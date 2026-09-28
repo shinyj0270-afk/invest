@@ -29,7 +29,7 @@ def inspect(root):
                               text=True, encoding='utf-8', errors='replace', timeout=20)
     top = git('rev-parse', '--show-toplevel')
     if top.returncode:
-        return dict(repository=False, state='remote_pending', transfer='not_executed')
+        return dict(repository=False, state='remote_pending', transfer_performed_by_check=False)
     root = Path(top.stdout.strip())  # Inspect the whole parent repository, never a nested substitute.
     # Entire remote URLs are withheld, not just userinfo: paths can themselves contain credentials.
     remotes = git('remote').stdout.splitlines()
@@ -59,7 +59,7 @@ def inspect(root):
                 upstream_configured=upstream.returncode == 0, ahead=ahead, behind=behind,
                 changed_count=len(status), operations=active, tracked_private_paths=unsafe,
                 state=state, remote_freshness='not_fetched',
-                transfer='not_executed')
+                transfer_performed_by_check=False)
 
 
 def main():

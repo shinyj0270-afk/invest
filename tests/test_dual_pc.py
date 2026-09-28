@@ -139,7 +139,7 @@ class GitTests(unittest.TestCase):
         result=inspect(self.repo)
         self.assertEqual(result['state'],'diverged')
         self.assertEqual((result['ahead'],result['behind']),(1,1))
-        self.assertEqual(result['transfer'],'not_executed')
+        self.assertFalse(result['transfer_performed_by_check'])
 
     def test_private_tracked_and_ignore(self):
         (self.repo/'.gitignore').write_bytes((ROOT/'.gitignore').read_bytes())
