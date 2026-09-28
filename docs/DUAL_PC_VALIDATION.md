@@ -2,7 +2,7 @@
 
 ## Git 인계 · work15
 
-사용자가 공개 `shinyj0270-afk/invest`를 목적지로 확인했다. 기존 폴더에서 `main`을 초기화하고 91개 명시 파일만 stage했다. `git diff --cached --check` 통과, 로컬 설정·DB·원자료 및 목록 밖 파일은 제외. 최초 커밋 `796343f121254165bc184c4ed9be7cc6fd79e697`을 원격에 전송하고 `git ls-remote origin refs/heads/main`으로 같은 SHA를 확인했다. 후속 상태 문서 커밋의 최종 SHA는 작업 종료 때 다시 확인한다. 집 PC에서는 아직 받거나 실행하지 않았다.
+사용자가 공개 `shinyj0270-afk/invest`를 목적지로 확인했다. 기존 폴더에서 `main`을 초기화하고 91개 명시 파일만 stage했다. `git diff --cached --check` 통과, 로컬 설정·DB·원자료 및 목록 밖 파일은 제외. 최초 커밋 `796343f121254165bc184c4ed9be7cc6fd79e697`과 후속 상태 문서 커밋을 원격에 전송하고 `git ls-remote origin refs/heads/main`으로 최종 로컬 HEAD와 같은 SHA를 확인했다. 집 PC에서는 아직 받거나 실행하지 않았다.
 
 ## 사용자 정정 후 상태 · work14
 

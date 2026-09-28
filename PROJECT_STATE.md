@@ -1,11 +1,11 @@
 # INVESTMENT 작업 상태 · v0.4-work15 · 2026-09-28
 
 - 현재 PC: 회사 PC(`work`). 기존 작업폴더에서 개발·검증했으며 로컬 데이터/인증정보는 각 PC에 따로 둔다. 사용자는 일반 상장기업 데이터와 개인 관심 기록에 회사 감사·반출 승인이 필요한 민감자료가 없다고 확인했다.
-- Git: 이 폴더에서 `main` 저장소를 만들고 사용자가 확인한 공개 원격 `https://github.com/shinyj0270-afk/invest.git`을 `origin`으로 연결했다. 최초 91개 파일 커밋 `796343f121254165bc184c4ed9be7cc6fd79e697`을 전송했고 원격 `refs/heads/main`에 같은 SHA가 있음을 확인했다. 이후 상태 문서 커밋의 최종 원격 일치 여부는 이번 작업 마감 때 다시 확인한다.
+- Git: 이 폴더에서 `main` 저장소를 만들고 사용자가 확인한 공개 원격 `https://github.com/shinyj0270-afk/invest.git`을 `origin`으로 연결했다. 91개 파일 최초 커밋과 후속 상태 문서 커밋을 전송했다. 원격 `refs/heads/main`과 로컬 HEAD 일치는 작업 마감 때 다시 확인했다. 정확한 최종 SHA는 `git rev-parse HEAD`로 확인한다.
 - 인계 파일: `config/share_candidates.json`의 명시한 91개. 원본 README/PROJECT_STATE, 앱 소스·테스트·운영 문서를 포함한다. PC 로컬 config/local.json·runtime.local.json, DB, 원자료, 비밀번호·토큰, 가상환경, 로그는 제외했다. 사용자 제공 연구 원문은 로컬에만 남겨 두었으며, 해당 파일이 없으면 연구 결과에 파일 해시가 없다고 표시된다.
 - 앱: 수동 스냅샷 파일 경로를 PC 로컬 설정으로 이동. work에는 기존 자료가 있고 임시 home 프로필에는 실제 자료가 없으면 빈 상태로 표시됐다. 자동 수집/주문/계좌 연결 없음.
 - 검증: `tools/verify_all.py` 12명령 모두 성공, Python 92개 테스트 통과. `tests/verify_live_app.py` 실제 실행 앱 8탭·조건 저장·내보내기·모바일 폭 통과. `tools/validate_share_candidates.py` 91개 경로 검사 0건 및 임시 home 빌드·가상 배치·Python/JS·실제 빈 상태 통과. 이것은 집 PC 자체의 검증이 아니다.
-- 남은 작업: 최종 상태 문서 커밋을 원격으로 보내고 SHA 일치를 확인한다. 집 PC에서 `main`을 받아 home 로컬 설정·가상 실행을 검증하고 작은 문서 변경으로 왕복 인계 확인. Kiwoom/OpenDART 신규 인증 및 인포맥스 자동 연동은 별도 설정 대기.
+- 남은 작업: 집 PC에서 `main`을 받아 home 로컬 설정·가상 실행을 검증하고 작은 문서 변경으로 왕복 인계 확인. Kiwoom/OpenDART 신규 인증 및 인포맥스 자동 연동은 별도 설정 대기.
 - 세부 절차와 검증: docs/DUAL_PC_WORKFLOW.md, docs/DUAL_PC_VALIDATION.md, docs/SHARE_REVIEW.md. 이전 로컬 상태는 첫 Git 커밋과 아래 work12 기록에 보존돼 있다.
 
 ---
