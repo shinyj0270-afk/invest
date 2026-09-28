@@ -12,8 +12,8 @@ from investment.local_config import load_local,require_profile
 
 ROOT=Path(__file__).resolve().parent
 
-def run(profile,mode,frequency):
-    local=load_local(ROOT)
+def run(profile,mode,frequency,root=None):
+    local=load_local(root or ROOT)
     profile=require_profile(local,profile)
     store=Store(local['data_dir'],profile,mode)
     lock=store.path.parent/'batch.lock'

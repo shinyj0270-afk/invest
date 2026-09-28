@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools'))
-from infomax_user_policy import apply_observed_flow_policy
+from infomax_user_policy import apply_observed_flow_policy, apply_analysis_basis
 
 
 class PolicyTests(unittest.TestCase):
@@ -29,7 +29,30 @@ class PolicyTests(unittest.TestCase):
         self.assertFalse(e['official_calendar_verified'])
         self.assertFalse(e['prices_final'])
         self.assertFalse(e['venue_comparability_confirmed'])
-        self.assertIn('거래소 범위 동일성 미확인',e['labels'])
+        self.assertIn(self.decisions['flow_turnover_scope_comparability']['required_label'],e['labels'])
+
+    def test_krx_basis_preserves_raw_values_and_unverified_facts(self):
+        snapshot={'meta':{'warnings':['거래소 범위 미확인','공식 거래일 미대조']},
+                  'companies':[{'metrics':{'price':123,'roe_pct':10},
+                                'prices':[{'close':123,'venue':None,'final':False}],
+                                'data_quality':['거래소 범위 미확인'],
+                                'user_policy_evidence':{'labels':['공식 거래일 미대조'],
+                                                        'price_venue':None,'prices_final':False}}]}
+        original=copy.deepcopy(snapshot)
+        apply_analysis_basis(snapshot,self.decisions)
+        self.assertEqual(snapshot['meta']['analysis_venue'],'KRX')
+        self.assertFalse(snapshot['meta']['market_data_policy']['official_calendar_required'])
+        self.assertEqual(snapshot['companies'][0]['metrics'],original['companies'][0]['metrics'])
+        self.assertEqual(snapshot['companies'][0]['prices'],original['companies'][0]['prices'])
+        self.assertIsNone(snapshot['companies'][0]['user_policy_evidence']['price_venue'])
+        again=copy.deepcopy(snapshot)
+        self.assertEqual(apply_analysis_basis(snapshot,self.decisions),again)
+
+    def test_no_krx_basis_inferred(self):
+        decisions=copy.deepcopy(self.decisions)
+        decisions['unknown_venue'].pop('analysis_venue')
+        snapshot={'meta':{},'companies':[]}
+        self.assertEqual(apply_analysis_basis(snapshot,decisions),{'meta':{},'companies':[]})
 
     def test_ratio_requires_explicit_approval(self):
         del self.decisions['flow_turnover_scope_comparability']

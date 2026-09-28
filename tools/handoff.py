@@ -9,6 +9,12 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
 FILES = (
+    'tools/returns_history.py', 'tests/test_returns_history.py', 'docs/RETURNS_HISTORY.md',
+    'tools/trend_history.py', 'tests/test_trend_history.py', 'docs/TREND_HISTORY.md',
+    'tools/infomax_history.py', 'tests/test_infomax_history.py', 'docs/LONG_TERM_HISTORY.md',
+    'investment/refresh.py', 'tools/refresh_infomax.py', 'tests/test_refresh.py', 'docs/REFRESH.md',
+    'tools/infomax_financial_snapshot.py', 'tests/test_infomax_financial_snapshot.py', 'docs/HOME_FINANCIAL_CONNECTION.md',
+    'tools/infomax_daily.py', 'tests/test_infomax_daily.py', 'docs/HOME_RECEIVE.md',
     'AGENTS.md', 'CLAUDE.md', 'docs/DUAL_PC_WORKFLOW.md',
     'investment/local_config.py', 'tools/pc_check.py', 'tests/test_dual_pc.py',
     'scripts/pc-start.ps1', 'scripts/pc-finish.ps1',

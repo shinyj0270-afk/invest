@@ -1,5 +1,47 @@
-"""Explicit review-only overrides; preserve unknown venue and finality facts."""
+"""Explicit user policies; preserve source observations and verification status."""
 from infomax_import import require
+
+
+def apply_analysis_basis(snapshot, decisions):
+    """Apply the user's analysis basis without certifying the saved source's venue."""
+    venue = decisions.get('unknown_venue', {})
+    if venue.get('analysis_venue') != 'KRX' or venue.get('venue_basis') != 'user_declared':
+        return snapshot
+    require(decisions.get('revision_finality', {}).get('decision') == 'allow_provisional_use_with_label',
+            '잠정값 사용 결정 필요')
+    require(decisions.get('observed_sessions_calendar', {}).get('decision') == 'use_latest_20_common_observed_dates_with_label',
+            '관측일 사용 결정 필요')
+    labels = [decisions[k]['required_label'] for k in
+              ('unknown_venue', 'revision_finality', 'observed_sessions_calendar')]
+    replacements = {
+        '가격·수급 거래소 범위 동일성 미확인': decisions['flow_turnover_scope_comparability']['required_label'],
+        '거래소 범위 동일성 미확인': decisions['flow_turnover_scope_comparability']['required_label'],
+        '거래소 범위 미확인': labels[0],
+        '추후 정정 가능': labels[1],
+        '공식 거래일 미대조': labels[2],
+    }
+    def revised(notes):
+        return list(dict.fromkeys(replacements.get(note, note) for note in notes))
+    meta = snapshot['meta']
+    meta['analysis_venue'] = 'KRX'
+    meta['venue'] = 'KRX · 사용자 지정 기준'
+    meta['market_data_policy'] = dict(venue='KRX', venue_basis='user_declared',
+        provisional_values_accepted=True, window_basis='latest_20_common_observations',
+        official_calendar_required=False, official_calendar_verified=False,
+        source_venue_independently_verified=False, user_answer=venue['user_answer'])
+    meta['warnings'] = revised(meta.get('warnings', []))
+    for label in labels:
+        if label not in meta['warnings']: meta['warnings'].append(label)
+    for row in snapshot['companies']:
+        row['analysis_venue'] = 'KRX'
+        row['data_quality'] = revised(row.get('data_quality', []))
+        evidence = row.get('user_policy_evidence')
+        if evidence:
+            evidence['analysis_venue'] = 'KRX'
+            evidence['venue_basis'] = 'user_declared'
+            evidence['official_calendar_required'] = False
+            evidence['labels'] = revised(evidence.get('labels', []))
+    return snapshot
 
 
 def apply_observed_flow_policy(row, data, sessions, decisions):

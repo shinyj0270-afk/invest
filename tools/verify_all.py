@@ -16,7 +16,7 @@ if edge.exists(): env.setdefault('CHROMIUM_PATH',str(edge))
 commands=[
  [sys.executable,'build.py'],
  ['node','tests/test_engine.js'],['node','tests/test_portfolio.js'],
- [sys.executable,'-m','unittest','tests.test_dual_pc','tests.test_research_app','tests.test_financial_reconciliation','tests.test_user_policy','tests.test_company_finish','tests.test_review_tolerance','tests.test_infomax_import','tests.test_marketcap_history','tests.test_streamlit_app'],
+ [sys.executable,'-m','unittest','tests.test_dual_pc','tests.test_research_app','tests.test_financial_reconciliation','tests.test_user_policy','tests.test_company_finish','tests.test_review_tolerance','tests.test_infomax_import','tests.test_marketcap_history','tests.test_streamlit_app','tests.test_infomax_daily','tests.test_infomax_financial_snapshot','tests.test_refresh','tests.test_infomax_history','tests.test_trend_history','tests.test_returns_history'],
  [sys.executable,'tests/test_ui.py'],[sys.executable,'tests/test_portfolio_ui.py'],
  [sys.executable,'batch.py','init-fixture','--profile',profile],
  [sys.executable,'batch.py','daily','--profile',profile],[sys.executable,'batch.py','weekly','--profile',profile],

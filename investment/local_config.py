@@ -29,6 +29,7 @@ def load_local(root):
     if not isinstance(sources, list) or any(s not in ('kiwoom', 'dart', 'infomax_manual') for s in sources):
         raise ValueError('Unknown local source permission')
     return dict(profile=profile, project_root=root, data_dir=data.resolve(),
+                infomax_refresh=config.get('infomax_refresh'),
                 manual_snapshot_file=manual_file,
                 enabled_data_adapters=sources,
                 scheduled_jobs_enabled=config.get('scheduled_jobs_enabled', False) is True)

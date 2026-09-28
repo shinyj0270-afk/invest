@@ -1,6 +1,22 @@
 {
   "purpose": "Single-source, explicit Git handoff list for the existing INVESTMENT workspace",
   "files": {
+    "tools/returns_history.py": "tools/returns_history.py",
+    "tests/test_returns_history.py": "tests/test_returns_history.py",
+    "docs/RETURNS_HISTORY.md": "docs/RETURNS_HISTORY.md",
+    "tools/trend_history.py": "tools/trend_history.py",
+    "tests/test_trend_history.py": "tests/test_trend_history.py",
+    "docs/TREND_HISTORY.md": "docs/TREND_HISTORY.md",
+    "tools/infomax_history.py": "tools/infomax_history.py",
+    "tests/test_infomax_history.py": "tests/test_infomax_history.py",
+    "docs/LONG_TERM_HISTORY.md": "docs/LONG_TERM_HISTORY.md",
+    "investment/refresh.py": "investment/refresh.py",
+    "tools/refresh_infomax.py": "tools/refresh_infomax.py",
+    "tests/test_refresh.py": "tests/test_refresh.py",
+    "docs/REFRESH.md": "docs/REFRESH.md",
+    "tools/infomax_daily.py": "tools/infomax_daily.py",
+    "tests/test_infomax_daily.py": "tests/test_infomax_daily.py",
+    "docs/HOME_RECEIVE.md": "docs/HOME_RECEIVE.md",
     "AGENTS.md": "AGENTS.md",
     "CLAUDE.md": "CLAUDE.md",
     "docs/DUAL_PC_WORKFLOW.md": "docs/DUAL_PC_WORKFLOW.md",
@@ -91,6 +107,9 @@
     "tools/validate_share_candidates.py": "tools/validate_share_candidates.py",
     "tools/verify_portable.py": "tools/verify_portable.py",
     "docs/SHARE_REVIEW.md": "docs/SHARE_REVIEW.md",
-    "docs/DUAL_PC_VALIDATION.md": "docs/DUAL_PC_VALIDATION.md"
+    "docs/DUAL_PC_VALIDATION.md": "docs/DUAL_PC_VALIDATION.md",
+    "tools/infomax_financial_snapshot.py": "tools/infomax_financial_snapshot.py",
+    "tests/test_infomax_financial_snapshot.py": "tests/test_infomax_financial_snapshot.py",
+    "docs/HOME_FINANCIAL_CONNECTION.md": "docs/HOME_FINANCIAL_CONNECTION.md"
   }
 }

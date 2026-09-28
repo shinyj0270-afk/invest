@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 env = dict(os.environ, PYTHONIOENCODING='utf-8')
 commands = [
     [sys.executable, 'build.py'],
-    [sys.executable, '-m', 'unittest', 'tests.test_research_app', 'tests.test_streamlit_app'],
+    [sys.executable, '-m', 'unittest', 'tests.test_research_app', 'tests.test_streamlit_app', 'tests.test_infomax_daily', 'tests.test_infomax_financial_snapshot', 'tests.test_refresh', 'tests.test_infomax_history', 'tests.test_trend_history', 'tests.test_returns_history'],
     [sys.executable, 'batch.py', 'init-fixture'],
     [sys.executable, 'batch.py', 'daily'],
     [sys.executable, 'batch.py', 'weekly'],

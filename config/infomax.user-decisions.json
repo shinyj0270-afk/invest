@@ -3,18 +3,20 @@
   "decisions": {
     "unknown_venue": {
       "decision": "allow_use_with_label",
-      "user_answer": "1번",
-      "scope": "가격·수급 데이터의 거래소 범위 미확인 상태 사용",
-      "required_label": "거래소 범위 미확인",
+      "user_answer": "거래소는 KRX 기준/잠정값으로/실제 아니어도 인정",
+      "scope": "사용자 지정 KRX 기준으로 분석. 저장 원자료의 거래소 범위를 독립 검증한 것은 아님.",
+      "required_label": "KRX 기준(사용자 지정) · 원자료 범위 독립 검증 전",
       "price_venue": null,
       "flow_venue": null,
-      "provider_definition_confirmed": false
+      "provider_definition_confirmed": false,
+      "analysis_venue": "KRX",
+      "venue_basis": "user_declared"
     },
     "revision_finality": {
       "decision": "allow_provisional_use_with_label",
-      "user_answer": "1",
+      "user_answer": "거래소는 KRX 기준/잠정값으로/실제 아니어도 인정",
       "scope": "현재 저장된 가격·수급 값을 잠정값으로 사용",
-      "required_label": "추후 정정 가능",
+      "required_label": "잠정값 허용 · 추후 정정 가능",
       "prices_final": false,
       "flows_final": false,
       "provider_finality_confirmed": false
@@ -22,26 +24,30 @@
     "investor_aggregation": {
       "decision": "use_existing_provider_fields_with_label",
       "user_answer": "1",
-      "fields": ["외국인순매수금액", "기관순매수금액"],
+      "fields": [
+        "외국인순매수금액",
+        "기관순매수금액"
+      ],
       "required_label": "공급자 분류 기준·세부 범위 미확인",
       "combine_other_foreign_fields": false,
       "provider_aggregation_confirmed": false
     },
     "flow_turnover_scope_comparability": {
       "decision": "allow_provisional_ratio_with_label",
-      "user_answer": "1",
-      "required_label": "거래소 범위 동일성 미확인",
+      "user_answer": "거래소는 KRX 기준/잠정값으로/실제 아니어도 인정",
+      "required_label": "가격·수급 KRX 기준 적용(사용자 지정) · 원자료 범위 독립 검증 전",
       "scope": "같은 20개 공통 관측일의 순매수 합계 / 거래대금 합계를 잠정 계산",
       "venue_comparability_confirmed": false
     },
     "observed_sessions_calendar": {
       "decision": "use_latest_20_common_observed_dates_with_label",
-      "user_answer": "1",
+      "user_answer": "거래소는 KRX 기준/잠정값으로/실제 아니어도 인정",
       "scope": "가격·수급에 공통으로 존재하는 최근 20개 관측일로 계산",
-      "required_label": "공식 거래일 미대조",
+      "required_label": "최근 20개 공통 관측일 사용 승인 · 실제 20거래일 일치 불필요",
       "observation_count": 20,
       "official_calendar_verified": false,
-      "missing_trading_dates_may_extend_period": true
+      "missing_trading_dates_may_extend_period": true,
+      "official_calendar_required": false
     }
   },
   "financial_source_priority": {
@@ -53,5 +59,5 @@
     "definition_equivalence_confirmed": false
   },
   "pending": [],
-  "implementation_status": "All six user decisions applied to the saved review dataset; unverified facts and provisional labels preserved."
+  "implementation_status": "KRX user-declared analysis basis, provisional values, latest 20 common observations accepted; source verification flags preserved."
 }
