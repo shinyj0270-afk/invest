@@ -4,8 +4,8 @@
 
 ## 현재 상태
 
-- 회사 PC 로컬 준비 대상: work. Git 저장소와 상위 저장소가 없어 원격·브랜치·미푸시 커밋은 해당 없음. 새 Git 저장소를 자동 생성하지 않는다.
-- 원격 전송: 미실행. 사용할 원격 저장소·브랜치의 동일성 확인 대기. 회사 감사·반출 승인은 이 프로젝트의 대기 조건이 아니다(사용자 확인).
+- 회사 PC 작업본: work, 기존 폴더에 Git `main`을 연결했다. 원격은 사용자가 확인한 `https://github.com/shinyj0270-afk/invest.git`이다.
+- 원격 인계: 91개 명시 파일의 최초 커밋을 `main`에 전송하고 원격 SHA 일치를 확인했다. 마지막 상태 문서 커밋까지 포함한 최신 상태는 `PROJECT_STATE.md`와 `git ls-remote origin refs/heads/main`으로 확인한다. 회사 감사·반출 승인은 이 프로젝트의 대기 조건이 아니다(사용자 확인).
 - 집 PC 수신/실행: 미확인. 양쪽 구축 완료가 아니다.
 - Wiki: 이번 PC에서 C:\AI\llm-wiki 경로가 없음. /wiki-sync 정의·설정은 확인되지 않았고 실행하지 않음. Git과 독립이다.
 
@@ -27,7 +27,7 @@ enabled_data_adapters의 kiwoom/dart는 별도 runtime.local.json의 같은 프�
 
 ## 시작과 마감
 
-두 보조 스크립트는 기본적으로 로컬 Git만 점검한다. 네트워크/commit/push/pull을 수행하지 않는다. `-RunTests`도 검증만 실행한다. 출력의 clean_cached_refs는 과거 로컬 참조 상태이며 원격 최신 확인이 아니다. Git 미설정/dirty/진행 중 merge·rebase/divergence/추적 중 비공개 경로에서는 인계를 보류한다.
+두 보조 스크립트는 기본적으로 로컬 Git만 점검한다. 네트워크/commit/push/pull을 수행하지 않는다. `-RunTests`도 검증만 실행한다. 출력의 clean_cached_refs는 과거 로컬 참조 상태이며 원격 최신 확인이 아니다. Git 미설정/dirty/진행 중 merge·rebase/divergence에서는 자동 수신을 보류한다.
 
 수신은 사용할 원격·브랜치를 확인한 별도 작업이다. clean 상태→원격 fetch→ahead/behind 및 진행 작업 확인→분기되지 않았을 때만 pull --ff-only. 로컬 미커밋 변경은 보존하고 중단한다.
 

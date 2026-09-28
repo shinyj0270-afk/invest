@@ -2,6 +2,8 @@
 
 두 PC에 인계할 코드·문서 91개는 `config/share_candidates.json`에 명시했습니다. 검사·임시 home 실행 결과와 원격 상태는 [공유 범위 점검](docs/SHARE_REVIEW.md)에 있습니다. 원본 README와 PROJECT_STATE는 포함하고 PC별 DB·설정·인증정보는 제외합니다.
 
+GitHub 원격: [shinyj0270-afk/invest](https://github.com/shinyj0270-afk/invest) `main`. 회사 PC 최초 커밋은 원격에서 확인했습니다. 집 PC에서의 수신·실행은 아직 확인하지 않았습니다.
+
 기존 앱을 보존하면서 회사/집 PC 공통 지침과 로컬 설정을 분리했습니다. 현재 회사 PC 로컬 검증 완료, 원격 미연결, 집 PC 미검증입니다. [운영 절차](docs/DUAL_PC_WORKFLOW.md)와 [변경·검증 내역](docs/DUAL_PC_VALIDATION.md)을 먼저 확인하세요. 아래 work12 설명은 기존 기능 기록입니다.
 
 # INVESTMENT · 연구 앱 v0.4-work12

@@ -58,7 +58,7 @@ def inspect(root):
                 remote_count=len(remotes), remote_urls='withheld',
                 upstream_configured=upstream.returncode == 0, ahead=ahead, behind=behind,
                 changed_count=len(status), operations=active, tracked_private_paths=unsafe,
-                state=state, remote_freshness='not_fetched', history_content_review='pending',
+                state=state, remote_freshness='not_fetched',
                 transfer='not_executed')
 
 
@@ -72,7 +72,6 @@ def main():
     result.update(phase=args.phase, profile=config['profile'],
                   configured_data_dir=str(config['data_dir']),
                   scheduled_jobs_enabled=config['scheduled_jobs_enabled'],
-                  remote_destination_confirmed=False,
                   note='Inspection only; cached refs are not proof of current remote state.')
     print(json.dumps(result, ensure_ascii=False, indent=2))
 

@@ -1,30 +1,16 @@
-# 최신 상태 · v0.4-work14 · 2026-09-28
+# INVESTMENT 작업 상태 · v0.4-work15 · 2026-09-28
 
-- 사용자 확인: `shinyj0270-afk/invest` 공개 GitHub 저장소를 이 프로젝트 원격으로 사용. 원격은 `git ls-remote --heads`에서 브랜치 없음(빈 저장소)으로 확인했다. 현재 작업폴더의 기존 파일을 사용하며 PC별 로컬 데이터는 제외한다.
-- 현재 Git 인계 목록은 `config/share_candidates.json`의 91개 명시 파일이다. 원본 README·PROJECT_STATE 및 기존 코드·검증 문서를 포함한다. 임시 home 프로필 검사 통과. 최초 적용 후속 인계 작업으로 진행 중이며 집 PC 수신·실행은 아직 아니다.
-
-- 사용자 정정: 일반 상장기업 데이터와 개인 관심 기록에 회사 감사·반출 승인이 필요한 민감자료는 없다. 이전 문서의 회사 반출 승인 대기는 해제한다. 비밀번호·토큰과 PC 로컬 DB/설정의 분리는 유지한다.
-- GitHub 읽기 확인: 이 PC의 GitHub CLI가 `shinyj0270-afk` 계정에 로그인되어 있고, 사용자가 `shinyj0270-afk/invest`를 목적지로 확인했다. 원격 전송 상태는 Git 명령 결과로 별도 갱신한다.
-- 실행 후보는 원본 README.md와 PROJECT_STATE.md를 포함한다. 과거 대체 문서 사용 결정은 폐기. `config/share_candidates.json` 및 `docs/SHARE_REVIEW.md`가 현재 기준이다.
-
-- 회사 PC 후속 준비: `config/share_candidates.json`에 41개 실행 후보를 선별. `tools/validate_share_candidates.py` 경로/내용 패턴 검사와 임시 home 프로필의 빌드·fixture Python/JS·배치·실제 빈 상태 검증 수행. 집 PC에서 직접 검증한 것은 아님.
-- 앱의 수동 입력 경로를 로컬 `manual_snapshot_file`로 설정화. 회사 PC 기존 경로 유지, 집 PC 예시는 null. 데이터 상태와 HTML의 회사 전용 문구를 수정.
-- 이번 실행: `tools/verify_all.py` 12명령 모두 성공(Python 92개), `tests/verify_live_app.py` 실제 8탭·저장·출력 통과, 선별 후보 임시 home 실행 통과. 기록: `docs/DUAL_PC_VALIDATION.md`, `docs/SHARE_REVIEW.md`, `validation/current/`.
-- 원격 저장소는 사용자가 특정했다. 현재 폴더의 Git 연결·commit·push 결과는 후속 기록으로 확인한다. 집 PC 수신·실행 미확인.
-
-- 후속 사전 점검: docs/SHARE_REVIEW.md에 공유 후보와 제외 대상 기록. 기존 인계 파일 목록에는 실제 종목 코드·과거 재무 수치가 있는 분석 코드/문서가 포함되므로 목록 전체·기존 ZIP을 승인된 외부 공유본으로 취급하지 않는다. 원격 연결/전송은 여전히 미실행.
-
-- 현재 PC: 사용자가 명시한 work. 이 문서가 있는 기존 작업본 유지. 로컬 두 PC 운영 지침 적용·검증 완료.
-- 원격: 프로젝트와 상위 폴더 모두 Git 저장소 아님. branch/upstream/추적/미푸시 해당 없음. 외부 업로드·새 저장소 생성 없음.
-- 집 PC: 수신·실행·왕복 검증 미실시. 두 PC 전체 구축 완료 아님.
-- 공통 AGENTS/CLAUDE/운영 문서 추가. 기존 로컬 설정 재사용, data_dir를 앱·배치·수집기에 연결. 다른 PC 프로필/경로 오용 거부. 예약 false 유지.
-- 실제 테스트: 통합 12명령 전부 성공(Python 89, JS 84, 기존 UI 43). 이후 신규 12개 테스트 재실행(고유 Python 총 91), 실제 앱 8탭·저장·출력, A4 4개 각 1페이지 통과. 상세: docs/DUAL_PC_VALIDATION.md, VALIDATION.md.
-- 로컬 인포맥스 입력 보존, 신규 인증 조회 없음. 가상/실제 자료 분리. API/자동 연동 권한 대기 유지.
-- 다음: `shinyj0270-afk/invest`의 main 브랜치에 명시 파일을 인계하고 원격 커밋을 확인한다. 인증정보·PC 로컬 DB/설정은 계속 제외한다. 집 PC에서는 별도 로컬 설정·환경·가상 앱 검증과 왕복 확인이 필요하다.
-- 기존 dist/work12는 이전 버전이며 이번 변경을 포함하지 않는다. 과거 상태 기록은 아래에 보존한다.
+- 현재 PC: 회사 PC(`work`). 기존 작업폴더에서 개발·검증했으며 로컬 데이터/인증정보는 각 PC에 따로 둔다. 사용자는 일반 상장기업 데이터와 개인 관심 기록에 회사 감사·반출 승인이 필요한 민감자료가 없다고 확인했다.
+- Git: 이 폴더에서 `main` 저장소를 만들고 사용자가 확인한 공개 원격 `https://github.com/shinyj0270-afk/invest.git`을 `origin`으로 연결했다. 최초 91개 파일 커밋 `796343f121254165bc184c4ed9be7cc6fd79e697`을 전송했고 원격 `refs/heads/main`에 같은 SHA가 있음을 확인했다. 이후 상태 문서 커밋의 최종 원격 일치 여부는 이번 작업 마감 때 다시 확인한다.
+- 인계 파일: `config/share_candidates.json`의 명시한 91개. 원본 README/PROJECT_STATE, 앱 소스·테스트·운영 문서를 포함한다. PC 로컬 config/local.json·runtime.local.json, DB, 원자료, 비밀번호·토큰, 가상환경, 로그는 제외했다. 사용자 제공 연구 원문은 로컬에만 남겨 두었으며, 해당 파일이 없으면 연구 결과에 파일 해시가 없다고 표시된다.
+- 앱: 수동 스냅샷 파일 경로를 PC 로컬 설정으로 이동. work에는 기존 자료가 있고 임시 home 프로필에는 실제 자료가 없으면 빈 상태로 표시됐다. 자동 수집/주문/계좌 연결 없음.
+- 검증: `tools/verify_all.py` 12명령 모두 성공, Python 92개 테스트 통과. `tests/verify_live_app.py` 실제 실행 앱 8탭·조건 저장·내보내기·모바일 폭 통과. `tools/validate_share_candidates.py` 91개 경로 검사 0건 및 임시 home 빌드·가상 배치·Python/JS·실제 빈 상태 통과. 이것은 집 PC 자체의 검증이 아니다.
+- 남은 작업: 최종 상태 문서 커밋을 원격으로 보내고 SHA 일치를 확인한다. 집 PC에서 `main`을 받아 home 로컬 설정·가상 실행을 검증하고 작은 문서 변경으로 왕복 인계 확인. Kiwoom/OpenDART 신규 인증 및 인포맥스 자동 연동은 별도 설정 대기.
+- 세부 절차와 검증: docs/DUAL_PC_WORKFLOW.md, docs/DUAL_PC_VALIDATION.md, docs/SHARE_REVIEW.md. 이전 로컬 상태는 첫 Git 커밋과 아래 work12 기록에 보존돼 있다.
 
 ---
-아래는 역사적 기록입니다. 최신 운영 상태는 위 work13이 우선합니다.
+
+## 이전 로컬 기록
 
 # INVESTMENT 작업 상태
 
