@@ -1,0 +1,483 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>INVESTMENT · 종목 탐색 대시보드</title><style>:root{--ink:#17283d;--muted:#6a7787;--line:#dfe6ed;--paper:#f4f6f9;--blue:#255cc7;--blue-soft:#ecf2ff;--warn:#fff4df;--warn-ink:#865a0b;--good:#eef7f3;--good-ink:#236a4b;--bad:#fff0ef;--bad-ink:#a84742;--radius:14px}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR','Malgun Gothic',sans-serif}button,input,select{font:inherit}button{cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--ink);transition:background .12s}button:hover{background:#edf2f7}button:disabled{cursor:not-allowed;opacity:.45}button.primary{background:var(--blue);color:white;border-color:var(--blue)}button.primary:hover{background:#174db5}button.small{font-size:12px;padding:5px 8px}input,select{border:1px solid #ced8e1;border-radius:7px;padding:8px 9px;color:var(--ink);background:white;min-width:0}input:focus,select:focus,button:focus-visible{outline:2px solid #75a1ed;outline-offset:2px}input[type=checkbox]{width:17px;height:17px;accent-color:var(--blue);cursor:pointer}a{color:var(--blue)}h1,h2,h3,p{margin:0}h1{font-size:23px;letter-spacing:-.7px;line-height:1.35}h2{font-size:17px;letter-spacing:-.4px}h3{font-size:14px}header{background:white;border-bottom:1px solid var(--line)}.top{max-width:1580px;margin:auto;padding:24px 28px 17px;display:flex;gap:20px;align-items:center;justify-content:space-between}.project{font-size:11px;letter-spacing:1.6px;font-weight:700;color:var(--blue);margin-bottom:3px}.top-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.tag{display:inline-flex;align-items:center;font-size:12px;border-radius:6px;padding:4px 8px;line-height:1.5;background:#eef2f6;color:#546477}.tag.warning{background:var(--warn);color:var(--warn-ink)}.tag.good{background:var(--good);color:var(--good-ink)}.tag.fail{background:var(--bad);color:var(--bad-ink)}.nav{max-width:1580px;margin:auto;padding:0 28px;display:flex;gap:22px;overflow:auto}.nav button{border:0;border-radius:0;padding:12px 4px;background:transparent;white-space:nowrap;font-weight:600;color:var(--muted);border-bottom:3px solid transparent}.nav button.active{color:var(--blue);border-bottom-color:var(--blue)}main{max-width:1580px;margin:auto;padding:22px 28px 36px}.notice{padding:11px 15px;border:1px solid #ebdcbf;border-radius:10px;background:#fffaf0;display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:18px;color:#6a562e;font-size:13px}.notice button{background:transparent;border-color:#ddc89b;white-space:nowrap}.scope-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;font-size:12px;color:var(--muted)}.scope-bar span{border:1px solid var(--line);padding:4px 9px;border-radius:20px;background:white}.card{background:white;border:1px solid var(--line);border-radius:var(--radius);padding:20px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}.stat{padding:17px 20px}.stat .label{color:var(--muted);font-size:12px}.stat .big{font-size:29px;line-height:1.5;font-weight:700;letter-spacing:-1px}.sub{color:var(--muted);font-size:12px}.layout{display:grid;grid-template-columns:310px minmax(0,1fr);gap:18px;align-items:start}.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}.form-item{margin-bottom:13px}.form-item label{display:block;font-size:12px;color:#56697e;margin-bottom:5px}.form-item>input,.form-item>select{width:100%}.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.split{display:grid;grid-template-columns:1fr 1fr;gap:10px}.divider{border-top:1px solid var(--line);margin:18px 0}.rule{background:#f7f9fc;border:1px solid #e3e9f0;border-radius:9px;padding:10px;margin-bottom:9px}.rule-top{display:flex;gap:6px;margin-bottom:7px}.rule-top select{flex:1;width:0;font-size:12px}.rule-top button{padding:3px 8px;font-size:15px;color:var(--muted)}.rule-value{display:grid;grid-template-columns:79px 1fr 30px;gap:6px;align-items:center}.rule-value select,.rule-value input{width:100%;font-size:12px;padding:6px}.unit{font-size:11px;color:var(--muted)}.wide{width:100%}.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.8}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}.toolbar input{max-width:240px}.scroll{overflow:auto;width:100%}table{border-collapse:collapse;width:100%;font-size:12px}th{background:#f5f7fa;color:#5c6b7a;font-weight:500;text-align:right;white-space:nowrap;padding:11px 12px;border-bottom:1px solid var(--line)}td{border-bottom:1px solid #edf1f5;padding:12px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}th:first-child,td:first-child{text-align:left}th.left,td.left{text-align:left}tbody tr:hover{background:#fafcff}.company-btn{border:0;background:transparent;color:var(--ink);font-weight:600;padding:0;font-size:13px}.company-btn:hover{background:transparent;color:var(--blue);text-decoration:underline}.empty{min-height:272px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:26px;color:var(--muted)}.empty-symbol{width:52px;height:52px;border-radius:14px;background:#f0f4fa;display:grid;place-items:center;color:#7b95b9;margin-bottom:15px;font-size:26px}.empty h3{color:#334b65;font-size:15px;margin-bottom:7px}.empty p{font-size:13px;max-width:440px;margin-bottom:15px}.table-foot{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;margin-top:12px;flex-wrap:wrap}.section-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:0 0 16px;flex-wrap:wrap}.section-head select{min-width:220px}.analysis-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:16px 0}.metric-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #f0f2f5;font-size:12px}.metric-row:last-child{border-bottom:0}.metric-row b{white-space:nowrap;font-size:14px}.metric-row span{color:#607285}.summary{padding:14px 17px;background:#f6f8fc;border-radius:9px;font-size:13px;line-height:1.9}.summary p+p{margin-top:6px}.grid-two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.chart-empty{min-height:200px;border-radius:9px;background:repeating-linear-gradient(to bottom,#fff,#fff 47px,#f0f3f7 48px);display:grid;place-items:center;color:var(--muted);font-size:12px}.sources{font-size:12px;line-height:1.8;margin-top:14px}.sources a{margin-right:16px}.bar-list{display:grid;gap:17px;margin-top:20px}.bar-row{display:grid;grid-template-columns:120px 1fr 74px;gap:10px;align-items:center;font-size:12px}.bar-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bar-area{height:19px;background:#f4f6fa;border-radius:3px;position:relative}.bar{position:absolute;top:2px;height:15px;background:#628edb;border-radius:2px;min-width:2px}.bar.median{background:#aab8ca}.zero-line{position:absolute;top:-3px;bottom:-3px;width:1px;background:#8395a7}.bar-number{text-align:right;font-variant-numeric:tabular-nums}.peer-picker{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0 20px}.peer-chip{display:flex;gap:6px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:8px;font-size:12px}.peer-chip:has(input:checked){background:var(--blue-soft);border-color:#acc4ee}.definition{display:grid;grid-template-columns:220px 1fr;gap:15px;padding:13px 0;border-bottom:1px solid #edf0f4;font-size:12px}.definition p{color:var(--muted)}.data-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}.data-layout .full{grid-column:1/-1}.data-step{padding:12px 0;border-bottom:1px solid #edf0f4}.data-step:last-child{border:0}.data-step strong{font-size:13px}.data-step p{color:var(--muted);font-size:12px;margin-top:4px}.status-line{display:flex;justify-content:space-between;align-items:center;gap:12px}.foot{font-size:11px;color:#8793a2;margin-top:23px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}#toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);max-width:calc(100vw - 30px);padding:12px 20px;border-radius:10px;background:#243a55;color:white;box-shadow:0 7px 30px #17283d30;z-index:50;font-size:13px;display:none}.muted{color:var(--muted)}.plot{width:100%;height:auto;display:block}.plot text{font-family:inherit;fill:#738297;font-size:11px}.tab-panel[hidden]{display:none}.inline-label{font-size:12px;color:var(--muted)}.error{background:var(--bad);color:var(--bad-ink);padding:10px;border-radius:7px;margin-bottom:12px}details summary{cursor:pointer;font-size:13px;color:#455d78;padding:7px 0}pre{white-space:pre-wrap;word-break:break-word;background:#f6f8fa;border-radius:8px;padding:12px;font:12px/1.8 ui-monospace,monospace}button.danger{color:#a84742}
+@media(max-width:1120px){.layout{grid-template-columns:285px minmax(0,1fr)}.analysis-grid{grid-template-columns:repeat(2,1fr)}.data-layout{grid-template-columns:1fr}.definition{grid-template-columns:190px 1fr}.bar-row{grid-template-columns:95px 1fr 60px}.card{padding:17px}}
+@media(max-width:780px){.top{padding:18px 16px 10px;align-items:flex-start;flex-direction:column;gap:12px}h1{font-size:21px}.nav{padding:0 16px;gap:18px}.nav button{font-size:13px}.top-actions{width:100%}.top-actions .tag{margin-right:auto}main{padding:16px}.cards{gap:8px}.stat{padding:12px}.stat .big{font-size:25px}.stat .sub{font-size:10px}.layout,.grid-two{grid-template-columns:1fr}.notice{align-items:flex-start;font-size:12px}.notice button{font-size:11px}.scope-bar{gap:5px}.scope-bar span{font-size:10px}.analysis-grid{gap:9px}.analysis-grid .card{padding:12px}.definition{grid-template-columns:1fr;gap:3px}.data-layout{grid-template-columns:1fr}.section-head select{min-width:180px;max-width:100%}.toolbar input{max-width:100%;flex:1}.empty{min-height:225px;padding:20px}.grid-two{margin-top:14px}.bar-row{grid-template-columns:100px 1fr 67px}.metric-row{font-size:11px}.metric-row b{font-size:12px}}
+@media print{.top-actions,.nav,.notice,#filters,.toolbar,.peer-picker,button{display:none!important}.layout,.grid-two,.data-layout{display:block}.card{break-inside:avoid;margin-bottom:12px}.tab-panel[hidden]{display:none!important}body{background:white}main,.top{padding:0}.scroll{overflow:visible}}
+[hidden]{display:none!important}
+
+/* Holdings / portfolio extension. */
+.p-intro{padding:16px 18px;background:var(--warn);border:1px solid #eadcb9;border-radius:12px;margin-bottom:18px;line-height:1.75}
+.p-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:14px 0}.p-toolbar.card{padding:14px 18px}.p-space{margin-top:18px}.p-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px}.p-layout>aside{align-self:start}.p-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}.p-form.one{grid-template-columns:1fr}.p-form label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)}.p-form input{width:100%}.p-check{display:flex;gap:9px;align-items:flex-start;font-size:12px;margin:18px 0;line-height:1.7}.p-check input{flex-shrink:0;margin-top:3px}.p-cash{font-weight:700;font-size:18px;margin:16px 0 4px}.p-bar{height:18px;display:flex;border-radius:8px;overflow:hidden;background:#e6ebf1;margin:20px 0 10px;gap:2px}.p-bar span{background:var(--blue);opacity:.8;min-width:0}.p-bar span:last-child{background:#c7d1dd;opacity:1}.p-ev{font-size:13px;line-height:1.85;margin:8px 0}.p-ev b{font-weight:650}.p-block{padding:12px 0;border-bottom:1px solid var(--line)}.p-block:last-child{border-bottom:0}.p-metric{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}#pJsonEditor{width:100%;min-height:170px;resize:vertical;background:#f7f9fc;border:1px solid var(--line);border-radius:8px;padding:10px;font:12px/1.6 ui-monospace,monospace;white-space:pre;tab-size:2}.p-date-warn{font-weight:600;color:var(--warn-ink)}
+@media(max-width:950px){.p-layout{grid-template-columns:1fr}.p-form.one{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.p-form,.p-form.one{grid-template-columns:1fr}.p-toolbar button{flex:1 1 auto}.p-intro{font-size:13px}}
+.p-layout>*{min-width:0}.p-layout .grid-two{grid-template-columns:repeat(2,minmax(0,1fr))}.p-layout .card-head{flex-wrap:wrap}.p-layout .p-ev,.p-layout .hint{overflow-wrap:anywhere}
+@media(max-width:950px){.p-layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:780px){.p-layout .grid-two{grid-template-columns:minmax(0,1fr)}}
+</style></head><body>
+<header><div class="top"><div><div class="project">INVESTMENT</div><h1>종목 탐색 대시보드</h1></div><div class="top-actions"><span id="dataBadge" class="tag warning">시제품 · 데이터 미연결</span><button id="exportConfig">조건 파일 내보내기</button><button id="uploadButton" class="primary">데이터·조건 파일 가져오기</button><input id="dataInput" type="file" accept="application/json,.json" hidden></div></div><nav class="nav" aria-label="대시보드 화면" role="tablist"><button data-tab="screen" class="active" role="tab">01 조건검색</button><button data-tab="company" role="tab">02 기업분석</button><button data-tab="compare" role="tab">03 산업비교</button><button data-tab="holdings" role="tab">04 보유종목 점검</button><button data-tab="portfolio" role="tab">05 포트폴리오</button><button data-tab="data" role="tab">데이터·계산 기준</button></nav></header>
+<main><div class="notice"><span id="noticeText"></span><button id="showData" class="small">연결 상태 보기</button></div><div id="scopeBar" class="scope-bar"></div>
+<section id="panel-screen" class="tab-panel" role="tabpanel"><div class="cards"><div class="card stat"><div class="label">현재 분석 대상</div><div id="universeStat" class="big">—</div><div class="sub">불러온 데이터에 시장·산업 필터 적용</div></div><div class="card stat"><div class="label">조건 충족 기업</div><div id="matchStat" class="big">—</div><div class="sub">입력한 수치 기준 · 매수 추천 아님</div></div><div class="card stat"><div class="label">판정 보류 기업</div><div id="unknownStat" class="big">—</div><div class="sub">필수 지표 부족 · 0으로 대체하지 않음</div></div></div>
+<div class="layout"><aside id="filters" class="card"><div class="card-head"><h2>검색 조건</h2><button id="resetRules" class="small">초기화</button></div><div class="split"><div class="form-item"><label for="market">시장</label><select id="market"><option value="">전체 시장</option><option>KOSPI</option><option>KOSDAQ</option></select></div><div class="form-item"><label for="industry">산업</label><select id="industry"><option value="">전체 산업</option></select></div></div><div class="form-item"><label for="logic">조건 결합</label><select id="logic"><option value="AND">모두 충족 (AND)</option><option value="OR">하나 이상 충족 (OR)</option></select></div><div id="rules"></div><button id="addRule" class="wide">+ 조건 추가</button><p id="activeRules" class="hint"></p><button id="sampleRules" class="small" style="margin-top:8px">입력 예시 적용</button><p class="sub" style="margin-top:5px">예시 수치는 조작 확인용이며 투자 기준이 아닙니다.</p><div class="divider"></div><div class="form-item"><label for="savedPreset">저장한 검색식</label><select id="savedPreset"></select></div><div class="row"><input id="presetName" placeholder="조건 이름" aria-label="저장할 조건 이름" style="flex:1;width:0" maxlength="60"><button id="savePreset">저장</button></div><p class="hint">조건은 이 브라우저에 저장합니다. 다른 PC에서는 조건 파일로 옮길 수 있습니다.</p></aside>
+<div class="card"><div class="card-head"><div><h2>기업 탐색 결과</h2><div id="resultsCount" class="sub">결과 데이터 미연결</div></div><div class="row"><button id="exportResults" class="small" disabled>현재 결과 CSV</button><button id="goCompare" class="small primary">선택기업 비교</button></div></div><div class="toolbar"><input id="nameSearch" placeholder="기업명 또는 종목코드" aria-label="기업명 또는 종목코드 검색"><select id="resultStatus" aria-label="결과 상태"><option value="">모든 판정</option><option value="pass">조건 충족만</option><option value="unknown">자료 부족만</option><option value="fail">미충족만</option></select><div class="row"><select id="sortMetric" aria-label="정렬 지표" style="max-width:160px"></select><select id="sortDir" aria-label="정렬 방향"><option value="asc">오름차순</option><option value="desc">내림차순</option></select></div></div><div id="resultTable" class="scroll" hidden><table><thead><tr><th>비교</th><th class="left">기업</th><th class="left">산업</th><th>영업이익률 %</th><th>부채비율 %</th><th>외국인 20일<br>순매수 · 억원</th><th>20일 일평균<br>거래대금 · 억원</th><th>조건 판정</th><th>상세</th></tr></thead><tbody id="resultBody"></tbody></table></div><div id="screenEmpty" class="empty"><div class="empty-symbol" aria-hidden="true">⌕</div><h3>조건을 정하고, 근거가 있는 기업을 찾습니다.</h3><p>실제 데이터 연결 전이라 기업명과 수치를 표시하지 않습니다.<br>왼쪽에서 지표·조건값을 설정하고 검색식을 저장할 수 있습니다.</p><div class="row"><span class="tag">수익성</span><span class="tag">재무안정성</span><span class="tag">수급</span><span class="tag">유동성</span></div></div><div class="table-foot"><span>1차 범위: KOSPI·KOSDAQ 비금융 보통주</span><span>— : 미제공 또는 계산 불가</span></div></div></div></section>
+<section id="panel-company" class="tab-panel" role="tabpanel" hidden><div class="section-head"><div><h2 id="companyTitle"></h2><p class="sub" id="companyMeta"></p></div><select id="companySelect" aria-label="분석할 기업"></select></div><div class="analysis-grid"><div class="card"><h3>수익성</h3><div id="profitMetrics"></div></div><div class="card"><h3>재무안정성</h3><div id="stabilityMetrics"></div></div><div class="card"><h3>수급 · 최근 20거래일</h3><div id="flowMetrics"></div></div><div class="card"><h3>유동성 · 거래 / 재무</h3><div id="liquidityMetrics"></div></div></div><div class="card"><div class="card-head"><h2>기업 요약</h2><span class="tag">수치 기반 · 규칙형</span></div><div id="companySummary" class="summary"></div><div id="companySources" class="sources"></div></div><div class="grid-two"><div class="card"><div class="card-head"><h2>연간 재무 이력</h2><span class="sub">제공된 최근 5개 연도 · 억원</span></div><div class="scroll"><table><thead><tr><th>회계연도</th><th>매출액</th><th>영업이익</th><th>영업이익률 %</th></tr></thead><tbody id="historyBody"></tbody></table></div></div><div class="card"><h2>영업이익률 추이</h2><p class="sub">연도별 영업이익 ÷ 매출액 · 없는 연도는 연결하지 않음</p><div id="historyChart"></div></div></div></section>
+<section id="panel-compare" class="tab-panel" role="tabpanel" hidden><div class="section-head"><div><h2>같은 산업 안에서 비교</h2><p id="peerScope" class="sub"></p></div><select id="compareIndustry" aria-label="비교 산업"></select></div><div class="card"><div class="card-head"><h3>비교 기업 선택</h3><span class="sub">최대 5개 · 전체 업종 중앙값과 함께 비교</span></div><div id="peerPicker" class="peer-picker"></div><div class="scroll"><table><thead id="compareHead"></thead><tbody id="compareBody"></tbody></table></div><p class="hint">중앙값은 검색 통과 기업만이 아니라, 불러온 동일 산업의 모든 비금융 보통주를 사용합니다. 선택기업도 모집단에 포함합니다. 실제 업종 전체를 확보했다는 뜻은 아닙니다.</p></div><div class="grid-two"><div class="card"><h2>영업이익률 비교</h2><p class="sub">동일 재무기간·연결 기준 · %</p><div id="marginCompare"></div></div><div class="card"><h2>외국인 순매수 / 거래대금</h2><p class="sub">같은 20거래일의 순매수대금 ÷ 전체 거래대금 · %</p><div id="flowCompare"></div></div><div class="card" style="margin-top:18px"><h3>비교 기준</h3><p class="hint">산업 분류와 자료 기준일은 입력 데이터가 정합니다. 금융업·지주사 등 사업구조가 다른 기업은 별도 비교 체계가 필요합니다. 이 시제품은 비금융 보통주용이며, 기업 간 우열을 하나의 점수로 단정하지 않습니다.</p></div></section>
+<section id="panel-holdings" class="tab-panel" role="tabpanel" hidden>
+  <div class="section-head"><div><h2>보유종목 점검</h2><p class="sub">기업의 투자 논리와 포트폴리오 내 비중을 따로 판단합니다.</p></div><span id="pMode" class="tag warning">보유·연구 입력 대기</span></div>
+  <div class="p-intro">이 기능은 <b>입력된 연구 상태와 근거를 이용하는 규칙형 시제품</b>입니다. 실제 공시를 자동 분석하거나 증권계좌에 연결하지 않습니다. 의견은 매매 지시가 아니며 손실을 방지하지 못합니다.</div>
+  <div class="p-toolbar card"><button id="pImport" class="primary">보유·연구 JSON 가져오기</button><input id="pFile" type="file" accept=".json,application/json" hidden><button id="pTemplate">빈 입력 형식</button><button id="pFixture">가상 예제 실행</button><button id="pExport">현재 입력 내보내기</button><button id="pClear" class="danger">입력 비우기</button><span class="sub">새로고침 시 제거 · 계좌번호·인증키 불필요</span></div>
+  <div id="pScope" class="scope-bar"></div>
+  <div class="cards"><div class="card stat"><div class="label">입력 범위 평가액</div><div class="big" id="pValue">—</div><div class="sub">보유주식 + 입력 현금 · 전체 자산 아님</div></div><div class="card stat"><div class="label">재검토·매도 검토</div><div class="big" id="pReviewCount">—</div><div class="sub">손익률 자체는 판정 기준이 아닙니다.</div></div><div class="card stat"><div class="label">판단 보류</div><div class="big" id="pWaitCount">—</div><div class="sub">자료 부족을 보유 의견으로 바꾸지 않습니다.</div></div></div>
+  <div class="card p-space"><div class="card-head"><h3>현재 보유목록</h3><span class="sub">기업 의견 / 비중 의견 분리</span></div><div class="scroll"><table><thead><tr><th class="left">기업</th><th>수량</th><th>평가액 · 원</th><th>평가손익률</th><th>현재 비중</th><th class="left">기업 의견</th><th class="left">비중 의견</th><th>근거</th></tr></thead><tbody id="pHoldBody"></tbody></table></div><p id="pBookNote" class="hint"></p></div>
+  <div class="grid-two p-space"><div class="card"><h3>보유종목 직접 추가·수정</h3><p class="hint">매입가는 손익 표시용입니다. 가격·연구 근거가 없으면 판단 보류로 남깁니다.</p><div class="p-form"><label>종목코드<input id="pCode" inputmode="numeric" maxlength="6" placeholder="6자리 코드"></label><label>보유수량<input id="pQty" type="number" min="1" step="1" placeholder="주"></label><label>평균 매입가 · 원<input id="pCost" type="number" min="0" placeholder="미입력 가능"></label><label>현금 · 원<input id="pCash" type="number" min="0" placeholder="모르면 미입력"></label></div><div class="p-toolbar"><button id="pSaveHolding">보유 추가·수정</button><button id="pDeleteHolding">해당 보유 삭제</button><button id="pSaveCash">현금 반영</button></div><p class="sub">평가손익에는 세금·수수료·배당을 포함하지 않습니다.</p></div><div class="card"><h3>현재 입력 JSON 편집</h3><p class="hint">연구 상태·긍정/반대 근거·공개일을 함께 입력합니다. 아래 예제는 형식 확인용입니다.</p><textarea id="pJsonEditor" spellcheck="false" aria-label="보유 연구 JSON 편집"></textarea><div class="p-toolbar"><button id="pLoadEditor">현재 입력 표시</button><button id="pApplyEditor">검사 후 적용</button></div></div></div>
+  <div id="pDetail" class="card p-space"><h3>판단 근거</h3><p class="hint">보유목록의 근거 버튼을 누르면 투자 논리·반대 근거·출처·재검토 조건을 확인할 수 있습니다.</p></div>
+</section>
+<section id="panel-portfolio" class="tab-panel" role="tabpanel" hidden>
+  <div class="section-head"><div><h2>최대 5개 기업 포트폴리오</h2><p class="sub">입력된 후보 안에서 만드는 조건부 모의 목표안 · 자동 주문 없음</p></div><button id="pExportReport">검토 결과 MD</button></div>
+  <div class="p-intro"><b>최대 5개 기업은 집중형 구성입니다.</b> 산업·공통 위험군 제한을 두어도 충분한 분산이나 손실 한도를 보장하지 않습니다. 미편입 보유종목은 자동 매도 대상이 아닙니다.</div>
+  <div class="p-layout"><aside class="card"><h3>구성 제약</h3><p class="hint">아래 숫자는 개발용 가정입니다. 본인에게 적합하다고 검증된 투자 기준이 아닙니다.</p><div class="p-form one"><label>최대 기업 수<input id="pMax" type="number" min="1" max="5" step="1" value="5"></label><label>기업당 상한 · %<input id="pCompanyCap" type="number" min="0.01" max="100" step="0.01" value="25"></label><label>동일 산업 상한 · %<input id="pSectorCap" type="number" min="0.01" max="100" step="0.01" value="40"></label><label>공통 위험군 상한 · %<input id="pGroupCap" type="number" min="0.01" max="100" step="0.01" value="40"></label><label>최소 현금 · %<input id="pCashMin" type="number" min="0" max="100" step="0.01" value="20"></label><label>주식 동반 하락 가정 · %<input id="pShock" type="number" min="-100" max="-0.01" step="0.01" value="-30"></label><label>위 가정에서 허용할 손실 · %<input id="pLossLimit" type="number" min="0.01" max="100" step="0.01" placeholder="직접 입력"></label><label>가격 경과일 한도 · 달력일<input id="pPriceAge" type="number" min="0" max="366" value="4"></label><label>연구 검토 경과일 한도<input id="pReviewAge" type="number" min="0" max="366" value="120"></label></div><label class="p-check"><input id="pConfirm" type="checkbox"> 이 설정을 모의 제안에 적용합니다. 실제 손실은 가정한 범위를 넘을 수 있음을 확인했습니다.</label><button id="pGenerate" class="primary wide">구성안 계산</button><p class="hint">확률·예상수익 최적화가 아니라 고정 슬롯 균등배분입니다. 빈 슬롯은 현금으로 남깁니다.</p></aside>
+    <div><div class="card"><div class="card-head"><h3 id="pProposalTitle">설정 확인 대기</h3><span id="pProposalBadge" class="tag warning"></span></div><p id="pProposalNote" class="hint"></p><div id="pAllocation"></div><div class="scroll"><table><thead><tr><th class="left">기업</th><th class="left">산업</th><th>목표 비중</th><th>현재 보유</th><th>근거</th></tr></thead><tbody id="pProposalBody"></tbody></table></div><p id="pCashLabel" class="p-cash">현금 —</p></div>
+    <div class="grid-two p-space"><div class="card"><h3>가정 시나리오</h3><div id="pStress"></div><p class="hint">확률·VaR·최대손실 예측이 아닙니다. 가격 하락 외 유동성·거래비용·부도 등은 반영하지 않았습니다.</p></div><div class="card"><h3>산업·위험군 노출</h3><div id="pExposure"></div><p class="hint">수익률 상관관계와 실제 고객·지역 노출은 아직 자동 계산하지 않습니다. 위험군은 입력자가 검토한 분류입니다.</p></div></div>
+    <div class="card p-space"><h3>제외·확인 대기 사유</h3><div id="pRejected"></div><p id="pUnselected" class="hint"></p></div>
+    <div class="card p-space"><h3>모형의 범위</h3><p class="hint">후보는 입력 파일 안의 비금융 보통주만 사용합니다. 투자 논리·재무·가치평가 상태는 입력자가 검토한 분석값이며, 이 화면이 실제 공시에서 자동 추론한 결과가 아닙니다. 기존 조건검색과는 별도 입력을 사용합니다. 최신 로컬 앱에 연결하는 계약은 동봉된 v0.5 지시문에 있습니다.</p></div></div>
+  </div>
+</section>
+
+<section id="panel-data" class="tab-panel" role="tabpanel" hidden><div class="section-head"><div><h2>데이터 연결과 계산 기준</h2><p class="sub">수집 계획과 현재 구현 상태를 구분합니다.</p></div><button id="clearData" class="danger">불러온 데이터 비우기</button></div><div class="data-layout"><div class="card"><div class="card-head"><h3>현재 불러온 자료</h3><span id="importCount" class="tag"></span></div><p id="coverageDetail" class="hint"></p><pre id="dataMeta"></pre><button id="downloadTemplate">빈 데이터 형식 받기</button><p class="hint">원자료 API 응답을 그대로 읽는 것이 아니라, 동봉된 명세에 맞춘 정규화 JSON을 읽습니다. 실제 종목 데이터는 브라우저 메모리에서만 처리하며 새로고침하면 제거됩니다. 조건만 브라우저에 저장합니다.</p></div><div class="card"><h3>연결할 데이터 원천</h3><div class="data-step"><strong>인포맥스 Excel 파일 가져오기</strong><p>1333에서 저장한 CSV/XLSX를 동봉 로컬 변환기로 JSON으로 바꾼 뒤 상단에서 불러옵니다. 단위·완료 거래일·재무 기준을 검사하고 부족한 지표는 비워 둡니다. 자세한 절차는 INFOMAX_IMPORT.md를 참고하세요.</p><p class="sub">이 PC의 수동 파일 변환 지원 · 공급자 자동 연결 없음</p></div><div class="data-step"><div class="status-line"><strong>재무제표 · OpenDART</strong><span class="tag warning">미연결</span></div><p>연결·별도, 정기보고서, 공시 접수번호를 보존하는 수집기 필요.</p><a href="https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS003&amp;apiId=2019020" target="_blank" rel="noopener noreferrer">공식 재무제표 API 안내</a></div><div class="data-step"><div class="status-line"><strong>가격·거래대금·투자자별 수급</strong><span class="tag warning">미연결</span></div><p>이용 권한이 확인된 증권사 또는 시장정보 데이터 원천 필요. 기본 연결 후보: 키움 REST API. 인포맥스는 PC별 공식 이용 권한 확인 전 대기합니다.</p><a href="https://openapi.kiwoom.com/guide/apiguide" target="_blank" rel="noopener noreferrer">공식 API 제공 항목</a></div><div class="data-step"><div class="status-line"><strong>기업·산업 분류</strong><span class="tag warning">미연결</span></div><p>종목코드와 공시 고유번호 매핑, 비금융·금융 구분, 산업 분류 버전을 검증해야 합니다.</p></div><div class="data-step"><strong>현재 파일에 없는 기능</strong><p>API 직접 수집, 실시간 시세, 자동 새로고침, 자연어 검색 해석, 외부 AI 호출, 주문·매매 실행은 구현하지 않았습니다.</p></div></div><div class="card full"><h3>데이터 처리 원칙</h3><div class="data-step"><strong>결측과 기준 혼합</strong><p>없는 숫자는 null로 남깁니다. 스냅샷 안에서 가격일·재무기간·연결 기준·수급 기간·거래소 범위가 다른 행은 불러오기 단계에서 차단합니다. 실제 원문과 계산의 정확성까지 자동 검증하는 것은 아닙니다.</p></div><div class="data-step"><strong>연결 정보 보호</strong><p>API 키·비밀번호·계좌번호는 이 파일에 넣지 않습니다. 데이터 연결은 별도 로컬 수집기와 비밀정보 저장소에서 처리해야 합니다. 이 화면은 조회·분석 전용입니다.</p></div><div class="data-step"><strong>산업별 특성</strong><p>비금융 보통주를 기본 대상으로 합니다. 은행·보험·증권·리츠·스팩·우선주 및 지주사 전용 지표는 별도 확장 범위입니다.</p></div><div class="data-step"><strong>사용 권한과 공개 범위</strong><p>개인용으로 설계한 시제품입니다. 입력 데이터의 재배포·블로그 공개·외부 서버 배포 전에는 원천별 이용조건을 확인해야 합니다.</p><a href="https://openapi.kiwoom.com/guide/apiguide" target="_blank" rel="noopener noreferrer">키움 REST API 공식 안내</a></div></div><div class="card full"><h3>지표 정의 · 수집기에 적용할 계약</h3><p class="hint">이 화면은 아래 정의로 사전 계산된 metrics를 입력받습니다. 개별 재무 비율의 원자료 수집·정규화는 별도 구현이 필요합니다. 연간 이력의 영업이익률만 화면에서 직접 계산합니다.</p><div id="definitions"></div></div></div></section>
+<div class="foot"><span>INVESTMENT · 보유·포트폴리오 확장 시제품 v0.2 · 2026-09-27</span><span>실제 관측값 미포함 · 전 시장 데이터 연결·자동 갱신 미구현</span></div></main><div id="toast" role="status" aria-live="polite"></div><script>'use strict';
+const METRICS = Object.freeze({
+  market_cap_eok: {label:'시가총액', unit:'억원', category:'규모', definition:'가격 기준일의 시가총액. 보통주·우선주 범위를 수집 단계에서 통일합니다.'},
+  revenue_growth_pct: {label:'매출 증가율', unit:'%', category:'수익성', definition:'동일 길이의 비교 기간 대비 매출 증가율. 전기 매출이 0 이하인 경우 수집 단계에서 null 처리합니다.'},
+  operating_margin_pct: {label:'영업이익률', unit:'%', category:'수익성', definition:'동일 보고기간 영업이익 ÷ 매출액 × 100. 매출액 0 이하이면 null 처리합니다.'},
+  roe_pct: {label:'ROE', unit:'%', category:'수익성', definition:'최근 12개월 지배주주 순이익 ÷ 기초·기말 평균 지배주주 지분 × 100. 비교 기간과 연결 범위를 통일하고, 평균 지분 0 이하이면 null 처리합니다.'},
+  debt_ratio_pct: {label:'부채비율', unit:'%', category:'재무안정성', definition:'부채총계 ÷ 자본총계 × 100. 자본총계 0 이하이면 null 처리하고 자본잠식 여부를 별도 확인합니다.'},
+  net_debt_equity_pct: {label:'순차입금 / 자본', unit:'%', category:'재무안정성', definition:'(이자부 차입금 − 현금및현금성자산) ÷ 자본총계 × 100. 차입금 포함 계정은 수집 단계에서 통일합니다. 자본 0 이하이면 null입니다.'},
+  interest_coverage_x: {label:'이자보상배율', unit:'배', category:'재무안정성', definition:'동일 기간 영업이익 ÷ 이자비용. 금융원가 전체로 대체하지 않습니다. 이자비용 0 이하 또는 구분 불가이면 null입니다.'},
+  foreign_net_20d_eok: {label:'외국인 20일 순매수', unit:'억원', category:'수급', definition:'동일한 최근 20거래일의 외국인 순매수대금 합계. 장중 추정치가 아닌 확정치만 사용합니다.'},
+  institution_net_20d_eok: {label:'기관 20일 순매수', unit:'억원', category:'수급', definition:'동일한 최근 20거래일의 기관합계 순매수대금 합계. 기관 분류는 공급자 기준을 기록합니다.'},
+  foreign_net_turnover_20d_pct: {label:'외국인 순매수 / 거래대금', unit:'%', category:'수급', definition:'20거래일 외국인 순매수대금 합계 ÷ 같은 20거래일 전체 거래대금 합계 × 100. 거래소 범위를 통일합니다.'},
+  institution_net_turnover_20d_pct: {label:'기관 순매수 / 거래대금', unit:'%', category:'수급', definition:'20거래일 기관 순매수대금 합계 ÷ 같은 20거래일 전체 거래대금 합계 × 100. 거래소 범위를 통일합니다.'},
+  avg_trading_value_20d_eok: {label:'20일 일평균 거래대금', unit:'억원', category:'거래 유동성', definition:'최근 20거래일 거래대금 합계 ÷ 20. 기간 중 일부 자료가 없으면 null. 신규상장 등 관측일 부족을 20일 평균으로 표시하지 않습니다.'},
+  current_ratio_pct: {label:'유동비율', unit:'%', category:'재무 유동성', definition:'유동자산 ÷ 유동부채 × 100. 유동부채 0 이하 또는 유동·비유동 구분이 없으면 null입니다.'}
+});
+const isNum = v => typeof v === 'number' && Number.isFinite(v);
+const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+const val = (row, key) => isNum(row.metrics?.[key]) ? row.metrics[key] : null;
+function median(values) { const a=values.filter(isNum).sort((a,b)=>a-b); if(!a.length)return null; const n=a.length;return n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2; }
+function evaluateRule(row, rule) {
+  const n=val(row,rule.metric); if(n===null)return 'unknown';
+  if(!hasOwn(METRICS,rule.metric) || !isNum(rule.value))throw new Error('유효하지 않은 조건입니다.');
+  const ops={gte:(a,b)=>a>=b,lte:(a,b)=>a<=b,gt:(a,b)=>a>b,lt:(a,b)=>a<b,eq:(a,b)=>a===b};
+  if(!hasOwn(ops,rule.op))throw new Error('알 수 없는 비교 연산입니다.');
+  return ops[rule.op](n,rule.value)?'pass':'fail';
+}
+function evaluate(row,rules,logic='AND') {
+  if(!rules.length)return 'pass';
+  const a=rules.map(r=>evaluateRule(row,r));
+  if(logic==='AND')return a.includes('fail')?'fail':a.includes('unknown')?'unknown':'pass';
+  if(logic==='OR')return a.includes('pass')?'pass':a.includes('unknown')?'unknown':'fail';
+  throw new Error('AND 또는 OR만 지원합니다.');
+}
+function percentile(value,values){const a=values.filter(isNum);if(!isNum(value)||a.length<5)return null;return (a.filter(x=>x<value).length+0.5*a.filter(x=>x===value).length)/a.length*100;}
+function eligible(rows){return rows.filter(r=>['KOSPI','KOSDAQ'].includes(r.market)&&r.security_type==='ordinary'&&r.analysis_profile==='nonfinancial');}
+function peerRows(rows,industry){return eligible(rows).filter(r=>r.industry===industry);}
+function validateSnapshot(data){
+  if(!data||data.schema_version!=='0.1'||!Array.isArray(data.companies))throw new Error('schema_version 0.1 및 companies 배열이 필요합니다.');
+  if(data.companies.length>10000)throw new Error('한 번에 10,000개 이하의 종목만 불러올 수 있습니다.');
+  if(!data.meta||typeof data.meta!=='object')throw new Error('meta가 필요합니다.');
+  if(data.meta.data_mode!=null&&!['fixture','user_input'].includes(data.meta.data_mode))throw new Error('data_mode는 fixture 또는 user_input입니다.');
+  const required=['price_date','flow_start','flow_end','financial_period','financial_basis','venue','universe_label'];
+  if(data.companies.length)for(const k of required)if(typeof data.meta[k]!=='string'||!data.meta[k].trim())throw new Error(`meta.${k} 기준값이 필요합니다.`);
+  for(const k of ['price_date','flow_start','flow_end'])if(data.meta[k]&&!/^\d{4}-\d{2}-\d{2}$/.test(data.meta[k]))throw new Error(`${k} 날짜 형식은 YYYY-MM-DD입니다.`);
+  if(data.meta.flow_start&&data.meta.flow_end&&data.meta.flow_start>data.meta.flow_end)throw new Error('수급 시작일은 종료일보다 늦을 수 없습니다.');
+  if(data.companies.length&&!['CFS','OFS'].includes(data.meta.financial_basis))throw new Error('연결(CFS)과 별도(OFS)를 혼합하지 마세요.');
+  if(data.meta.universe_total!=null&&(!Number.isInteger(data.meta.universe_total)||data.meta.universe_total<data.companies.length))throw new Error('전체 모집단 수가 적재 종목 수보다 작거나 유효하지 않습니다.');
+  const codes=new Set();
+  for(const row of data.companies){
+    if(typeof row.code!=='string'||!/^\d{6}$/.test(row.code)||codes.has(row.code))throw new Error('종목코드는 중복 없는 6자리 문자열이어야 합니다.');
+    codes.add(row.code);
+    for(const k of ['name','market','industry','security_type','analysis_profile'])if(typeof row[k]!=='string'||!row[k].trim())throw new Error(`${row.code}: ${k}가 필요합니다.`);
+    if(!row.metrics||typeof row.metrics!=='object'||Array.isArray(row.metrics))throw new Error(`${row.code}: metrics가 필요합니다.`);
+    if(row.data_quality!=null&&(!Array.isArray(row.data_quality)||row.data_quality.length>30||row.data_quality.some(s=>typeof s!=='string'||s.length>1000)))throw new Error('data_quality는 최대 30개 설명 배열입니다.');
+    if(row.metric_missing_reasons!=null){
+      if(typeof row.metric_missing_reasons!=='object'||Array.isArray(row.metric_missing_reasons))throw new Error('metric_missing_reasons는 객체입니다.');
+      for(const [k,v] of Object.entries(row.metric_missing_reasons))if(!hasOwn(METRICS,k)||typeof v!=='string'||v.length>1000)throw new Error('지표의 결측 사유 형식이 올바르지 않습니다.');
+    }
+    for(const [k,v]of Object.entries(row.metrics)){if(!hasOwn(METRICS,k))throw new Error(`${row.code}: 알 수 없는 지표 ${k}`);if(v!==null&&!isNum(v))throw new Error(`${row.code}: ${k}는 숫자 또는 null이어야 합니다.`);}
+    for(const k of required){if(row[k]!=null&&row[k]!==data.meta[k])throw new Error(`${row.code}: ${k}가 스냅샷 공통 기준과 다릅니다.`);}
+    if(row.history!=null){
+      if(!Array.isArray(row.history)||row.history.length>20)throw new Error('history는 최대 20개 연도 배열입니다.');
+      const ys=new Set();
+      for(const h of row.history){if(!Number.isInteger(h.year)||h.year<2000||h.year>2100||ys.has(h.year))throw new Error('history 연도는 중복 없는 정수여야 합니다.');ys.add(h.year);for(const k of ['revenue_eok','operating_profit_eok'])if(h[k]!=null&&!isNum(h[k]))throw new Error(`history.${k}는 숫자 또는 null입니다.`);}
+    }
+    if(row.sources!=null&&!Array.isArray(row.sources))throw new Error('sources는 배열입니다.');
+    if(row.sources?.length>50)throw new Error('종목당 출처는 50개까지 가능합니다.');
+    for(const s of row.sources||[])if(typeof s.label!=='string'||typeof s.url!=='string'||!/^https?:\/\//i.test(s.url))throw new Error('출처에는 label과 http(s) URL이 필요합니다.');
+  }
+  return data;
+}
+if(typeof module!=='undefined')module.exports={METRICS,isNum,val,median,evaluateRule,evaluate,percentile,eligible,peerRows,validateSnapshot};
+</script><script>'use strict';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=(v,u='',digits=1)=>isNum(v)?v.toLocaleString('ko-KR',{maximumFractionDigits:digits})+(u?' '+u:''):'—';
+const STATUS={pass:'충족',fail:'미충족',unknown:'자료 부족'};
+const EMPTY={schema_version:'0.1',meta:{price_date:null,flow_start:null,flow_end:null,financial_period:null,financial_basis:null,venue:null,universe_label:'데이터 미연결',universe_total:null},companies:[]};
+let snapshot=structuredClone(EMPTY),activeTab='screen',companyCode='',comparisonIndustry='',comparisonCodes=new Set(),lastRows=[];
+let rules=[{metric:'operating_margin_pct',op:'gte',value:null},{metric:'debt_ratio_pct',op:'lte',value:null},{metric:'avg_trading_value_20d_eok',op:'gte',value:null}];
+let savedConfigs={};try{savedConfigs=JSON.parse(localStorage.getItem('investment-screen-presets-v01')||'{}');if(!savedConfigs||typeof savedConfigs!=='object'||Array.isArray(savedConfigs))savedConfigs={};}catch{savedConfigs={};}
+let toastTimer;function toast(t){$('toast').textContent=t;$('toast').style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').style.display='none',4200);}
+function download(name,content,type='application/json'){const a=document.createElement('a');const url=URL.createObjectURL(new Blob([content],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function metricOptions(selected){let out='';for(const cat of [...new Set(Object.values(METRICS).map(m=>m.category))]){out+=`<optgroup label="${esc(cat)}">`;for(const [k,m]of Object.entries(METRICS))if(m.category===cat)out+=`<option value="${k}" ${k===selected?'selected':''}>${esc(m.label)}</option>`;out+='</optgroup>';}return out;}
+function activate(tab){activeTab=tab;document.querySelectorAll('[data-tab]').forEach(el=>{el.classList.toggle('active',el.dataset.tab===tab);el.setAttribute('aria-selected',el.dataset.tab===tab?'true':'false')});document.querySelectorAll('.tab-panel').forEach(el=>el.hidden=el.id!==`panel-${tab}`);if(tab==='company')renderCompany();if(tab==='compare')renderComparison();}
+function validRules(){return rules.filter(r=>isNum(r.value));}
+function renderRules(){
+ $('rules').innerHTML=rules.map((r,i)=>`<div class="rule"><div class="rule-top"><select aria-label="조건 ${i+1} 지표" data-rule="${i}" data-part="metric">${metricOptions(r.metric)}</select><button data-remove="${i}" aria-label="조건 ${i+1} 삭제">×</button></div><div class="rule-value"><select aria-label="조건 ${i+1} 연산" data-rule="${i}" data-part="op">${[['gte','이상 ≥'],['lte','이하 ≤'],['gt','초과 >'],['lt','미만 <'],['eq','같음 =']].map(([k,v])=>`<option value="${k}" ${r.op===k?'selected':''}>${v}</option>`).join('')}</select><input type="number" step="any" placeholder="값 입력" aria-label="조건 ${i+1} 값" data-rule="${i}" data-part="value" value="${r.value??''}"><span class="unit">${METRICS[r.metric].unit}</span></div></div>`).join('');
+ $('rules').querySelectorAll('[data-part]').forEach(el=>el.addEventListener('change',()=>{const i=+el.dataset.rule,k=el.dataset.part;rules[i][k]=k==='value'?(el.value===''?null:Number(el.value)):el.value;if(k==='metric')renderRules();renderScreen();}));
+ $('rules').querySelectorAll('[data-remove]').forEach(el=>el.addEventListener('click',()=>{rules.splice(+el.dataset.remove,1);renderRules();renderScreen();}));
+ $('activeRules').textContent=`활성 조건 ${validRules().length}개 · 빈 값은 적용하지 않음`;
+}
+function renderSaved(){const keys=Object.keys(savedConfigs);$('savedPreset').innerHTML='<option value="">저장한 조건 선택</option>'+keys.map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('');}
+function allEligible(){return eligible(snapshot.companies);}
+function filteredBase(){const market=$('market').value,ind=$('industry').value,q=$('nameSearch').value.trim().toLowerCase();return allEligible().filter(r=>(!market||r.market===market)&&(!ind||r.industry===ind)&&(!q||r.code.includes(q)||r.name.toLowerCase().includes(q)));}
+function setIndustries(){const industries=[...new Set(allEligible().map(r=>r.industry))].sort((a,b)=>a.localeCompare(b,'ko'));const current=$('industry').value;$('industry').innerHTML='<option value="">전체 산업</option>'+industries.map(s=>`<option>${esc(s)}</option>`).join('');if(industries.includes(current))$('industry').value=current;$('compareIndustry').innerHTML=industries.length?industries.map(s=>`<option>${esc(s)}</option>`).join(''):'<option value="">산업 데이터 미연결</option>';if(!industries.includes(comparisonIndustry))comparisonIndustry=industries[0]||'';$('compareIndustry').value=comparisonIndustry;}
+function scopeMeta(){
+ const m=snapshot.meta,has=snapshot.companies.length>0,fixture=m.data_mode==='fixture';
+ $('dataBadge').textContent=has?(fixture?'가상 테스트 자료':'불러온 데이터 · 자동연결 없음'):'시제품 · 데이터 미연결';
+ $('dataBadge').className='tag warning';
+ $('noticeText').textContent=has?(fixture?'가상으로 만든 테스트 자료입니다. 실제 시장 관측이나 투자 판단 자료가 아닙니다.':`불러온 ${snapshot.companies.length}개 종목 범위의 분석입니다. 전 시장 완전성·수치 원문 검증·자동 갱신은 확인되지 않았습니다.`):'조건 설정과 화면 이동을 확인하는 시제품입니다. 실제 기업·가격·재무 데이터는 아직 연결하지 않았습니다.';
+ $('scopeBar').innerHTML=[`시세 ${m.price_date||'미연결'}`,`재무 ${m.financial_period||'미연결'} · ${m.financial_basis||'기준 미설정'}`,`수급 ${m.flow_start&&m.flow_end?`${m.flow_start} ~ ${m.flow_end}`:'미연결'}`,`시장 범위 ${m.venue||'미설정'}`].map(t=>`<span>${esc(t)}</span>`).join('');
+ $('dataMeta').textContent=JSON.stringify(m,null,2);$('importCount').textContent=has?`${snapshot.companies.length.toLocaleString()}개 종목`:'연결 전';
+ $('coverageDetail').textContent=has?`파일 범위: ${m.universe_label}. 전체 모집단: ${m.universe_total==null?'미확인':m.universe_total+'개'}. 일반 스크리너 대상: ${allEligible().length}개.`:'불러온 자료가 없습니다. 전 종목 데이터베이스나 API 연결은 포함하지 않습니다.';
+}
+function renderScreen(){
+ const has=snapshot.companies.length>0,rs=validRules(),logic=$('logic').value;let rows=filteredBase().map(row=>({row,status:evaluate(row,rs,logic)}));
+ $('universeStat').textContent=has?rows.length.toLocaleString():'—';$('matchStat').textContent=has?rows.filter(x=>x.status==='pass').length.toLocaleString():'—';$('unknownStat').textContent=has?rows.filter(x=>x.status==='unknown').length.toLocaleString():'—';$('activeRules').textContent=`활성 조건 ${rs.length}개 · 빈 값은 적용하지 않음`;
+ const status=$('resultStatus').value;if(status)rows=rows.filter(x=>x.status===status);
+ const sort=$('sortMetric').value,dir=$('sortDir').value==='desc'?-1:1;
+ rows.sort((a,b)=>{if(sort==='name')return dir*a.row.name.localeCompare(b.row.name,'ko');const av=val(a.row,sort),bv=val(b.row,sort);if(av===null&&bv===null)return a.row.code.localeCompare(b.row.code);if(av===null)return 1;if(bv===null)return-1;return dir*(av-bv)||a.row.code.localeCompare(b.row.code)});
+ lastRows=rows;$('exportResults').disabled=!has;$('resultsCount').textContent=has?`${rows.length}개 표시`:'결과 데이터 미연결';
+ if(!has){$('resultBody').innerHTML='';$('resultTable').hidden=true;$('screenEmpty').hidden=false;return;}
+ $('resultTable').hidden=false;$('screenEmpty').hidden=true;
+ if(!rows.length){$('resultBody').innerHTML='<tr><td colspan="9" style="text-align:center;padding:45px">현재 필터에 맞는 항목이 없습니다. 자료 부족 항목도 별도로 확인하세요.</td></tr>';return;}
+ $('resultBody').innerHTML=rows.map(({row:r,status:s})=>{const missing=rs.filter(c=>val(r,c.metric)===null).map(c=>METRICS[c.metric].label);return `<tr><td><input type="checkbox" data-compare="${r.code}" aria-label="${esc(r.name)} 비교 선택" ${comparisonCodes.has(r.code)?'checked':''}></td><td class="left"><button class="company-btn" data-company="${r.code}">${esc(r.name)}</button><div class="sub">${r.code} · ${esc(r.market)}</div></td><td class="left">${esc(r.industry)}</td><td>${fmt(val(r,'operating_margin_pct'))}</td><td>${fmt(val(r,'debt_ratio_pct'))}</td><td>${fmt(val(r,'foreign_net_20d_eok'))}</td><td>${fmt(val(r,'avg_trading_value_20d_eok'))}</td><td><span class="tag ${s==='pass'?'good':s==='fail'?'fail':'warning'}" title="${esc(missing.length?'누락: '+missing.join(', '):'현재 입력된 조건 기준')}">${STATUS[s]}</span></td><td><button class="small" data-company="${r.code}">분석</button></td></tr>`}).join('');
+ $('resultBody').querySelectorAll('[data-company]').forEach(b=>b.addEventListener('click',()=>{companyCode=b.dataset.company;activate('company')}));
+ $('resultBody').querySelectorAll('[data-compare]').forEach(b=>b.addEventListener('change',()=>{const row=snapshot.companies.find(r=>r.code===b.dataset.compare);if(b.checked){if(comparisonIndustry!==row.industry){comparisonCodes.clear();comparisonIndustry=row.industry;toast('같은 산업끼리 비교하도록 비교 집합을 변경했습니다.');}if(comparisonCodes.size>=5){b.checked=false;toast('비교 기업은 최대 5개입니다.');return;}comparisonCodes.add(row.code);}else comparisonCodes.delete(row.code);$('compareIndustry').value=comparisonIndustry;renderScreen();renderComparison();}));
+}
+function companySelect(){const rows=allEligible().sort((a,b)=>a.name.localeCompare(b.name,'ko'));if(!rows.some(r=>r.code===companyCode))companyCode=rows[0]?.code||'';$('companySelect').innerHTML=rows.length?rows.map(r=>`<option value="${r.code}" ${companyCode===r.code?'selected':''}>${esc(r.name)} · ${r.code}</option>`).join(''):'<option value="">기업 데이터 미연결</option>';return rows.find(r=>r.code===companyCode);}
+function metricRows(row,keys){return keys.map(k=>`<div class="metric-row"><span title="${esc(row?.metric_missing_reasons?.[k]||METRICS[k].definition)}">${esc(METRICS[k].label)}</span><b>${fmt(row?val(row,k):null,METRICS[k].unit)}</b></div>`).join('');}
+function renderCompany(){
+ const row=companySelect();$('companyTitle').textContent=row?row.name:'기업을 선택하면 핵심 지표를 확인할 수 있습니다.';$('companyMeta').textContent=row?`${row.code} · ${row.market} · ${row.industry} · ${snapshot.meta.financial_period} / ${snapshot.meta.financial_basis}`:'수익성 · 재무안정성 · 수급 · 두 가지 유동성';
+ $('profitMetrics').innerHTML=metricRows(row,['revenue_growth_pct','operating_margin_pct','roe_pct']);$('stabilityMetrics').innerHTML=metricRows(row,['debt_ratio_pct','net_debt_equity_pct','interest_coverage_x']);$('flowMetrics').innerHTML=metricRows(row,['foreign_net_20d_eok','institution_net_20d_eok','foreign_net_turnover_20d_pct']);$('liquidityMetrics').innerHTML=metricRows(row,['avg_trading_value_20d_eok','current_ratio_pct']);
+ if(!row){$('companySummary').innerHTML='<p>데이터 연결 전입니다. 자동 요약은 확인된 수치와 비교 범위만 설명하며, 매수·매도 판단이나 종합 점수는 생성하지 않습니다.</p>';$('historyBody').innerHTML='<tr><td colspan="4" style="text-align:center;padding:30px">연간 재무 데이터 미연결</td></tr>';$('historyChart').innerHTML='<div class="chart-empty">실제 연도별 재무자료가 연결되면 표시됩니다.</div>';$('companySources').innerHTML='출처 원문 미연결';return;}
+ const peers=peerRows(snapshot.companies,row.industry),med=median(peers.map(r=>val(r,'operating_margin_pct'))),op=val(row,'operating_margin_pct'),diff=op!==null&&med!==null?`${Math.abs(op-med).toFixed(1)}%p ${op>=med?'높음':'낮음'}`:'비교 자료 부족';
+ $('companySummary').innerHTML=`<p><strong>수익성</strong> · 영업이익률 ${fmt(op,'%')}. 불러온 동일 산업 중앙값 ${fmt(med,'%')} 대비 ${diff}.</p><p><strong>재무</strong> · 부채비율 ${fmt(val(row,'debt_ratio_pct'),'%')}, 이자보상배율 ${fmt(val(row,'interest_coverage_x'),'배')}. 지표만으로 지급능력이나 위험을 확정하지 않습니다.</p><p><strong>수급</strong> · 최근 20거래일 외국인 ${fmt(val(row,'foreign_net_20d_eok'),'억원')}, 기관 ${fmt(val(row,'institution_net_20d_eok'),'억원')} 순매수.</p><p><strong>유동성</strong> · 주식의 일평균 거래대금 ${fmt(val(row,'avg_trading_value_20d_eok'),'억원')}; 회사의 유동비율 ${fmt(val(row,'current_ratio_pct'),'%')}. 서로 다른 지표입니다.</p><p class="sub">규칙 기반 요약 · 업종 모집단은 불러온 기업 ${peers.length}개 · 결측치는 추정하지 않음</p>`;
+ const hist=(row.history||[]).slice().sort((a,b)=>a.year-b.year).slice(-5);
+ $('historyBody').innerHTML=hist.length?hist.map(h=>`<tr><td>${h.year}</td><td>${fmt(h.revenue_eok)}</td><td>${fmt(h.operating_profit_eok)}</td><td>${fmt(isNum(h.revenue_eok)&&h.revenue_eok>0&&isNum(h.operating_profit_eok)?h.operating_profit_eok/h.revenue_eok*100:null)}</td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;padding:30px">연간 이력 없음 · 수집된 최신 지표만 표시합니다.</td></tr>';
+ $('historyChart').innerHTML=lineChart(hist);
+ $('companySources').innerHTML=(row.sources||[]).length?row.sources.map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)}</a>`).join(''):'공시·시장자료 원문 출처 미입력. 수치의 실제 출처를 검증하지 않은 상태입니다.';
+ if(row.data_quality?.length)$('companySources').innerHTML+=`<p><strong>자료 확인이 필요한 항목</strong></p><ul>${row.data_quality.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`;
+}
+function lineChart(hist){
+ const pts=hist.map(h=>({year:h.year,value:isNum(h.revenue_eok)&&h.revenue_eok>0&&isNum(h.operating_profit_eok)?h.operating_profit_eok/h.revenue_eok*100:null}));
+ const nums=pts.map(p=>p.value).filter(isNum);if(!nums.length)return '<div class="chart-empty">영업이익률 추이를 계산할 연간 자료가 없습니다.</div>';
+ const minY=Math.min(0,...nums),maxY=Math.max(1,...nums),span=maxY-minY||1;const years=pts.map(p=>p.year),minX=Math.min(...years),maxX=Math.max(...years),x=yr=>48+(yr-minX)/Math.max(maxX-minX,1)*400,y=v=>190-(v-minY)/span*150;
+ let path='',prev=null;for(const p of pts){if(p.value===null){prev=null;continue;}path+=`${prev!==null&&p.year===prev+1?'L':'M'}${x(p.year)},${y(p.value)} `;prev=p.year;}
+ return `<svg class="plot" viewBox="0 0 490 230" role="img" aria-label="연도별 영업이익률. 자료가 없는 연도는 선으로 연결하지 않습니다.">${[0,.5,1].map(t=>{const v=minY+span*t;return `<line x1="48" x2="460" y1="${y(v)}" y2="${y(v)}" stroke="#e7edf4"/><text x="40" y="${y(v)+4}" text-anchor="end">${v.toFixed(1)}%</text>`}).join('')}<path d="${path}" fill="none" stroke="#326acb" stroke-width="2.5"/>${pts.filter(p=>p.value!==null).map(p=>`<circle cx="${x(p.year)}" cy="${y(p.value)}" r="4" fill="#326acb"><title>${p.year}: ${p.value.toFixed(1)}%</title></circle>`).join('')}${years.map(yr=>`<text x="${x(yr)}" y="216" text-anchor="middle">${yr}</text>`).join('')}</svg>`;
+}
+function barChart(rows,key,med){const items=rows.map(r=>({name:r.name,value:val(r,key)}));if(med!==null)items.push({name:'업종 중앙값',value:med,median:true});const vals=items.map(i=>i.value).filter(isNum);if(!vals.length)return '<div class="chart-empty">비교 가능한 자료가 없습니다.</div>';const lo=Math.min(0,...vals),hi=Math.max(0,...vals),span=hi-lo||1,zero=(0-lo)/span*100;return `<div class="bar-list">${items.map(i=>{const pos=i.value===null?zero:(i.value-lo)/span*100;return `<div class="bar-row"><span class="bar-name" title="${esc(i.name)}">${esc(i.name)}</span><div class="bar-area"><span class="zero-line" style="left:${zero}%"></span>${i.value===null?'':`<span class="bar ${i.median?'median':''}" style="left:${Math.min(zero,pos)}%;width:${Math.abs(pos-zero)}%"></span>`}</div><span class="bar-number">${fmt(i.value,'%')}</span></div>`}).join('')}</div>`;}
+function renderComparison(){
+ const peers=peerRows(snapshot.companies,comparisonIndustry).sort((a,b)=>a.name.localeCompare(b.name,'ko'));const rows=peers.filter(r=>comparisonCodes.has(r.code));$('compareIndustry').value=comparisonIndustry;
+ $('peerScope').textContent=peers.length?`업종: ${comparisonIndustry} · 불러온 동종업계 ${peers.length}개 · 선택기업 ${rows.length}개 · 검색 조건과 독립된 모집단`:'업종 데이터 미연결 · 전체 업종 기준과 선택기업을 함께 비교합니다.';
+ $('peerPicker').innerHTML=peers.length?peers.map(r=>`<label class="peer-chip"><input type="checkbox" data-peer="${r.code}" ${comparisonCodes.has(r.code)?'checked':''}>${esc(r.name)}</label>`).join(''):'<span class="muted">실제 기업 자료가 연결되면 비교 기업을 최대 5개 선택할 수 있습니다.</span>';
+ $('peerPicker').querySelectorAll('[data-peer]').forEach(el=>el.addEventListener('change',()=>{if(el.checked){if(comparisonCodes.size>=5){el.checked=false;toast('비교는 최대 5개 기업입니다.');return;}comparisonCodes.add(el.dataset.peer);}else comparisonCodes.delete(el.dataset.peer);renderComparison();renderScreen();}));
+ const keys=['operating_margin_pct','roe_pct','debt_ratio_pct','interest_coverage_x','foreign_net_turnover_20d_pct','institution_net_turnover_20d_pct','avg_trading_value_20d_eok','current_ratio_pct'];
+ $('compareHead').innerHTML='<tr><th class="left">지표</th>'+rows.map(r=>`<th>${esc(r.name)}</th>`).join('')+'<th>업종 중앙값</th><th>유효 표본</th></tr>';
+ $('compareBody').innerHTML=keys.map(k=>{const values=peers.map(r=>val(r,k)),m=median(values),n=values.filter(isNum).length;return `<tr><td class="left" title="${esc(METRICS[k].definition)}">${METRICS[k].label} (${METRICS[k].unit})</td>${rows.map(r=>`<td>${fmt(val(r,k))}</td>`).join('')}<td>${fmt(m)}</td><td>${peers.length?n+' / '+peers.length:'—'}</td></tr>`}).join('');
+ $('marginCompare').innerHTML=rows.length?barChart(rows,'operating_margin_pct',median(peers.map(r=>val(r,'operating_margin_pct')))):'<div class="chart-empty">비교 기업을 선택하면 표시됩니다.</div>';
+ $('flowCompare').innerHTML=rows.length?barChart(rows,'foreign_net_turnover_20d_pct',median(peers.map(r=>val(r,'foreign_net_turnover_20d_pct')))):'<div class="chart-empty">비교 기업을 선택하면 표시됩니다.</div>';
+}
+function renderAll(){scopeMeta();setIndustries();renderScreen();renderCompany();renderComparison();}
+function exportCsv(){if(!lastRows.length){toast('내보낼 결과가 없습니다.');return;}const cols=['code','name','market','industry','status',...Object.keys(METRICS)];const safe=s=>{let t=String(s??'');if(/^[=+@\-]/.test(t)&&!/^[-+]?\d+(\.\d+)?$/.test(t))t="'"+t;return '"'+t.replace(/"/g,'""')+'"'};const lines=[cols,...lastRows.map(({row:r,status:s})=>[r.code,r.name,r.market,r.industry,STATUS[s],...Object.keys(METRICS).map(k=>val(r,k))])];download('screen_results.csv','\uFEFF'+lines.map(a=>a.map(safe).join(',')).join('\r\n'),'text/csv;charset=utf-8');toast('현재 필터 결과만 CSV로 내보냈습니다. 종목코드는 가져오기 시 문자열로 지정하세요.');}
+function currentConfig(){return{schema_version:'0.1',logic:$('logic').value,market:$('market').value,industry:$('industry').value,rules:validRules()};}
+function importConfig(config){if(!config||!Array.isArray(config.rules)||!['AND','OR'].includes(config.logic))throw new Error('조건 설정 형식이 올바르지 않습니다.');for(const r of config.rules)if(!hasOwn(METRICS,r.metric)||!['gte','lte','gt','lt','eq'].includes(r.op)||!isNum(r.value))throw new Error('조건의 지표·연산·수치가 올바르지 않습니다.');rules=structuredClone(config.rules);$('logic').value=config.logic;$('market').value=['KOSPI','KOSDAQ'].includes(config.market)?config.market:'';$('industry').value=[...$('industry').options].some(o=>o.value===config.industry)?config.industry:'';renderRules();renderScreen();}
+$('dataInput').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;if(file.size>30*1024*1024){toast('파일은 30MB 이하만 지원합니다.');e.target.value='';return;}try{const data=JSON.parse(await file.text());if(data.rules&&!data.companies){importConfig(data);toast('조건 설정 파일을 불러왔습니다.');}else{validateSnapshot(data);snapshot=data;comparisonCodes.clear();companyCode='';comparisonIndustry='';renderAll();toast(`${snapshot.companies.length}개 종목을 불러왔습니다. 원문 수치 검증·자동 연결과는 별개입니다.`);}}catch(err){toast('불러오기 실패: '+err.message);}e.target.value='';});
+$('uploadButton').addEventListener('click',()=>$('dataInput').click());$('addRule').addEventListener('click',()=>{if(rules.length>=20){toast('조건은 최대 20개입니다.');return;}rules.push({metric:'roe_pct',op:'gte',value:null});renderRules();});
+$('sampleRules').addEventListener('click',()=>{rules=[{metric:'operating_margin_pct',op:'gte',value:8},{metric:'debt_ratio_pct',op:'lte',value:100},{metric:'avg_trading_value_20d_eok',op:'gte',value:20},{metric:'foreign_net_20d_eok',op:'gt',value:0}];$('logic').value='AND';renderRules();renderScreen();toast('조작 확인용 입력 예시입니다. 추천 투자 기준이 아닙니다.');});
+$('resetRules').addEventListener('click',()=>{rules=[];$('market').value='';$('industry').value='';$('nameSearch').value='';$('resultStatus').value='';renderRules();renderScreen();});
+$('savePreset').addEventListener('click',()=>{const name=$('presetName').value.trim();if(!name){toast('저장할 조건 이름을 입력하세요.');return;}if(name.length>60){toast('조건 이름은 60자 이내로 입력하세요.');return;}Object.defineProperty(savedConfigs,name,{value:currentConfig(),writable:true,enumerable:true,configurable:true});try{localStorage.setItem('investment-screen-presets-v01',JSON.stringify(savedConfigs));renderSaved();toast('이 브라우저에 조건을 저장했습니다. 다른 PC와 자동 동기화되지 않습니다.');}catch{toast('브라우저 저장을 사용할 수 없습니다. 조건 파일로 내보내세요.');}});
+$('savedPreset').addEventListener('change',()=>{const name=$('savedPreset').value;if(!name||!hasOwn(savedConfigs,name))return;try{importConfig(savedConfigs[name]);$('presetName').value=name;}catch(err){toast(err.message);}});
+$('exportConfig').addEventListener('click',()=>download('screen_conditions.json',JSON.stringify(currentConfig(),null,2)));
+$('downloadTemplate').addEventListener('click',()=>download('snapshot_empty.json',JSON.stringify(EMPTY,null,2)));
+$('clearData').addEventListener('click',()=>{snapshot=structuredClone(EMPTY);comparisonCodes.clear();companyCode='';comparisonIndustry='';renderAll();toast('현재 화면에서 불러온 데이터를 제거했습니다. 원본 파일은 변경하지 않았습니다.');});
+$('exportResults').addEventListener('click',exportCsv);
+for(const id of ['market','industry','logic','sortMetric','sortDir','resultStatus'])$(id).addEventListener('change',renderScreen);$('nameSearch').addEventListener('input',renderScreen);
+$('companySelect').addEventListener('change',()=>{companyCode=$('companySelect').value;renderCompany();});
+$('compareIndustry').addEventListener('change',()=>{comparisonIndustry=$('compareIndustry').value;comparisonCodes.clear();renderComparison();renderScreen();});
+$('goCompare').addEventListener('click',()=>activate('compare'));
+$('showData').addEventListener('click',()=>activate('data'));
+document.querySelectorAll('[data-tab]').forEach(el=>el.addEventListener('click',()=>activate(el.dataset.tab)));
+$('sortMetric').innerHTML='<option value="name">기업명</option>'+metricOptions('');
+$('definitions').innerHTML=Object.entries(METRICS).map(([k,m])=>`<div class="definition"><div><strong>${esc(m.label)}</strong> <span class="muted">(${m.unit})</span><br><code class="muted">${k}</code></div><p>${esc(m.definition)}</p></div>`).join('');
+renderRules();renderSaved();renderAll();activate('screen');
+</script><script>/* Pure, deterministic review engine. No network, trading, or return prediction. */
+'use strict';
+const PortfolioEngine = (() => {
+  const VERSION = '0.2.0';
+  const LABEL = Object.freeze({HOLD:'보유 검토',REDUCE:'비중 축소 검토',SELL:'매도 검토',REVIEW:'재검토',WAIT:'판단 보류'});
+  // These are configurable engineering examples, NOT a validated investment policy.
+  const DEFAULT = Object.freeze({maxCompanies:5,companyCapPct:25,sectorCapPct:40,groupCapPct:40,minCashPct:20,maxPriceAgeDays:4,maxReviewAgeDays:120,stressShockPct:-30,stressLossLimitPct:null,policyConfirmed:false});
+  const num = n => typeof n === 'number' && Number.isFinite(n);
+  const text = v => typeof v === 'string' && v.trim().length > 0;
+  const own = (o,k) => Object.prototype.hasOwnProperty.call(o,k);
+  function dateOK(s) {return typeof s==='string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s+'T00:00:00Z')) && new Date(s+'T00:00:00Z').toISOString().slice(0,10)===s;}
+  function age(a,b) {return (Date.parse(a+'T00:00:00Z')-Date.parse(b+'T00:00:00Z'))/86400000;}
+  function urlOK(s){try{const u=new URL(s);return ['https:','http:'].includes(u.protocol)&&!!u.hostname&&!u.username&&!u.password;}catch{return false;}}
+  function amount(n,nullable=false){return (nullable&&n===null)||(num(n)&&n>=0&&n<=Number.MAX_SAFE_INTEGER);}
+  function clone(v){return JSON.parse(JSON.stringify(v));}
+  function cleanPolicy(p={}) {
+    const q={...DEFAULT,...p};
+    if(!Number.isInteger(q.maxCompanies)||q.maxCompanies<1||q.maxCompanies>5)throw Error('기업 수 상한은 1~5의 정수입니다.');
+    for(const k of ['companyCapPct','sectorCapPct','groupCapPct'])if(!num(q[k])||q[k]<=0||q[k]>100)throw Error(k+': 0 초과 100 이하의 비율이 필요합니다.');
+    if(!num(q.minCashPct)||q.minCashPct<0||q.minCashPct>100)throw Error('최소 현금은 0~100%입니다.');
+    for(const k of ['maxPriceAgeDays','maxReviewAgeDays'])if(!Number.isInteger(q[k])||q[k]<0||q[k]>366)throw Error(k+': 0~366일의 정수가 필요합니다.');
+    if(!num(q.stressShockPct)||q.stressShockPct>=0||q.stressShockPct< -100)throw Error('주식 동반 하락 가정은 -100 이상 0 미만입니다.');
+    if(q.stressLossLimitPct!==null&&(!num(q.stressLossLimitPct)||q.stressLossLimitPct<=0||q.stressLossLimitPct>100))throw Error('시나리오 손실 기준은 0 초과 100 이하입니다.');
+    if(typeof q.policyConfirmed!=='boolean')throw Error('설정 확인 여부가 필요합니다.');
+    return q;
+  }
+  function validate(x){
+    if(!x||x.schema_version!=='holdings-portfolio-0.1')throw Error('보유·포트폴리오 schema_version이 맞지 않습니다.');
+    if(!['fixture','user_input'].includes(x.mode))throw Error('fixture 또는 user_input 모드가 필요합니다.');
+    if(!dateOK(x.as_of)||!text(x.snapshot_id))throw Error('정확한 평가일과 snapshot_id가 필요합니다.');
+    if(!amount(x.cash_krw,true))throw Error('현금은 0 이상의 원 단위 숫자 또는 null입니다.');
+    if(!Array.isArray(x.holdings)||x.holdings.length>500||!Array.isArray(x.research)||x.research.length>3000)throw Error('holdings 500개 / research 3,000개 이하 배열이 필요합니다.');
+    const codes=new Set();
+    for(const h of x.holdings){
+      if(!/^\d{6}$/.test(h.code)||typeof h.code!=='string'||codes.has(h.code))throw Error('보유 종목코드는 중복 없는 6자리 문자열입니다.');
+      codes.add(h.code);
+      if(!Number.isSafeInteger(h.quantity)||h.quantity<=0||!amount(h.avg_cost_krw,true))throw Error('보유 수량은 양의 안전한 정수, 매입가는 0 이상 또는 null입니다.');
+      if(h.thesis_note!=null&&(typeof h.thesis_note!=='string'||h.thesis_note.length>4000))throw Error('투자 메모는 4,000자 이하입니다.');
+    }
+    codes.clear();
+    const enums={thesis:['intact','weakened','broken','unknown'],business:['improving','stable','deteriorating','unknown'],finance:['sound','concern','critical','unknown'],valuation:['attractive','fair','stretched','unknown'],material_risk:['clear','unresolved','confirmed','unknown']};
+    for(const r of x.research){
+      if(typeof r.code!=='string'||!/^\d{6}$/.test(r.code)||codes.has(r.code))throw Error('연구 종목코드는 중복 없는 6자리 문자열입니다.');
+      codes.add(r.code);
+      for(const k of ['issuer_id','name','market','security_type','analysis_profile'])if(!text(r[k])||r[k].length>200)throw Error(r.code+': '+k+'가 필요합니다.');
+      for(const k of ['sector','risk_group'])if(r[k]!==null&&(!text(r[k])||r[k].length>200))throw Error(k+'는 문자열 또는 null입니다.');
+      if(!amount(r.price_krw,true)||r.price_krw===0)throw Error('현재가는 양수 또는 null입니다.');
+      if(r.price_date!==null&&!dateOK(r.price_date))throw Error('price_date 형식 오류');
+      if(!r.review||typeof r.review!=='object')throw Error(r.code+': review가 필요합니다.');
+      for(const [k,values] of Object.entries(enums))if(!values.includes(r.review[k]))throw Error(r.code+': '+k+' 상태 오류');
+      if(r.review.reviewed_on!==null&&!dateOK(r.review.reviewed_on))throw Error('검토일 형식 오류');
+      if(r.review.next_review_on!==null&&!dateOK(r.review.next_review_on))throw Error('다음 검토일 형식 오류');
+      if(!text(r.review.financial_period))throw Error('재무 보고기간을 표시해야 합니다.');
+      for(const k of ['positives','negatives'])if(!Array.isArray(r.review[k])||r.review[k].length>12||r.review[k].some(v=>!text(v)||v.length>2000))throw Error('긍정·반대 근거는 12개 이하 문자열 배열입니다.');
+      if(typeof r.review.invalidation!=='string'||r.review.invalidation.length>4000)throw Error('판단을 바꿀 조건을 문자열로 입력하세요.');
+      if(!Array.isArray(r.evidence)||r.evidence.length>30)throw Error('근거는 30개 이하 배열입니다.');
+      const ids=new Set();
+      for(const e of r.evidence){
+        if(!text(e.id)||ids.has(e.id)||!text(e.label)||!urlOK(e.url)||!dateOK(e.available_on)||typeof e.reviewed!=='boolean')throw Error('근거 ID·이름·http(s) URL·이용가능일·사용자 확인 여부를 검사하세요.');
+        ids.add(e.id);
+      }
+      if(r.price_source!==null&&(!r.price_source||!text(r.price_source.label)||!urlOK(r.price_source.url)))throw Error('가격 출처 형식 오류');
+    }
+    return x;
+  }
+  function evidenceBlockers(r,asOf,p){
+    if(!r)return ['보유종목에 대응하는 연구 입력 없음'];
+    const b=[];
+    if(!['KOSPI','KOSDAQ'].includes(r.market)||r.security_type!=='ordinary'||r.analysis_profile!=='nonfinancial')b.push('비금융 보통주 외 별도 분석 필요');
+    if(!r.evidence.length||r.evidence.some(e=>!e.reviewed||e.available_on>asOf))b.push('근거 미확인 또는 평가일 이후 공개된 근거');
+    const v=r.review;
+    if(!v.reviewed_on||v.reviewed_on>asOf||age(asOf,v.reviewed_on)>p.maxReviewAgeDays)b.push('연구 검토일 누락·미래·설정 기한 초과');
+    if(v.reviewed_on && r.evidence.some(e=>e.available_on>v.reviewed_on))b.push('근거 공개일보다 앞선 연구 검토일');
+    if(!v.positives.length||!v.negatives.length||!text(v.invalidation))b.push('긍정·반대 근거 또는 판단 변경 조건 미입력');
+    return b;
+  }
+  function priceBlockers(r,asOf,p){
+    if(!r)return ['가격 입력 없음'];
+    const b=[];
+    if(!num(r.price_krw)||r.price_krw<=0||!r.price_date||r.price_date>asOf||age(asOf,r.price_date)>p.maxPriceAgeDays)b.push('가격 누락·미래·설정 기한 초과');
+    if(!r.price_source)b.push('가격 출처 미입력');
+    return b;
+  }
+  function companyReview(r,asOf,p){
+    const blockers=evidenceBlockers(r,asOf,p);
+    if(!r)return {code:null,opinion:'WAIT',label:LABEL.WAIT,blockers,reasons:blockers};
+    const v=r.review;
+    // A verified adverse event stays visible even when unrelated inputs are missing.
+    const criticalBlockers=blockers.filter(b=>!b.startsWith('긍정·반대'));
+    if(!criticalBlockers.length&&(v.thesis==='broken'||v.finance==='critical'||v.material_risk==='confirmed')){
+      const reasons=[];
+      if(v.thesis==='broken')reasons.push('검토 입력상 최초 투자 논리 훼손');
+      if(v.finance==='critical')reasons.push('검토 입력상 중대한 재무 위험');
+      if(v.material_risk==='confirmed')reasons.push('검토 입력상 중대 위험 확인');
+      return {code:r.code,opinion:'SELL',label:LABEL.SELL,blockers:[...blockers,...priceBlockers(r,asOf,p)],reasons:[...reasons,'체결 가능성·거래정지·가격은 별도 확인; 자동 매도 아님']};
+    }
+    const missing=Object.keys({thesis:1,business:1,finance:1,valuation:1,material_risk:1}).filter(k=>v[k]==='unknown');
+    if(missing.length)blockers.push('분석 상태 미확인: '+missing.join(', '));
+    blockers.push(...priceBlockers(r,asOf,p));
+    if(blockers.length)return {code:r.code,opinion:'WAIT',label:LABEL.WAIT,blockers,reasons:blockers};
+    if(v.thesis==='weakened'||v.finance==='concern'||v.business==='deteriorating'||v.material_risk==='unresolved')return {code:r.code,opinion:'REVIEW',label:LABEL.REVIEW,blockers:[],reasons:['투자 논리·사업·재무 또는 미해결 위험을 재검토']};
+    if(v.valuation==='stretched')return {code:r.code,opinion:'REDUCE',label:LABEL.REDUCE,blockers:[],reasons:['사업 평가와 별개로 검토 입력상 가치평가 부담']};
+    return {code:r.code,opinion:'HOLD',label:LABEL.HOLD,blockers:[],reasons:['입력 근거상 투자 논리 유지, 사업·재무 상태 양호','현재 수익률이나 매입가가 아닌 연구 상태를 기준으로 판정']};
+  }
+  function bookSummary(x,p){
+    const map=new Map(x.research.map(r=>[r.code,r]));
+    let total=x.cash_krw,complete=x.cash_krw!==null;
+    const missing=[];
+    const positions=x.holdings.map(h=>{
+      const r=map.get(h.code),bad=priceBlockers(r,x.as_of,p);
+      let value=!bad.length?h.quantity*r.price_krw:null;
+      if(value!==null&&(!num(value)||value>Number.MAX_SAFE_INTEGER))value=null;
+      if(value===null){complete=false;missing.push(h.code);}
+      else if(total!==null)total+=value;
+      const cost=h.avg_cost_krw===null?null:h.quantity*h.avg_cost_krw;
+      const usableCost=cost!==null&&num(cost)&&cost<=Number.MAX_SAFE_INTEGER?cost:null;
+      return {...h,name:r?.name||h.code,value_krw:value,cost_krw:usableCost,pnl_krw:value!==null&&usableCost!==null?value-usableCost:null,pnl_pct:value!==null&&usableCost>0?(value/usableCost-1)*100:null,weight_pct:null};
+    });
+    if(!complete||total===null||!num(total)||total>Number.MAX_SAFE_INTEGER||total<=0){total=null;complete=false;}
+    if(complete)for(const pos of positions)pos.weight_pct=pos.value_krw/total*100;
+    return {complete,total_krw:total,cash_krw:x.cash_krw,positions,missing_codes:missing};
+  }
+  function reviewHoldings(x,policy={}){
+    validate(x);const p=cleanPolicy(policy),book=bookSummary(x,p),map=new Map(x.research.map(r=>[r.code,r]));
+    return {book,rows:book.positions.map(pos=>{
+      const r=map.get(pos.code),c=companyReview(r,x.as_of,p),over=pos.weight_pct!==null&&pos.weight_pct>p.companyCapPct;
+      const issuerWeight=r&&book.complete?book.positions.filter(h=>map.get(h.code)?.issuer_id===r.issuer_id).reduce((s,h)=>s+h.weight_pct,0):null;
+      const companyOver=issuerWeight!==null&&issuerWeight>p.companyCapPct;
+      let portfolioAction=book.complete?(companyOver?'동일 기업 합산 비중 상한 초과 · 축소 검토':'설정한 개별기업 비중 상한 이내'):'잔고·가격 부족으로 비중 판단 보류';
+      return {...pos,...c,code:pos.code,company_opinion:c.opinion,portfolio_action:portfolioAction,overweight:companyOver,issuer_weight_pct:issuerWeight,research:r||null};
+    })};
+  }
+  function propose(x,policy={}){
+    validate(x);const p=cleanPolicy(policy);
+    const rejected=[],pool=[];let missingCandidateData=false;
+    if(!x.research.length)return {status:'DATA_REQUIRED',items:[],cash_pct:null,rejected,message:'연구 후보 입력이 없습니다. 자료 없음과 현금 100% 제안을 구분합니다.',policy:p};
+    for(const r of x.research){
+      const c=companyReview(r,x.as_of,p),reasons=[...c.blockers];
+      if(c.opinion!=='HOLD')reasons.push(c.label);
+      if(c.opinion==='WAIT'||(c.opinion==='HOLD'&&(!r.sector||!r.risk_group)))missingCandidateData=true;
+      if(!r.sector)reasons.push('산업 분류 없음');
+      if(!r.risk_group)reasons.push('공통 위험군 미확인');
+      if(reasons.length)rejected.push({code:r.code,name:r.name,reasons:[...new Set(reasons)]});else pool.push(r);
+    }
+    if(!p.policyConfirmed||p.stressLossLimitPct===null)return {status:'SETTINGS_REQUIRED',items:[],cash_pct:null,rejected,message:'가정 시나리오의 손실 기준과 비중 설정을 확인한 뒤 모의 구성안을 생성하세요.',policy:p};
+    if(!pool.length&&missingCandidateData)return {status:'DATA_REQUIRED',items:[],cash_pct:null,rejected,message:'후보의 근거·가격·분류가 부족합니다. 자료 부족을 현금 100% 의견으로 바꾸지 않습니다.',policy:p};
+    // Transparent, fixed-slot allocation. No statistical optimisation/alpha claim.
+    const equityBudgetBps=Math.min(10000-Math.ceil(p.minCashPct*100),Math.floor(10000*p.stressLossLimitPct/Math.abs(p.stressShockPct)));
+    const slotBps=Math.floor(Math.min(equityBudgetBps/p.maxCompanies,Math.floor(p.companyCapPct*100),Math.floor(p.sectorCapPct*100),Math.floor(p.groupCapPct*100)));
+    if(slotBps<=0)return {status:'CASH_ONLY',items:[],cash_pct:100,rejected,message:'현금·비중 한도와 반올림 설정에 따라 편입 가능한 주식 비중이 없습니다.',policy:p};
+    const held=new Set(x.holdings.map(h=>h.code));
+    pool.sort((a,b)=>(a.review.valuation==='attractive'?0:1)-(b.review.valuation==='attractive'?0:1)||(a.review.business==='improving'?0:1)-(b.review.business==='improving'?0:1)||(held.has(a.code)?0:1)-(held.has(b.code)?0:1)||a.code.localeCompare(b.code));
+    const issuers=new Set(),sectors=new Map(),groups=new Map(),items=[];
+    for(const r of pool){
+      let reason='';
+      if(issuers.has(r.issuer_id))reason='동일 기업 중복';
+      else if(items.length>=p.maxCompanies)reason='기업 수 상한';
+      else if((sectors.get(r.sector)||0)+slotBps>Math.floor(p.sectorCapPct*100))reason='산업 비중 상한';
+      else if((groups.get(r.risk_group)||0)+slotBps>Math.floor(p.groupCapPct*100))reason='공통 위험군 비중 상한';
+      if(reason){rejected.push({code:r.code,name:r.name,reasons:[reason]});continue;}
+      issuers.add(r.issuer_id);sectors.set(r.sector,(sectors.get(r.sector)||0)+slotBps);groups.set(r.risk_group,(groups.get(r.risk_group)||0)+slotBps);
+      items.push({code:r.code,name:r.name,issuer_id:r.issuer_id,sector:r.sector,risk_group:r.risk_group,weight_pct:slotBps/100,existing:held.has(r.code),reasons:['보유 검토 조건과 근거 입력 기준 통과','고정 슬롯 균등배분; 기대수익 최적화 아님'],research:r});
+    }
+    const cash=100-items.reduce((s,r)=>s+Math.round(r.weight_pct*100),0)/100;
+    const selected=new Set(items.map(i=>i.code));
+    return {status:items.length?'MODEL_PROPOSAL':'CASH_ONLY',items,cash_pct:cash,rejected,policy:p,unselected_holdings:x.holdings.filter(h=>!selected.has(h.code)).map(h=>h.code),message:'조건부 모의 목표안입니다. 미편입 보유종목을 자동 매도하거나 현재 보유목록을 변경하지 않습니다.',allocation_method:'fixed_slot_equal_v1',sector_weights:Object.fromEntries([...sectors].map(([k,v])=>[k,v/100])),group_weights:Object.fromEntries([...groups].map(([k,v])=>[k,v/100]))};
+  }
+  function stress(items,shockPct){
+    if(!num(shockPct)||shockPct>0||shockPct< -100)throw Error('스트레스 가정은 -100~0%입니다.');
+    return items.reduce((s,i)=>s+i.weight_pct/100*shockPct,0);
+  }
+  function empty(asOf){return {schema_version:'holdings-portfolio-0.1',mode:'user_input',as_of:asOf,snapshot_id:'manual-'+asOf,cash_krw:null,holdings:[],research:[]};}
+  function fixture(){
+    const asOf='2026-09-25';const rows=[];
+    for(let i=1;i<=8;i++)rows.push({code:'99'+String(i).padStart(4,'0'),issuer_id:'FICTIONAL-ISSUER-'+i,name:'가상기업 '+String.fromCharCode(64+i),market:i%2?'KOSPI':'KOSDAQ',security_type:'ordinary',analysis_profile:'nonfinancial',sector:['가상산업 A','가상산업 B','가상산업 C','가상산업 D'][i%4],risk_group:['가상위험군 A','가상위험군 B','가상위험군 C','가상위험군 D'][i%4],price_krw:10000+i*1000,price_date:asOf,price_source:{label:'가상 가격 출처 · 실제 관측값 아님',url:'https://example.invalid/fixture/price'},review:{thesis:i===6?'broken':'intact',business:'stable',finance:'sound',valuation:i===7?'stretched':'fair',material_risk:'clear',reviewed_on:asOf,financial_period:'가상 TTM 2026-06-30',positives:['기능 검증용: 사업 지표가 안정적이라는 가정'],negatives:['기능 검증용: 수요 둔화가 발생할 수 있다는 가정'],invalidation:'가정한 주요 계약이 종료되면 논리를 다시 검토',next_review_on:'2026-10-30'},evidence:[{id:'FIX-'+i,label:'가상 근거 · 실제 공시 아님',url:'https://example.invalid/fixture/'+i,available_on:asOf,reviewed:true}]});
+    rows[7].review.thesis='unknown';
+    return {schema_version:'holdings-portfolio-0.1',mode:'fixture',as_of:asOf,snapshot_id:'FIXTURE-ONLY-20260925',cash_krw:200000,holdings:[{code:'990001',quantity:40,avg_cost_krw:10000,thesis_note:'테스트용 투자 메모'},{code:'990006',quantity:10,avg_cost_krw:17000},{code:'990007',quantity:10,avg_cost_krw:15000},{code:'990008',quantity:10,avg_cost_krw:17000}],research:rows};
+  }
+  return Object.freeze({VERSION,LABEL,DEFAULT,dateOK,urlOK,validate,cleanPolicy,companyReview,bookSummary,reviewHoldings,propose,stress,empty,fixture,clone});
+})();
+if(typeof module!=='undefined')module.exports=PortfolioEngine;
+</script><script>/* Browser-only UI. All imported holdings stay in memory until explicit export. */
+'use strict';
+(() => {
+  const P=PortfolioEngine;
+  const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  let data=P.empty(today()),proposal=null,detailCode='';
+  const n=id=>$(id).value.trim()===''?null:Number($(id).value);
+  function policy(){return P.cleanPolicy({maxCompanies:n('pMax'),companyCapPct:n('pCompanyCap'),sectorCapPct:n('pSectorCap'),groupCapPct:n('pGroupCap'),minCashPct:n('pCashMin'),stressShockPct:n('pShock'),stressLossLimitPct:n('pLossLimit'),maxPriceAgeDays:n('pPriceAge'),maxReviewAgeDays:n('pReviewAge'),policyConfirmed:$('pConfirm').checked});}
+  function tag(code){return `<span class="tag ${code==='HOLD'?'good':code==='SELL'?'fail':'warning'}">${esc(P.LABEL[code]||code)}</span>`;}
+  function bindDetails(root){$(root).querySelectorAll('[data-review-detail]').forEach(b=>b.addEventListener('click',()=>{detailCode=b.dataset.reviewDetail;activate('holdings');renderDetail();$('pDetail').scrollIntoView({behavior:'smooth',block:'start'});}));}
+  function renderHoldings(p){
+    const result=P.reviewHoldings(data,p),b=result.book;
+    $('pMode').textContent=data.mode==='fixture'?'가상 테스트 · 실제 투자 자료 아님':data.holdings.length||data.research.length?'사용자 입력 · 원문 대조 미실행':'보유·연구 입력 대기';
+    $('pScope').innerHTML=[`평가 기준일 ${data.as_of}`,`가격·공시 최신성 자동확인 없음`,`후보 ${data.research.length}개 / 보유 ${data.holdings.length}개`,`스냅샷 ${data.snapshot_id}`].map(s=>`<span>${esc(s)}</span>`).join('');
+    if(data.as_of!==today())$('pScope').innerHTML+=`<span class="p-date-warn">현재 날짜가 아닌 입력 평가일의 검토입니다.</span>`;
+    $('pValue').textContent=fmt(b.total_krw,'원',0);
+    $('pReviewCount').textContent=data.holdings.length?String(result.rows.filter(r=>['SELL','REVIEW','REDUCE'].includes(r.opinion)).length):'—';
+    $('pWaitCount').textContent=data.holdings.length?String(result.rows.filter(r=>r.opinion==='WAIT').length):'—';
+    $('pHoldBody').innerHTML=result.rows.length?result.rows.map(r=>`<tr><td class="left"><b>${esc(r.name)}</b><div class="sub">${esc(r.code)}</div></td><td>${fmt(r.quantity,'',0)}</td><td>${fmt(r.value_krw,'',0)}</td><td>${fmt(r.pnl_pct,'%',2)}</td><td>${fmt(r.weight_pct,'%',2)}</td><td class="left">${tag(r.opinion)}</td><td class="left">${esc(r.portfolio_action)}</td><td><button class="small" data-review-detail="${esc(r.code)}">근거 보기</button></td></tr>`).join(''):'<tr><td colspan="8" style="text-align:center;padding:40px">보유목록을 직접 입력하거나 JSON 파일을 가져오세요. 실제 보유종목은 포함되어 있지 않습니다.</td></tr>';
+    $('pBookNote').textContent=b.complete?'비중의 분모는 입력한 보유종목 평가액과 현금입니다. 동일 기업 여러 주식은 기업 한도 판단 시 합산합니다. 일부 자료만 입력하면 전체 계좌나 전체 재산을 대표하지 않습니다. 비중 상한은 포트폴리오 탭의 개발 가정이며 적합성이 검증된 기준이 아닙니다.':'현금 또는 일부 보유종목의 유효 가격이 없어 전체 평가액·비중을 계산하지 않습니다. 확인된 종목만으로 비중을 100% 재정규화하지 않습니다.';
+    bindDetails('pHoldBody');
+    renderDetail();
+    return result;
+  }
+  function renderDetail(){
+    const r=data.research.find(r=>r.code===detailCode);
+    if(!detailCode){$('pDetail').innerHTML='<h3>판단 근거</h3><p class="hint">보유목록의 근거 버튼을 누르면 투자 논리·반대 근거·출처·재검토 조건을 확인할 수 있습니다.</p>';return;}
+    if(!r){$('pDetail').innerHTML=`<h3>${esc(detailCode)} · 판단 보류</h3><p class="hint">대응하는 가격·연구 근거가 없습니다. 보유했다고 좋은 기업으로 가정하지 않습니다.</p>`;return;}
+    const v=r.review,c=P.companyReview(r,data.as_of,policy());
+    $('pDetail').innerHTML=`<div class="card-head"><h3>${esc(r.name)} · 근거와 변경 조건</h3><span class="sub">연구 검토 ${esc(v.reviewed_on||'미확인')} / ${esc(v.financial_period)}</span></div><div class="p-block">${tag(c.opinion)}<p class="p-ev">${esc(c.reasons.join(' / '))}</p>${c.blockers.length?`<p class="hint">추가 확인: ${esc(c.blockers.join(' / '))}</p>`:''}<p class="hint">가격 ${fmt(r.price_krw,'원',0)} · 기준일 ${esc(r.price_date||'미확인')} · ${esc(r.price_source?.label||'가격 출처 미입력')}</p></div><div class="grid-two"><div><p class="p-ev"><b>긍정 근거</b></p>${v.positives.map(t=>`<p class="p-ev">${esc(t)}</p>`).join('')||'<p class="hint">미입력</p>'}</div><div><p class="p-ev"><b>반대 근거</b></p>${v.negatives.map(t=>`<p class="p-ev">${esc(t)}</p>`).join('')||'<p class="hint">미입력</p>'}</div></div><div class="p-block"><b>판단을 바꿀 조건</b><p class="p-ev">${esc(v.invalidation||'미입력')}</p><p class="sub">다음 검토 예정일 ${esc(v.next_review_on||'미입력')} · 예약 알림은 등록하지 않습니다.</p></div><div class="p-block"><b>근거 출처</b>${r.evidence.map(e=>`<p class="p-ev">${data.mode==='fixture'?esc(e.label):`<a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${esc(e.label)}</a>`} · 이용가능일 ${esc(e.available_on)} · ${e.reviewed?'입력자가 확인 표시':'확인 대기'}</p>`).join('')||'<p class="hint">출처 없음</p>'}<p class="hint">출처 존재·내용의 정확성을 이 HTML이 외부에서 검증하지는 않습니다.</p></div>`;
+  }
+  function renderProposal(){
+    $('pAllocation').innerHTML='';$('pProposalBody').innerHTML='';$('pCashLabel').textContent='현금 —';$('pStress').innerHTML='';$('pExposure').innerHTML='';$('pRejected').innerHTML='';$('pUnselected').textContent='';
+    $('pExportReport').disabled=!proposal;
+    if(!proposal){$('pProposalTitle').textContent='입력과 설정 확인 대기';$('pProposalBadge').textContent='아직 계산하지 않음';$('pProposalNote').textContent='설정을 바꾸거나 입력 파일을 교체하면 이전 구성안은 해제됩니다. 조건을 확인한 뒤 계산하세요.';return;}
+    const a=proposal;
+    $('pProposalTitle').textContent=a.status==='MODEL_PROPOSAL'?`${a.items.length}개 기업 + 현금`:a.status==='CASH_ONLY'?'현재 조건의 편입 기업 0개':'조건·자료 확인 필요';
+    $('pProposalBadge').textContent=data.mode==='fixture'?'가상 결과':'입력 기반 모의 결과';
+    $('pProposalNote').textContent=a.message;
+    $('pProposalBody').innerHTML=a.items.map(r=>`<tr><td class="left"><b>${esc(r.name)}</b><div class="sub">${esc(r.code)}</div></td><td class="left">${esc(r.sector)}</td><td><b>${fmt(r.weight_pct,'%',2)}</b></td><td>${r.existing?'보유 중':'신규 후보'}</td><td><button class="small" data-review-detail="${esc(r.code)}">근거</button></td></tr>`).join('');
+    if(a.cash_pct!==null){
+      $('pCashLabel').textContent=`현금 ${fmt(a.cash_pct,'%',2)} · 빈 자리를 억지로 채우지 않습니다.`;
+      $('pAllocation').innerHTML=`<div class="p-bar" aria-label="주식과 현금 비중">${a.items.map(r=>`<span style="width:${r.weight_pct}%" title="${esc(r.name)} ${r.weight_pct}%"></span>`).join('')}<span style="width:${a.cash_pct}%" title="현금 ${a.cash_pct}%"></span></div>`;
+      const p=a.policy,shock=P.stress(a.items,p.stressShockPct),worse=P.stress(a.items,-50);
+      $('pStress').innerHTML=`<div class="p-metric"><span>주식 동반 ${fmt(p.stressShockPct,'%')} 가정</span><b>${fmt(shock,'%',2)}</b></div><div class="p-metric"><span>별도 하락 -50% 가정</span><b>${fmt(worse,'%',2)}</b></div><p class="hint">첫 시나리오 기준 ${fmt(p.stressLossLimitPct,'%')}를 주식 비중에 반영했습니다. 실제 손실 상한이 아닙니다.</p>`;
+    }
+    const sectors=a.sector_weights||{},groups=a.group_weights||{};
+    $('pExposure').innerHTML=Object.entries(sectors).map(([k,v])=>`<div class="p-metric"><span>${esc(k)}</span><b>${fmt(v,'%',2)}</b></div>`).join('')+`<p class="hint">공통 위험군: ${Object.entries(groups).map(([k,v])=>`${esc(k)} ${fmt(v,'%',2)}`).join(' / ')||'없음'}</p>`;
+    $('pRejected').innerHTML=a.rejected.map(r=>`<div class="p-block"><b>${esc(r.name)} · ${esc(r.code)}</b><p class="hint">${esc(r.reasons.join(' / '))}</p></div>`).join('')||'<p class="hint">현재 표시할 제외 사유가 없습니다.</p>';
+    if(a.unselected_holdings?.length)$('pUnselected').textContent=`모의안 미편입 보유종목: ${a.unselected_holdings.join(', ')}. 이는 자동 매도 의견이 아닙니다. 보유종목 점검에서 개별 근거를 확인하세요. 현재 보유목록은 유지됩니다.`;
+    bindDetails('pProposalBody');
+  }
+  function refresh(){try{renderHoldings(policy());renderProposal();}catch(e){proposal=null;renderProposal();$('pHoldBody').innerHTML='<tr><td colspan="8">설정 오류로 재계산을 보류합니다.</td></tr>';$('pValue').textContent='—';toast('설정 검사: '+e.message);}}
+  function apply(x){P.validate(x);data=P.clone(x);proposal=null;detailCode='';$('pConfirm').checked=false;$('pCash').value=data.cash_krw??'';refresh();}
+  function protectReplace(){return !data.holdings.length&&!data.research.length||confirm('현재 입력을 교체합니다. 필요한 내용은 먼저 내보내세요. 원본 파일은 변경하지 않습니다.');}
+  function report(){
+    const h=P.reviewHoldings(data,policy()),a=proposal;
+    let s=`# INVESTMENT 보유·포트폴리오 검토\n\n평가일: ${data.as_of}\n데이터 모드: ${data.mode==='fixture'?'가상 테스트 (실제 기업·수치 아님)':'사용자 입력 (원문 자동 검증 미실행)'}\n스냅샷: ${data.snapshot_id}\n엔진: ${P.VERSION}\n\n의견은 의사결정 보조이며 매매 지시·수익 보장·손실 한도 보장이 아닙니다.\n\n## 보유종목\n`;
+    for(const r of h.rows){s+=`\n### ${r.name} (${r.code})\n기업 의견: ${r.label}\n비중 의견: ${r.portfolio_action}\n현재 비중: ${fmt(r.weight_pct,'%',2)}\n판정 근거: ${r.reasons.join(' / ')}\n`;if(r.research){s+=`긍정: ${r.research.review.positives.join(' / ')}\n반대: ${r.research.review.negatives.join(' / ')}\n변경 조건: ${r.research.review.invalidation}\n`;for(const e of r.research.evidence)s+=`출처: ${e.label} | ${e.url} | ${e.available_on}\n`;}}
+    s+='\n## 최대 5개 기업 모의 목표안\n';
+    if(a){s+=`${a.message}\n`;for(const r of a.items){s+=`\n### ${r.name} (${r.code}) · ${r.weight_pct}%\n편입 이유: ${r.reasons.join(' / ')}\n가격 기준일: ${r.research.price_date}\n긍정: ${r.research.review.positives.join(' / ')}\n반대: ${r.research.review.negatives.join(' / ')}\n변경 조건: ${r.research.review.invalidation}\n`;for(const e of r.research.evidence)s+=`출처: ${e.label} | ${e.url} | ${e.available_on}\n`;}s+=`현금: ${fmt(a.cash_pct,'%',2)}\n\n고정 슬롯 균등배분이며 최적 기대수익 모형이 아닙니다. 미편입 보유종목을 자동 매도하지 않습니다.\n\n### 적용 설정\n\`\`\`json\n${JSON.stringify(a.policy,null,2)}\n\`\`\`\n`;}
+    if(a&&a.cash_pct!==null)s+=`\n가정 시나리오: 주식 ${a.policy.stressShockPct}% / 구성안 ${fmt(P.stress(a.items,a.policy.stressShockPct),'%',2)}. 실제 손실 상한이 아닙니다.\n`;
+    if(a?.rejected?.length)s+='\n제외·확인 대기: '+a.rejected.map(r=>`${r.name} (${r.code}): ${r.reasons.join(' / ')}`).join('\n')+'\n';
+    s+='\n실제 시세·공시 수집, 계좌 연결, 외부 LLM 호출, 상관관계 추정, 거래비용, 자동 주문은 미구현입니다.\n';return s;
+  }
+  $('pImport').addEventListener('click',()=>$('pFile').click());
+  $('pFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>12*1024*1024)throw Error('12MB 이하 JSON만 지원합니다.');const x=JSON.parse(await f.text());P.validate(x);if(protectReplace()){apply(x);toast('입력 파일을 검사해 불러왔습니다. 원문 검증이나 실제 계좌 연결은 아닙니다.');}}catch(err){toast('보유·연구 불러오기 실패: '+err.message);}e.target.value='';});
+  $('pTemplate').addEventListener('click',()=>download('holdings_research_empty.json',JSON.stringify(P.empty(today()),null,2)));
+  $('pFixture').addEventListener('click',()=>{if(protectReplace()){apply(P.fixture());$('pLossLimit').value=25;toast('모든 기업·가격·출처가 허구인 테스트 예제입니다.');}});
+  $('pExport').addEventListener('click',()=>download('holdings_research_private.json',JSON.stringify(data,null,2)));
+  $('pClear').addEventListener('click',()=>{if(protectReplace()){apply(P.empty(today()));$('pJsonEditor').value='';toast('새 보유·연구 입력만 비웠습니다. 원본 파일과 기존 조건검색 자료는 유지합니다.');}});
+  $('pLoadEditor').addEventListener('click',()=>{$('pJsonEditor').value=JSON.stringify(data,null,2);});
+  $('pApplyEditor').addEventListener('click',()=>{try{apply(JSON.parse($('pJsonEditor').value));toast('형식 검사를 통과한 편집 내용을 적용했습니다.');}catch(e){toast('편집 적용 실패: '+e.message);}});
+  $('pSaveHolding').addEventListener('click',()=>{try{const x=P.clone(data),code=$('pCode').value.trim(),h={code,quantity:n('pQty'),avg_cost_krw:n('pCost')};const i=x.holdings.findIndex(v=>v.code===code);if(i>=0)x.holdings[i]={...x.holdings[i],...h};else x.holdings.push(h);apply(x);toast('보유 입력을 반영했습니다. 연구 근거가 없으면 판단 보류입니다.');}catch(e){toast('보유 입력 실패: '+e.message);}});
+  $('pDeleteHolding').addEventListener('click',()=>{const code=$('pCode').value.trim();if(!data.holdings.some(h=>h.code===code)){toast('보유목록에 없는 코드입니다.');return;}if(!confirm('보유 입력에서 이 종목을 제거할까요? 실제 주식 매도가 아닙니다.'))return;const x=P.clone(data);x.holdings=x.holdings.filter(h=>h.code!==code);apply(x);});
+  $('pSaveCash').addEventListener('click',()=>{try{const x=P.clone(data);x.cash_krw=n('pCash');apply(x);toast('입력한 현금을 평가액에 반영했습니다.');}catch(e){toast('현금 입력 실패: '+e.message);}});
+  for(const id of ['pMax','pCompanyCap','pSectorCap','pGroupCap','pCashMin','pShock','pLossLimit','pPriceAge','pReviewAge'])$(id).addEventListener('input',()=>{proposal=null;$('pConfirm').checked=false;refresh();});
+  $('pConfirm').addEventListener('change',()=>{proposal=null;refresh();});
+  $('pGenerate').addEventListener('click',()=>{try{proposal=P.propose(data,policy());renderHoldings(policy());renderProposal();}catch(e){proposal=null;renderProposal();toast('구성안 계산 실패: '+e.message);}});
+  $('pExportReport').addEventListener('click',()=>download('INVESTMENT_Review_'+data.as_of+'.md',report(),'text/markdown;charset=utf-8'));
+  refresh();
+})();
+</script></body></html>

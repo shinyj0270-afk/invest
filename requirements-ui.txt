@@ -1,0 +1,2 @@
+# Optional UI verification; version used in the supplied baseline report.
+playwright==1.57.0

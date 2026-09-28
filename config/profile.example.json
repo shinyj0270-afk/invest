@@ -1,0 +1,9 @@
+{
+  "profile": "unknown",
+  "project_root": ".",
+  "data_dir": "data",
+  "manual_snapshot_file": null,
+  "enabled_data_adapters": [],
+  "scheduled_jobs_enabled": false,
+  "note": "Consumed by app/batch/collect. Set this PC profile explicitly. Never put credentials here."
+}

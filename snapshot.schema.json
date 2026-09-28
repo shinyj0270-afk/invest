@@ -1,0 +1,313 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "INVESTMENT reviewed snapshot v0.1",
+  "description": "Data-connection contract. No observed market data included. Runtime checks also enforce common dates/basis and unique codes.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "meta",
+    "companies"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1"
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "price_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "flow_start": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "flow_end": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "financial_period": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "financial_basis": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "venue": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "universe_label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "universe_total": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "data_mode": {
+          "enum": [
+            "fixture",
+            "user_input"
+          ]
+        }
+      }
+    },
+    "companies": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "market",
+          "industry",
+          "security_type",
+          "analysis_profile",
+          "metrics"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string"
+          },
+          "industry": {
+            "type": "string",
+            "minLength": 1
+          },
+          "security_type": {
+            "type": "string"
+          },
+          "analysis_profile": {
+            "type": "string"
+          },
+          "metrics": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "market_cap_eok": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "revenue_growth_pct": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "operating_margin_pct": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "roe_pct": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "debt_ratio_pct": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "net_debt_equity_pct": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "interest_coverage_x": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "current_ratio_pct": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "foreign_net_20d_eok": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "institution_net_20d_eok": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "foreign_net_turnover_20d_pct": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "institution_net_turnover_20d_pct": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "avg_trading_value_20d_eok": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "label",
+                "url"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string",
+                  "pattern": "^https?://"
+                }
+              }
+            }
+          },
+          "history": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "required": [
+                "year"
+              ],
+              "properties": {
+                "year": {
+                  "type": "integer",
+                  "minimum": 2000,
+                  "maximum": 2100
+                },
+                "revenue_eok": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "operating_profit_eok": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "data_quality": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "type": "string",
+              "maxLength": 1000
+            }
+          },
+          "metric_missing_reasons": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "market_cap_eok": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "revenue_growth_pct": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "operating_margin_pct": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "roe_pct": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "debt_ratio_pct": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "net_debt_equity_pct": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "interest_coverage_x": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "current_ratio_pct": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "foreign_net_20d_eok": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "institution_net_20d_eok": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "foreign_net_turnover_20d_pct": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "institution_net_turnover_20d_pct": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "avg_trading_value_20d_eok": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

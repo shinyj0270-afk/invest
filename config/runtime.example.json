@@ -1,0 +1,7 @@
+{
+  "profile": "unknown",
+  "permissions": {"kiwoom": false, "kiwoom_spec_verified": false, "dart": false, "infomax_automated_export": false},
+  "secrets": {"kiwoom_token_env": "KIWOOM_ACCESS_TOKEN", "dart_key_env": "OPENDART_API_KEY"},
+  "timezone": "Asia/Seoul",
+  "batch_registered": false
+}

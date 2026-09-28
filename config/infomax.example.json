@@ -1,0 +1,45 @@
+{
+  "schema_version": "infomax-import-0.1",
+  "mode": "user_input",
+  "as_of": null,
+  "completed_through": null,
+  "sessions_20d": [],
+  "financial_period": null,
+  "financial_basis": "CFS",
+  "balance_comp": "누적",
+  "income_comp": "순",
+  "units": {
+    "누적거래대금": "원",
+    "시가총액": "원",
+    "기관순매수금액": "천원",
+    "외국인순매수금액": "천원",
+    "자산": "천원",
+    "자본": "천원",
+    "부채": "천원",
+    "매출액(영업수익)": "천원",
+    "영업이익": "천원",
+    "당기순이익(포괄손익계산서)": "천원"
+  },
+  "price_venue": null,
+  "flow_venue": null,
+  "prices_final": false,
+  "flows_final": false,
+  "market_cap_date": null,
+  "companies": {
+    "005930": {
+      "security_type": "unknown",
+      "analysis_profile": "unknown",
+      "financial_available_on": null
+    },
+    "000660": {
+      "security_type": "unknown",
+      "analysis_profile": "unknown",
+      "financial_available_on": null
+    },
+    "005380": {
+      "security_type": "unknown",
+      "analysis_profile": "unknown",
+      "financial_available_on": null
+    }
+  }
+}

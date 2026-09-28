@@ -1,0 +1,57 @@
+{
+  "schema_version": "infomax-user-decisions-0.1",
+  "decisions": {
+    "unknown_venue": {
+      "decision": "allow_use_with_label",
+      "user_answer": "1번",
+      "scope": "가격·수급 데이터의 거래소 범위 미확인 상태 사용",
+      "required_label": "거래소 범위 미확인",
+      "price_venue": null,
+      "flow_venue": null,
+      "provider_definition_confirmed": false
+    },
+    "revision_finality": {
+      "decision": "allow_provisional_use_with_label",
+      "user_answer": "1",
+      "scope": "현재 저장된 가격·수급 값을 잠정값으로 사용",
+      "required_label": "추후 정정 가능",
+      "prices_final": false,
+      "flows_final": false,
+      "provider_finality_confirmed": false
+    },
+    "investor_aggregation": {
+      "decision": "use_existing_provider_fields_with_label",
+      "user_answer": "1",
+      "fields": ["외국인순매수금액", "기관순매수금액"],
+      "required_label": "공급자 분류 기준·세부 범위 미확인",
+      "combine_other_foreign_fields": false,
+      "provider_aggregation_confirmed": false
+    },
+    "flow_turnover_scope_comparability": {
+      "decision": "allow_provisional_ratio_with_label",
+      "user_answer": "1",
+      "required_label": "거래소 범위 동일성 미확인",
+      "scope": "같은 20개 공통 관측일의 순매수 합계 / 거래대금 합계를 잠정 계산",
+      "venue_comparability_confirmed": false
+    },
+    "observed_sessions_calendar": {
+      "decision": "use_latest_20_common_observed_dates_with_label",
+      "user_answer": "1",
+      "scope": "가격·수급에 공통으로 존재하는 최근 20개 관측일로 계산",
+      "required_label": "공식 거래일 미대조",
+      "observation_count": 20,
+      "official_calendar_verified": false,
+      "missing_trading_dates_may_extend_period": true
+    }
+  },
+  "financial_source_priority": {
+    "decision": "prefer_infomax_on_monetary_difference",
+    "user_answer": "인포맥스 값과 공식 재무 원문 차이가 날 때는 인포맥스 값을 사용해",
+    "scope": "인포맥스와 공식 재무 원문의 금액이 다르면 인포맥스 값을 계산에 사용",
+    "retain_official_comparison": true,
+    "missing_provider_components": "supplement_from_official_with_explicit_label",
+    "definition_equivalence_confirmed": false
+  },
+  "pending": [],
+  "implementation_status": "All six user decisions applied to the saved review dataset; unverified facts and provisional labels preserved."
+}

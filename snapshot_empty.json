@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.1",
+  "meta": {
+    "price_date": null,
+    "flow_start": null,
+    "flow_end": null,
+    "financial_period": null,
+    "financial_basis": null,
+    "venue": null,
+    "universe_label": "데이터 미연결",
+    "universe_total": null
+  },
+  "companies": []
+}

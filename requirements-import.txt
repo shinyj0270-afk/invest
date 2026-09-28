@@ -1,0 +1,2 @@
+# CSV conversion uses only Python's standard library. XLSX read-only support:
+openpyxl==3.1.5

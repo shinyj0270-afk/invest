@@ -1,0 +1,34 @@
+"""Fresh local verification; does not register tasks or call external data APIs."""
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+from datetime import datetime,timezone
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from investment.local_config import load_local,require_profile
+profile=require_profile(load_local(ROOT))
+out=ROOT/'validation/current'; out.mkdir(parents=True,exist_ok=True)
+env=dict(os.environ,PYTHONIOENCODING='utf-8')
+edge=Path('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe')
+if edge.exists(): env.setdefault('CHROMIUM_PATH',str(edge))
+commands=[
+ [sys.executable,'build.py'],
+ ['node','tests/test_engine.js'],['node','tests/test_portfolio.js'],
+ [sys.executable,'-m','unittest','tests.test_dual_pc','tests.test_research_app','tests.test_financial_reconciliation','tests.test_user_policy','tests.test_company_finish','tests.test_review_tolerance','tests.test_infomax_import','tests.test_marketcap_history','tests.test_streamlit_app'],
+ [sys.executable,'tests/test_ui.py'],[sys.executable,'tests/test_portfolio_ui.py'],
+ [sys.executable,'batch.py','init-fixture','--profile',profile],
+ [sys.executable,'batch.py','daily','--profile',profile],[sys.executable,'batch.py','weekly','--profile',profile],
+ [sys.executable,'batch.py','weekly','--profile',profile],
+ [sys.executable,'tests/verify_report_browser.py'],
+]
+if (ROOT/'private_data/infomax/info.xlsx').exists(): commands.append([sys.executable,'tools/company_finish.py'])
+results=[]
+for i,command in enumerate(commands):
+    run=subprocess.run(command,cwd=ROOT,env=env,capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=180)
+    (out/f'{i:02}.txt').write_text(run.stdout+run.stderr,encoding='utf-8')
+    results.append(dict(command=command,exit_code=run.returncode,log=f'{i:02}.txt'))
+    print(('PASS ' if run.returncode==0 else 'FAIL ')+str(command[1:]))
+(out/'results.json').write_text(json.dumps(dict(executed_at=datetime.now(timezone.utc).isoformat(),results=results),ensure_ascii=False,indent=2),encoding='utf-8')
+sys.exit(any(r['exit_code'] for r in results))

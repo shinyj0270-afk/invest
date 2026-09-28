@@ -1,0 +1,368 @@
+{
+  "schema_version": "holdings-portfolio-0.1",
+  "mode": "fixture",
+  "as_of": "2026-09-25",
+  "snapshot_id": "FIXTURE-ONLY-20260925",
+  "cash_krw": 200000,
+  "holdings": [
+    {
+      "code": "990001",
+      "quantity": 40,
+      "avg_cost_krw": 10000,
+      "thesis_note": "테스트용 투자 메모"
+    },
+    {
+      "code": "990006",
+      "quantity": 10,
+      "avg_cost_krw": 17000
+    },
+    {
+      "code": "990007",
+      "quantity": 10,
+      "avg_cost_krw": 15000
+    },
+    {
+      "code": "990008",
+      "quantity": 10,
+      "avg_cost_krw": 17000
+    }
+  ],
+  "research": [
+    {
+      "code": "990001",
+      "issuer_id": "FICTIONAL-ISSUER-1",
+      "name": "가상기업 A",
+      "market": "KOSPI",
+      "security_type": "ordinary",
+      "analysis_profile": "nonfinancial",
+      "sector": "가상산업 B",
+      "risk_group": "가상위험군 B",
+      "price_krw": 11000,
+      "price_date": "2026-09-25",
+      "price_source": {
+        "label": "가상 가격 출처 · 실제 관측값 아님",
+        "url": "https://example.invalid/fixture/price"
+      },
+      "review": {
+        "thesis": "intact",
+        "business": "stable",
+        "finance": "sound",
+        "valuation": "fair",
+        "material_risk": "clear",
+        "reviewed_on": "2026-09-25",
+        "financial_period": "가상 TTM 2026-06-30",
+        "positives": [
+          "기능 검증용: 사업 지표가 안정적이라는 가정"
+        ],
+        "negatives": [
+          "기능 검증용: 수요 둔화가 발생할 수 있다는 가정"
+        ],
+        "invalidation": "가정한 주요 계약이 종료되면 논리를 다시 검토",
+        "next_review_on": "2026-10-30"
+      },
+      "evidence": [
+        {
+          "id": "FIX-1",
+          "label": "가상 근거 · 실제 공시 아님",
+          "url": "https://example.invalid/fixture/1",
+          "available_on": "2026-09-25",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "code": "990002",
+      "issuer_id": "FICTIONAL-ISSUER-2",
+      "name": "가상기업 B",
+      "market": "KOSDAQ",
+      "security_type": "ordinary",
+      "analysis_profile": "nonfinancial",
+      "sector": "가상산업 C",
+      "risk_group": "가상위험군 C",
+      "price_krw": 12000,
+      "price_date": "2026-09-25",
+      "price_source": {
+        "label": "가상 가격 출처 · 실제 관측값 아님",
+        "url": "https://example.invalid/fixture/price"
+      },
+      "review": {
+        "thesis": "intact",
+        "business": "stable",
+        "finance": "sound",
+        "valuation": "fair",
+        "material_risk": "clear",
+        "reviewed_on": "2026-09-25",
+        "financial_period": "가상 TTM 2026-06-30",
+        "positives": [
+          "기능 검증용: 사업 지표가 안정적이라는 가정"
+        ],
+        "negatives": [
+          "기능 검증용: 수요 둔화가 발생할 수 있다는 가정"
+        ],
+        "invalidation": "가정한 주요 계약이 종료되면 논리를 다시 검토",
+        "next_review_on": "2026-10-30"
+      },
+      "evidence": [
+        {
+          "id": "FIX-2",
+          "label": "가상 근거 · 실제 공시 아님",
+          "url": "https://example.invalid/fixture/2",
+          "available_on": "2026-09-25",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "code": "990003",
+      "issuer_id": "FICTIONAL-ISSUER-3",
+      "name": "가상기업 C",
+      "market": "KOSPI",
+      "security_type": "ordinary",
+      "analysis_profile": "nonfinancial",
+      "sector": "가상산업 D",
+      "risk_group": "가상위험군 D",
+      "price_krw": 13000,
+      "price_date": "2026-09-25",
+      "price_source": {
+        "label": "가상 가격 출처 · 실제 관측값 아님",
+        "url": "https://example.invalid/fixture/price"
+      },
+      "review": {
+        "thesis": "intact",
+        "business": "stable",
+        "finance": "sound",
+        "valuation": "fair",
+        "material_risk": "clear",
+        "reviewed_on": "2026-09-25",
+        "financial_period": "가상 TTM 2026-06-30",
+        "positives": [
+          "기능 검증용: 사업 지표가 안정적이라는 가정"
+        ],
+        "negatives": [
+          "기능 검증용: 수요 둔화가 발생할 수 있다는 가정"
+        ],
+        "invalidation": "가정한 주요 계약이 종료되면 논리를 다시 검토",
+        "next_review_on": "2026-10-30"
+      },
+      "evidence": [
+        {
+          "id": "FIX-3",
+          "label": "가상 근거 · 실제 공시 아님",
+          "url": "https://example.invalid/fixture/3",
+          "available_on": "2026-09-25",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "code": "990004",
+      "issuer_id": "FICTIONAL-ISSUER-4",
+      "name": "가상기업 D",
+      "market": "KOSDAQ",
+      "security_type": "ordinary",
+      "analysis_profile": "nonfinancial",
+      "sector": "가상산업 A",
+      "risk_group": "가상위험군 A",
+      "price_krw": 14000,
+      "price_date": "2026-09-25",
+      "price_source": {
+        "label": "가상 가격 출처 · 실제 관측값 아님",
+        "url": "https://example.invalid/fixture/price"
+      },
+      "review": {
+        "thesis": "intact",
+        "business": "stable",
+        "finance": "sound",
+        "valuation": "fair",
+        "material_risk": "clear",
+        "reviewed_on": "2026-09-25",
+        "financial_period": "가상 TTM 2026-06-30",
+        "positives": [
+          "기능 검증용: 사업 지표가 안정적이라는 가정"
+        ],
+        "negatives": [
+          "기능 검증용: 수요 둔화가 발생할 수 있다는 가정"
+        ],
+        "invalidation": "가정한 주요 계약이 종료되면 논리를 다시 검토",
+        "next_review_on": "2026-10-30"
+      },
+      "evidence": [
+        {
+          "id": "FIX-4",
+          "label": "가상 근거 · 실제 공시 아님",
+          "url": "https://example.invalid/fixture/4",
+          "available_on": "2026-09-25",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "code": "990005",
+      "issuer_id": "FICTIONAL-ISSUER-5",
+      "name": "가상기업 E",
+      "market": "KOSPI",
+      "security_type": "ordinary",
+      "analysis_profile": "nonfinancial",
+      "sector": "가상산업 B",
+      "risk_group": "가상위험군 B",
+      "price_krw": 15000,
+      "price_date": "2026-09-25",
+      "price_source": {
+        "label": "가상 가격 출처 · 실제 관측값 아님",
+        "url": "https://example.invalid/fixture/price"
+      },
+      "review": {
+        "thesis": "intact",
+        "business": "stable",
+        "finance": "sound",
+        "valuation": "fair",
+        "material_risk": "clear",
+        "reviewed_on": "2026-09-25",
+        "financial_period": "가상 TTM 2026-06-30",
+        "positives": [
+          "기능 검증용: 사업 지표가 안정적이라는 가정"
+        ],
+        "negatives": [
+          "기능 검증용: 수요 둔화가 발생할 수 있다는 가정"
+        ],
+        "invalidation": "가정한 주요 계약이 종료되면 논리를 다시 검토",
+        "next_review_on": "2026-10-30"
+      },
+      "evidence": [
+        {
+          "id": "FIX-5",
+          "label": "가상 근거 · 실제 공시 아님",
+          "url": "https://example.invalid/fixture/5",
+          "available_on": "2026-09-25",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "code": "990006",
+      "issuer_id": "FICTIONAL-ISSUER-6",
+      "name": "가상기업 F",
+      "market": "KOSDAQ",
+      "security_type": "ordinary",
+      "analysis_profile": "nonfinancial",
+      "sector": "가상산업 C",
+      "risk_group": "가상위험군 C",
+      "price_krw": 16000,
+      "price_date": "2026-09-25",
+      "price_source": {
+        "label": "가상 가격 출처 · 실제 관측값 아님",
+        "url": "https://example.invalid/fixture/price"
+      },
+      "review": {
+        "thesis": "broken",
+        "business": "stable",
+        "finance": "sound",
+        "valuation": "fair",
+        "material_risk": "clear",
+        "reviewed_on": "2026-09-25",
+        "financial_period": "가상 TTM 2026-06-30",
+        "positives": [
+          "기능 검증용: 사업 지표가 안정적이라는 가정"
+        ],
+        "negatives": [
+          "기능 검증용: 수요 둔화가 발생할 수 있다는 가정"
+        ],
+        "invalidation": "가정한 주요 계약이 종료되면 논리를 다시 검토",
+        "next_review_on": "2026-10-30"
+      },
+      "evidence": [
+        {
+          "id": "FIX-6",
+          "label": "가상 근거 · 실제 공시 아님",
+          "url": "https://example.invalid/fixture/6",
+          "available_on": "2026-09-25",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "code": "990007",
+      "issuer_id": "FICTIONAL-ISSUER-7",
+      "name": "가상기업 G",
+      "market": "KOSPI",
+      "security_type": "ordinary",
+      "analysis_profile": "nonfinancial",
+      "sector": "가상산업 D",
+      "risk_group": "가상위험군 D",
+      "price_krw": 17000,
+      "price_date": "2026-09-25",
+      "price_source": {
+        "label": "가상 가격 출처 · 실제 관측값 아님",
+        "url": "https://example.invalid/fixture/price"
+      },
+      "review": {
+        "thesis": "intact",
+        "business": "stable",
+        "finance": "sound",
+        "valuation": "stretched",
+        "material_risk": "clear",
+        "reviewed_on": "2026-09-25",
+        "financial_period": "가상 TTM 2026-06-30",
+        "positives": [
+          "기능 검증용: 사업 지표가 안정적이라는 가정"
+        ],
+        "negatives": [
+          "기능 검증용: 수요 둔화가 발생할 수 있다는 가정"
+        ],
+        "invalidation": "가정한 주요 계약이 종료되면 논리를 다시 검토",
+        "next_review_on": "2026-10-30"
+      },
+      "evidence": [
+        {
+          "id": "FIX-7",
+          "label": "가상 근거 · 실제 공시 아님",
+          "url": "https://example.invalid/fixture/7",
+          "available_on": "2026-09-25",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "code": "990008",
+      "issuer_id": "FICTIONAL-ISSUER-8",
+      "name": "가상기업 H",
+      "market": "KOSDAQ",
+      "security_type": "ordinary",
+      "analysis_profile": "nonfinancial",
+      "sector": "가상산업 A",
+      "risk_group": "가상위험군 A",
+      "price_krw": 18000,
+      "price_date": "2026-09-25",
+      "price_source": {
+        "label": "가상 가격 출처 · 실제 관측값 아님",
+        "url": "https://example.invalid/fixture/price"
+      },
+      "review": {
+        "thesis": "unknown",
+        "business": "stable",
+        "finance": "sound",
+        "valuation": "fair",
+        "material_risk": "clear",
+        "reviewed_on": "2026-09-25",
+        "financial_period": "가상 TTM 2026-06-30",
+        "positives": [
+          "기능 검증용: 사업 지표가 안정적이라는 가정"
+        ],
+        "negatives": [
+          "기능 검증용: 수요 둔화가 발생할 수 있다는 가정"
+        ],
+        "invalidation": "가정한 주요 계약이 종료되면 논리를 다시 검토",
+        "next_review_on": "2026-10-30"
+      },
+      "evidence": [
+        {
+          "id": "FIX-8",
+          "label": "가상 근거 · 실제 공시 아님",
+          "url": "https://example.invalid/fixture/8",
+          "available_on": "2026-09-25",
+          "reviewed": true
+        }
+      ]
+    }
+  ]
+}

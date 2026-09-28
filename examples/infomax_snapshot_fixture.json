@@ -1,0 +1,202 @@
+{
+  "schema_version": "0.1",
+  "meta": {
+    "price_date": "2026-01-29",
+    "flow_start": "2026-01-02",
+    "flow_end": "2026-01-29",
+    "financial_period": "2025-12-31 단독분기",
+    "financial_basis": "CFS",
+    "venue": "KRX",
+    "universe_label": "가상 테스트 표본",
+    "universe_total": null,
+    "data_mode": "fixture",
+    "as_of": "2026-01-30",
+    "adapter_version": "infomax-file-0.1",
+    "config_sha256": "b7270619c1054a45aeca2efe2d44284aa3b86cb2ec6eda77559abc054e861575",
+    "price_venue": "KRX",
+    "flow_venue": "KRX",
+    "source_files": {
+      "info": {
+        "file": "info.csv",
+        "sha256": "6095a7ccda3f66c745059d5fa6bad526b5491a1822a159ba1360ec0d5850013c"
+      },
+      "prices": {
+        "file": "prices.csv",
+        "sha256": "d718cee7a833bdee5b1778e6723b4092f013273b82e32049d483b8eb0b6ace48"
+      },
+      "flows": {
+        "file": "flows.csv",
+        "sha256": "72ab3998977ebe274f74049e04eb2788544b53598248f2fb3d09fe54eff9b08f"
+      },
+      "balance": {
+        "file": "balance.csv",
+        "sha256": "8b7e7d769ad879ec21faac168909062636150dfd41f005981822a5eb91b1a1ce"
+      },
+      "income": {
+        "file": "income.csv",
+        "sha256": "415cb5779a8129aec6b908aed8ef5e563aa83f15215f875992d79f9e4199d827"
+      }
+    },
+    "warnings": [
+      "파일 입력이며 공급자 자동 연결·공시 원문 검증은 수행하지 않았습니다.",
+      "거래일·확정 여부·연결/누적/순 기준은 사용자 설정이며 파일만으로 독립 검증되지 않습니다."
+    ],
+    "import_audit": {
+      "900001": {
+        "rows": {
+          "prices": 21,
+          "flows": 21,
+          "balance": 1,
+          "income": 1
+        },
+        "excluded_after_completed": {
+          "prices": 1,
+          "flows": 1
+        },
+        "financial_available_on": "2026-01-15",
+        "calculated_metrics": 8
+      },
+      "900002": {
+        "rows": {
+          "prices": 21,
+          "flows": 21,
+          "balance": 1,
+          "income": 1
+        },
+        "excluded_after_completed": {
+          "prices": 1,
+          "flows": 1
+        },
+        "financial_available_on": "2026-01-15",
+        "calculated_metrics": 8
+      },
+      "900003": {
+        "rows": {
+          "prices": 21,
+          "flows": 21,
+          "balance": 1,
+          "income": 1
+        },
+        "excluded_after_completed": {
+          "prices": 1,
+          "flows": 1
+        },
+        "financial_available_on": "2026-01-15",
+        "calculated_metrics": 8
+      }
+    }
+  },
+  "companies": [
+    {
+      "code": "900001",
+      "name": "가상테스트기업1",
+      "market": "KOSPI",
+      "industry": "가상테스트산업",
+      "security_type": "ordinary",
+      "analysis_profile": "nonfinancial",
+      "metrics": {
+        "market_cap_eok": 100.0,
+        "revenue_growth_pct": null,
+        "operating_margin_pct": 10.0,
+        "roe_pct": null,
+        "debt_ratio_pct": 50.0,
+        "net_debt_equity_pct": null,
+        "interest_coverage_x": null,
+        "current_ratio_pct": null,
+        "foreign_net_20d_eok": 0.2,
+        "institution_net_20d_eok": -0.1,
+        "foreign_net_turnover_20d_pct": 1.0,
+        "institution_net_turnover_20d_pct": -0.5,
+        "avg_trading_value_20d_eok": 1.0
+      },
+      "history": [],
+      "sources": [],
+      "data_quality": [
+        "TTM 지배주주 순이익·기초/기말 지배주주 지분 미수집",
+        "전년 동분기 매출과 공개 시점 미검증",
+        "필요 원계정 미수집"
+      ],
+      "metric_missing_reasons": {
+        "revenue_growth_pct": "전년 동분기 매출과 공개 시점 미검증",
+        "roe_pct": "TTM 지배주주 순이익·기초/기말 지배주주 지분 미수집",
+        "net_debt_equity_pct": "필요 원계정 미수집",
+        "interest_coverage_x": "필요 원계정 미수집",
+        "current_ratio_pct": "필요 원계정 미수집"
+      }
+    },
+    {
+      "code": "900002",
+      "name": "가상테스트기업2",
+      "market": "KOSPI",
+      "industry": "가상테스트산업",
+      "security_type": "ordinary",
+      "analysis_profile": "nonfinancial",
+      "metrics": {
+        "market_cap_eok": 100.0,
+        "revenue_growth_pct": null,
+        "operating_margin_pct": 10.0,
+        "roe_pct": null,
+        "debt_ratio_pct": 50.0,
+        "net_debt_equity_pct": null,
+        "interest_coverage_x": null,
+        "current_ratio_pct": null,
+        "foreign_net_20d_eok": 0.2,
+        "institution_net_20d_eok": -0.1,
+        "foreign_net_turnover_20d_pct": 1.0,
+        "institution_net_turnover_20d_pct": -0.5,
+        "avg_trading_value_20d_eok": 1.0
+      },
+      "history": [],
+      "sources": [],
+      "data_quality": [
+        "TTM 지배주주 순이익·기초/기말 지배주주 지분 미수집",
+        "전년 동분기 매출과 공개 시점 미검증",
+        "필요 원계정 미수집"
+      ],
+      "metric_missing_reasons": {
+        "revenue_growth_pct": "전년 동분기 매출과 공개 시점 미검증",
+        "roe_pct": "TTM 지배주주 순이익·기초/기말 지배주주 지분 미수집",
+        "net_debt_equity_pct": "필요 원계정 미수집",
+        "interest_coverage_x": "필요 원계정 미수집",
+        "current_ratio_pct": "필요 원계정 미수집"
+      }
+    },
+    {
+      "code": "900003",
+      "name": "가상테스트기업3",
+      "market": "KOSPI",
+      "industry": "가상테스트산업",
+      "security_type": "ordinary",
+      "analysis_profile": "nonfinancial",
+      "metrics": {
+        "market_cap_eok": 100.0,
+        "revenue_growth_pct": null,
+        "operating_margin_pct": 10.0,
+        "roe_pct": null,
+        "debt_ratio_pct": 50.0,
+        "net_debt_equity_pct": null,
+        "interest_coverage_x": null,
+        "current_ratio_pct": null,
+        "foreign_net_20d_eok": 0.2,
+        "institution_net_20d_eok": -0.1,
+        "foreign_net_turnover_20d_pct": 1.0,
+        "institution_net_turnover_20d_pct": -0.5,
+        "avg_trading_value_20d_eok": 1.0
+      },
+      "history": [],
+      "sources": [],
+      "data_quality": [
+        "TTM 지배주주 순이익·기초/기말 지배주주 지분 미수집",
+        "전년 동분기 매출과 공개 시점 미검증",
+        "필요 원계정 미수집"
+      ],
+      "metric_missing_reasons": {
+        "revenue_growth_pct": "전년 동분기 매출과 공개 시점 미검증",
+        "roe_pct": "TTM 지배주주 순이익·기초/기말 지배주주 지분 미수집",
+        "net_debt_equity_pct": "필요 원계정 미수집",
+        "interest_coverage_x": "필요 원계정 미수집",
+        "current_ratio_pct": "필요 원계정 미수집"
+      }
+    }
+  ]
+}
