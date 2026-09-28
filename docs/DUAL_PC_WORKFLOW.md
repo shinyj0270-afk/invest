@@ -5,8 +5,8 @@
 ## 현재 상태
 
 - 회사 PC 작업본: work, 기존 폴더에 Git `main`을 연결했다. 원격은 사용자가 확인한 `https://github.com/shinyj0270-afk/invest.git`이다.
-- 원격 인계: 91개 명시 파일의 최초 커밋을 `main`에 전송하고 원격 SHA 일치를 확인했다. 마지막 상태 문서 커밋까지 포함한 최신 상태는 `PROJECT_STATE.md`와 `git ls-remote origin refs/heads/main`으로 확인한다. 회사 감사·반출 승인은 이 프로젝트의 대기 조건이 아니다(사용자 확인).
-- 집 PC 수신/실행: 미확인. 양쪽 구축 완료가 아니다.
+- 원격 인계: 회사 PC 최초 인계 후 집 PC의 공통 코드·문서 변경 35개 파일을 `main`에 전송했다. 집 PC 코드 커밋 `ec406467888cecdc382429bff9ca765ee0e9653f`의 원격 SHA 일치를 확인했다. 최신 상태는 `PROJECT_STATE.md`와 `git ls-remote origin refs/heads/main`으로 확인한다. 회사 감사·반출 승인은 이 프로젝트의 대기 조건이 아니다(사용자 확인).
+- 집 PC 수신/실행: 회사 PC 최초 코드를 받아 실데이터 연결과 검증을 마쳤다. 집 PC에서 다시 전송한 코드를 첫 PC가 수신·실행했는지는 미확인이다.
 - Wiki: 이번 PC에서 C:\AI\llm-wiki 경로가 없음. /wiki-sync 정의·설정은 확인되지 않았고 실행하지 않음. Git과 독립이다.
 
 ## 설정과 실행
@@ -31,7 +31,7 @@ enabled_data_adapters의 kiwoom/dart는 별도 runtime.local.json의 같은 프�
 
 수신은 사용할 원격·브랜치를 확인한 별도 작업이다. clean 상태→원격 fetch→ahead/behind 및 진행 작업 확인→분기되지 않았을 때만 pull --ff-only. 로컬 미커밋 변경은 보존하고 중단한다.
 
-마감 전송은 명시적 요청을 받은 뒤 별도로 수행한다. 이번 테스트와 다음 지점 기록→전송 파일/커밋의 경로와 내용을 검토→명시한 경로만 git add→commit→원격 fetch 및 divergence 재검사→허용된 브랜치 push→원격에서 커밋 존재 확인. URL의 인증정보와 query는 출력하지 않는다. 초기 적용 중에는 이 전송 단계를 실행하지 않는다.
+마감 전송은 명시적 요청을 받은 뒤 별도로 수행한다. 이번 테스트와 다음 지점 기록→전송 파일/커밋의 경로와 내용을 검토→명시한 경로만 git add→commit→원격 fetch 및 divergence 재검사→허용된 브랜치 push→원격에서 커밋 존재 확인. URL의 인증정보와 query는 출력하지 않는다.
 
 tracked_private_paths는 경로 기반 경고일 뿐 비밀 탐지 인증이 아니다. 소스/문서에 들어간 값과 전송할 전체 커밋의 내용·이력은 별도 검토한다. 비밀 발견 시 전송을 중단하고 값 없이 위치만 보고한다. 임의 이력 재작성/키 폐기는 하지 않는다.
 
@@ -43,4 +43,15 @@ tracked_private_paths는 경로 기반 경고일 뿐 비밀 탐지 인증이 아
 
 ## 다른 PC에서 할 일
 
-원격·인계 브랜치 확정 후 기존 작업본과 변경부터 점검한다. 같은 커밋 수신 여부와 그 PC 앱/가상 데이터 검증을 각각 기록한다. 설정·키·DB를 가져오지 않는다. 작은 문서 변경으로 양방향 왕복을 별도 검증하기 전까지 두 PC 인계 완료라고 하지 않는다. 한 PC·한 쓰기 세션 규칙은 기술적으로 강제되지 않는다.
+첫 PC에서 기존 작업본의 변경과 진행 중인 작업부터 점검한다. 깨끗하고 분기되지 않은 `main`에서만 아래 순서로 수신한다.
+
+```powershell
+git status --short --branch
+git fetch origin main
+git status --short --branch
+git pull --ff-only origin main
+git rev-parse HEAD
+.\.venv\Scripts\python.exe tools\verify_portable.py
+```
+
+받은 커밋과 그 PC 앱/가상 데이터 검증을 각각 기록한다. 로컬 변경이나 원격 분기가 있으면 보존하고 수신을 멈춘다. 설정·키·DB를 가져오지 않는다. 작은 문서 변경으로 양방향 왕복을 별도 검증하기 전까지 두 PC 인계 완료라고 하지 않는다. 한 PC·한 쓰기 세션 규칙은 기술적으로 강제되지 않는다.
