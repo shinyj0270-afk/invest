@@ -5,7 +5,7 @@ from pathlib import Path
 from statistics import median
 import pandas as pd
 import streamlit as st
-from investment.core import validate_snapshot,evaluate,eligible,peers,percentile,safe_csv,num,digest
+from investment.core import validate_snapshot,evaluate,eligible,peers,percentile,safe_csv,num,digest,observed_close
 from investment.store import Store
 from investment.fixture import make_fixture
 from investment import research,trend
@@ -189,7 +189,15 @@ with tabs[1]:
         st.caption(f"보통주 DPS 전년 대비: {returns_history['common_dps_growth_1y_pct']:.2f}% · " + returns_history['note'])
         st.link_button('현금흐름·배당 공식 보고서',returns_history['source']['url'])
     prices=company.get('prices',[])
-    if prices: st.line_chart(pd.DataFrame(prices).set_index('date')[['close']])
+    observed=observed_close(company,meta['price_date'])
+    if observed:
+        st.metric('가격 기준일의 관측 종가',f"{observed['close']:,.0f}원")
+        st.caption(f"{meta['price_date']} 관측 · 거래소 범위: {observed['venue'] or '미확인'} · "
+                   f"확정 여부: {'확정' if observed['final'] else '미확정'} · "
+                   f"가격 보정: {observed['adjustment_basis']}")
+    if prices:
+        st.caption('보존된 관측 종가 이력 · 추세 신호용 조정 OHLCV로 검증되지 않았습니다.')
+        st.line_chart(pd.DataFrame(prices).set_index('date')[['close']])
     else: st.info('연구용 정규화 OHLCV 미연결')
     st.write('경로 상태',by_code[selection]['paths'])
     for note in company.get('data_quality',[]): st.caption(note)
@@ -260,7 +268,7 @@ with tabs[5]:
         st.caption('점수와 조건 충족 목록은 현재 세 종목만 비교한 잠정 참고 결과입니다.')
     st.dataframe(pd.DataFrame([{k:r.get(k) for k in ('code','name','status','reason','score','rs126','rs252','contraction','breakout')} for r in trends]),hide_index=True)
     st.write('조건 충족 상위 최대 10개',[r['name'] for r in trends if r['status']=='pass' and r['score'] is not None][:10])
-    if company.get('trend_prices') or company.get('prices'):
+    if any(r['code']==selection and r['status'] in ('pass','fail') for r in trends) and (company.get('trend_prices') or company.get('prices')):
         frame=pd.DataFrame(company.get('trend_prices') or company['prices']).set_index('date')
         for n in (50,150,200): frame[f'SMA{n}']=frame['close'].rolling(n).mean()
         st.line_chart(frame[['close','SMA50','SMA150','SMA200']]); st.bar_chart(frame[['volume']])

@@ -192,6 +192,24 @@
               }
             }
           },
+          "prices": {
+            "type": "array",
+            "maxItems": 10000,
+            "$comment": "Runtime validators also require strictly ascending, unique dates no later than meta.price_date.",
+            "items": {
+              "type": "object",
+              "required": ["date", "close"],
+              "properties": {
+                "date": {"type": "string", "format": "date", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+                "close": {"type": "number", "exclusiveMinimum": 0},
+                "volume": {"type": ["number", "null"], "minimum": 0},
+                "turnover": {"type": ["number", "null"], "minimum": 0},
+                "venue": {"type": ["string", "null"]},
+                "final": {"type": "boolean"},
+                "adjustment_basis": {"type": "string", "minLength": 1}
+              }
+            }
+          },
           "sources": {
             "type": "array",
             "items": {

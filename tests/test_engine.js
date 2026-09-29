@@ -19,6 +19,22 @@ test('작은 업종 집단은 백분위 숨김',()=>assert.equal(E.percentile(1,
 test('동률 중간 백분위',()=>assert.equal(E.percentile(2,[1,2,2,2,3]),50));
 const base={schema_version:'0.1',meta:{price_date:'2025-12-30',flow_start:'2025-12-01',flow_end:'2025-12-30',financial_period:'FY2025',financial_basis:'CFS',venue:'KRX',universe_label:'테스트 전용'},companies:[{code:'000001',name:'테스트 전용',market:'KOSPI',industry:'테스트 업종',security_type:'ordinary',analysis_profile:'nonfinancial',metrics:{operating_margin_pct:10}}]};
 test('정상 형식 검사',()=>assert.equal(E.validateSnapshot(base).companies.length,1));
+const bar=(date,close)=>({date,close,volume:100,turnover:1000,venue:null,final:false,adjustment_basis:'unverified'});
+const withPrices=prices=>({...base,companies:[{...base.companies[0],prices}]});
+test('선택적 관측 종가 이력',()=>assert.equal(E.validateSnapshot(withPrices([bar('2025-12-29',10),bar('2025-12-30',11)])).companies[0].prices.length,2));
+test('과거 스냅샷에 prices 없어도 통과',()=>assert.equal(E.validateSnapshot(base).companies[0].prices,undefined));
+test('가격 날짜 중복·역순·기준일 이후 차단',()=>{
+  for(const bars of [[bar('2025-12-30',10),bar('2025-12-30',11)],
+                     [bar('2025-12-30',10),bar('2025-12-29',11)],
+                     [bar('2025-12-31',10)]])assert.throws(()=>E.validateSnapshot(withPrices(bars)));
+});
+test('비정상 가격과 상태 차단',()=>{
+  for(const bad of [{...bar('2025-12-30',10),close:0},
+                    {...bar('2025-12-30',10),close:'10'},
+                    {...bar('2025-12-30',10),date:'2025-02-30'},
+                    {...bar('2025-12-30',10),final:null}])
+    assert.throws(()=>E.validateSnapshot(withPrices([bad])));
+});
 test('기준 혼합 차단',()=>assert.throws(()=>E.validateSnapshot({...base,companies:[{...base.companies[0],financial_basis:'OFS'}]})));
 test('중복 코드 차단',()=>assert.throws(()=>E.validateSnapshot({...base,companies:[base.companies[0],base.companies[0]]})));
 test('수치 문자열 차단',()=>assert.throws(()=>E.validateSnapshot({...base,companies:[{...base.companies[0],metrics:{operating_margin_pct:'10'}}]})));

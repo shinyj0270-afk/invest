@@ -15,6 +15,30 @@ from investment.report import onepager
 from investment.metrics import additional
 
 class CoreTests(unittest.TestCase):
+    def test_optional_observed_close_requires_matching_date_and_status(self):
+        s=make_fixture(); row=s['companies'][0]; end=s['meta']['price_date']
+        # Older fixture bars have no finality flag, so the app must not label them.
+        self.assertIsNone(observed_close(row,end))
+        row['prices']=[dict(date=end,close=12345,venue=None,final=False,adjustment_basis='unverified')]
+        self.assertEqual(observed_close(row,end)['close'],12345)
+        self.assertIsNone(observed_close(row,'2020-01-01'))
+        del row['prices'][0]['final']
+        self.assertIsNone(observed_close(row,end))
+        del row['prices']
+        validate_snapshot(s)
+        self.assertIsNone(observed_close(row,end))
+
+    def test_price_history_date_order_and_value_validation(self):
+        s=make_fixture(); row=s['companies'][0]; end=s['meta']['price_date']
+        row['prices']=[dict(date=end,close=10)]
+        validate_snapshot(s)
+        for bars in ([dict(date=end,close=10),dict(date=end,close=11)],
+                     [dict(date='2099-01-01',close=10)],
+                     [dict(date=end,close=None)],
+                     [dict(date=end,close=-1)]):
+            row['prices']=bars
+            with self.assertRaises(ValueError): validate_snapshot(s)
+
     def test_credentials_not_persisted(self):
         s=make_fixture(); s['meta']['access_token']='not-a-real-token'
         with self.assertRaises(ValueError): validate_snapshot(s)

@@ -58,6 +58,22 @@ function validateSnapshot(data){
       for(const [k,v] of Object.entries(row.metric_missing_reasons))if(!hasOwn(METRICS,k)||typeof v!=='string'||v.length>1000)throw new Error('지표의 결측 사유 형식이 올바르지 않습니다.');
     }
     for(const [k,v]of Object.entries(row.metrics)){if(!hasOwn(METRICS,k))throw new Error(`${row.code}: 알 수 없는 지표 ${k}`);if(v!==null&&!isNum(v))throw new Error(`${row.code}: ${k}는 숫자 또는 null이어야 합니다.`);}
+    if(hasOwn(row,'prices')){
+      if(!Array.isArray(row.prices)||row.prices.length>10000)throw new Error('prices 배열/크기 오류');
+      let prior='';
+      for(const bar of row.prices){
+        if(!bar||typeof bar!=='object'||Array.isArray(bar))throw new Error('prices 행 객체 필요');
+        const d=bar.date;
+        if(typeof d!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(d)||d.startsWith('0000')||!Number.isFinite(Date.parse(d+'T00:00:00Z'))||new Date(d+'T00:00:00Z').toISOString().slice(0,10)!==d)throw new Error('prices 날짜 형식 오류');
+        if(d<=prior||d>data.meta.price_date)throw new Error('prices 날짜 중복/정렬/기준일 오류');
+        prior=d;
+        if(!isNum(bar.close)||bar.close<=0)throw new Error('prices 양수 종가 필요');
+        for(const k of ['volume','turnover'])if(bar[k]!=null&&(!isNum(bar[k])||bar[k]<0))throw new Error(`prices ${k} 음수/비유한 값`);
+        if(hasOwn(bar,'final')&&typeof bar.final!=='boolean')throw new Error('prices final 형식 오류');
+        if(hasOwn(bar,'venue')&&bar.venue!==null&&typeof bar.venue!=='string')throw new Error('prices venue 형식 오류');
+        if(hasOwn(bar,'adjustment_basis')&&(typeof bar.adjustment_basis!=='string'||!bar.adjustment_basis))throw new Error('prices adjustment_basis 형식 오류');
+      }
+    }
     for(const k of required){if(row[k]!=null&&row[k]!==data.meta[k])throw new Error(`${row.code}: ${k}가 스냅샷 공통 기준과 다릅니다.`);}
     if(row.history!=null){
       if(!Array.isArray(row.history)||row.history.length>20)throw new Error('history는 최대 20개 연도 배열입니다.');

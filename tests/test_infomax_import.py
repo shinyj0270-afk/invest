@@ -13,6 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from tools.infomax_import import InputError, build_snapshot, day, number, read_grid, write_new
 from tools.infomax_demo import sample, create_demo
+from investment.core import observed_close, validate_snapshot
+from investment import trend
 
 
 class ImportTests(unittest.TestCase):
@@ -37,6 +39,42 @@ class ImportTests(unittest.TestCase):
             self.assertIsNone(m['revenue_growth_pct'])
             self.assertEqual(row['history'], [])
         self.assertEqual(result['meta']['data_mode'], 'fixture')
+
+    def test_observed_prices_preserved_without_enabling_signals(self):
+        result = self.result()
+        validate_snapshot(result)
+        for row in result['companies']:
+            bars = row['prices']
+            self.assertEqual(len(bars), 20)
+            self.assertEqual([b['date'] for b in bars], self.config['sessions_20d'])
+            self.assertEqual(bars[-1]['date'], result['meta']['price_date'])
+            self.assertEqual(observed_close(row, result['meta']['price_date'])['close'], 10000)
+            self.assertTrue(all(b['final'] is False and b['venue'] is None and
+                                b['adjustment_basis'] == 'unverified' for b in bars))
+            self.assertNotIn('price', row['metrics'])
+        self.assertTrue(all(r['status'] == 'unknown' and r['score'] is None
+                            for r in trend.analyze(result)))
+
+    def test_missing_and_invalid_observed_price(self):
+        # The completed day may be absent; no previous close is promoted to that day.
+        self.grids['prices'][4][1] = None
+        result = self.result()
+        row = result['companies'][0]
+        self.assertEqual(len(row['prices']), 19)
+        self.assertIsNone(observed_close(row, result['meta']['price_date']))
+        self.grids['prices'][4][1] = 'not-a-price'
+        with self.assertRaises(InputError): self.result()
+
+    def test_optional_prices_and_public_schema(self):
+        from jsonschema import Draft202012Validator, FormatChecker
+        schema = json.loads((ROOT / 'snapshot.schema.json').read_text(encoding='utf-8'))
+        validator = Draft202012Validator(schema, format_checker=FormatChecker())
+        result = self.result()
+        validator.validate(result)
+        for row in result['companies']: row.pop('prices')
+        validate_snapshot(result)
+        validator.validate(result)
+        self.assertIsNone(observed_close(result['companies'][0], result['meta']['price_date']))
 
     def test_today_excluded_without_filling_null(self):
         result = self.result()

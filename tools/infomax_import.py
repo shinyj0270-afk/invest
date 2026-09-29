@@ -232,6 +232,19 @@ def build_snapshot(grids, config, provenance=None):
 
         prices = data['prices'][code]
         turnovers = [prices.get(d, {}).get('누적거래대금') for d in sessions]
+        # Keep the observed close series separate from calculated, finalized metrics.
+        # parse_history has already rejected duplicate dates and invalid numbers.
+        observed_prices = [dict(date=d, close=prices[d]['현재가'],
+                                volume=prices[d]['누적거래량'],
+                                turnover=prices[d]['누적거래대금'],
+                                venue=None, final=False,
+                                adjustment_basis='unverified')
+                           for d in sessions if d in prices and prices[d]['현재가'] is not None]
+        require(not observed_prices or observed_prices[-1]['date'] <= end,
+                f'{code}: 가격 관측일이 가격 기준일 이후입니다.')
+        if prices.get(end, {}).get('현재가') is not None:
+            require(observed_prices and observed_prices[-1]['date'] == end,
+                    f'{code}: 가격 기준일 관측값 불일치')
         valid_turnover = config['prices_final'] and config.get('price_venue') and all(v is not None for v in turnovers)
         total_turnover = sum(turnovers) if valid_turnover else None
         if valid_turnover:
@@ -275,9 +288,12 @@ def build_snapshot(grids, config, provenance=None):
         row_notes = sorted(set(reasons.values()))
         if 'unknown' in (security, profile):
             row_notes.append('주식종류 또는 금융/비금융 분류 미확인: 일반 스크리너 대상 제외')
-        companies.append({k: identity[k] for k in ('code', 'name', 'market', 'industry')} |
-                         dict(security_type=security, analysis_profile=profile, metrics=metrics, history=[],
-                              sources=[], data_quality=row_notes, metric_missing_reasons=reasons))
+        company = ({k: identity[k] for k in ('code', 'name', 'market', 'industry')} |
+                   dict(security_type=security, analysis_profile=profile, metrics=metrics, history=[],
+                        sources=[], data_quality=row_notes, metric_missing_reasons=reasons))
+        if observed_prices:
+            company['prices'] = observed_prices
+        companies.append(company)
         audit[code] = {'rows': {k: len(data[k][code]) for k in data},
                        'excluded_after_completed': {k: sum(d > end for d in data[k][code]) for k in ('prices', 'flows')},
                        'financial_available_on': available, 'calculated_metrics': sum(v is not None for v in metrics.values())}

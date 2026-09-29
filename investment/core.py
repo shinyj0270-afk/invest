@@ -48,6 +48,16 @@ def peers(snapshot, row, codes=None):
         r.get('financial_basis',snapshot['meta']['financial_basis'])==row.get('financial_basis',snapshot['meta']['financial_basis']) and
         r.get('financial_period',snapshot['meta']['financial_period'])==row.get('financial_period',snapshot['meta']['financial_period'])]
 
+def observed_close(row, price_date):
+    """Return a dated observation only when its data status is explicit."""
+    matches = [bar for bar in row.get('prices', []) if bar.get('date') == price_date]
+    if len(matches) != 1: return None
+    bar = matches[0]
+    if not num(bar.get('close')) or bar['close'] <= 0: return None
+    if not isinstance(bar.get('final'), bool) or 'venue' not in bar or not isinstance(bar.get('adjustment_basis'), str): return None
+    if not bar['adjustment_basis']: return None
+    return bar
+
 def validate_snapshot(s):
     def reject_secrets(obj):
         if isinstance(obj,dict):
@@ -71,6 +81,30 @@ def validate_snapshot(s):
         for k in ('name','market','industry','security_type','analysis_profile'):
             if not isinstance(r.get(k),str) or not r[k]: raise ValueError('종목 메타데이터 누락')
         if any(v is not None and not num(v) for v in r['metrics'].values()): raise ValueError('유한 숫자/null 필요')
+        if 'prices' in r:
+            bars = r['prices']
+            if not isinstance(bars, list) or len(bars) > 10000: raise ValueError('prices 배열/크기 오류')
+            prior = ''
+            for bar in bars:
+                if not isinstance(bar, dict): raise ValueError('prices 행 객체 필요')
+                observed = bar.get('date')
+                if not isinstance(observed, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}', observed):
+                    raise ValueError('prices 날짜 형식 오류')
+                try: date.fromisoformat(observed)
+                except ValueError as exc: raise ValueError('prices 유효하지 않은 날짜') from exc
+                if observed <= prior or observed > m['price_date']:
+                    raise ValueError('prices 날짜 중복/정렬/기준일 오류')
+                prior = observed
+                if not num(bar.get('close')) or bar['close'] <= 0: raise ValueError('prices 양수 종가 필요')
+                for key in ('volume', 'turnover'):
+                    value = bar.get(key)
+                    if value is not None and (not num(value) or value < 0):
+                        raise ValueError(f'prices {key} 음수/비유한 값')
+                if 'final' in bar and not isinstance(bar['final'], bool): raise ValueError('prices final 형식 오류')
+                if 'venue' in bar and bar['venue'] is not None and not isinstance(bar['venue'], str):
+                    raise ValueError('prices venue 형식 오류')
+                if 'adjustment_basis' in bar and (not isinstance(bar['adjustment_basis'], str) or not bar['adjustment_basis']):
+                    raise ValueError('prices adjustment_basis 형식 오류')
         for k in ('financial_basis','financial_period'):
             if k in r and r[k]!=m[k]: raise ValueError('혼합 보고기간/회계 기준')
     digest(s)
