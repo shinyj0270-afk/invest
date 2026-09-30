@@ -1,5 +1,6 @@
 # INVESTMENT 공통 작업 지침
 
+- 사용자가 `INVESTMENT START`/`INVESTMENT 시작` 또는 `INVESTMENT CLOSE`/`INVESTMENT 마감`이라고 하면 [skills/investment-session/SKILL.md](skills/investment-session/SKILL.md)의 해당 모드를 실행한다.
 - 모든 PC·Claude/Codex·ChatGPT 간 상태 일치는 [SYNC_CONTRACT.md](SYNC_CONTRACT.md)를 따른다. 현재 개발 상태의 단일 기준은 `origin/main`의 `PROJECT_STATE.md`이며, 과거 대화/Wiki 요약만으로 최신 상태를 단정하지 않는다.
 
 <!-- BEGIN DUAL-PC -->
