@@ -171,6 +171,10 @@
     "tests/test_market_history.py": "tests/test_market_history.py",
     "tests/test_market_discovery.py": "tests/test_market_discovery.py",
     "SYNC_CONTRACT.md": "SYNC_CONTRACT.md",
-    "skills/investment-session/SKILL.md": "skills/investment-session/SKILL.md"
+    "skills/investment-session/SKILL.md": "skills/investment-session/SKILL.md",
+    "src/advanced_visuals.js": "src/advanced_visuals.js",
+    "tests/test_advanced_visuals.js": "tests/test_advanced_visuals.js",
+    "tests/test_advanced_visuals_ui.py": "tests/test_advanced_visuals_ui.py",
+    "docs/ADVANCED_VISUALS.md": "docs/ADVANCED_VISUALS.md"
   }
 }

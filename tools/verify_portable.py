@@ -14,7 +14,7 @@ commands = [
     [sys.executable, 'batch.py', 'weekly'],
 ]
 if (ROOT/'tests/test_engine.js').exists():
-    commands += [['node', 'tests/test_engine.js'], ['node', 'tests/test_portfolio.js'], ['node', 'tests/test_discovery.js']]
+    commands += [['node', 'tests/test_engine.js'], ['node', 'tests/test_portfolio.js'], ['node', 'tests/test_discovery.js'], ['node', 'tests/test_advanced_visuals.js']]
 for command in commands:
     result = subprocess.run(command, cwd=ROOT, env=env, text=True, encoding='utf-8', errors='replace',
                             capture_output=True, timeout=180)

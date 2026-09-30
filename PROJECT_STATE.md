@@ -1,3 +1,13 @@
+# Advanced Visuals 1차 구현 · 실데이터 검증 대기 · 2026-09-30
+
+- **실제 변경:** 별도 Advanced Visuals 탭 추가. 전체 후보 ROE×PER 100셀 집계(샘플링 없음), 결과/모집단/25개 페이지, 기존 DiscoveryEngine 필터, 선택 기업 종가/수익성/부채/밸류/RS/52주/추세/뉴스 및 출처·결측 패널. iframe의 기존 보유 입력과 PortfolioEngine.reviewHoldings/propose로 판단·비중·손익·최대 5종목 구성안을 표시. 매크로 관계는 unavailable, 위험 기여도와 이벤트 위험은 unknown. 기존 화면·엔진·데이터 계약 유지, 외부 의존성 추가 없음.
+- **시작/보존:** Desktop/Investment는 clean 42a6b34였으나 Git 메타데이터 ACL 제한으로 fetch 불가. 기존 작업본을 변경하지 않고 현재 Codex 작업공간의 work/invest에 원격 main 69bf5a0을 받아 AGENTS/SYNC_CONTRACT/CLAUDE/PROJECT_STATE 및 Git 상태를 읽었다. Windows schannel 조회 오류는 이 작업 명령에서 OpenSSL 백엔드를 사용해 해결. 기존 PC 로컬 설정·DB·원자료·보유·인증자료 수정/전송 없음.
+- **실제 검증:** 새 JS 집계 계약 테스트 통과. 기존 Engine25/Portfolio65/Discovery 통과. 기존 workspace 브라우저 회귀 통과. 새 UI 8개 가상 상세 및 별도 2,455개 가상 발굴 후보(상세 계약 분리)에서 선택·검색 필터·리셋·새로고침 탭/필터 복원·기존 보유 엔진·390px 가로넘침 없음·앱 JS오류0 통과. 마지막 규모 검사 초기 탭 렌더5.8ms, 필터/리셋15.8ms, 새 탭 DOM253개(브라우저/가상자료 기준). JS 구문 검사 통과. 공유후보175개 문제0 및 격리 복사본 Portable9단계+실자료 없는 Streamlit 빈 상태 통과. 직접 portable 실행은 빌드/Python 이후 PC프로필 unknown으로 배치 중단; 기존 설정 수정 없이 격리 검증으로 수행했다.
+- **미해결:** 이 PC에는 문서상의 실제2,455개 캐시/실제내보내기가 없다. 사용자는 회사PC에 있을 것으로 답했으나 정확한 경로 미확인. 실제2,455개/일봉2,454개/RS2,290개 UI·성능 검증은 미실행이며 실제 데이터 완료 기준 달성으로 보고하지 않는다. 첫 가상 규모 검사에서 후보를 상세 snapshot에 넣은 시험 구성은 느려 중단하고 별도 discovery 계약으로 수정했다. 로컬 실제 미리보기 없음.
+- **다음 작업:** 회사PC에서 clean main 수신, 기존 공개 캐시와 검토 자료를 기존 exporter/live_dashboard로 공급해 Advanced 탭 실검증. 데이터 없음은 unknown으로 보존. 세부 사용/검증 계약 docs/ADVANCED_VISUALS.md. 현재 PC 원본 작업본 및 상대 PC 수신은 별도로 필요하다.
+
+---
+
 # 코스피·코스닥 기업 발굴 범위 확대 · 2026-09-30
 
 - **결과:** 실제 분석 후보를 기존 3종목에서 코스피·코스닥 비금융 일반주 후보 2,455개로 확대했다. 공개 목록은 2,768개(코스피 944·코스닥 1,824), 금융·우선주·ETF/ETN·SPAC·리츠 등 313개 제외다. 기존 인포맥스 3종목 원본·DB·보유 입력은 보존하고 공개 시장 캐시를 `data/work/market-expansion`에 분리했다.
