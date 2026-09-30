@@ -1,5 +1,7 @@
 # INVESTMENT 공통 작업 지침
 
+- 모든 PC·Claude/Codex·ChatGPT 간 상태 일치는 [SYNC_CONTRACT.md](SYNC_CONTRACT.md)를 따른다. 현재 개발 상태의 단일 기준은 `origin/main`의 `PROJECT_STATE.md`이며, 과거 대화/Wiki 요약만으로 최신 상태를 단정하지 않는다.
+
 <!-- BEGIN DUAL-PC -->
 - work와 home은 대등한 독립 실행 PC다. 사용자가 명시한 프로필만 config/local.json에 설정한다. 미확인 PC는 unknown으로 둔다.
 - 시작 시 이 파일, PROJECT_STATE.md, docs/DUAL_PC_WORKFLOW.md와 Git 상태를 읽는다. 기존 작업본/미완료 변경을 보존한다. 상위 저장소가 있으면 중첩 저장소를 만들지 않는다.
