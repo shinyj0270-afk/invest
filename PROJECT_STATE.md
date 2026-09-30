@@ -1,3 +1,14 @@
+# INVESTMENT CLOSE · 회사 PC 인계 대기 · 2026-09-30
+
+- **시작:** 별도 Codex 작업본 work/invest, main, HEAD 87a5411, 로컬 origin/main 69bf5a0, clean/ahead2. PC profile unknown 유지. 기존 Desktop 작업본은 변경하지 않았다.
+- **실제 변경:** 사용자 마감 요청에 따라 이 종료 기록을 추가하고 회사 PC 인계용 변경 패치를 갱신했다. Advanced Visuals 구현 범위와 선행 검증 결과는 바로 아래 기록을 따른다. 이번 CLOSE에서는 앱 코드를 추가 변경하지 않았다.
+- **이번 실제 검증:** pc-finish.ps1은 해당 별도 작업본의 .venv 부재로 실행 중단. 같은 PC의 기존 Investment .venv Python으로 pc_check.py --phase finish를 실행해 변경0/진행중Git작업0/추적비공개경로0/ahead2 확인. git diff --check 통과. 공유목록과 .gitignore 검토. 코드/브라우저/Portable 테스트는 이번 CLOSE에서 재실행하지 않았다.
+- **commit/push:** 이 마감 문서는 명시적으로 stage하여 별도 로컬 커밋으로 저장한다. gh auth status로 기존 GitHub 인증 token invalid 재확인(값 출력 없음). 이번 원격 조회는 네트워크 연결 실패여서 원격 최신 SHA 재확인 불가. 직전 확인 원격 main 69bf5a0과 로컬 HEAD는 다르다. 로컬 저장 완료 / 원격 인계 미완료.
+- **미해결:** 회사 PC 실제2,455개 공개 후보/일봉2,454개/RS2,290개 캐시 경로 및 실UI 검증 대기. GitHub 재인증·일반 push·HEAD=origin/main=remote main 확인 대기. 현재 패치가 전송되지 않으면 회사 PC의 pull만으로 이번 구현을 받을 수 없다.
+- **다음 작업:** 회사 PC에서 AGENTS/SYNC_CONTRACT/CLAUDE/PROJECT_STATE와 Git 상태·최신 main을 먼저 확인. 안전한 clean 작업본에 인계 패치를 git apply --check 후 적용하거나 이 작업본의 인증 복구·push 이후 main으로 수신. 기존 실제 캐시를 공급해 Advanced 탭과 검토된 상세/보유 계약 분리·모바일·JS오류를 확인한다. 두 인계 방식을 중복 적용하지 않는다.
+
+---
+
 # Advanced Visuals 1차 구현 · 실데이터 검증 대기 · 2026-09-30
 
 - **실제 변경:** 별도 Advanced Visuals 탭 추가. 전체 후보 ROE×PER 100셀 집계(샘플링 없음), 결과/모집단/25개 페이지, 기존 DiscoveryEngine 필터, 선택 기업 종가/수익성/부채/밸류/RS/52주/추세/뉴스 및 출처·결측 패널. iframe의 기존 보유 입력과 PortfolioEngine.reviewHoldings/propose로 판단·비중·손익·최대 5종목 구성안을 표시. 매크로 관계는 unavailable, 위험 기여도와 이벤트 위험은 unknown. 기존 화면·엔진·데이터 계약 유지, 외부 의존성 추가 없음.
