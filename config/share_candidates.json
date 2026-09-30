@@ -169,6 +169,8 @@
     "tools/expand_market.py": "tools/expand_market.py",
     "tests/test_naver_universe.py": "tests/test_naver_universe.py",
     "tests/test_market_history.py": "tests/test_market_history.py",
-    "tests/test_market_discovery.py": "tests/test_market_discovery.py"
+    "tests/test_market_discovery.py": "tests/test_market_discovery.py",
+    "SYNC_CONTRACT.md": "SYNC_CONTRACT.md",
+    "skills/investment-session/SKILL.md": "skills/investment-session/SKILL.md"
   }
 }
