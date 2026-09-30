@@ -42,4 +42,17 @@ test('금융업 일반 스크리너 제외',()=>assert.equal(E.eligible([{...bas
 test('업종 비교는 전체 입력 모집단 기준',()=>assert.equal(E.peerRows([...base.companies,{...base.companies[0],code:'000002',metrics:{operating_margin_pct:-3}}],'테스트 업종').length,2));
 test('악성 출처 URL 차단',()=>assert.throws(()=>E.validateSnapshot({...base,companies:[{...base.companies[0],sources:[{label:'x',url:'javascript:alert(1)'}]}]})));
 test('모집단 수 역전 차단',()=>assert.throws(()=>E.validateSnapshot({...base,meta:{...base.meta,universe_total:0}})));
+test('PER PBR 선택 지표와 결측 사유 허용',()=>{
+  const snapshot={...base,companies:[{...base.companies[0],metrics:{per:10,pbr:null,eps_ttm:1000,bps:5000,price:10000},metric_missing_reasons:{pbr:'분모 확인 대기'}}]};
+  assert.equal(E.validateSnapshot(snapshot).companies[0].metrics.per,10);
+  assert.equal(E.evaluate(snapshot.companies[0],[{metric:'per',op:'lte',value:12}]),'pass');
+  assert.equal(E.evaluate(snapshot.companies[0],[{metric:'pbr',op:'lte',value:1}]),'unknown');
+});
+test('평가 관측 근거 계약 검사',()=>{
+  const record={metric:'per',value:10,source:'가상 Infomax',observed_on:'2025-12-30',price_date:'2025-12-30',financial_period:'2025-09-30',financial_basis:'CFS',adjustment_basis:'unadjusted',venue:'KRX',period_type:'TTM',denominator_positive:true};
+  const snapshot=records=>({...base,companies:[{...base.companies[0],valuation_observations:records}]});
+  assert.equal(E.validateSnapshot(snapshot([record])).companies.length,1);
+  for(const change of [{value:'10'},{source:''},{observed_on:'2025-02-30'},{denominator_positive:'true'},{period_type:'annual'}])assert.throws(()=>E.validateSnapshot(snapshot([{...record,...change}])));
+  assert.throws(()=>E.validateSnapshot(snapshot([record,record])));
+});
 console.log(`${n} tests passed.`);

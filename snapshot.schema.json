@@ -189,6 +189,36 @@
                   "number",
                   "null"
                 ]
+              },
+              "per": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "pbr": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "eps_ttm": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "bps": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "price": {
+                "type": [
+                  "number",
+                  "null"
+                ]
               }
             }
           },
@@ -198,15 +228,47 @@
             "$comment": "Runtime validators also require strictly ascending, unique dates no later than meta.price_date.",
             "items": {
               "type": "object",
-              "required": ["date", "close"],
+              "required": [
+                "date",
+                "close"
+              ],
               "properties": {
-                "date": {"type": "string", "format": "date", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
-                "close": {"type": "number", "exclusiveMinimum": 0},
-                "volume": {"type": ["number", "null"], "minimum": 0},
-                "turnover": {"type": ["number", "null"], "minimum": 0},
-                "venue": {"type": ["string", "null"]},
-                "final": {"type": "boolean"},
-                "adjustment_basis": {"type": "string", "minLength": 1}
+                "date": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                },
+                "close": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "volume": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "turnover": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "venue": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "final": {
+                  "type": "boolean"
+                },
+                "adjustment_basis": {
+                  "type": "string",
+                  "minLength": 1
+                }
               }
             }
           },
@@ -321,6 +383,119 @@
               "avg_trading_value_20d_eok": {
                 "type": "string",
                 "maxLength": 1000
+              },
+              "per": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "pbr": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "eps_ttm": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "bps": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "price": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            }
+          },
+          "valuation_observations": {
+            "type": "array",
+            "maxItems": 100,
+            "description": "Explicit sourced valuation multiples or KRW/share EPS TTM/BPS. Runtime checks date, denominator positivity, accounting, price adjustment and venue compatibility.",
+            "items": {
+              "type": "object",
+              "required": [
+                "metric",
+                "value",
+                "source",
+                "observed_on",
+                "price_date",
+                "financial_period",
+                "financial_basis",
+                "adjustment_basis",
+                "period_type",
+                "venue"
+              ],
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "observed_on": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000,
+                  "format": "date",
+                  "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                },
+                "price_date": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000,
+                  "format": "date",
+                  "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                },
+                "financial_period": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000,
+                  "format": "date",
+                  "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                },
+                "financial_basis": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000,
+                  "enum": [
+                    "CFS",
+                    "OFS"
+                  ]
+                },
+                "adjustment_basis": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "period_type": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000,
+                  "enum": [
+                    "TTM",
+                    "point_in_time"
+                  ]
+                },
+                "venue": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "metric": {
+                  "enum": [
+                    "per",
+                    "pbr",
+                    "eps_ttm",
+                    "bps"
+                  ]
+                },
+                "value": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "denominator_positive": {
+                  "type": "boolean"
+                }
               }
             }
           }

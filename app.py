@@ -109,7 +109,12 @@ with st.sidebar.expander('통합 HTML 대시보드'):
     st.caption('좌측 메뉴와 차트가 있는 독립 HTML입니다. 현재 시장자료를 담으며 개인 보유 입력은 포함하지 않습니다.')
     if st.button('HTML 결과물 만들기'):
         from investment.workspace_export import export_workspace
-        st.session_state['workspace_export_'+mode]=dict(snapshot_id=digest(snapshot),html=export_workspace(snapshot))
+        from investment.workspace_events import load_cached_events
+        from investment.naver_reference import load_cached_references
+        from investment.market_discovery import load_market_cache
+        st.session_state['workspace_export_'+mode]=dict(snapshot_id=digest(snapshot),html=export_workspace(snapshot,
+            events=load_cached_events(ROOT,snapshot),references=load_cached_references(ROOT,snapshot),
+            market_cache=load_market_cache(ROOT,snapshot)))
     exported=st.session_state.get('workspace_export_'+mode)
     if isinstance(exported,dict) and exported.get('snapshot_id')==digest(snapshot):
         st.download_button('통합 대시보드 HTML 다운로드',exported['html'],

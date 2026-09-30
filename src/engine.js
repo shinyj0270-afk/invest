@@ -1,5 +1,10 @@
 'use strict';
 const METRICS = Object.freeze({
+  per: {label:'PER', unit:'배', category:'가치평가', definition:'동일 기준 가격 ÷ 양의 최근 12개월 EPS. 출처·기간·수정주가 기준이 확인된 값만 비교하며 적자·분모 0 이하는 제외합니다.'},
+  pbr: {label:'PBR', unit:'배', category:'가치평가', definition:'동일 기준 가격 ÷ 양의 보고일 BPS. 출처·연결 범위·수정주가 기준이 확인된 값만 비교하며 자본잠식·분모 0 이하는 제외합니다.'},
+  eps_ttm: {label:'TTM EPS', unit:'원', category:'가치평가', definition:'최근 12개월 보통주 주당순이익. 기간·보통주 귀속·주식수 및 수정 기준을 확인합니다.'},
+  bps: {label:'BPS', unit:'원', category:'가치평가', definition:'보고일 보통주 주당순자산. 지배주주·보통주 귀속 및 수정 기준을 확인합니다.'},
+  price: {label:'종가', unit:'원', category:'가격', definition:'명시한 가격 기준일의 종가. 평가비율 계산에는 확정 상태·거래소·수정 기준을 추가 확인합니다.'},
   market_cap_eok: {label:'시가총액', unit:'억원', category:'규모', definition:'가격 기준일의 시가총액. 보통주·우선주 범위를 수집 단계에서 통일합니다.'},
   revenue_growth_pct: {label:'매출 증가율', unit:'%', category:'수익성', definition:'동일 길이의 비교 기간 대비 매출 증가율. 전기 매출이 0 이하인 경우 수집 단계에서 null 처리합니다.'},
   operating_margin_pct: {label:'영업이익률', unit:'%', category:'수익성', definition:'동일 보고기간 영업이익 ÷ 매출액 × 100. 매출액 0 이하이면 null 처리합니다.'},
@@ -58,6 +63,20 @@ function validateSnapshot(data){
       for(const [k,v] of Object.entries(row.metric_missing_reasons))if(!hasOwn(METRICS,k)||typeof v!=='string'||v.length>1000)throw new Error('지표의 결측 사유 형식이 올바르지 않습니다.');
     }
     for(const [k,v]of Object.entries(row.metrics)){if(!hasOwn(METRICS,k))throw new Error(`${row.code}: 알 수 없는 지표 ${k}`);if(v!==null&&!isNum(v))throw new Error(`${row.code}: ${k}는 숫자 또는 null이어야 합니다.`);}
+    if(hasOwn(row,'valuation_observations')){
+      if(!Array.isArray(row.valuation_observations)||row.valuation_observations.length>100)throw new Error('평가 관측 배열 크기 오류');
+      const valuationIds=new Set();
+      for(const v of row.valuation_observations){
+        if(!v||!['per','pbr','eps_ttm','bps'].includes(v.metric)||!hasOwn(v,'value')||(v.value!==null&&!isNum(v.value)))throw new Error('평가 관측 지표/값 오류');
+        for(const k of ['source','observed_on','price_date','financial_period','financial_basis','adjustment_basis','period_type','venue'])if(typeof v[k]!=='string'||!v[k].trim()||v[k].length>1000)throw new Error('평가 관측 근거 누락');
+        for(const k of ['observed_on','price_date','financial_period'])if(!/^\d{4}-\d{2}-\d{2}$/.test(v[k])||v[k].startsWith('0000')||!Number.isFinite(Date.parse(v[k]+'T00:00:00Z'))||new Date(v[k]+'T00:00:00Z').toISOString().slice(0,10)!==v[k])throw new Error('평가 관측 날짜 오류');
+        if(!['CFS','OFS'].includes(v.financial_basis)||!['TTM','point_in_time'].includes(v.period_type))throw new Error('평가 관측 기준 오류');
+        if(hasOwn(v,'denominator_positive')&&typeof v.denominator_positive!=='boolean')throw new Error('평가 분모 상태 오류');
+        const identity=JSON.stringify(['metric','source','observed_on','price_date','financial_period','financial_basis','adjustment_basis','period_type','venue'].map(k=>v[k]));
+        if(valuationIds.has(identity))throw new Error('평가 관측 중복');
+        valuationIds.add(identity);
+      }
+    }
     if(hasOwn(row,'prices')){
       if(!Array.isArray(row.prices)||row.prices.length>10000)throw new Error('prices 배열/크기 오류');
       let prior='';

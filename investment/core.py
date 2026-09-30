@@ -81,6 +81,9 @@ def validate_snapshot(s):
         for k in ('name','market','industry','security_type','analysis_profile'):
             if not isinstance(r.get(k),str) or not r[k]: raise ValueError('종목 메타데이터 누락')
         if any(v is not None and not num(v) for v in r['metrics'].values()): raise ValueError('유한 숫자/null 필요')
+        if 'valuation_observations' in r:
+            from .valuation import validate_observations
+            validate_observations(r['valuation_observations'])
         if 'prices' in r:
             bars = r['prices']
             if not isinstance(bars, list) or len(bars) > 10000: raise ValueError('prices 배열/크기 오류')
