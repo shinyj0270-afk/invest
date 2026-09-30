@@ -6,6 +6,7 @@ const {chromium}=require('playwright');
 const DATA=path.resolve(__dirname,'../private_data/infomax');
 (async()=>{
  const expected=JSON.parse(fs.readFileSync(path.join(DATA,'snapshot-review.json'),'utf8'));
+ const policy=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../config/infomax.user-decisions.json'),'utf8')).decisions;
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
  try{
   const page=await browser.newPage({viewport:{width:1440,height:1100}}),errors=[];
@@ -28,7 +29,9 @@ const DATA=path.resolve(__dirname,'../private_data/infomax');
    }
    assert.equal(Object.values(row.metrics).filter(v=>v!==null).length,13);
    assert.equal(row.user_policy_evidence.venue_comparability_confirmed,false);
-   assert.match(await page.locator('body').innerText(),/거래소 범위 동일성 미확인/);
+   const scopeLabel=policy.flow_turnover_scope_comparability.required_label;
+   assert.ok(typeof scopeLabel==='string' && scopeLabel.length>0);
+   assert.ok((await page.locator('body').innerText()).includes(scopeLabel));
    assert.match(await page.locator('#flowMetrics').innerText(),new RegExp(String(Number(row.metrics.foreign_net_turnover_20d_pct.toFixed(1))).replace('.','\\.')));
    assert.equal(row.user_policy_evidence.official_calendar_verified,false);
    assert.equal(row.user_policy_evidence.price_venue,null);

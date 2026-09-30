@@ -11,3 +11,6 @@
 .p-layout>*{min-width:0}.p-layout .grid-two{grid-template-columns:repeat(2,minmax(0,1fr))}.p-layout .card-head{flex-wrap:wrap}.p-layout .p-ev,.p-layout .hint{overflow-wrap:anywhere}
 @media(max-width:950px){.p-layout{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:780px){.p-layout .grid-two{grid-template-columns:minmax(0,1fr)}}
+
+/* Shared visual language with the local Daily Dashboard. */
+:root{--ink:#191f28;--muted:#6b7684;--line:#e5e8eb;--paper:#f2f4f6;--blue:#3182f6;--blue-soft:#e8f3ff;--radius:20px}.card{box-shadow:0 3px 12px #191f2804}.nav button.active{background:#e8f3ff;border-radius:12px 12px 0 0}button{border-radius:10px}

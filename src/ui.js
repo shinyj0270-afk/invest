@@ -100,4 +100,11 @@ $('showData').addEventListener('click',()=>activate('data'));
 document.querySelectorAll('[data-tab]').forEach(el=>el.addEventListener('click',()=>activate(el.dataset.tab)));
 $('sortMetric').innerHTML='<option value="name">기업명</option>'+metricOptions('');
 $('definitions').innerHTML=Object.entries(METRICS).map(([k,m])=>`<div class="definition"><div><strong>${esc(m.label)}</strong> <span class="muted">(${m.unit})</span><br><code class="muted">${k}</code></div><p>${esc(m.definition)}</p></div>`).join('');
+if(window.INVESTMENT_INITIAL_SNAPSHOT){
+ const initial=structuredClone(window.INVESTMENT_INITIAL_SNAPSHOT);
+ // The embedded legacy screen supports a subset of the Python metrics.
+ for(const row of initial.companies){for(const key of ['metrics','metric_missing_reasons'])if(row[key])row[key]=Object.fromEntries(Object.entries(row[key]).filter(([k])=>hasOwn(METRICS,k)));}
+ validateSnapshot(initial);snapshot=initial;
+}
+window.INVESTMENT_ACTIVATE=activate;
 renderRules();renderSaved();renderAll();activate('screen');

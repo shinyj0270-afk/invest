@@ -54,18 +54,33 @@ const PortfolioEngine = (() => {
       for(const k of ['positives','negatives'])if(!Array.isArray(r.review[k])||r.review[k].length>12||r.review[k].some(v=>!text(v)||v.length>2000))throw Error('긍정·반대 근거는 12개 이하 문자열 배열입니다.');
       if(typeof r.review.invalidation!=='string'||r.review.invalidation.length>4000)throw Error('판단을 바꿀 조건을 문자열로 입력하세요.');
       if(!Array.isArray(r.evidence)||r.evidence.length>30)throw Error('근거는 30개 이하 배열입니다.');
+      if(own(r,'pending_events')){
+        if(!Array.isArray(r.pending_events)||r.pending_events.length>100)throw Error('미확인 이벤트는 100개 이하 배열입니다.');
+        const eventIds=new Set();
+        for(const e of r.pending_events){
+          if(!e||!text(e.id)||eventIds.has(e.id)||!text(e.title)||e.title.length>1000||!urlOK(e.url)||!dateOK(e.published_on))throw Error('공시·뉴스 이벤트 형식 오류');
+          eventIds.add(e.id);
+        }
+      }
       const ids=new Set();
       for(const e of r.evidence){
         if(!text(e.id)||ids.has(e.id)||!text(e.label)||!urlOK(e.url)||!dateOK(e.available_on)||typeof e.reviewed!=='boolean')throw Error('근거 ID·이름·http(s) URL·이용가능일·사용자 확인 여부를 검사하세요.');
         ids.add(e.id);
       }
-      if(r.price_source!==null&&(!r.price_source||!text(r.price_source.label)||!urlOK(r.price_source.url)))throw Error('가격 출처 형식 오류');
+      if(r.price_source!==null){
+        const source=r.price_source;
+        const valid=source&&text(source.label)&&(source.kind==='local_snapshot'
+          ? /^[a-f0-9]{64}$/.test(source.snapshot_id||'') && !own(source,'url')
+          : urlOK(source.url));
+        if(!valid)throw Error('가격 출처 형식 오류');
+      }
     }
     return x;
   }
   function evidenceBlockers(r,asOf,p){
     if(!r)return ['보유종목에 대응하는 연구 입력 없음'];
     const b=[];
+    if((r.pending_events||[]).some(e=>e.published_on<=asOf))b.push('주요 공시·뉴스 재검토 필요');
     if(!['KOSPI','KOSDAQ'].includes(r.market)||r.security_type!=='ordinary'||r.analysis_profile!=='nonfinancial')b.push('비금융 보통주 외 별도 분석 필요');
     if(!r.evidence.length||r.evidence.some(e=>!e.reviewed||e.available_on>asOf))b.push('근거 미확인 또는 평가일 이후 공개된 근거');
     const v=r.review;
@@ -86,7 +101,7 @@ const PortfolioEngine = (() => {
     if(!r)return {code:null,opinion:'WAIT',label:LABEL.WAIT,blockers,reasons:blockers};
     const v=r.review;
     // A verified adverse event stays visible even when unrelated inputs are missing.
-    const criticalBlockers=blockers.filter(b=>!b.startsWith('긍정·반대'));
+    const criticalBlockers=blockers.filter(b=>!b.startsWith('긍정·반대')&&b!=='주요 공시·뉴스 재검토 필요');
     if(!criticalBlockers.length&&(v.thesis==='broken'||v.finance==='critical'||v.material_risk==='confirmed')){
       const reasons=[];
       if(v.thesis==='broken')reasons.push('검토 입력상 최초 투자 논리 훼손');
@@ -130,17 +145,27 @@ const PortfolioEngine = (() => {
       return {...pos,...c,code:pos.code,company_opinion:c.opinion,portfolio_action:portfolioAction,overweight:companyOver,issuer_weight_pct:issuerWeight,research:r||null};
     })};
   }
+  function candidateChecks(x,policy={}){
+    validate(x);const p=cleanPolicy(policy);
+    return x.research.map(r=>{
+      const c=companyReview(r,x.as_of,p),reasons=[...c.blockers];
+      if(c.opinion!=='HOLD')reasons.push(c.label);
+      if(!r.sector)reasons.push('산업 분류 없음');
+      if(!r.risk_group)reasons.push('공통 위험군 미확인');
+      return {code:r.code,name:r.name,opinion:c.opinion,ready:reasons.length===0,
+        missing_data:c.opinion==='WAIT'||(c.opinion==='HOLD'&&(!r.sector||!r.risk_group)),
+        reasons:[...new Set(reasons)]};
+    });
+  }
   function propose(x,policy={}){
     validate(x);const p=cleanPolicy(policy);
     const rejected=[],pool=[];let missingCandidateData=false;
     if(!x.research.length)return {status:'DATA_REQUIRED',items:[],cash_pct:null,rejected,message:'연구 후보 입력이 없습니다. 자료 없음과 현금 100% 제안을 구분합니다.',policy:p};
-    for(const r of x.research){
-      const c=companyReview(r,x.as_of,p),reasons=[...c.blockers];
-      if(c.opinion!=='HOLD')reasons.push(c.label);
-      if(c.opinion==='WAIT'||(c.opinion==='HOLD'&&(!r.sector||!r.risk_group)))missingCandidateData=true;
-      if(!r.sector)reasons.push('산업 분류 없음');
-      if(!r.risk_group)reasons.push('공통 위험군 미확인');
-      if(reasons.length)rejected.push({code:r.code,name:r.name,reasons:[...new Set(reasons)]});else pool.push(r);
+    const candidates=candidateChecks(x,p),rows=new Map(x.research.map(r=>[r.code,r]));
+    for(const candidate of candidates){
+      if(candidate.missing_data)missingCandidateData=true;
+      if(!candidate.ready)rejected.push({code:candidate.code,name:candidate.name,reasons:candidate.reasons});
+      else pool.push(rows.get(candidate.code));
     }
     if(!p.policyConfirmed||p.stressLossLimitPct===null)return {status:'SETTINGS_REQUIRED',items:[],cash_pct:null,rejected,message:'가정 시나리오의 손실 기준과 비중 설정을 확인한 뒤 모의 구성안을 생성하세요.',policy:p};
     if(!pool.length&&missingCandidateData)return {status:'DATA_REQUIRED',items:[],cash_pct:null,rejected,message:'후보의 근거·가격·분류가 부족합니다. 자료 부족을 현금 100% 의견으로 바꾸지 않습니다.',policy:p};
@@ -176,6 +201,25 @@ const PortfolioEngine = (() => {
     rows[7].review.thesis='unknown';
     return {schema_version:'holdings-portfolio-0.1',mode:'fixture',as_of:asOf,snapshot_id:'FIXTURE-ONLY-20260925',cash_krw:200000,holdings:[{code:'990001',quantity:40,avg_cost_krw:10000,thesis_note:'테스트용 투자 메모'},{code:'990006',quantity:10,avg_cost_krw:17000},{code:'990007',quantity:10,avg_cost_krw:15000},{code:'990008',quantity:10,avg_cost_krw:17000}],research:rows};
   }
-  return Object.freeze({VERSION,LABEL,DEFAULT,dateOK,urlOK,validate,cleanPolicy,companyReview,bookSummary,reviewHoldings,propose,stress,empty,fixture,clone});
+  function attachMarket(input,market){
+    validate(input);validate(market);
+    if(input.mode!=='user_input'||market.mode!=='user_input')throw Error('실제/가상 보유 자료 혼합 금지');
+    const result=clone(input),index=new Map(result.research.map(r=>[r.code,r]));
+    for(const current of market.research){
+      const row=index.get(current.code);
+      if(!row){result.research.push(clone(current));continue;}
+      if(['market','security_type','analysis_profile','name'].some(k=>row[k]!==current[k]))
+        throw Error(current.code+': 종목 식별 정보가 다릅니다. 입력을 확인하세요.');
+      if(own(current,'pending_events'))row.pending_events=clone(current.pending_events);
+      if(current.price_date&&(!row.price_date||current.price_date>=row.price_date)){
+        for(const key of ['price_krw','price_date','price_source'])row[key]=clone(current[key]);
+      }
+    }
+    result.as_of=market.as_of;
+    result.snapshot_id=market.snapshot_id;
+    result.market_data_as_of=market.market_data_as_of;
+    return validate(result);
+  }
+  return Object.freeze({VERSION,LABEL,DEFAULT,dateOK,urlOK,validate,cleanPolicy,companyReview,bookSummary,reviewHoldings,propose,stress,empty,fixture,clone,attachMarket,candidateChecks});
 })();
 if(typeof module!=='undefined')module.exports=PortfolioEngine;

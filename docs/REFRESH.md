@@ -1,9 +1,28 @@
-# 저장자료 갱신
+# Infomax 저장자료 자동 갱신
+
+## 대시보드 시작과 수동 재시도
+
+실제 저장자료 모드에서 시작·화면 재실행 시 `investment/auto_refresh.py`가 마지막 정상 스냅샷과 시장 기준일을 확인한다. 최근 성공한 확인으로부터 기본 900초 이내이고 가격일이 충분하면 캐시를 사용한다. stale 자료 또는 확인 주기가 지난 자료는 기존 갱신 계층을 호출한다. 실패하거나 같은 오래된 파일만 있는 경우 기본 60초 동안 자동 재시도를 쉬며, **데이터 새로고침** 버튼과 기본 CLI 명령은 즉시 다시 시도한다. 예약 작업은 등록하지 않는다.
+
+흐름: Infomax 저장 XLSX/검토 JSON → `infomax_provider.py` → 기존 변환·검증 → `refresh.py`의 SQLite 트랜잭션 → 기존 분석 엔진 → 대시보드. `SavedDailyProvider`는 기존 일별 XLSX 변환기를 사용한다. `SavedSnapshotProvider`는 기존 `manual_snapshot_file`을 읽는다. Infomax 직접 API나 Excel 함수 재계산을 실행하는 연결은 아직 없다. 저장 파일을 읽은 성공과 단말 최신 데이터 수신 성공은 구분한다.
+
+시각은 Asia/Seoul(KST), 시장 기준일은 원자료의 `meta.price_date`다. 당일 장중 값은 기존 일별 변환기대로 제외하며, 장 종료 후에도 당일 제외 정책을 유지한다. 달력이 없으면 KST 전날까지의 최근 평일을 보수적으로 추정하고 **한국 휴장일 미검증**을 표시한다. 추석·공휴일에는 실제로 최신인 파일도 stale로 표시될 수 있다. PC 로컬 `trading_calendar_file`을 지정하면 그 달력에서 오늘 이전 마지막 거래일을 사용한다. 달력은 `valid_from`, `valid_through`, 오름차순·중복 없는 `sessions`, `source`가 필요하며 적용일이 범위를 벗어나면 최신으로 인증하지 않고 실패/fallback을 표시한다. 달력 파일은 `private_data/`에 보관한다.
+
+결과는 `status`, `success`, `data_as_of`, `source_fetched_at`, `updated_companies`, `price_records`, `updated_price_records`, `failed_companies`, `stale`, `fallback`을 제공한다. `source_fetched_at`은 원본 스냅샷의 적재 시각이며 시세 관측 시각을 뜻하지 않는다. 가격 건수는 캐시에 남은 전체 관측 수이고 업데이트 건수는 날짜별 신규·변경 관측 수다. 전체 입력이 무효이면 트랜잭션 전체를 거절하고 기존 종목 수를 실패 수로 보고한다. 캐시조차 없으면 확인된 실패 종목 수는 0, `failure_scope=whole_refresh`이며 실제 실패 모집단은 알 수 없다. 목록/추세 계산만 실패하면 `partial`이며 저장된 시장자료는 사용할 수 있다. `success=true`라도 `stale=true`이면 새 시장자료 확보 성공이 아니다.
+
+자동/CLI 실패 결과에는 예외 종류만 기록한다. 공급자가 예외에 넣을 수 있는 인증값이나 URL을 이 결과에 복사하지 않는다. 실패한 데이터로 가상 자료를 생성하지 않으며, 마지막 검증된 캐시가 없으면 빈 실제 자료 화면을 유지한다.
+
+## 데이터 보존
+
+- 기존 가격 배열을 재사용하며 `(종목코드, 날짜)`별로 새 관측을 병합한다. 새 조회 기간이 짧아져도 과거 가격은 남는다. 같은 날짜의 신규 정정 관측은 한 행으로 교체하고, 이전 조회일·가격일·관측 시각의 입력은 거절한다.
+- 동일 입력은 중복 스냅샷을 만들지 않는다. 일별 가격·수급만 갱신하고 검토된 재무·장기 실적·배당 자료는 유지한다. 신규 재무 검토는 이 단계에서 자동화하지 않는다.
+- 비정상 가격·시가총액·거래량·무한값·중복 날짜는 거절한다. 재무 지표의 `null`은 그대로 분석 계층에 전달한다.
+- 기존 `prices` 없는 스냅샷도 읽으며, 없는 가격·OHLC·BPS를 생성하지 않는다. 새 가격이 없는 입력은 기존 가격 이력을 삭제하지 않는다.
 
 ## 매일 하는 일
 
 1. 인포맥스에 로그인한 상태에서 기존 일별 Excel 파일을 열고 조회 종료일·조회 결과가 원하는 날짜인지 확인한 뒤 **저장(Ctrl+S)** 한다. 함수 계산과 조회가 끝난 뒤 저장한다.
-2. 앱의 **실제 저장자료 → 저장 파일로 갱신**을 누른다.
+2. 앱의 **실제 저장자료**를 열어 자동 확인 결과를 보거나 **데이터 새로고침**을 누른다. 기존 **저장 파일로 갱신** 버튼도 유지한다.
 
 파일 검증, 가격·수급 계산, 로컬 저장, 일간·주간 목록 반영을 한 번에 처리한다. 이미 공개 추세 시세가 연결된 PC에서는 **새 가격일에만** 세 종목과 KOSPI 공개 시세도 다시 조회·검증한다. 다른 이름으로 내보낼 필요 없이 설정된 파일을 계속 사용한다. 버튼 아래에서 마지막 완료 시간, 저장 파일 조회일, 가격일을 확인한다. 당일 관측은 제외하므로 가격일과 조회일은 다를 수 있다.
 
@@ -25,14 +44,17 @@ Excel 저장만으로 인포맥스 조회가 갱신되지는 않는다. 앱은 �
 ```json
 {
   "infomax_refresh": {
+    "provider": "daily",
     "daily_file": "private_data/infomax/daily.xlsx",
     "company_config": "private_data/infomax/daily-config.json",
-    "policy": "config/infomax.user-decisions.json"
+    "policy": "config/infomax.user-decisions.json",
+    "freshness_seconds": 900,
+    "retry_seconds": 60
   }
 }
 ```
 
-종목 설정은 기존 일별 변환기 계약을 사용한다. 정책은 공통 정책 JSON에서 매번 읽는다. 최초 기준 자료는 기존 DB 또는 `manual_snapshot_file`로 연결되어 있어야 한다. 갱신 후 앱의 기준은 DB이며, `manual_snapshot_file`은 DB가 없는 PC의 최초 연결용이다. DB를 임의로 지우면 최초 자료로 돌아갈 수 있다.
+종목 설정은 기존 일별 변환기 계약을 사용한다. 정책은 공통 정책 JSON에서 매번 읽는다. 기존 DB가 없으면 `manual_snapshot_file` 또는 검증된 최초 일별 자료를 적재한다. 최초 일별 자료에 없는 재무 지표는 결측으로 남는다. 갱신 후 앱의 기준은 DB다. 일별 설정이 없고 기존 `manual_snapshot_file`만 연결된 PC는 `snapshot` 어댑터를 기본으로 사용한다. 이 어댑터는 저장된 검토 JSON의 시장 자료를 확인하며 원본 XLSX 재변환은 기존 도구에서 수행한다. 설정 예시는 `config/profile.example.json`이며 실제 PC 설정은 Git에 포함하지 않는다.
 
 갱신 스냅샷은 데이터 폴더의 `<profile>/user_input/refresh-snapshots/`에 보존한다. 원본 Excel, 재무 원자료, 기존 DB 스냅샷을 덮어쓰지 않는다. 갱신 기록은 같은 DB의 설정에 저장한다. 원자료·DB·설정·스냅샷은 자동 공유하지 않는다.
 
@@ -40,6 +62,7 @@ Excel 저장만으로 인포맥스 조회가 갱신되지는 않는다. 앱은 �
 
 ```powershell
 .\.venv\Scripts\python.exe tools/refresh_infomax.py
+.\.venv\Scripts\python.exe tools/refresh_infomax.py --if-stale
 ```
 
 예약 작업이나 Windows 자동 시작 등록은 이 절차에 포함하지 않는다.

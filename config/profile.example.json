@@ -5,5 +5,13 @@
   "manual_snapshot_file": null,
   "enabled_data_adapters": [],
   "scheduled_jobs_enabled": false,
-  "note": "Consumed by app/batch/collect. Set this PC profile explicitly. Never put credentials here."
+  "infomax_refresh": {
+    "provider": "snapshot",
+    "freshness_seconds": 900,
+    "retry_seconds": 60
+  },
+  "note": "Consumed by app/batch/collect. Set this PC profile explicitly. Never put credentials here.",
+  "market_events": {
+    "dart_corp_codes": {}
+  }
 }

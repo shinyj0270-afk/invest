@@ -16,57 +16,104 @@ from investment.local_config import load_local
 ROOT=Path(__file__).resolve().parent
 LABELS={'market_cap_eok':'시가총액 (억원)','operating_margin_pct':'영업이익률 (%)','roe_pct':'ROE (%)','debt_ratio_pct':'부채비율 (%)','net_debt_equity_pct':'순차입금/자본 (%)','interest_coverage_x':'이자보상배율 (배)','current_ratio_pct':'유동비율 (%)','revenue_growth_pct':'매출 증가율 (%)','foreign_net_20d_eok':'외국인 20일 순매수 (억원)','institution_net_20d_eok':'기관 20일 순매수 (억원)','foreign_net_turnover_20d_pct':'외국인 순매수/거래대금 (%)','institution_net_turnover_20d_pct':'기관 순매수/거래대금 (%)','avg_trading_value_20d_eok':'20일 평균 거래대금 (억원)','eps_ttm':'TTM EPS (원)','price':'가격 (원)','per':'PER (배)','pbr':'PBR (배)'}
 STATUS={'pass':'충족','fail':'미충족','unknown':'자료 부족'}
-st.set_page_config(page_title='INVESTMENT 연구 대시보드',layout='wide')
-st.title('INVESTMENT · 기업 탐색과 연구')
+st.set_page_config(page_title='INVESTMENT · Daily Dashboard',layout='wide')
+st.markdown('<style>'+(ROOT/'src/dashboard.css').read_text(encoding='utf-8')+'</style>',unsafe_allow_html=True)
+st.sidebar.markdown('<div class="brand"><b>●</b> INVESTMENT<small>데이터로 살펴보는 나의 투자</small></div>',unsafe_allow_html=True)
+PAGES=['오늘','인터랙티브 뷰어','조건검색','기업분석','산업비교','A4 One-Pager','장기성장 연구','추세 연구','보유·포트폴리오','데이터 상태']
+# Preserve view filters when Streamlit removes widgets on another page.
+for key in list(st.session_state):
+    if key.startswith(('market_','industry_','path_','order_','ascending_','rules_','viewer_')) and not key.endswith('_scatter'):
+        st.session_state[key]=st.session_state[key]
+with st.sidebar.container(key='app_navigation'):
+    view=st.radio('화면',PAGES,key='app_page',label_visibility='collapsed')
+st.title('오늘의 투자 점검' if view=='오늘' else view)
 local=load_local(ROOT)
 profile=local.get('profile','unknown')
-st.sidebar.caption(f'현재 PC 프로필: {profile} · 자동 수집/주문 없음')
+st.sidebar.caption(f'현재 PC 프로필: {profile} · 저장자료 자동 확인 · 주문 없음')
 mode_label=st.sidebar.selectbox('데이터 모드',['실제 저장자료','가상 테스트'])
 mode='fixture' if mode_label=='가상 테스트' else 'user_input'
+data_controls=st.sidebar.expander('데이터 연결 · 갱신',expanded=False)
 store=Store(local['data_dir'],profile,mode)
 manual_path=local.get('manual_snapshot_file')
 source_key='snapshot_'+mode
+if mode=='user_input':
+    from investment.auto_refresh import ensure_data
+    # The policy persists its attempt time across sessions and throttles reruns.
+    auto=ensure_data(ROOT)
+    if auto['snapshot'] is not None and (source_key not in st.session_state or auto['receipt']['attempted']):
+        st.session_state[source_key]=auto['snapshot']
+    status=auto['receipt']
+    data_controls.caption(f"데이터 기준일: {status['data_as_of'] or '없음'} · 최근 확인: {status['checked_at']}")
+    if status['stale']:
+        data_controls.warning('오래된 자료(stale) · 인포맥스 조회·저장 후 데이터 새로고침이 필요합니다.')
+    if status['error']:
+        data_controls.warning(status['error']+' · 마지막 정상 자료를 사용합니다.' if auto['snapshot'] else status['error'])
+    if status['status']=='partial':
+        data_controls.warning('시장자료 저장 후 추세·목록 처리 일부 실패 · 데이터 새로고침으로 재시도하세요.')
+    if status['calendar_basis']=='weekday_estimate_holidays_unverified':
+        data_controls.caption('KST 전일 기준 · 평일 추정(한국 휴장일 미검증) · 당일 관측 제외')
+    if data_controls.button('데이터 새로고침'):
+        with st.spinner('Infomax 저장자료 확인 중…'):
+            auto=ensure_data(ROOT,force=True)
+        if auto['snapshot'] is not None:
+            st.session_state[source_key]=auto['snapshot']
+        st.session_state['infomax_manual_result']=auto['receipt']
+        st.rerun()
+    if 'infomax_manual_result' in st.session_state:
+        result=st.session_state['infomax_manual_result']
+        data_controls.caption(f"갱신 결과: {result['status']} · 성공: {result['success']} · 기준일: {result['data_as_of'] or '없음'} · "
+            f"업데이트 {result['updated_companies']}종목 · 가격 {result['price_records']}건 · "
+            f"실패 {result['failed_companies']}종목 · stale: {result['stale']}")
 if mode=='user_input' and local.get('infomax_refresh'):
     from investment.refresh import refresh, STATUS_KEY
-    st.sidebar.markdown('### 자료 갱신')
-    st.sidebar.caption('① 인포맥스 일별 Excel 조회 완료 후 저장 → ② 아래 버튼 (새 가격일에는 공개 추세 시세도 갱신)')
-    if st.sidebar.button('저장 파일로 갱신',type='primary'):
+    data_controls.markdown('### 자료 갱신')
+    data_controls.caption('① 인포맥스 일별 Excel 조회 완료 후 저장 → ② 아래 버튼 (새 가격일에는 공개 추세 시세도 갱신)')
+    if data_controls.button('저장 파일로 갱신',type='primary'):
         try:
             with st.spinner('파일 검증 · 계산 · 일간/주간 목록 갱신 중…'):
                 refreshed=refresh(ROOT)
             st.session_state[source_key]=refreshed['snapshot']
             state=refreshed['receipt']['status']
             if state=='partial':
-                st.sidebar.warning('자료 저장 완료 · 추세/목록 갱신 일부 실패. 같은 버튼으로 재시도하세요.')
+                data_controls.warning('자료 저장 완료 · 추세/목록 갱신 일부 실패. 같은 버튼으로 재시도하세요.')
             else:
-                st.sidebar.success('파일 변경 없음 · 현재 자료로 목록 확인 완료' if state=='unchanged' else '자료와 일간·주간 목록 갱신 완료')
+                data_controls.success('파일 변경 없음 · 현재 자료로 목록 갱신 완료' if state=='unchanged' else '자료와 일간·주간 목록 갱신 완료')
         except Exception as exc:
-            st.sidebar.error('갱신 실패: '+str(exc))
+            data_controls.error('갱신 실패: '+str(exc))
     receipt=store.setting(STATUS_KEY,{})
     if receipt:
-        st.sidebar.caption(f"마지막 완료: {receipt.get('last_success_at','없음')}\n\n저장 파일 조회일: {receipt.get('as_of','—')} · 가격일: {receipt.get('price_date','—')}")
-        st.sidebar.caption(f"재무: {receipt.get('financial_period','—')} · 기존 검토 자료 유지")
+        data_controls.caption(f"마지막 완료: {receipt.get('last_success_at','없음')}\n\n저장 파일 조회일: {receipt.get('as_of','—')} · 가격일: {receipt.get('price_date','—')}")
+        data_controls.caption(f"재무: {receipt.get('financial_period','—')} · 기존 검토 자료 유지")
         if receipt.get('status') in ('failed','partial','processing'):
-            st.sidebar.warning('최근 갱신 미완료 · '+ ' / '.join(receipt.get('errors',[]) or ['같은 버튼으로 다시 시도하세요']))
+            data_controls.warning('최근 갱신 미완료 · '+ ' / '.join(receipt.get('errors',[]) or ['같은 버튼으로 다시 시도하세요']))
 if source_key not in st.session_state:
     saved=store.latest()
-    st.session_state[source_key]=saved or (make_fixture() if mode=='fixture' else json.loads(manual_path.read_text(encoding='utf-8')) if profile!='unknown' and 'infomax_manual' in local['enabled_data_adapters'] and manual_path is not None and manual_path.is_file() else None)
-input_panel=st.sidebar.expander('다른 스냅샷 입력·저장') if mode=='user_input' and local.get('infomax_refresh') else st.sidebar
+    st.session_state[source_key]=(saved or make_fixture()) if mode=='fixture' else auto['snapshot']
+input_panel=data_controls
 uploaded=input_panel.file_uploader('동일 모드 스냅샷 JSON',type=['json'])
 if uploaded and input_panel.button('입력 적용'):
     try:
         candidate=validate_snapshot(json.loads(uploaded.getvalue()))
         if candidate['meta']['data_mode']!=mode: raise ValueError('선택한 데이터 모드와 파일이 다릅니다')
         st.session_state[source_key]=candidate
-        st.sidebar.success('입력 검증 통과')
-    except (ValueError,KeyError,TypeError): st.sidebar.error('입력 검증 실패 · 기존 자료 보존')
+        data_controls.success('입력 검증 통과')
+    except (ValueError,KeyError,TypeError): data_controls.error('입력 검증 실패 · 기존 자료 보존')
 snapshot=st.session_state[source_key]
 if not snapshot:
     st.info('실제 저장자료가 없습니다. 파일을 입력하거나 가상 테스트 모드를 직접 선택하세요.')
     st.stop()
 validate_snapshot(snapshot)
 if input_panel.button('현재 스냅샷을 이 PC에 저장'):
-    store.save_snapshot(snapshot); st.sidebar.success('SQLite 저장 완료')
+    store.save_snapshot(snapshot); data_controls.success('SQLite 저장 완료')
+with st.sidebar.expander('통합 HTML 대시보드'):
+    st.caption('좌측 메뉴와 차트가 있는 독립 HTML입니다. 현재 시장자료를 담으며 개인 보유 입력은 포함하지 않습니다.')
+    if st.button('HTML 결과물 만들기'):
+        from investment.workspace_export import export_workspace
+        st.session_state['workspace_export_'+mode]=dict(snapshot_id=digest(snapshot),html=export_workspace(snapshot))
+    exported=st.session_state.get('workspace_export_'+mode)
+    if isinstance(exported,dict) and exported.get('snapshot_id')==digest(snapshot):
+        st.download_button('통합 대시보드 HTML 다운로드',exported['html'],
+                           'investment_dashboard.html','text/html',on_click='ignore')
 snapshot=copy.deepcopy(snapshot)
 for row in snapshot['companies']:
     extra,missing=additional(row,snapshot,include_current_history=(mode=='user_input'))
@@ -81,20 +128,35 @@ for n in (5,60):
 meta=snapshot['meta']; all_rows=[r for r in snapshot['companies'] if eligible(r)]
 if not all_rows: st.info('적격 비금융 보통주 없음'); st.stop()
 st.warning(('가상 테스트 · 실제 기업/시장 관측 아님' if mode=='fixture' else '실제 저장자료 · 부분 모집단 · 새 API 조회 없음')+f" | 가격 {meta['price_date']} | 재무 {meta['financial_period']} {meta['financial_basis']}")
-if mode != 'fixture' and meta.get('warnings'):
-    st.caption(' · '.join(meta['warnings']))
-st.caption(f"적재 {len(snapshot['companies'])}개 · 적격 {len(all_rows)}개 · 전체시장 수 {meta.get('universe_total') if meta.get('universe_total') is not None else '미확인'} · 실제 공급자 정의·과거 빈티지 미검증")
-if meta.get('financial_history_observed_on'):
-    st.caption(f"CAGR·TTM은 {meta['financial_history_observed_on']} 조회 장기 손익 기준 · 과거 시점 연구 판정에는 미사용")
+with st.expander('자료 범위와 출처 주의사항'):
+    if mode != 'fixture' and meta.get('warnings'):
+        st.caption('원본 스냅샷 기록: '+' · '.join(meta['warnings']))
+    st.caption(f"적재 {len(snapshot['companies'])}개 · 적격 {len(all_rows)}개 · 전체시장 수 {meta.get('universe_total') if meta.get('universe_total') is not None else '미확인'} · 실제 공급자 정의·과거 빈티지 미검증")
+    if meta.get('financial_history_observed_on'):
+        st.caption(f"CAGR·TTM은 {meta['financial_history_observed_on']} 조회 장기 손익 기준 · 과거 시점 연구 판정에는 미사용")
 res=research.analyze(snapshot); by_code={r['code']:r for r in res}; trends=trend.analyze(snapshot)
 selection=st.sidebar.selectbox('분석할 기업',[r['code'] for r in all_rows],format_func=lambda code:next(r['name']+' · '+code for r in all_rows if r['code']==code))
 company=next(r for r in all_rows if r['code']==selection)
-tabs=st.tabs(['조건검색','기업분석','산업비교','A4 One-Pager','장기성장 연구','추세 연구','기존 보유·포트폴리오','데이터 상태'])
-with tabs[0]:
+from investment.daily_dashboard import event_context,render_daily
+daily_events=dict(pending={},rows=[],receipt={},error=None)
+if mode=='user_input':
+    try:
+        daily_events=event_context(store,[r['code'] for r in snapshot['companies']])
+    except Exception as error:
+        daily_events=dict(pending=None,rows=[],receipt={},error=type(error).__name__)
+daily_holdings=st.session_state.get('daily_holdings_user_input') if mode=='user_input' else None
+daily_policy=st.session_state.get('daily_holdings_user_input_policy',{}) if mode=='user_input' else {}
+if view=='오늘':
+    daily_holdings,daily_policy=render_daily(snapshot,auto['receipt'] if mode=='user_input' else None,daily_events)
+if view=='인터랙티브 뷰어':
+    from investment.visuals import render_viewer
+    render_viewer(snapshot)
+if view=='조건검색':
     st.subheader('사용자 지정 조건검색')
     default={'logic':'AND','rules':[{'metric':'operating_margin_pct','op':'gte','value':10}]}
     saved=store.setting('screen',default)
-    rule_text=st.text_area('조건 JSON',json.dumps(saved,ensure_ascii=False,indent=2),key='rules_'+mode,height=170)
+    st.session_state.setdefault('rules_'+mode,json.dumps(saved,ensure_ascii=False,indent=2))
+    rule_text=st.text_area('조건 JSON',value=None,key='rules_'+mode,height=170)
     markets=['전체','KOSPI','KOSDAQ']; industries=['전체']+sorted({r['industry'] for r in all_rows})
     defaults={'market':saved.get('market') or '전체','industry':saved.get('industry') or '전체','path':saved.get('path','없음'),'order':saved.get('sort_metric','market_cap_eok'),'ascending':saved.get('ascending',False)}
     for key,value in defaults.items(): st.session_state.setdefault(key+'_'+mode,value)
@@ -137,8 +199,11 @@ with tabs[0]:
         st.download_button('조건 JSON 내보내기',json.dumps(settings,ensure_ascii=False,indent=2),'screen_conditions.json','application/json',on_click='ignore')
         st.download_button('결과 CSV 내보내기',safe_csv(output),'screen_results.csv','text/csv',on_click='ignore')
     except (ValueError,KeyError,TypeError): st.error('조건 형식 오류 · metric/op/value, AND/OR를 확인하세요.')
-with tabs[1]:
+if view=='기업분석':
     st.subheader(company['name'])
+    if mode=='user_input':
+        from investment.events_ui import render_events
+        render_events(ROOT,store,[r['code'] for r in all_rows],selection)
     st.dataframe(pd.DataFrame([{'지표':LABELS.get(k,k),'값':v,'부족 사유':company.get('metric_missing_reasons',{}).get(k,'')} for k,v in company['metrics'].items()]),hide_index=True)
     st.caption('거래 유동성(거래대금)과 재무 유동성(유동비율)은 별개입니다.')
     financial_evidence=company.get('financial_evidence')
@@ -201,7 +266,7 @@ with tabs[1]:
     else: st.info('연구용 정규화 OHLCV 미연결')
     st.write('경로 상태',by_code[selection]['paths'])
     for note in company.get('data_quality',[]): st.caption(note)
-with tabs[2]:
+if view=='산업비교':
     st.subheader('동일 산업 비교 · 검색 결과와 독립')
     custom=st.multiselect('사용자 피어 코드 (비우면 공급자 업종)',[r['code'] for r in all_rows],default=store.setting('peers_'+selection,[]))
     if st.button('피어집합 저장'): store.save_setting('peers_'+selection,custom); st.success('피어집합 저장 완료')
@@ -214,13 +279,13 @@ with tabs[2]:
         comparison.append({'지표':label,'기업':company['metrics'].get(key),'중앙값':median(vals) if vals else None,'유효 표본':len(vals),'상대 백분위':pct*100 if pct is not None else None})
     st.dataframe(pd.DataFrame(comparison),hide_index=True)
     st.caption('유효 표본 5개 미만이면 백분위는 표시하지 않습니다. 전체 시장 산업 통계가 아닙니다.')
-with tabs[3]:
+if view=='A4 One-Pager':
     st.subheader('A4 One-Pager')
     html=onepager(snapshot,company,by_code[selection])
     st.iframe(html,height=850)
     st.download_button('인쇄용 HTML 다운로드',html,f'{selection}_onepager.html','text/html',on_click='ignore')
     st.caption('HTML을 브라우저에서 열어 인쇄 → A4 / 배율 100%. 출처가 많은 경우 요약 개수를 표시합니다.')
-with tabs[4]:
+if view=='장기성장 연구':
     st.subheader('한국형 장기성장 연구 · 100-Bagger 참고 모형')
     st.info('자료 내용 / 프로젝트 구현 가설 / 관측 데이터를 분리합니다. 100배 수익이나 성공 확률을 예측하지 않습니다.')
     observed_rows=[r for r in all_rows if current_history(r,snapshot)]
@@ -257,7 +322,7 @@ with tabs[4]:
         st.write(by_code[selection]['persistence'])
     else:
         st.markdown((ROOT/'RESEARCH_MODEL.md').read_text(encoding='utf-8'))
-with tabs[5]:
+if view=='추세 연구':
     st.subheader('추세추종 연구 · 매매 실행 없음')
     if meta.get('trend_source'):
         st.warning(f"공개 시세 참고 · {meta['trend_source']['cutoff']} · Yahoo Finance 기준 · 인포맥스 가격과 차이 있음")
@@ -272,14 +337,26 @@ with tabs[5]:
         frame=pd.DataFrame(company.get('trend_prices') or company['prices']).set_index('date')
         for n in (50,150,200): frame[f'SMA{n}']=frame['close'].rolling(n).mean()
         st.line_chart(frame[['close','SMA50','SMA150','SMA200']]); st.bar_chart(frame[['volume']])
-with tabs[6]:
-    st.caption('보존한 기존 수동 보유·포트폴리오 앱. 별도 입력 계약이며 계좌 자동 수집 없음.')
-    st.iframe(ROOT/'INVESTMENT_Dashboard.html',height=900)
-with tabs[7]:
+if view=='보유·포트폴리오':
+    st.caption('현재 저장 시장자료를 기존 보유 점검에 연결합니다. 수량·매입가·투자 논리는 직접 입력하거나 기존 보유 JSON을 가져오세요.')
+    st.caption('입력은 화면 메모리에만 있습니다. 대시보드를 갱신하기 전에 JSON으로 내보내 보관하세요. 계좌 조회는 하지 않습니다.')
+    if mode=='user_input':
+        from investment.holdings_bridge import linked_dashboard
+        st.caption('오늘 화면에서 불러온 보유·연구 입력과 적용한 구성 설정을 연결합니다. 여기서 편집한 값은 내보내기 후 오늘 화면에서 다시 적용하세요.')
+        st.iframe(linked_dashboard((ROOT/'INVESTMENT_Dashboard.html').read_text(encoding='utf-8'),snapshot,
+            events=daily_events['pending'],initial_input=daily_holdings,policy=daily_policy),height=900)
+    else:
+        st.iframe(ROOT/'INVESTMENT_Dashboard.html',height=900)
+if view=='데이터 상태':
     st.subheader('연결과 검증 상태')
+    from investment.daily_dashboard import SOURCE_STATES
     manual_status=('현재 가상 모드 · 실제 자료 연결 판정 안 함' if mode=='fixture' else
-                   '이 PC 수동 파일 있음 · 자동 연동/외부 저장 권한 미확인' if 'infomax_manual' in local['enabled_data_adapters'] and manual_path is not None and manual_path.is_file() else
-                   '이 PC 수동 파일 미설정 · 자동 연동/외부 저장 권한 미확인')
-    st.table(pd.DataFrame([['키움 REST','인증·공식 TR 단위/범위 및 조회 권한 설정 대기'],['OpenDART','API 키 및 회사 고유번호 설정 대기'],['인포맥스',manual_status]],columns=['공급자','상태']))
+                   '저장자료 '+SOURCE_STATES.get(auto['receipt']['status'],'미확인')+' · 단말 직접 조회 미연결')
+    event_sources=daily_events['receipt'].get('sources',{})
+    dart_states=[SOURCE_STATES.get(s['status'],'미확인') for name,s in event_sources.items() if name.startswith('dart:')]
+    dart_status=' / '.join(sorted(set(dart_states))) if dart_states else '가상 모드 · 미연결' if mode=='fixture' else '조회 기록 없음 · 설정 확인 필요'
+    news_status=SOURCE_STATES.get(event_sources.get('samsung_news',{}).get('status'),'조회 기록 없음')
+    st.table(pd.DataFrame([['키움 REST','인증·공식 TR 단위/범위 및 조회 권한 설정 대기'],
+        ['OpenDART 최근 수집',dart_status],['인포맥스',manual_status],['삼성전자 뉴스룸 최근 수집',news_status]],columns=['공급자','상태']))
     st.write('스냅샷 ID',digest(snapshot)); st.write('프로필/저장소',profile+'/'+mode)
     st.json(meta)

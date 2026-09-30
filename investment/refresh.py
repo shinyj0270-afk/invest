@@ -7,8 +7,10 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from .core import digest, validate_snapshot
-from .local_config import load_local, require_profile
+from .local_config import require_profile
+from . import local_config
 from .store import Store
+from .infomax_provider import provider_for
 from tools.infomax_daily import convert
 
 MARKET_METRICS = ('price', 'market_cap_eok', 'avg_trading_value_20d_eok',
@@ -32,6 +34,10 @@ def merge_daily(previous, daily):
     for key in ('as_of', 'price_date'):
         if daily['meta'][key] < previous['meta'][key]:
             raise ValueError('기존 자료보다 과거인 파일입니다: ' + key)
+    old_fetched = previous['meta'].get('fetched_at')
+    new_fetched = daily['meta'].get('fetched_at')
+    if old_fetched and new_fetched and datetime.fromisoformat(new_fetched) < datetime.fromisoformat(old_fetched):
+        raise ValueError('기존 자료보다 과거인 관측 시각입니다')
     result = copy.deepcopy(previous)
     # The daily importer has no financials; never copy those placeholders.
     market_meta = {k: v for k, v in daily['meta'].items()
@@ -43,7 +49,6 @@ def merge_daily(previous, daily):
     result['meta']['warnings'] = list(dict.fromkeys(market_warnings + [
         w for w in previous['meta'].get('warnings', []) if w not in old_market_warnings]))
     result['meta']['refresh_daily_warnings'] = market_warnings
-    previous_source = previous['meta'].get('source_files', {})
     rows = []
     for incoming in daily['companies']:
         row = copy.deepcopy(old[incoming['code']])
@@ -51,17 +56,23 @@ def merge_daily(previous, daily):
             if row.get(key) != incoming.get(key):
                 raise ValueError('종목 식별·분류 설정 변경 확인 필요: ' + incoming['code'])
         for key in MARKET_METRICS:
-            row['metrics'][key] = incoming['metrics'][key]
+            row['metrics'][key] = incoming['metrics'].get(key)
             row.setdefault('metric_missing_reasons', {}).pop(key, None)
-            if incoming['metrics'][key] is None and key in incoming['metric_missing_reasons']:
+            if incoming['metrics'].get(key) is None and key in incoming.get('metric_missing_reasons', {}):
                 row['metric_missing_reasons'][key] = incoming['metric_missing_reasons'][key]
-        for key in ('prices', 'flows', 'price_venue', 'analysis_venue', 'user_policy_evidence'):
+        # Keep earlier observations when a new export contains a shorter rolling window.
+        # Overlapping dates are replaced once by the newly validated observation.
+        if 'prices' in incoming:
+            bars = {b['date']: b for b in row.get('prices', [])}
+            bars.update({b['date']: b for b in incoming['prices']})
+            row['prices'] = [bars[d] for d in sorted(bars)]
+        for key in ('flows', 'price_venue', 'analysis_venue', 'user_policy_evidence'):
             row.pop(key, None)
             if key in incoming:
                 row[key] = incoming[key]
-        row['sources'] = incoming['sources'] + [s for s in row.get('sources', [])
-            if not (s.get('file') == previous_source.get('file') and
-                    s.get('sha256') == previous_source.get('sha256'))]
+        # Earlier bars remain in the cache, so keep their original source evidence.
+        sources = incoming['sources'] + row.get('sources', [])
+        row['sources'] = list({digest(s): s for s in sources}.values())
         row['data_quality'] = list(dict.fromkeys(market_warnings + [
             w for w in row.get('data_quality', []) if w not in old_market_warnings]))
         rows.append(row)
@@ -69,13 +80,13 @@ def merge_daily(previous, daily):
     return validate_snapshot(result)
 
 
-def refresh(root):
+def refresh(root, *, provider=None):
     root = Path(root).resolve()
-    local = load_local(root)
+    local = local_config.load_local(root)
     profile = require_profile(local)
-    config = local.get('infomax_refresh')
-    if 'infomax_manual' not in local['enabled_data_adapters'] or not isinstance(config, dict):
+    if 'infomax_manual' not in local['enabled_data_adapters']:
         raise ValueError('이 PC의 인포맥스 저장 파일 경로를 먼저 설정하세요')
+    provider = provider or provider_for(root, local, convert)
     store = Store(local['data_dir'], profile, 'user_input')
     lock = store.path.parent / 'refresh.lock'
     try:
@@ -89,24 +100,31 @@ def refresh(root):
     try:
         prior = store.setting(STATUS_KEY, {})
         receipt = dict(prior, last_attempt_at=receipt['last_attempt_at'])
-        def path(key):
-            value = config.get(key)
-            if not isinstance(value, str) or not value.strip():
-                raise ValueError('갱신 파일 설정 누락: ' + key)
-            return (root / value).resolve()
-        identities = json.loads(path('company_config').read_text(encoding='utf-8-sig'))
-        policy = json.loads(path('policy').read_text(encoding='utf-8-sig'))
-        identities['decisions'] = policy.get('decisions', policy)
-        daily = convert(path('daily_file'), identities)
-        if daily['meta']['as_of'] > datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat():
-            raise ValueError('저장 파일의 조회 종료일이 미래입니다')
+        daily, identity, source_name = provider.fetch()
         previous = store.latest()
+        if previous and daily['meta']['price_date'] < previous['meta']['price_date']:
+            raise ValueError('기존 자료보다 과거인 파일입니다: price_date')
+        validate_snapshot(daily)
+        for row in daily['companies']:
+            for metric in ('price', 'market_cap_eok'):
+                value = row['metrics'].get(metric)
+                if value is not None and value <= 0:
+                    raise ValueError('가격/시가총액은 양수여야 합니다')
+        if daily['meta']['data_mode'] != 'user_input':
+            raise ValueError('실제 저장자료만 갱신할 수 있습니다')
+        from tools.infomax_import import day
+        as_of = day(daily['meta']['as_of'], '조회일')
+        if daily['meta']['price_date'] > as_of:
+            raise ValueError('가격일이 조회일보다 미래입니다')
+        if as_of > datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat():
+            raise ValueError('저장 파일의 조회 종료일이 미래입니다')
         if previous is None:
             manual = local.get('manual_snapshot_file')
-            if manual is None or not manual.is_file():
-                raise ValueError('기준 스냅샷이 없습니다. 최초 자료 연결을 먼저 완료하세요')
-            previous = json.loads(manual.read_text(encoding='utf-8-sig'))
-        fingerprint = digest(dict(source=daily['meta']['source_files'], config=identities))
+            if manual is not None and manual.is_file():
+                previous = json.loads(manual.read_text(encoding='utf-8-sig'))
+            else:
+                previous = daily
+        fingerprint = digest(identity)
         previous_id = digest(previous)
         input_unchanged = fingerprint == prior.get('input_hash') and previous_id == prior.get('snapshot_id')
         candidate = previous if input_unchanged else merge_daily(previous, daily)
@@ -119,10 +137,10 @@ def refresh(root):
                 candidate = build(candidate, fetch_charts(source_dir))
             except Exception as exc:
                 trend_error = '추세 시세 재조회 실패: ' + str(exc)
-        unchanged = input_unchanged and digest(candidate) == previous_id
+        unchanged = input_unchanged and digest(candidate) == previous_id and store.latest() is not None
         sid = digest(candidate)
         receipt.update(input_hash=fingerprint, snapshot_id=sid,
-                       source_file=path('daily_file').name, as_of=candidate['meta']['as_of'],
+                       source_file=source_name, as_of=candidate['meta']['as_of'],
                        price_date=candidate['meta']['price_date'],
                        financial_period=candidate['meta']['financial_period'],
                        companies=len(candidate['companies']), status='processing', errors=[])
@@ -163,7 +181,7 @@ def refresh(root):
         return dict(receipt=receipt, snapshot=candidate)
     except Exception as exc:
         failed = dict(receipt if promoted else prior, status='failed',
-                      last_attempt_at=receipt['last_attempt_at'], errors=[str(exc)])
+                      last_attempt_at=receipt['last_attempt_at'], errors=['갱신 실패 · ' + type(exc).__name__])
         store.save_setting(STATUS_KEY, failed)
         raise
     finally:
