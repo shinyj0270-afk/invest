@@ -196,6 +196,7 @@
     "tools/company_statements.py": "tools/company_statements.py",
     "tests/test_dart_statements.py": "tests/test_dart_statements.py",
     "tests/test_company_valuation.js": "tests/test_company_valuation.js",
-    "docs/OPENDART_STATEMENTS.md": "docs/OPENDART_STATEMENTS.md"
+    "docs/OPENDART_STATEMENTS.md": "docs/OPENDART_STATEMENTS.md",
+    "docs/HOLDINGS_PORTFOLIO_REVIEW.md": "docs/HOLDINGS_PORTFOLIO_REVIEW.md"
   }
 }
