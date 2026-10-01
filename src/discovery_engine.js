@@ -7,7 +7,15 @@ const DiscoveryEngine = (() => {
   const med = a => {const vs=a.filter(numeric).sort((x,y)=>x-y), n=vs.length;return n?n%2?vs[(n-1)/2]:(vs[n/2-1]+vs[n/2])/2:null;};
   function prepare(snapshot,research){const discovery=snapshot.meta?.discovery===true;return snapshot.companies.filter(r=>['KOSPI','KOSDAQ'].includes(r.market)&&((r.security_type==='ordinary'&&r.analysis_profile==='nonfinancial')||(discovery&&r.security_type==='ordinary_candidate'&&r.eligibility==='candidate'))).map(r=>{const f=research.rows?.[r.code]?.fundamental,t=research.rows?.[r.code]?.technical;return {...r,discovery,legacy_available:r.legacy_available??!discovery,metric_details:{...r.metric_details,...f?.metric_details},metrics:{...r.metrics,...f?.metrics,price_rs:t?.price_strength?.score??null,excess126_pct:t?.rs126_pct??null,excess252_pct:t?.rs252_pct??null}};});}
   const known=v=>typeof v==='string'&&v.trim()&&!/unknown|unverified|미확인|미명시|대기/i.test(v);
-  function detail(row,research,key){const f=research.rows?.[row.code]?.fundamental,d=row.metric_details?.[key]||f?.metric_details?.[key];return d||(!row.discovery?{source:row.valuation_details?.[key]?.source,period:row.valuation_details?.[key]?.period||f?.period,basis:row.valuation_details?.[key]?.basis||f?.basis,observed_on:row.valuation_details?.[key]?.price_date,reason:row.valuation_details?.[key]?.reason}:{});}
+  function detail(row,research,key){
+    if(['price_rs','excess126_pct','excess252_pct'].includes(key)){
+      const t=research.rows?.[row.code]?.technical||{},s=t.price_strength||{};
+      return {source:t.source_note||s.source_note||s.source,observed_on:s.as_of||t.as_of,
+        period:key==='price_rs'?'252거래일':key==='excess126_pct'?'126거래일':'252거래일',
+        basis:key==='price_rs'?(s.market||row.market)+' 저장 유효 기업 내 순위':'종목 수익률 − 동일 시장 지수 수익률',
+        reason:key==='price_rs'?s.reason:t.reason};
+    }
+    const f=research.rows?.[row.code]?.fundamental,d=row.metric_details?.[key]||f?.metric_details?.[key];return d||(!row.discovery?{source:row.valuation_details?.[key]?.source,period:row.valuation_details?.[key]?.period||f?.period,basis:row.valuation_details?.[key]?.basis||f?.basis,observed_on:row.valuation_details?.[key]?.price_date,reason:row.valuation_details?.[key]?.reason}:{});}
   function filter(rows, f={}, research={}, watch=[]){
     const q=String(f.query||'').trim().toLocaleLowerCase(), ids=new Set(watch.map(w=>w.code));
     return rows.filter(r=>{
@@ -33,16 +41,20 @@ const DiscoveryEngine = (() => {
     const ownDetail=detail(row,research,key);
     const matches=rows.filter(r=>{
       const g=research.rows?.[r.code]?.fundamental,v=r.valuation_details?.[key];
-      if(row.discovery||r.discovery){const other=detail(r,research,key);return r.code!==row.code&&r.industry===row.industry&&known(ownDetail.period)&&known(ownDetail.basis)&&ownDetail.period===other.period&&ownDetail.basis===other.basis&&numeric(metric(r,key))&&(!['per','pbr'].includes(key)||(metric(r,key)>0&&known(ownDetail.observed_on)&&ownDetail.observed_on===other.observed_on));}
+      if(row.discovery||r.discovery){const other=detail(r,research,key);return r.code!==row.code&&r.industry===row.industry&&comparableDetails(ownDetail,other,key)&&numeric(metric(r,key))&&(!['per','pbr'].includes(key)||metric(r,key)>0);}
       if(r.code===row.code||r.industry!==row.industry||!f?.period||!f?.basis||f.period!==g?.period||f.basis!==g?.basis)return false;
       if(['per','pbr'].includes(key)&&(!own||!v||!own.period||own.period!==v.period||own.basis!==v.basis||own.price_date!==v.price_date))return false;
       return numeric(metric(r,key))&&(!['per','pbr'].includes(key)||metric(r,key)>0);
     });
     return {count:matches.length,median:matches.length>=5?med(matches.map(r=>metric(r,key))):null};
   }
+  function comparableDetails(a,b,key){
+    return known(a.period)&&known(a.basis)&&a.period===b.period&&a.basis===b.basis&&
+      (!['per','pbr'].includes(key)||(known(a.price_date||a.observed_on)&&(a.price_date||a.observed_on)===(b.price_date||b.observed_on)));
+  }
   function sectors(rows,research={}){
     const groups=new Map();for(const r of rows){const key=r.industry||'산업 미분류';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(r);}
-    return [...groups].map(([name,rs])=>({name,count:rs.length,cap:rs.reduce((s,r)=>s+(numeric(metric(r,'market_cap_eok'))&&metric(r,'market_cap_eok')>0?metric(r,'market_cap_eok'):0),0),capCount:rs.filter(r=>metric(r,'market_cap_eok')>0).length,metrics:Object.fromEntries(dimensions.map(k=>{const valid=rs.filter(r=>metric(r,k)!==null),first=valid[0]&&detail(valid[0],research,k),comparable=!rs.some(r=>r.discovery)||(valid.length>0&&known(first.period)&&known(first.basis)&&valid.every(r=>{const d=detail(r,research,k);return d.period===first.period&&d.basis===first.basis;}));return [k,{value:comparable?med(valid.map(r=>metric(r,k))):null,count:valid.length,reason:comparable?'':'기간·기준 확인 또는 일치 필요'}];}))})).sort((a,b)=>b.cap-a.cap||a.name.localeCompare(b.name));
+    return [...groups].map(([name,rs])=>({name,count:rs.length,cap:rs.reduce((s,r)=>s+(numeric(metric(r,'market_cap_eok'))&&metric(r,'market_cap_eok')>0?metric(r,'market_cap_eok'):0),0),capCount:rs.filter(r=>metric(r,'market_cap_eok')>0).length,metrics:Object.fromEntries(dimensions.map(k=>{const valid=rs.filter(r=>metric(r,k)!==null&&(!['per','pbr'].includes(k)||metric(r,k)>0)),first=valid[0]&&detail(valid[0],research,k),comparable=valid.length>0&&valid.every(r=>comparableDetails(first,detail(r,research,k),k));return [k,{value:comparable?med(valid.map(r=>metric(r,k))):null,count:valid.length,reason:comparable?'':'기간·기준·가격일 확인 또는 일치 필요'}];}))})).sort((a,b)=>b.cap-a.cap||a.name.localeCompare(b.name));
   }
   function restoreWatch(value,rows,mode){
     if(!value||value.version!==1||value.data_mode!==mode||!Array.isArray(value.companies)||value.companies.length>10000)throw Error('관심목록 형식 또는 실제/가상 모드가 다릅니다.');

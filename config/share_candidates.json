@@ -175,6 +175,7 @@
     "src/advanced_visuals.js": "src/advanced_visuals.js",
     "tests/test_advanced_visuals.js": "tests/test_advanced_visuals.js",
     "tests/test_advanced_visuals_ui.py": "tests/test_advanced_visuals_ui.py",
-    "docs/ADVANCED_VISUALS.md": "docs/ADVANCED_VISUALS.md"
+    "docs/ADVANCED_VISUALS.md": "docs/ADVANCED_VISUALS.md",
+    "tests/test_workspace_audit_ui.py": "tests/test_workspace_audit_ui.py"
   }
 }

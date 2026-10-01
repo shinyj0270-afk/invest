@@ -57,3 +57,13 @@ assert.ok(element.innerHTML.includes('NAVER 공개 참고')&&element.innerHTML.i
 ui.render('trend');
 assert.ok(element.innerHTML.includes('가격 추세 충족 · 거래대금 미확인')&&element.innerHTML.includes('NAVER 전일 일별 자료'));
 console.log('PASS discovery: canonical + separate candidate eligibility, source metadata, comparisons, CSV, and UI labels');
+
+const dated=comparable.map((r,i)=>({...r,metric_details:{per:{...r.metric_details.per,observed_on:i?'2026-09-29':'2026-09-28'}}}));
+assert.equal(E.sectors(dated,{})[0].metrics.per.value,null,'mixed valuation dates cannot form sector median');
+const badRatios=comparable.map((r,i)=>({...r,metrics:{...r.metrics,per:i<2?-i:8}}));
+assert.equal(E.sectors(badRatios,{})[0].metrics.per.count,4,'zero and negative multiples excluded');
+const priceMeta=E.detail(candidates[0],candidateResearch,'price_rs');
+assert.equal(priceMeta.source,'NAVER 전일 일별 자료');
+assert.equal(priceMeta.period,'252거래일');
+assert.ok(discoveryCsv.includes('NAVER 전일 일별 자료'),'CSV retains technical source too');
+console.log('PASS valuation date/positive denominator and technical provenance regressions');

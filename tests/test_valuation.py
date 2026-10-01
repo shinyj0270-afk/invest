@@ -139,11 +139,11 @@ class ValuationTests(unittest.TestCase):
                 companies={self.row['code']: [self.observation()]})), encoding='utf-8')
             command = [sys.executable, str(root / 'tools/infomax_valuation.py'), '--base', str(base),
                 '--observations', str(observations), '--output', str(output)]
-            run = subprocess.run(command, capture_output=True, text=True)
+            run = subprocess.run(command, capture_output=True, text=True, encoding='utf-8')
             self.assertEqual(run.returncode, 0, run.stderr)
             original = output.read_bytes()
             self.assertEqual(json.loads(original)['companies'][0]['metrics']['per'], 10)
-            again = subprocess.run(command, capture_output=True, text=True)
+            again = subprocess.run(command, capture_output=True, text=True, encoding='utf-8')
             self.assertNotEqual(again.returncode, 0)
             self.assertEqual(output.read_bytes(), original)
 
