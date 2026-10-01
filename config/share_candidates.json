@@ -210,6 +210,9 @@
     "scripts/open-investment.ps1": "scripts/open-investment.ps1",
     "tests/test_holdings_sync.js": "tests/test_holdings_sync.js",
     "tests/test_holdings_sync.py": "tests/test_holdings_sync.py",
-    "tests/test_holdings_sync_ui.py": "tests/test_holdings_sync_ui.py"
+    "tests/test_holdings_sync_ui.py": "tests/test_holdings_sync_ui.py",
+    "investment/holding_market.py": "investment/holding_market.py",
+    "tests/test_holding_market.py": "tests/test_holding_market.py",
+    "tests/test_holding_market_ui.py": "tests/test_holding_market_ui.py"
   }
 }

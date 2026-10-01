@@ -3,8 +3,49 @@
 (() => {
   const P=PortfolioEngine;
   const marketInput=window.INVESTMENT_HOLDINGS_INPUT||null;
+  const catalog=new Map((window.INVESTMENT_HOLDINGS_CATALOG||[]).map(r=>[r.code,r]));
+  const quoteConfig=window.INVESTMENT_HOLDINGS_MARKET;
   const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   let data=P.empty(today()),proposal=null,detailCode='',sync=null,syncRestoring=false,holdingDraft=false,entryAuto=true;
+  let quoteDraft=false,lookupTimer=null;
+  const quoteChecks=new Map(),quoteBusy=new Set();
+  function marketFor(input,extra=[]){
+    const m=P.clone(marketInput),codes=new Set([...input.holdings.map(h=>h.code),...input.research.map(r=>r.code),...extra]);
+    m.as_of=today();
+    const index=new Map(m.research.map(r=>[r.code,r]));
+    for(const code of codes)if(catalog.has(code))index.set(code,catalog.get(code));
+    m.research=[...index.values()];return m;
+  }
+  function connected(input,extra=[]){return marketInput&&input.mode==='user_input'?P.attachMarket(input,marketFor(input,extra)):P.clone(input);}
+  function formResearch(code){try{return connected(data,[code]).research.find(r=>r.code===code);}catch{return data.research.find(r=>r.code===code);}}
+  function paintCompany(r){
+    $('pHoldingName').value=r?.name||'';$('pHoldingName').readOnly=!!r&&r.name!==r.code;
+    if(!quoteDraft){
+      $('pQuote').value=r?.price_krw??'';$('pQuoteDate').value=r?.price_date||data.as_of;
+      $('pQuoteSource').value=r?.price_source?.kind==='manual_input'?r.price_source.label.replace(/^(사용자 수기 입력|가상 테스트) · /,''):'';
+    }
+    $('pInputStatus').textContent=r?.price_krw?`연결 가격 ${fmt(r.price_krw,'원',0)} · ${r.price_date||'날짜 미확인'} · ${r.price_source?.label||'출처 미입력'}. 가격을 수정할 때 출처를 입력하세요.`:'현재가·기준일·출처를 입력하면 평가액과 손익을 계산할 수 있습니다.';
+  }
+  async function lookup(code,force=false){
+    if(!quoteConfig?.enabled||data.mode!=='user_input'||!/^\d{6}$/.test(code)||quoteBusy.has(code)||!force&&Date.now()-(quoteChecks.get(code)||0)<300000)return;
+    quoteBusy.add(code);quoteChecks.set(code,Date.now());$('pMarketStatus').textContent='기업·최근 완료 종가 확인 중';
+    try{
+      const response=await fetch(quoteConfig.endpoint+'?code='+encodeURIComponent(code)+(force?'&refresh=1':''),{headers:{'X-Dashboard-Token':quoteConfig.token},cache:'no-store'});
+      if(!response.ok)throw Error();const result=await response.json();
+      if(result.code!==code)throw Error();
+      if(result.row){
+        if(result.row.code!==code)throw Error();
+        const check=P.empty(data.as_of);check.research=[result.row];P.validate(check);catalog.set(code,result.row);
+        if(data.mode==='user_input'&&data.holdings.some(h=>h.code===code)){
+          const next=connected(data);if(JSON.stringify(next)!==JSON.stringify(data)){data=next;proposal=null;refresh();persist();}
+        }
+        if($('pCode').value.trim()===code&&data.mode==='user_input')paintCompany(formResearch(code));
+      }
+      $('pMarketStatus').textContent=(result.row?result.row.name+' · ':'')+(result.message||'기업·가격 확인 완료');
+    }catch{$('pMarketStatus').textContent='기업·가격 연결 대기 · 기존 입력과 관측값 유지';}
+    finally{quoteBusy.delete(code);}
+  }
+  function refreshQuotes(force=false){if(data.mode==='user_input')for(const h of data.holdings)lookup(h.code,force);}
   function persist(){if(sync&&!syncRestoring){let p;try{p=policy();}catch{p=sync.policy();}sync.changed({version:1,input:P.clone(data),policy:p});}}
   window.INVESTMENT_GET_HOLDINGS=()=>P.clone(data);
   window.INVESTMENT_GET_POLICY=()=>policy();
@@ -33,12 +74,10 @@
   function openEntry(){entryAuto=false;$('pEntryPanel').open=true;}
   $('pEntryPanel').querySelector('summary').addEventListener('click',()=>{entryAuto=false;});
   function loadHoldingForm(){
-    const code=$('pCode').value.trim(),h=data.holdings.find(v=>v.code===code),r=data.research.find(v=>v.code===code);
+    const code=$('pCode').value.trim(),h=data.holdings.find(v=>v.code===code),r=formResearch(code);
+    quoteDraft=false;
     $('pQty').value=h?.quantity??'';$('pCost').value=h?.avg_cost_krw??'';
-    $('pHoldingName').value=r?.name||'';$('pHoldingName').readOnly=!!r;
-    $('pQuote').value=r?.price_krw??'';$('pQuoteDate').value=r?.price_date||data.as_of;
-    $('pQuoteSource').value=r?.price_source?.kind==='manual_input'?r.price_source.label.replace(/^(사용자 수기 입력|가상 테스트) · /,''):'';
-    $('pInputStatus').textContent=r?.price_krw?`연결 가격 ${fmt(r.price_krw,'원',0)} · ${r.price_date||'날짜 미확인'} · ${r.price_source?.label||'출처 미입력'}. 가격을 수정할 때 출처를 입력하세요.`:'현재가·기준일·출처를 입력하면 평가액과 손익을 계산할 수 있습니다.';
+    paintCompany(r);
   }
   function missingValue(r,p){
     if(r.value_krw!==null)return `가격 ${fmt(r.research.price_krw,'원',0)} · ${r.research.price_date} · ${r.research.price_source?.label||''}`;
@@ -61,10 +100,11 @@
     $('pValue').textContent=fmt(b.total_krw,'원',0);
     $('pReviewCount').textContent=data.holdings.length?String(result.rows.filter(r=>['SELL','REVIEW','REDUCE'].includes(r.opinion)).length):'—';
     $('pWaitCount').textContent=data.holdings.length?String(result.rows.filter(r=>r.opinion==='WAIT').length):'—';
-    $('pHoldBody').innerHTML=result.rows.length?result.rows.map(r=>`<tr><td class="left"><b>${esc(r.name)}</b><div class="sub">${esc(r.code)}</div><div class="sub">${esc(missingValue(r,p))}</div>${r.cost_krw===null?'<div class="sub">매입가 입력 필요 · 손익 계산 대기</div>':''}</td><td>${fmt(r.quantity,'',0)}</td><td>${fmt(r.cost_krw,'',0)}</td><td>${fmt(r.value_krw,'',0)}</td><td>${fmt(r.pnl_krw,'',0)}</td><td>${fmt(r.pnl_pct,'%',2)}</td><td>${fmt(r.weight_pct,'%',2)}</td><td class="left">${tag(r.opinion)}</td><td class="left">${esc(r.portfolio_action)}</td><td><button class="small" data-holding-edit="${esc(r.code)}">입력 수정</button> <button class="small" data-review-detail="${esc(r.code)}">근거 보기</button></td></tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:40px">보유목록을 직접 입력하거나 JSON 파일을 가져오세요. 실제 보유종목은 포함되어 있지 않습니다.</td></tr>';
+    $('pHoldBody').innerHTML=result.rows.length?result.rows.map(r=>`<tr><td class="left">${window.parent!==window&&window.parent.INVESTMENT_CAN_OPEN_HOLDING_COMPANY?.(r.code)?`<button class="p-company-link" data-holding-company="${esc(r.code)}">${esc(r.name)}</button>`:`<b>${esc(r.name)}</b>`}<div class="sub">${esc(r.code)}</div><div class="sub">${esc(missingValue(r,p))}</div>${r.cost_krw===null?'<div class="sub">매입가 입력 필요 · 손익 계산 대기</div>':''}</td><td>${fmt(r.quantity,'',0)}</td><td>${fmt(r.cost_krw,'',0)}</td><td>${fmt(r.value_krw,'',0)}</td><td>${fmt(r.pnl_krw,'',0)}</td><td>${fmt(r.pnl_pct,'%',2)}</td><td>${fmt(r.weight_pct,'%',2)}</td><td class="left">${tag(r.opinion)}</td><td class="left">${esc(r.portfolio_action)}</td><td><button class="small" data-holding-edit="${esc(r.code)}">입력 수정</button> <button class="small" data-review-detail="${esc(r.code)}">근거 보기</button></td></tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:40px">보유목록을 직접 입력하거나 JSON 파일을 가져오세요. 실제 보유종목은 포함되어 있지 않습니다.</td></tr>';
     $('pBookNote').textContent=b.complete?'':[data.cash_krw===null?'현금 미입력: 현금이 없으면 0을 입력하세요.':'',b.missing_codes.length?'가격 확인 필요: '+b.missing_codes.join(', ')+'. 표의 가격 안내를 확인하고 입력 수정 버튼을 누르세요.':'','전체 평가액·비중은 모든 보유종목 가격과 현금을 확인한 뒤 계산합니다.'].filter(Boolean).join(' ');
-    $('pKnownCodes').innerHTML=data.research.map(r=>`<option value="${esc(r.code)}">${esc(r.name)}</option>`).join('');
+    $('pKnownCodes').innerHTML=[...new Map([...catalog,...data.research.map(r=>[r.code,r])]).values()].map(r=>`<option value="${esc(r.code)}">${esc(r.name)}</option>`).join('');
     $('pHoldBody').querySelectorAll('[data-holding-edit]').forEach(el=>el.onclick=()=>{openEntry();$('pCode').value=el.dataset.holdingEdit;loadHoldingForm();$('pCode').scrollIntoView({behavior:'smooth',block:'center'});});
+    $('pHoldBody').querySelectorAll('[data-holding-company]').forEach(el=>el.onclick=()=>window.parent.INVESTMENT_OPEN_HOLDING_COMPANY(el.dataset.holdingCompany));
     bindDetails('pHoldBody');
     renderDetail();
     return result;
@@ -105,7 +145,7 @@
     bindDetails('pProposalBody');
   }
   function refresh(){try{renderHoldings(policy());renderProposal();}catch(e){proposal=null;renderProposal();$('pHoldBody').innerHTML='<tr><td colspan="10">설정 오류로 재계산을 보류합니다.</td></tr>';$('pValue').textContent='—';$('pReviewCount').textContent='—';$('pWaitCount').textContent='—';$('pDetail').hidden=false;$('pDetail').innerHTML='<h3>설정 확인 필요</h3><p class="hint">포트폴리오 설정을 확인하면 다시 계산합니다.</p>';$('pBookNote').textContent='설정 오류로 재계산을 보류합니다.';toast('설정 검사: '+e.message);}}
-  function apply(x){P.validate(x);if(x.mode==='user_input'){let p;try{p=policy();}catch{p=sync?.policy()||P.DEFAULT;}HoldingsSync.validate({version:1,input:x,policy:p});}data=marketInput&&x.mode==='user_input'?P.attachMarket(x,marketInput):P.clone(x);proposal=null;detailCode='';$('pConfirm').checked=false;$('pCash').value=data.cash_krw??'';if(!syncRestoring)holdingDraft=false;loadHoldingForm();refresh();persist();}
+  function apply(x){P.validate(x);if(x.mode==='user_input'){let p;try{p=policy();}catch{p=sync?.policy()||P.DEFAULT;}HoldingsSync.validate({version:1,input:x,policy:p});}data=connected(x);proposal=null;detailCode='';$('pConfirm').checked=false;$('pCash').value=data.cash_krw??'';if(!syncRestoring)holdingDraft=false;loadHoldingForm();refresh();persist();}
   function protectReplace(){return !data.holdings.length&&!data.research.length||confirm('현재 입력을 교체합니다. 보유 입력 변경은 저장 및 PC 동기화에 반영됩니다. 필요한 내용은 먼저 내보내세요.');}
   function report(){
     const h=P.reviewHoldings(data,policy()),a=proposal;
@@ -126,8 +166,11 @@
   $('pClear').addEventListener('click',()=>{if(protectReplace()){if(data.mode==='fixture'){syncRestoring=true;try{apply(P.empty(today()));}finally{syncRestoring=false;}sync?.restore();}else apply(P.empty(today()));$('pJsonEditor').value='';toast('보유 입력 비우기를 반영했습니다. 저장된 실제 입력은 가상 예제로 교체하지 않습니다.');}});
   $('pLoadEditor').addEventListener('click',()=>{$('pJsonEditor').value=JSON.stringify(data,null,2);});
   $('pApplyEditor').addEventListener('click',()=>{try{apply(JSON.parse($('pJsonEditor').value));toast('형식 검사를 통과한 편집 내용을 적용했습니다.');}catch(e){toast('편집 적용 실패: '+e.message);}});
-  $('pCode').addEventListener('input',loadHoldingForm);
-  $('pSaveHolding').addEventListener('click',()=>{try{const code=$('pCode').value.trim(),r=data.research.find(v=>v.code===code),price=n('pQuote'),label=$('pQuoteSource').value.trim();let quote=null;if(price!==null){const unchanged=r?.price_krw===price&&r.price_date===$('pQuoteDate').value&&!label;if(!unchanged)quote={price,date:$('pQuoteDate').value,label,name:$('pHoldingName').value};}else if(label)throw Error('출처와 함께 현재가를 입력하세요.');const x=P.saveHolding(data,{code,quantity:n('pQty'),avg_cost_krw:n('pCost')},n('pCash'),quote);apply(x);toast('보유·가격·현금을 반영했습니다. 부족한 자료는 표 아래 안내를 확인하세요.');}catch(e){toast('보유 입력 실패: '+e.message);}});
+  $('pCode').addEventListener('input',()=>{loadHoldingForm();clearTimeout(lookupTimer);const code=$('pCode').value.trim();lookupTimer=setTimeout(()=>lookup(code),300);});
+  for(const id of ['pQuote','pQuoteDate','pQuoteSource'])$(id).addEventListener('input',()=>{quoteDraft=true;});
+  $('pQuoteRefresh').hidden=!quoteConfig?.enabled;
+  $('pQuoteRefresh').onclick=()=>{if(data.holdings.length)refreshQuotes(true);else lookup($('pCode').value.trim(),true);};
+  $('pSaveHolding').addEventListener('click',()=>{try{const code=$('pCode').value.trim(),r=formResearch(code),price=n('pQuote'),label=$('pQuoteSource').value.trim();let quote=null;if(price!==null){const unchanged=r?.price_krw===price&&r.price_date===$('pQuoteDate').value&&!label;if(!unchanged)quote={price,date:$('pQuoteDate').value,label,name:$('pHoldingName').value};}else if(label)throw Error('출처와 함께 현재가를 입력하세요.');const x=P.saveHolding(connected(data,[code]),{code,quantity:n('pQty'),avg_cost_krw:n('pCost')},n('pCash'),quote);apply(x);toast('보유·가격·현금을 반영했습니다. 부족한 자료는 표 아래 안내를 확인하세요.');}catch(e){toast('보유 입력 실패: '+e.message);}});
   $('pDeleteHolding').addEventListener('click',()=>{const code=$('pCode').value.trim();if(!data.holdings.some(h=>h.code===code)){toast('보유목록에 없는 코드입니다.');return;}if(!confirm('보유 입력에서 이 종목을 제거할까요? 실제 주식 매도가 아닙니다.'))return;const x=P.clone(data);x.holdings=x.holdings.filter(h=>h.code!==code);apply(x);});
   $('pSaveCash').addEventListener('click',()=>{try{const x=P.clone(data);x.cash_krw=n('pCash');apply(x);toast('입력한 현금을 평가액에 반영했습니다.');}catch(e){toast('현금 입력 실패: '+e.message);}});
   for(const id of ['pMax','pCompanyCap','pSectorCap','pGroupCap','pCashMin','pShock','pLossLimit','pPriceAge','pReviewAge'])$(id).addEventListener('input',()=>{proposal=null;$('pConfirm').checked=false;refresh();persist();});
@@ -154,6 +197,8 @@
       const focused=holdingDraft||ids.includes(document.activeElement?.id),draft=focused?ids.map(id=>[$(id),$(id).value]):[];
       syncRestoring=true;try{window.INVESTMENT_RESTORE_SESSION(s.input,s.policy);loadHoldingForm();}finally{syncRestoring=false;}
       for(const [el,value] of draft)el.value=value;
+      queueMicrotask(()=>{if(data.mode==='user_input'&&JSON.stringify(data)!==JSON.stringify(s.input))persist();refreshQuotes();});
     }
   });
+  refreshQuotes();setInterval(()=>refreshQuotes(),300000);
 })();

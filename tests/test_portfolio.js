@@ -110,4 +110,17 @@ test('manual source rejects unsafe optional URL and stale quote remains blocked'
  assert.equal(P.reviewHoldings(x).book.total_krw,null);assert.equal(P.reviewHoldings(x,{maxPriceAgeDays:10}).book.total_krw,12);
  x.research[0].price_source.url='javascript:alert(1)';assert.throws(()=>P.validate(x));
 });
+test('unresolved code identity enriches without changing holdings or research',()=>{
+ let x=P.saveHolding(P.empty('2026-10-01'),{code:'000001',quantity:10,avg_cost_krw:null},null,{price:100,date:'2026-09-30',label:'가상 입력'});
+ x.research[0].review.invalidation='manual note';const m=P.clone(x);m.holdings=[];
+ Object.assign(m.research[0],{name:'가상 회사',market:'KOSPI',security_type:'ordinary_candidate',analysis_profile:'nonfinancial_candidate',sector:'가상 산업'});
+ m.research[0].price_krw=90;m.research[0].price_date='2026-09-29';
+ const y=P.attachMarket(x,m);assert.equal(y.research[0].name,'가상 회사');assert.equal(y.research[0].price_krw,100);
+ assert.deepEqual(y.holdings,x.holdings);assert.equal(y.cash_krw,null);assert.deepEqual(y.research[0].review,x.research[0].review);
+ assert.equal(P.reviewHoldings(y).rows[0].opinion,'WAIT');
+});
+test('verified identity and issuer changes still fail without overwriting input',()=>{
+ const x=f();x.mode='user_input';const m=P.clone(x);m.research[0].issuer_id='DIFFERENT';
+ assert.throws(()=>P.attachMarket(x,m));m.research[0].issuer_id=x.research[0].issuer_id;m.research[0].name='different';assert.throws(()=>P.attachMarket(x,m));
+});
 console.log(count+' portfolio tests passed.');

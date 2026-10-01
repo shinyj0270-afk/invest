@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 from .core import validate_snapshot
-from .holdings_bridge import holdings_input
+from .holdings_bridge import holdings_input, holdings_catalog
 from .valuation import enrich_valuation
 from .workspace_research import build_research
 from .naver_reference import sanitize_references
@@ -45,6 +45,9 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
         values['INVESTMENT_HOLDINGS_SYNC'] = dict(enabled=True,endpoint='/holdings',token=live['token'])
     if snapshot['meta']['data_mode'] == 'user_input':
         values['INVESTMENT_HOLDINGS_INPUT'] = holdings_input(snapshot)
+        values['INVESTMENT_HOLDINGS_CATALOG'] = holdings_catalog(snapshot, market_cache)
+    if live and live.get('holdings_market'):
+        values['INVESTMENT_HOLDINGS_MARKET'] = dict(enabled=True,endpoint='/holding-market',token=live['token'])
     legacy = legacy.replace('<script>', '<script>Object.assign(window,' + script_json(values) + ');</script><script>', 1)
     # The parent owns navigation; retain internal tab buttons for existing detail flows.
     legacy = legacy.replace('</head>', '<style>header{display:none}main{max-width:none;padding:0}body{background:transparent}.notice,#scopeBar,.foot,#clearData{display:none}</style></head>')

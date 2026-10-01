@@ -20,6 +20,8 @@ from .financial_table import load_local_financials
 from .holdings_sync import load_service, SyncError, LIMIT
 from .local_config import load_local
 from .core import validate_snapshot
+from .holding_market import HoldingMarket
+from urllib.parse import urlsplit, parse_qs
 
 
 def public_receipt(receipt):
@@ -43,7 +45,7 @@ def saved_data(root, *, force=False):
         data_as_of=snapshot['meta']['price_date'] if snapshot else None,stale=True,error=None))
 
 
-def handler_for(root, *, refresh=ensure_data, token=None, holdings=None):
+def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=None):
     token = token or secrets.token_urlsafe(32)
 
     class DashboardHandler(BaseHTTPRequestHandler):
@@ -64,6 +66,16 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None):
                     (self.headers.get('Origin')==origin if mutation else self.headers.get('Origin') in (None,origin)))
 
         def do_GET(self):
+            if urlsplit(self.path).path=='/holding-market':
+                if not self.authorized():self.send_body(403,'{"error":"요청 거부"}','application/json');return
+                query=parse_qs(urlsplit(self.path).query)
+                try:
+                    if set(query)-{'code','refresh'} or len(query.get('code',[]))!=1 or query.get('refresh') not in (None,['1']):raise ValueError()
+                    if quotes is None:self.send_body(503,'{"error":"가격 연결 설정 필요"}','application/json');return
+                    result=quotes.lookup(query['code'][0],force=True) if query.get('refresh') else quotes.lookup(query['code'][0])
+                    self.send_body(200,json.dumps(result,ensure_ascii=False),'application/json')
+                except ValueError:self.send_body(400,'{"error":"종목코드 형식 확인 필요"}','application/json')
+                return
             if self.path=='/health':
                 root_id=hashlib.sha256(str(Path(root).resolve()).encode()).hexdigest()
                 self.send_body(200,json.dumps(dict(app='investment-holdings-sync',version=1,root_id=root_id)),'application/json');return
@@ -90,7 +102,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None):
                            f'<p>{message}</p><p>기존 갱신 앱에서 저장자료 연결을 확인하세요.</p></main></html>')
                 self.send_body(200, content, 'text/html')
                 return
-            live = dict(token=token, receipt=receipt, snapshot_id=digest(result['snapshot']),holdings_sync=holdings is not None)
+            live = dict(token=token, receipt=receipt, snapshot_id=digest(result['snapshot']),holdings_sync=holdings is not None,holdings_market=quotes is not None)
             self.send_body(200, export_workspace(result['snapshot'], live=live,
                 events=load_cached_events(root, result['snapshot']),
                 references=load_cached_references(root, result['snapshot']),
@@ -130,6 +142,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None):
 
 def serve(root, *, port=8767, saved_only=False):
     holdings=load_service(root)
-    with ThreadingHTTPServer(('127.0.0.1', port), handler_for(root,holdings=holdings,refresh=saved_data if saved_only else ensure_data)) as server:
+    quotes=HoldingMarket(root,lambda:saved_data(root)['snapshot'])
+    with ThreadingHTTPServer(('127.0.0.1', port), handler_for(root,holdings=holdings,quotes=quotes,refresh=saved_data if saved_only else ensure_data)) as server:
         print(f'INVESTMENT live dashboard: http://127.0.0.1:{server.server_port}/', flush=True)
         server.serve_forever()

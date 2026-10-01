@@ -230,7 +230,12 @@ const PortfolioEngine = (() => {
     for(const current of market.research){
       const row=index.get(current.code);
       if(!row){result.research.push(clone(current));continue;}
-      if(['market','security_type','analysis_profile','name'].some(k=>row[k]!==current[k]))
+      const placeholder=row.issuer_id===row.code&&row.name===row.code&&
+        ['market','security_type','analysis_profile'].every(k=>row[k]==='unknown');
+      if(placeholder){
+        for(const key of ['issuer_id','name','market','security_type','analysis_profile'])row[key]=current[key];
+        if(row.sector===null)row.sector=current.sector;
+      }else if(['issuer_id','market','security_type','analysis_profile','name'].some(k=>row[k]!==current[k]))
         throw Error(current.code+': 종목 식별 정보가 다릅니다. 입력을 확인하세요.');
       if(own(current,'pending_events'))row.pending_events=clone(current.pending_events);
       if(current.price_date&&(!row.price_date||(current.price_date>row.price_date || current.price_date===row.price_date&&row.price_source?.kind!=='manual_input'))){

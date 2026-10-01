@@ -61,7 +61,7 @@ with sync_playwright() as p:
     page.locator('#avReview').click();frame=page.frame_locator('#detailFrame')
     # The real payload already has reviewed research, so switching to a fixture needs confirmation.
     page.once('dialog', lambda dialog: dialog.accept())
-    frame.locator('#pFixture').click()
+    frame.locator('#pManagement summary').click();frame.locator('#pFixture').click()
     page.locator('[data-page=portfolio]').click()
     frame.locator('#pConfirm').check();frame.locator('#pGenerate').click()
     # This synthetic holdings input is browser-local and explicitly labelled as a fixture.
