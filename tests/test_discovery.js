@@ -47,6 +47,8 @@ assert.ok(discoveryCsv.includes('per_source')&&discoveryCsv.includes('per_period
 assert.ok(discoveryCsv.includes('NAVER 공개 참고')&&discoveryCsv.includes('원천 기간 미명시'),'CSV retains per-field evidence');
 const vm=require('node:vm'),fs=require('node:fs'),context={DiscoveryEngine:E};
 vm.runInNewContext(fs.readFileSync(require.resolve('../src/financial_table_ui.js'),'utf8'),context);
+vm.runInNewContext(fs.readFileSync(require.resolve('../src/company_detail_engine.js'),'utf8'),context);
+vm.runInNewContext(fs.readFileSync(require.resolve('../src/company_detail_ui.js'),'utf8'),context);
 vm.runInNewContext(fs.readFileSync(require.resolve('../src/research_ui.js'),'utf8')+'\nglobalThis.UI=ResearchUI;',context);
 vm.runInNewContext(fs.readFileSync(require.resolve('../src/ebitda_inputs.js'),'utf8'),context);
 vm.runInNewContext(fs.readFileSync(require.resolve('../src/ebitda_editor.js'),'utf8'),context);

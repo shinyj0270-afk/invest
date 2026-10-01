@@ -27,7 +27,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     analysis = enrich_valuation(snapshot)
     research = build_research(analysis, events=events)
     discovery = build_discovery(analysis, research, market_cache)
-    financial_tables = {r['code']: build_table(r, analysis, (financials or {}).get(r['code'])) for r in analysis['companies']}
+    financial_tables = {r['code']: build_table(r, analysis, (financials or {}).get(r['code']),max_columns=48) for r in analysis['companies']}
     company_details = build_details(analysis, financial_tables, market_cache)
     # Every analysis view uses the same date-checked metrics; keep original payload intact.
     for row in analysis['companies']:

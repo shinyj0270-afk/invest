@@ -54,6 +54,8 @@ def build_details(snapshot, tables, cache=None):
         # FinancialTable has already checked identity, availability, periods and duplicates.
         statement_groups=[dict(id=g['id'],basis=g['basis'],cadence=g['cadence'],columns=[
             dict(period_end=c['period_end'],available_at=c['available_at'],source=c['source'],
+                 source_url=c.get('source_url'),receipt=c.get('receipt'),
+                 filing_available_at=c.get('filing_available_at'),
                  values=c['statement_values'],cell_notes=c['cell_notes']) for c in g['columns']]) for g in groups]
         dividends=[dict(period_end=a['period_end'],dps=a['dps'],source='저장 연간 자료')
             for a in r.get('annual',[]) if valid_day(a.get('period_end')) and a['period_end'] <= snapshot['meta']['price_date']

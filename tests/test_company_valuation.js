@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict'),E=require('../src/company_detail_engine');
+const qs=['2023-03-31','2023-06-30','2023-09-30','2023-12-31','2024-03-31'].map((d,i)=>({period_end:d,available_at:['2023-05-15','2023-08-14','2023-11-14','2024-03-15','2024-05-15'][i],source:'DART',values:{revenue:100,operating_profit:10,net_income:8,parent_net:6,parent_equity:120,equity:150,assets:200,liabilities:50,ocf:20,capex_ppe:-5,capex_intangibles:-2,cash_start:40+i,cash_end:41+i,eps:3}}));
+const model={groups:[{basis:'CFS',cadence:'quarter',columns:qs}],chart:{as_of:'2024-06-01',bars:[{date:'2024-03-14',close:100},{date:'2024-03-15',close:100},{date:'2024-05-15',close:120},{date:'2024-06-01',close:120}]}};
+const row={code:'x',metrics:{market_cap_eok:120}},v=E.valuation(row,model);
+assert.equal(v.history[0].per,null);assert.equal(v.history[1].period,'2023-12-31');assert.equal(v.history[2].period,'2024-03-31');assert.equal(v.current.per,5);assert.equal(v.current.pbr,1);
+const ttm=E.periods(model,'CFS','ttm')[0].values;assert.equal(ttm.ocf,80);assert.equal(ttm.fcf,52);assert.equal(ttm.cash_start,40);assert.equal(ttm.cash_end,44);assert.equal(ttm.eps,12);
+const missing=structuredClone(model);missing.groups[0].columns[1].values.ocf=null;assert.equal(E.periods(missing,'CFS','ttm')[0].values.ocf,null);assert.equal(E.valuation(row,missing).history[1].pcr,null);
+const loss=structuredClone(model);loss.groups[0].columns.forEach(c=>c.values.parent_net=-2);assert.equal(E.valuation(row,loss).current.per,null);
+const dist=E.distribution(Array.from({length:30},(_,i)=>({per:i+1})),'per',15);assert.equal(dist.percentile,50);assert.equal(dist.histogram.reduce((s,b)=>s+b.count,0),30);
+const flat=E.distribution(Array.from({length:30},()=>({per:2})),'per',2);assert.equal(flat.histogram.reduce((s,b)=>s+b.count,0),30);assert.equal(E.distribution([{per:-1}],'per',1),null);
+assert.equal(E.rim(100,10,.1).scenarios[0].value,100);assert.equal(E.rim(100,10,0),null);assert.equal(E.rim(null,10,.1),null);
+const factors=E.decomposition(100,130,10,15);assert.equal(factors.start+factors.profit+factors.multiple,factors.end);assert.equal(factors.profit,50);assert.equal(factors.multiple,-20);assert.equal(E.decomposition(100,130,-10,15),null);
+const summary=E.summary(row,model,{rows:{}},{financial_basis:'CFS',price_date:'2024-06-01'});assert.equal(summary.length,11);assert.equal(summary.find(x=>x[0]==='growth')[2],0);assert.equal(summary.find(x=>x[0]==='roe')[2],20);
+console.log('PASS valuation: submission dates, missing/loss exclusions, cash/TTM accounting, 11 common metrics, histogram/RIM/factor reconciliation');
