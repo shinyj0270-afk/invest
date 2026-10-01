@@ -72,4 +72,42 @@ test('review cannot precede source availability',()=>{const x=f();x.research[0].
 test('all unknown candidates not converted to cash-only opinion',()=>{const x=f();x.research.forEach(r=>r.review.thesis='unknown');const a=P.propose(x,cfg());assert.equal(a.status,'DATA_REQUIRED');assert.equal(a.cash_pct,null);});
 test('all missing sectors require data instead of cash opinion',()=>{const x=f();x.research=x.research.slice(0,2);x.research.forEach(r=>r.sector=null);const a=P.propose(x,cfg());assert.equal(a.status,'DATA_REQUIRED');assert.equal(a.cash_pct,null);});
 test('mixed adverse and unknown zero-candidate outcome stays incomplete',()=>{const x=f();x.research=x.research.slice(5);x.research[1].review.thesis='broken';const a=P.propose(x,cfg());assert.equal(a.cash_pct,null);});
+
+test('manual unknown company computes book without inventing research',()=>{
+ const x=P.empty('2026-10-01'),before=JSON.stringify(x);
+ const y=P.saveHolding(x,{code:'000001',quantity:10,avg_cost_krw:10000},200000,{price:12000,date:'2026-10-01',label:'가상 입력',name:'가상 기업'});
+ const r=P.reviewHoldings(y);assert.equal(r.book.total_krw,320000);assert.equal(r.rows[0].cost_krw,100000);
+ assert.equal(r.rows[0].value_krw,120000);assert.equal(r.rows[0].pnl_krw,20000);assert.ok(Math.abs(r.rows[0].pnl_pct-20)<1e-9);
+ assert.equal(r.rows[0].weight_pct,37.5);assert.equal(r.rows[0].opinion,'WAIT');assert.equal(y.research[0].market,'unknown');
+ assert.deepEqual(y.research[0].evidence,[]);assert.equal(JSON.stringify(x),before);
+});
+test('cash zero works while blank cash preserves unknown denominator',()=>{
+ const h={code:'000001',quantity:2,avg_cost_krw:0},q={price:100,date:'2026-10-01',label:'가상 입력'};
+ let x=P.saveHolding(P.empty('2026-10-01'),h,null,q),r=P.reviewHoldings(x);
+ assert.equal(r.rows[0].pnl_krw,200);assert.equal(r.rows[0].pnl_pct,null);assert.equal(r.book.total_krw,null);assert.equal(r.rows[0].weight_pct,null);
+ x=P.saveHolding(x,h,0);r=P.reviewHoldings(x);assert.equal(r.book.total_krw,200);assert.equal(r.rows[0].weight_pct,100);
+});
+test('invalid manual quote fails atomically',()=>{
+ const x=P.empty('2026-10-01'),before=JSON.stringify(x),h={code:'000001',quantity:2,avg_cost_krw:100},q={price:120,date:'2026-10-01',label:'가상 입력'};
+ for(const patch of [{price:0},{price:-1},{price:Infinity},{date:'2026-10-02'},{date:'2026-02-30'},{label:''}])assert.throws(()=>P.saveHolding(x,h,0,{...q,...patch}));
+ assert.throws(()=>P.saveHolding(x,{...h,quantity:0},0,q));assert.throws(()=>P.saveHolding(x,h,-1,q));assert.equal(JSON.stringify(x),before);
+});
+test('manual quote does not overwrite identity or reviewed thesis',()=>{
+ const x=f(),r=x.research[0],before=P.clone(r);
+ const y=P.saveHolding(x,{code:r.code,quantity:2,avg_cost_krw:100},0,{price:120,date:x.as_of,label:'가상 입력',name:'wrong identity'});
+ assert.equal(y.research[0].name,before.name);assert.deepEqual(y.research[0].review,before.review);assert.deepEqual(y.research[0].evidence,before.evidence);
+});
+test('newer market quote replaces manual while equal date preserves explicit input',()=>{
+ const market=f();market.mode='user_input';market.holdings=[];
+ const h={code:market.research[0].code,quantity:2,avg_cost_krw:100};
+ let x=P.saveHolding(market,h,0,{price:120,date:market.as_of,label:'가상 입력'});
+ assert.equal(P.attachMarket(x,market).research[0].price_krw,120);
+ market.as_of='2026-09-26';market.research[0].price_date=market.as_of;
+ assert.equal(P.attachMarket(x,market).research[0].price_krw,market.research[0].price_krw);
+});
+test('manual source rejects unsafe optional URL and stale quote remains blocked',()=>{
+ let x=P.saveHolding(P.empty('2026-10-01'),{code:'000001',quantity:1,avg_cost_krw:10},0,{price:12,date:'2026-09-23',label:'가상 입력'});
+ assert.equal(P.reviewHoldings(x).book.total_krw,null);assert.equal(P.reviewHoldings(x,{maxPriceAgeDays:10}).book.total_krw,12);
+ x.research[0].price_source.url='javascript:alert(1)';assert.throws(()=>P.validate(x));
+});
 console.log(count+' portfolio tests passed.');

@@ -1,7 +1,7 @@
 /* Pure, deterministic review engine. No network, trading, or return prediction. */
 'use strict';
 const PortfolioEngine = (() => {
-  const VERSION = '0.2.0';
+  const VERSION = '0.2.1';
   const LABEL = Object.freeze({HOLD:'보유 검토',REDUCE:'비중 축소 검토',SELL:'매도 검토',REVIEW:'재검토',WAIT:'판단 보류'});
   // These are configurable engineering examples, NOT a validated investment policy.
   const DEFAULT = Object.freeze({maxCompanies:5,companyCapPct:25,sectorCapPct:40,groupCapPct:40,minCashPct:20,maxPriceAgeDays:4,maxReviewAgeDays:120,stressShockPct:-30,stressLossLimitPct:null,policyConfirmed:false});
@@ -71,7 +71,7 @@ const PortfolioEngine = (() => {
         const source=r.price_source;
         const valid=source&&text(source.label)&&(source.kind==='local_snapshot'
           ? /^[a-f0-9]{64}$/.test(source.snapshot_id||'') && !own(source,'url')
-          : urlOK(source.url));
+          : source.kind==='manual_input' ? (!own(source,'url') || urlOK(source.url)) : urlOK(source.url));
         if(!valid)throw Error('가격 출처 형식 오류');
       }
     }
@@ -201,6 +201,28 @@ const PortfolioEngine = (() => {
     rows[7].review.thesis='unknown';
     return {schema_version:'holdings-portfolio-0.1',mode:'fixture',as_of:asOf,snapshot_id:'FIXTURE-ONLY-20260925',cash_krw:200000,holdings:[{code:'990001',quantity:40,avg_cost_krw:10000,thesis_note:'테스트용 투자 메모'},{code:'990006',quantity:10,avg_cost_krw:17000},{code:'990007',quantity:10,avg_cost_krw:15000},{code:'990008',quantity:10,avg_cost_krw:17000}],research:rows};
   }
+  // Commit a complete manual form atomically; no quote or review is inferred from cost.
+  function saveHolding(input,holding,cash,quote=null){
+    validate(input);const x=clone(input),i=x.holdings.findIndex(h=>h.code===holding.code);
+    if(i>=0)x.holdings[i]={...x.holdings[i],...holding};else x.holdings.push(clone(holding));
+    x.cash_krw=cash;
+    if(quote){
+      if(!dateOK(quote.date)||quote.date>x.as_of)throw Error('가격 기준일은 평가일 '+x.as_of+' 이하여야 합니다.');
+      if(!text(quote.label)||quote.label.length>200)throw Error('가격 출처를 200자 이하로 입력하세요. 가상 가격이면 가상 입력이라고 표시하세요.');
+      let r=x.research.find(r=>r.code===holding.code);
+      if(!r){
+        r={code:holding.code,issuer_id:holding.code,name:quote.name?.trim()||holding.code,
+          market:'unknown',security_type:'unknown',analysis_profile:'unknown',sector:null,risk_group:null,
+          price_krw:null,price_date:null,price_source:null,evidence:[],
+          review:{thesis:'unknown',business:'unknown',finance:'unknown',valuation:'unknown',material_risk:'unknown',
+            reviewed_on:null,financial_period:'미입력',positives:[],negatives:[],invalidation:'',next_review_on:null}};
+        x.research.push(r);
+      }
+      r.price_krw=quote.price;r.price_date=quote.date;
+      r.price_source={kind:'manual_input',label:(x.mode==='fixture'?'가상 테스트 · ':'사용자 수기 입력 · ')+quote.label.trim()};
+    }
+    return validate(x);
+  }
   function attachMarket(input,market){
     validate(input);validate(market);
     if(input.mode!=='user_input'||market.mode!=='user_input')throw Error('실제/가상 보유 자료 혼합 금지');
@@ -211,7 +233,7 @@ const PortfolioEngine = (() => {
       if(['market','security_type','analysis_profile','name'].some(k=>row[k]!==current[k]))
         throw Error(current.code+': 종목 식별 정보가 다릅니다. 입력을 확인하세요.');
       if(own(current,'pending_events'))row.pending_events=clone(current.pending_events);
-      if(current.price_date&&(!row.price_date||current.price_date>=row.price_date)){
+      if(current.price_date&&(!row.price_date||(current.price_date>row.price_date || current.price_date===row.price_date&&row.price_source?.kind!=='manual_input'))){
         for(const key of ['price_krw','price_date','price_source'])row[key]=clone(current[key]);
       }
     }
@@ -220,6 +242,6 @@ const PortfolioEngine = (() => {
     result.market_data_as_of=market.market_data_as_of;
     return validate(result);
   }
-  return Object.freeze({VERSION,LABEL,DEFAULT,dateOK,urlOK,validate,cleanPolicy,companyReview,bookSummary,reviewHoldings,propose,stress,empty,fixture,clone,attachMarket,candidateChecks});
+  return Object.freeze({VERSION,LABEL,DEFAULT,dateOK,urlOK,validate,cleanPolicy,companyReview,bookSummary,reviewHoldings,propose,stress,empty,fixture,clone,attachMarket,candidateChecks,saveHolding});
 })();
 if(typeof module!=='undefined')module.exports=PortfolioEngine;

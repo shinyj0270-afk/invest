@@ -45,7 +45,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
         values['INVESTMENT_HOLDINGS_INPUT'] = holdings_input(snapshot)
     legacy = legacy.replace('<script>', '<script>Object.assign(window,' + script_json(values) + ');</script><script>', 1)
     # The parent owns navigation; retain internal tab buttons for existing detail flows.
-    legacy = legacy.replace('</head>', '<style>header{display:none}main{max-width:none;padding:0}body{background:transparent}.notice,.scope-bar,.foot,#clearData{display:none}</style></head>')
+    legacy = legacy.replace('</head>', '<style>header{display:none}main{max-width:none;padding:0}body{background:transparent}.notice,#scopeBar,.foot,#clearData{display:none}</style></head>')
     html = (src / 'workspace.html').read_text(encoding='utf-8')
     # Insert payload last so data containing template marker text stays literal.
     for marker, name in [('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*WORKSPACE_JS*/', 'workspace.js'),
