@@ -7,6 +7,7 @@ from .valuation import enrich_valuation
 from .workspace_research import build_research
 from .naver_reference import sanitize_references
 from .market_discovery import build_discovery
+from .financial_table import build_table
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -19,12 +20,13 @@ def script_json(value):
     return text
 
 
-def export_workspace(snapshot, *, live=None, events=None, references=None, market_cache=None):
+def export_workspace(snapshot, *, live=None, events=None, references=None, market_cache=None, financials=None):
     """Embed only the supplied snapshot; never read local credentials or holdings."""
     validate_snapshot(snapshot)
     analysis = enrich_valuation(snapshot)
     research = build_research(analysis, events=events)
     discovery = build_discovery(analysis, research, market_cache)
+    financial_tables = {r['code']: build_table(r, analysis, (financials or {}).get(r['code'])) for r in analysis['companies']}
     # Every analysis view uses the same date-checked metrics; keep original payload intact.
     for row in analysis['companies']:
         facts = research['rows'].get(row['code'])
@@ -45,10 +47,10 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     html = (src / 'workspace.html').read_text(encoding='utf-8')
     # Insert payload last so data containing template marker text stays literal.
     for marker, name in [('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*WORKSPACE_JS*/', 'workspace.js'),
-                         ('/*DISCOVERY_ENGINE*/', 'discovery_engine.js'), ('/*ADVANCED_VISUALS*/', 'advanced_visuals.js'), ('/*RESEARCH_UI*/', 'research_ui.js'),
+                         ('/*DISCOVERY_ENGINE*/', 'discovery_engine.js'), ('/*FINANCIAL_TABLE_UI*/', 'financial_table_ui.js'), ('/*ADVANCED_VISUALS*/', 'advanced_visuals.js'), ('/*RESEARCH_UI*/', 'research_ui.js'),
                          ('/*ENGINE*/', 'engine.js'), ('/*PORTFOLIO_ENGINE*/', 'portfolio_engine.js')]:
         html = html.replace(marker, (src / name).read_text(encoding='utf-8'))
     html = html.replace('/*LIVE_CONFIG*/', script_json(live))
     return html.replace('/*PAYLOAD*/', script_json(dict(snapshot=snapshot, analysis_snapshot=analysis,
-        research=research, discovery=discovery,
+        research=research, discovery=discovery, financial_tables=financial_tables,
         references=sanitize_references(references or {}, snapshot), detail_html=legacy)))

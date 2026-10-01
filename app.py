@@ -112,9 +112,10 @@ with st.sidebar.expander('통합 HTML 대시보드'):
         from investment.workspace_events import load_cached_events
         from investment.naver_reference import load_cached_references
         from investment.market_discovery import load_market_cache
+        from investment.financial_table import load_local_financials
         st.session_state['workspace_export_'+mode]=dict(snapshot_id=digest(snapshot),html=export_workspace(snapshot,
             events=load_cached_events(ROOT,snapshot),references=load_cached_references(ROOT,snapshot),
-            market_cache=load_market_cache(ROOT,snapshot)))
+            market_cache=load_market_cache(ROOT,snapshot),financials=load_local_financials(ROOT,snapshot)))
     exported=st.session_state.get('workspace_export_'+mode)
     if isinstance(exported,dict) and exported.get('snapshot_id')==digest(snapshot):
         st.download_button('통합 대시보드 HTML 다운로드',exported['html'],

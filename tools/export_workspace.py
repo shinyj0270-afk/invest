@@ -9,6 +9,7 @@ from investment.workspace_export import export_workspace
 from investment.naver_reference import load_cached_references
 from investment.workspace_events import load_cached_events
 from investment.market_discovery import load_market_cache
+from investment.financial_table import load_local_financials
 
 def main():
     config=load_local(ROOT)
@@ -19,7 +20,7 @@ def main():
     target.parent.mkdir(parents=True,exist_ok=True)
     target.write_text(export_workspace(snapshot,events=load_cached_events(ROOT,snapshot),
         references=load_cached_references(ROOT,snapshot),
-        market_cache=load_market_cache(ROOT,snapshot)),encoding='utf-8')
+        market_cache=load_market_cache(ROOT,snapshot),financials=load_local_financials(ROOT,snapshot)),encoding='utf-8')
     print(target.resolve())
 
 if __name__=='__main__':

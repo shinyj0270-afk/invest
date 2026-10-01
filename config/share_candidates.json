@@ -176,6 +176,10 @@
     "tests/test_advanced_visuals.js": "tests/test_advanced_visuals.js",
     "tests/test_advanced_visuals_ui.py": "tests/test_advanced_visuals_ui.py",
     "docs/ADVANCED_VISUALS.md": "docs/ADVANCED_VISUALS.md",
-    "tests/test_workspace_audit_ui.py": "tests/test_workspace_audit_ui.py"
+    "tests/test_workspace_audit_ui.py": "tests/test_workspace_audit_ui.py",
+    "investment/financial_table.py": "investment/financial_table.py",
+    "src/financial_table_ui.js": "src/financial_table_ui.js",
+    "tests/test_financial_table.py": "tests/test_financial_table.py",
+    "tests/test_financial_table_ui.py": "tests/test_financial_table_ui.py"
   }
 }

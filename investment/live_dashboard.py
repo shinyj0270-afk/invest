@@ -11,6 +11,7 @@ from .workspace_export import export_workspace
 from .naver_reference import load_cached_references
 from .workspace_events import load_cached_events
 from .market_discovery import load_market_cache
+from .financial_table import load_local_financials
 
 
 def public_receipt(receipt):
@@ -59,7 +60,7 @@ def handler_for(root, *, refresh=ensure_data, token=None):
             self.send_body(200, export_workspace(result['snapshot'], live=live,
                 events=load_cached_events(root, result['snapshot']),
                 references=load_cached_references(root, result['snapshot']),
-                market_cache=load_market_cache(root, result['snapshot'])), 'text/html')
+                market_cache=load_market_cache(root, result['snapshot']), financials=load_local_financials(root, result['snapshot'])), 'text/html')
 
         def do_POST(self):
             expected_origin = f'http://127.0.0.1:{self.server.server_port}'

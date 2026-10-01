@@ -140,20 +140,21 @@ def parse_info(grid):
     return result
 
 
-def parse_history(grid, kind, info):
+def parse_history(grid, kind, info, *, fields=None):
     require(len(grid) >= 3, f'{kind}: 1333 조건/종목명/항목 3행 필요')
     require(text(at(grid, 0, 0)) == '시작', f'{kind}: 조건행 누락')
     require(text(at(grid, 0, 7)) == ('일' if kind in ('prices', 'flows') else '분기'), f'{kind}: 주기 불일치')
     require(text(at(grid, 0, 9)) == 'D' and text(at(grid, 0, 11)) == '0', f'{kind}: 내림차순·영업일 0 필요')
     require(text(at(grid, 0, 13)) == '종가', f'{kind}: 종가 설정 필요')
-    width = len(FIELDS[kind]) + 1
+    fields = FIELDS[kind] if fields is None else fields
+    width = len(fields) + 1
     by_name = {v['name']: code for code, v in info.items()}
     result, seen = {}, set()
     for c in range(0, len(grid[2]), width):
         headers = [text(at(grid, 2, c + n)) for n in range(width)]
         if not any(headers):
             continue
-        require(headers == ['일자'] + FIELDS[kind], f'{kind}: {c+1}열 헤더 불일치')
+        require(headers == ['일자'] + fields, f'{kind}: {c+1}열 헤더 불일치')
         name = text(at(grid, 1, c))
         require(name in by_name and name not in seen, f'{kind}: 종목명 누락/중복/미등록 (값으로 저장 확인)')
         seen.add(name)
@@ -164,7 +165,7 @@ def parse_history(grid, kind, info):
                 continue
             d = day(cells[0], f'{kind}/{code}/{r+1}행')
             require(d not in observations, f'{kind}/{code}: 날짜 중복 {d}')
-            values = {f: number(v, f'{kind}/{code}/{d}/{f}') for f, v in zip(FIELDS[kind], cells[1:])}
+            values = {f: number(v, f'{kind}/{code}/{d}/{f}') for f, v in zip(fields, cells[1:])}
             if kind == 'prices':
                 require(values['현재가'] is None or values['현재가'] > 0, f'{code}/{d}: 가격은 양수여야 합니다.')
                 require(all(values[f] is None or values[f] >= 0 for f in FIELDS[kind][1:]), f'{code}/{d}: 거래량/대금 음수')
