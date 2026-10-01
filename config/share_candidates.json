@@ -180,6 +180,9 @@
     "investment/financial_table.py": "investment/financial_table.py",
     "src/financial_table_ui.js": "src/financial_table_ui.js",
     "tests/test_financial_table.py": "tests/test_financial_table.py",
-    "tests/test_financial_table_ui.py": "tests/test_financial_table_ui.py"
+    "tests/test_financial_table_ui.py": "tests/test_financial_table_ui.py",
+    "src/ebitda_inputs.js": "src/ebitda_inputs.js",
+    "src/ebitda_editor.js": "src/ebitda_editor.js",
+    "tests/test_ebitda_inputs.js": "tests/test_ebitda_inputs.js"
   }
 }

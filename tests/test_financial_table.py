@@ -27,7 +27,7 @@ class FinancialTableTests(unittest.TestCase):
     def test_missing_ebitda_and_invalid_denominator_do_not_become_zero(self):
         p=dict(self.period,ebitda=None,equity=-1,interest_expense=0)
         v=build_table(self.row,self.snapshot,self.source(p))['groups'][0]['columns'][0]['values']
-        for key in ['ebitda','ebitda_margin','ebitda_interest','debt_ratio','debt_ebitda']:self.assertIsNone(v[key])
+        for key in ['ebitda','ebitda_interest','debt_ratio','debt_ebitda']:self.assertIsNone(v[key])
     def test_quarterly_ebitda_is_not_annualized(self):
         p=dict(self.period,cadence='annual')
         quarter=build_table(self.row,self.snapshot,self.source(self.period))['groups'][0]['columns'][0]['values']
@@ -70,6 +70,12 @@ class FinancialTableTests(unittest.TestCase):
             config['units']['매출액(영업수익)']='원'
             (raw/'config-review.json').write_text(json.dumps(config),encoding='utf-8')
             self.assertEqual(load_local_financials(root,snapshot),{})
+    def test_margin_removed_and_interest_input_keeps_eok_unit(self):
+        table=build_table(self.row,self.snapshot,self.source(self.period))
+        self.assertNotIn('ebitda_margin',[r[0] for r in table['rows']])
+        column=table['groups'][0]['columns'][0]
+        self.assertNotIn('ebitda_margin',column['values'])
+        self.assertEqual(column['interest_expense_eok'],2)
     def test_fixture_never_reads_manual_real_files(self):
         self.assertEqual(load_local_financials('/path/does/not/exist',self.snapshot),{})
 

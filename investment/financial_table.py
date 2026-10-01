@@ -13,7 +13,6 @@ ROWS = [
     ('borrowings', '차입금', '억원', 'amount'),
     ('total_borrowings', '총차입금', '억원', 'amount'),
     ('operating_margin', '영업이익률', '%', 'ratio'),
-    ('ebitda_margin', 'EBITDA/매출액', '%', 'ratio'),
     ('ebitda_interest', 'EBITDA/이자비용', '배', 'ratio'),
     ('debt_ebitda', '총차입금/EBITDA', '배', 'ratio'),
     ('debt_ratio', '부채비율', '%', 'ratio'),
@@ -32,7 +31,6 @@ def values(record, cadence):
     raw={k:record.get(k) if num(record.get(k)) else None for k in INPUTS}
     result={k:raw[k]/1e8 if raw[k] is not None else None for k,_,_,kind in ROWS if kind=='amount'}
     result.update(operating_margin=ratio(raw['operating_profit'],raw['revenue'],100),
-        ebitda_margin=ratio(raw['ebitda'],raw['revenue'],100),
         ebitda_interest=ratio(raw['ebitda'],raw['interest_expense']),
         debt_ratio=ratio(raw['liabilities'],raw['equity'],100),
         borrowing_dependence=ratio(raw['total_borrowings'],raw['assets'],100),
@@ -73,14 +71,15 @@ def build_table(row, snapshot, supplemental=None):
         cell_notes={k:v for k,v in r.get('cell_notes',{}).items() if k in {x[0] for x in ROWS} and isinstance(v,str)}
         if cadence!='annual':cell_notes['debt_ebitda']='연간 EBITDA가 필요합니다. 분기·누적 EBITDA를 연간으로 환산하지 않습니다.'
         groups.setdefault((basis,cadence),[]).append(dict(period_end=end,available_at=available,
-            source=r.get('source','저장 재무자료'),values=values(r,cadence),cell_notes=cell_notes))
+            source=r.get('source','저장 재무자료'),values=values(r,cadence),
+            interest_expense_eok=r.get('interest_expense')/1e8 if num(r.get('interest_expense')) else None,cell_notes=cell_notes))
     result=[]
     for (basis,cadence),columns in groups.items():
         result.append(dict(id=basis+'-'+cadence,basis=basis,cadence=cadence,
             columns=sorted(columns,key=lambda r:r['period_end'])[-6:]))
     notes.extend(['금액: 억원. 손익은 표시 기간의 실적, 차입금은 기말 잔액입니다.',
         '부채비율 = 부채/자본, 차입금의존도 = 총차입금/자산. 분모가 0 이하이면 표시하지 않습니다.',
-        '미확보 항목은 —로 표시합니다. EBITDA는 감가상각 자료 없이 추정하지 않습니다.'])
+        '미확보 항목은 —로 표시합니다. EBITDA는 직접 입력하거나 동일 기간 상각비로 계산할 수 있습니다.'])
     if records and any(r.get('available_at') is None for r in records):
         notes.append('공개일을 확인하지 못한 저장 재무자료가 포함됩니다. 과거 시점 검증용 자료가 아닙니다.')
     return dict(groups=result,rows=ROWS,notes=list(dict.fromkeys(notes)))

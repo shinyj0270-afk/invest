@@ -1,5 +1,5 @@
 """Synthetic financial-table checks; optional actual stored HTML is read-only."""
-import os,sys,json
+import os,sys,json,re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from investment.fixture import make_fixture
@@ -13,11 +13,11 @@ with sync_playwright() as p:
     page.on('pageerror',lambda e:errors.append(str(e)))
     page.on('request',lambda r:external.append(r.url) if r.url.startswith('https:') else None)
     page.route('http://127.0.0.1:8799/**',lambda r:r.fulfill(body=html,content_type='text/html'))
-    page.goto('http://127.0.0.1:8799/');page.locator('[data-page=brief]').click()
+    page.goto(Path(actual).resolve().as_uri() if actual else 'http://127.0.0.1:8799/');page.locator('[data-page=brief]').click()
     if actual:page.locator('#researchCompany').select_option('005930')
     expect(page.locator('#financialSummary')).to_be_visible()
     expect(page.locator('.financial-cards .financial-card')).to_have_count(4)
-    expect(page.locator('.financial-table tbody tr')).to_have_count(12)
+    expect(page.locator('.financial-table tbody tr')).to_have_count(11)
     if actual:
         expect(page.locator('.financial-table thead')).to_contain_text('연결 재무(CFS) · 분기 실적')
         expect(page.locator('.financial-table thead')).to_contain_text('2025.09')
@@ -42,6 +42,69 @@ with sync_playwright() as p:
         page.locator('#financialPeriodSelect').select_option('CFS-annual')
         expect(page.locator('.financial-table thead')).to_contain_text('연간 실적')
         expect(page.locator('.financial-table thead')).to_contain_text('2025.12')
+    expect(page.locator('[data-financial-key=ebitda_margin]')).to_have_count(0)
+    if not actual:page.locator('#financialPeriodSelect').select_option('CFS-annual')
+    # All entered amounts below are explicit test inputs, including in actual HTML.
+    page.locator('[data-ebitda-period]').last.click()
+    page.locator('#ebitdaValue').fill('1,000.25')
+    page.locator('#ebitdaNote').fill('가상 UI 검증용 입력')
+    page.locator('#ebitdaForm button[type=submit]').click()
+    expect(page.locator('[data-financial-key=ebitda] td').last).to_contain_text('1,000')
+    expect(page.locator('[data-financial-key=ebitda] td').last).to_have_attribute('title',re.compile('사용자 직접 입력'))
+    page.locator('#ebitdaValue').fill('')
+    page.locator('#ebitdaForm button[type=submit]').click()
+    expect(page.locator('.ebitda-status')).to_contain_text('금액을 숫자로')
+    expect(page.locator('[data-financial-key=ebitda] td').last).to_contain_text('1,000')
+    page.locator('#ebitdaMethod').select_option('operating')
+    page.locator('#ebitdaOperatingProfit').fill('500')
+    page.locator('#ebitdaDepreciation').fill('40')
+    page.locator('#ebitdaAmortization').fill('10')
+    expect(page.locator('#ebitdaPreview')).to_have_text('550')
+    page.locator('#ebitdaForm button[type=submit]').click()
+    expect(page.locator('[data-financial-key=ebitda] td').last).to_contain_text('550')
+    page.reload();page.locator('[data-page=brief]').click()
+    if actual:page.locator('#researchCompany').select_option('005930')
+    else:page.locator('#financialPeriodSelect').select_option('CFS-annual')
+    expect(page.locator('[data-financial-key=ebitda] td').last).to_contain_text('550')
+    page.locator('[data-ebitda-period]').first.click()
+    page.locator('#ebitdaValue').fill('0')
+    page.locator('#ebitdaForm button[type=submit]').click()
+    expect(page.locator('[data-financial-key=ebitda] td').first).to_contain_text('0')
+    expect(page.locator('[data-financial-key=ebitda] td').last).to_contain_text('550')
+    with page.expect_download() as download_event:page.locator('#ebitdaExport').click()
+    download=download_event.value
+    saved=ROOT/'validation/ebitda-test-inputs.json';download.save_as(saved)
+    payload=json.loads(saved.read_text(encoding='utf-8'))
+    assert payload['unit']=='억원' and len(payload['entries'])==2
+    page.locator('[data-ebitda-period]').last.click();page.locator('#ebitdaReset').click()
+    expect(page.locator('[data-financial-key=ebitda] td').last).to_have_text('—')
+    page.locator('#ebitdaImport').set_input_files(str(saved))
+    expect(page.locator('.ebitda-status')).to_contain_text('입력 2개 불러옴')
+    expect(page.locator('[data-financial-key=ebitda] td').last).to_contain_text('550')
+    bad={**payload,'unit':'원'}
+    page.locator('#ebitdaImport').set_input_files({'name':'wrong-unit.json','mimeType':'application/json','buffer':json.dumps(bad).encode()})
+    expect(page.locator('.ebitda-status')).to_contain_text('억원 단위')
+    expect(page.locator('[data-financial-key=ebitda] td').last).to_contain_text('550')
+    # Printing must retain numbers rendered as editable buttons.
+    page.emulate_media(media='print')
+    expect(page.locator('[data-ebitda-period]').last).to_be_visible()
+    page.emulate_media(media='screen')
+    # A different company must not inherit the manual amount.
+    original=page.locator('#researchCompany').input_value()
+    another=page.evaluate("[...document.querySelector('#researchCompany').options].find(o=>o.value!==document.querySelector('#researchCompany').value).value")
+    page.locator('#researchCompany').select_option(another)
+    assert '550' not in page.locator('[data-financial-key=ebitda]').inner_text()
+    page.locator('#researchCompany').select_option(original)
+    if not actual:page.locator('#financialPeriodSelect').select_option('CFS-annual')
+    expect(page.locator('[data-financial-key=ebitda] td').last).to_contain_text('550')
+    # Remove test inputs before capturing the actual source dashboard.
+    page.locator('[data-ebitda-period]').first.click();page.locator('#ebitdaReset').click()
+    page.locator('[data-ebitda-period]').last.click();page.locator('#ebitdaReset').click()
+    page.locator('#ebitdaMethod').select_option('operating')
+    expect(page.locator('#ebitdaPreview')).to_have_text('—')
+    if actual:
+        page.add_style_tag(content='.mast,.workspace-bar{position:static!important}')
+        page.locator('#financialSummary').screenshot(path=str(ROOT/'validation/ebitda-inputs-actual.png'))
     page.set_viewport_size({'width':390,'height':844})
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
     assert page.locator('.financial-scroll').evaluate('e=>e.scrollWidth>e.clientWidth')
@@ -50,8 +113,8 @@ with sync_playwright() as p:
     corner=page.locator('.financial-table thead th[rowspan]').bounding_box()
     row_label=page.locator('.financial-table tbody th').first.bounding_box()
     assert abs(corner['x']-row_label['x'])<2
-    page.locator('#financialSummary').screenshot(path=str(ROOT/'validation/financial-table-mobile.png'))
+    page.locator('#financialSummary').screenshot(path=str(ROOT/'validation/ebitda-inputs-mobile.png'))
     assert not errors,errors
     assert not external,external
     browser.close()
-print('PASS financial table '+('actual' if actual else 'fixture')+': values, periods, units, missing, cards, comparison, company switch, 390px')
+print('PASS financial table '+('actual' if actual else 'fixture')+': manual/calculated EBITDA, removed margin, restore, export/import, period/company isolation, printing, 390px')
