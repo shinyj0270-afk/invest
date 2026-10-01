@@ -20,7 +20,7 @@
 .\.venv\Scripts\python.exe tools/company_statements.py --source api --start-year 2023 --end-year 2026 --through-quarter 2 --output private_data/infomax/company-statements.json
 ```
 
-`--codes`로 005930·000660·005380 중 필요한 기업을 선택합니다. 마지막 연도는 `--through-quarter`까지, 앞선 연도는 네 분기를 조회합니다. 키를 받은 뒤 API 모드의 실제 인증 성공은 별도로 확인해야 합니다. 이번 실행은 공개 조회이고 API 경로는 가상 응답으로 대조·키 미노출을 검사했습니다.
+`--codes`로 005930·000660·005380 중 필요한 기업을 선택합니다. 마지막 연도는 `--through-quarter`까지, 앞선 연도는 네 분기를 조회합니다. 2026-10-01 회사 PC에서 로컬 환경변수의 키로 실제 인증과 API 모드를 확인했습니다. 3사 연결·별도 84개 공시의 회사·접수번호와 자산/부채/자본 총계 대조가 모두 통과했습니다. 기존 재무 값은 변경되지 않았습니다. 손익/현금흐름 모든 계정의 API 일치까지 검사한 것은 아닙니다. 집 PC의 키 설정과 실제 조회는 별도로 확인합니다.
 
 API 모드는 [전체 재무제표 API](https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS003&apiId=2019020)의 회사·접수번호·대차 총계를 공개 원문과 대조합니다. 세 재무제표의 회사별 계정/단위는 [DART 공개 조회](https://opendart.fss.or.kr/disclosureinfo/fnltt/singl/main.do) 원문을 정규화합니다. 오류 메시지·파일에 키나 키가 포함된 요청 URL을 남기지 않습니다. 일부 조회·검증이 실패하면 `.incomplete.json`에 따로 저장하고 기존 연결 파일을 보존합니다.
 
