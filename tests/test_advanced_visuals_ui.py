@@ -46,8 +46,47 @@ with sync_playwright() as p:
     elapsed=float(page.locator('#advanced').get_attribute('data-render-ms'));assert elapsed<2000,elapsed
     nodes=page.locator('#advanced *').count();assert nodes<1600,nodes
     page.locator('[data-av-node]').first.click();expect(page.locator('#avNode')).to_contain_text('unavailable')
-    page.locator('#avReview').click();frame=page.frame_locator('#detailFrame');frame.locator('#pFixture').click()
-    page.locator('[data-page=advanced]').click();expect(page.locator('#avHoldings')).to_contain_text('가상 테스트');assert page.locator('.av-holding').count()>0
+    # Verify the live payload stays separate from the reviewed holdings/detail contract.
+    if actual:
+        expect(page.locator('.av-strip')).to_contain_text('실제 저장자료')
+        assert page.evaluate('WORKSPACE_DATA.analysis_snapshot.companies.length') == len(payload['analysis_snapshot']['companies'])
+        assert page.evaluate('WORKSPACE_DATA.discovery.coverage.rs_ready') == payload['discovery']['coverage']['rs_ready']
+        expect(page.locator('#avHoldings')).to_contain_text('브라우저 보유 입력')
+        page.evaluate('window.scrollTo(0,0)')
+        page.screenshot(path=str(ROOT/'validation/advanced-actual-desktop.png'))
+        page.set_viewport_size({'width':390,'height':844})
+        assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
+        page.screenshot(path=str(ROOT/'validation/advanced-actual-mobile.png'))
+        page.set_viewport_size({'width':1440,'height':1000})
+    page.locator('#avReview').click();frame=page.frame_locator('#detailFrame')
+    # The real payload already has reviewed research, so switching to a fixture needs confirmation.
+    page.once('dialog', lambda dialog: dialog.accept())
+    frame.locator('#pFixture').click()
+    page.locator('[data-page=portfolio]').click()
+    frame.locator('#pConfirm').check();frame.locator('#pGenerate').click()
+    # This synthetic holdings input is browser-local and explicitly labelled as a fixture.
+    expected=page.evaluate('''() => {
+      const w=document.querySelector('#detailFrame').contentWindow;
+      const data=w.INVESTMENT_GET_HOLDINGS(),policy=w.INVESTMENT_GET_POLICY();
+      const review=PortfolioEngine.reviewHoldings(data,policy),proposal=PortfolioEngine.propose(data,policy);
+      const formatted=v=>typeof v==='number'?v.toLocaleString('ko-KR',{maximumFractionDigits:2}):'unknown';
+      return {rows:review.rows.map(r=>({name:r.name,label:r.label,weight:formatted(r.weight_pct),pnl:formatted(r.pnl_krw)})),
+              status:proposal.status,items:proposal.items.map(i=>({...i,displayWeight:formatted(i.weight_pct)})),cash:formatted(proposal.cash_pct)};
+    }''')
+    assert expected['status']=='MODEL_PROPOSAL',expected['status']
+    assert 0<len(expected['items'])<=5
+    page.locator('[data-page=advanced]').click();expect(page.locator('#avHoldings')).to_contain_text('가상 테스트')
+    assert page.locator('.av-holding').count()==len(expected['rows'])
+    expect(page.locator('#avHoldings')).to_contain_text(expected['status'])
+    for i,row in enumerate(expected['rows']):
+        card=page.locator('.av-holding').nth(i)
+        expect(card).to_contain_text(row['name']+' · '+row['label'])
+        expect(card).to_contain_text('비중 '+row['weight']+'%')
+        expect(card).to_contain_text('손익 '+row['pnl']+'원')
+    for item in expected['items']:
+        expect(page.locator('#avHoldings')).to_contain_text((item.get('name') or item['code'])+' · '+item['displayWeight']+'%')
+    expect(page.locator('#avHoldings')).to_contain_text('현금 '+expected['cash']+'%')
+    expect(page.locator('#avHoldings')).to_contain_text('리스크 기여도 unknown')
     page.set_viewport_size({'width':390,'height':844});assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
     page.screenshot(path=str(ROOT/'validation/advanced-mobile.png'))
     assert not errors,errors
