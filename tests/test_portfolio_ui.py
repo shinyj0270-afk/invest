@@ -70,6 +70,7 @@ with sync_playwright() as p:
     check('leading zero manual code survives','000001' in page.locator('#pHoldBody').inner_text())
     check('missing researcher keeps holding in wait',page.locator('#pHoldBody tr').count()==5 and '판단 보류' in page.locator('#pHoldBody tr').last.inner_text())
     check('partial valuations do not create total',page.locator('#pValue').inner_text()=='—')
+    page.locator('summary').filter(has_text='연구 입력 고급 편집').click()
     page.locator('#pLoadEditor').click()
     check('JSON editor populated','holdings-portfolio-0.1' in page.locator('#pJsonEditor').input_value())
     page.locator('#pClear').click()

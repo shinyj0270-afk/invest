@@ -18,7 +18,7 @@
 2. 진행 중 로컬 변경이 없고 `main`이면 `git fetch origin` 후 차이를 확인하고 `git pull --ff-only`로만 수신한다.
 3. divergence, 미커밋 변경, 다른 작업 세션이 있으면 자동 정리하지 말고 중단·보고한다.
 4. 수신이 끝난 뒤 `AGENTS.md`, `CLAUDE.md`, `PROJECT_STATE.md`를 다시 읽고 작업을 시작한다.
-5. 로컬 설정·인증·DB·원자료·보유내역은 Git으로 동기화하지 않는다.
+5. 로컬 설정·인증·DB·원자료·보유내역은 공개 코드 Git 인계로 동기화하지 않는다. 사용자가 선택한 보유내역의 전용 비공개 자동 동기화는 docs/HOLDINGS_SYNC.md에 따라 별도로 수행한다.
 
 ## 로컬 Claude/Codex 종료 절차
 

@@ -38,9 +38,11 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     legacy = (src / 'shell.html').read_text(encoding='utf-8')
     for marker, name in [('/*STYLE*/', 'style.css'), ('/*ENGINE*/', 'engine.js'),
                          ('/*UI*/', 'ui.js'), ('/*PORTFOLIO_ENGINE*/', 'portfolio_engine.js'),
-                         ('/*PORTFOLIO_UI*/', 'portfolio_ui.js')]:
+                         ('/*PORTFOLIO_UI*/', 'portfolio_ui.js'), ('/*HOLDINGS_SYNC_ENGINE*/','holdings_sync.js'), ('/*HOLDINGS_SYNC_UI*/','holdings_sync_ui.js')]:
         legacy = legacy.replace(marker, (src / name).read_text(encoding='utf-8'))
     values = dict(INVESTMENT_INITIAL_SNAPSHOT=analysis)
+    if live and live.get('holdings_sync'):
+        values['INVESTMENT_HOLDINGS_SYNC'] = dict(enabled=True,endpoint='/holdings',token=live['token'])
     if snapshot['meta']['data_mode'] == 'user_input':
         values['INVESTMENT_HOLDINGS_INPUT'] = holdings_input(snapshot)
     legacy = legacy.replace('<script>', '<script>Object.assign(window,' + script_json(values) + ');</script><script>', 1)

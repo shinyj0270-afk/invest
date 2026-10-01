@@ -198,6 +198,18 @@
     "tests/test_company_valuation.js": "tests/test_company_valuation.js",
     "docs/OPENDART_STATEMENTS.md": "docs/OPENDART_STATEMENTS.md",
     "docs/HOLDINGS_PORTFOLIO_REVIEW.md": "docs/HOLDINGS_PORTFOLIO_REVIEW.md",
-    "tests/test_holdings_entry_ui.py": "tests/test_holdings_entry_ui.py"
+    "tests/test_holdings_entry_ui.py": "tests/test_holdings_entry_ui.py",
+    "config/holdings-sync.json": "config/holdings-sync.json",
+    "docs/HOLDINGS_SYNC.md": "docs/HOLDINGS_SYNC.md",
+    "src/holdings_sync.js": "src/holdings_sync.js",
+    "src/holdings_sync_ui.js": "src/holdings_sync_ui.js",
+    "investment/holdings_sync.py": "investment/holdings_sync.py",
+    "tools/holdings_sync_check.js": "tools/holdings_sync_check.js",
+    "tools/open_dashboard.py": "tools/open_dashboard.py",
+    "scripts/open-investment.cmd": "scripts/open-investment.cmd",
+    "scripts/open-investment.ps1": "scripts/open-investment.ps1",
+    "tests/test_holdings_sync.js": "tests/test_holdings_sync.js",
+    "tests/test_holdings_sync.py": "tests/test_holdings_sync.py",
+    "tests/test_holdings_sync_ui.py": "tests/test_holdings_sync_ui.py"
   }
 }

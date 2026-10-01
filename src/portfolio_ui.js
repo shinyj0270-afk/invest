@@ -1,10 +1,11 @@
-/* Browser-only UI. All imported holdings stay in memory until explicit export. */
+/* Manual entry with local persistence and optional private PC sync. */
 'use strict';
 (() => {
   const P=PortfolioEngine;
   const marketInput=window.INVESTMENT_HOLDINGS_INPUT||null;
   const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-  let data=P.empty(today()),proposal=null,detailCode='';
+  let data=P.empty(today()),proposal=null,detailCode='',sync=null,syncRestoring=false,holdingDraft=false;
+  function persist(){if(sync&&!syncRestoring){let p;try{p=policy();}catch{p=sync.policy();}sync.changed({version:1,input:P.clone(data),policy:p});}}
   window.INVESTMENT_GET_HOLDINGS=()=>P.clone(data);
   window.INVESTMENT_GET_POLICY=()=>policy();
   window.INVESTMENT_RESTORE_SESSION=(input,savedPolicy)=>{
@@ -97,8 +98,8 @@
     bindDetails('pProposalBody');
   }
   function refresh(){try{renderHoldings(policy());renderProposal();}catch(e){proposal=null;renderProposal();$('pHoldBody').innerHTML='<tr><td colspan="10">설정 오류로 재계산을 보류합니다.</td></tr>';$('pValue').textContent='—';$('pReviewCount').textContent='—';$('pWaitCount').textContent='—';$('pDetail').innerHTML='<h3>설정 확인 필요</h3><p class="hint">포트폴리오 설정을 확인하면 다시 계산합니다.</p>';$('pBookNote').textContent='설정 오류로 재계산을 보류합니다.';toast('설정 검사: '+e.message);}}
-  function apply(x){P.validate(x);data=marketInput&&x.mode==='user_input'?P.attachMarket(x,marketInput):P.clone(x);proposal=null;detailCode='';$('pConfirm').checked=false;$('pCash').value=data.cash_krw??'';loadHoldingForm();refresh();}
-  function protectReplace(){return !data.holdings.length&&!data.research.length||confirm('현재 입력을 교체합니다. 필요한 내용은 먼저 내보내세요. 원본 파일은 변경하지 않습니다.');}
+  function apply(x){P.validate(x);if(x.mode==='user_input'){let p;try{p=policy();}catch{p=sync?.policy()||P.DEFAULT;}HoldingsSync.validate({version:1,input:x,policy:p});}data=marketInput&&x.mode==='user_input'?P.attachMarket(x,marketInput):P.clone(x);proposal=null;detailCode='';$('pConfirm').checked=false;$('pCash').value=data.cash_krw??'';if(!syncRestoring)holdingDraft=false;loadHoldingForm();refresh();persist();}
+  function protectReplace(){return !data.holdings.length&&!data.research.length||confirm('현재 입력을 교체합니다. 보유 입력 변경은 저장 및 PC 동기화에 반영됩니다. 필요한 내용은 먼저 내보내세요.');}
   function report(){
     const h=P.reviewHoldings(data,policy()),a=proposal;
     let s=`# INVESTMENT 보유·포트폴리오 검토\n\n평가일: ${data.as_of}\n데이터 모드: ${data.mode==='fixture'?'가상 테스트 (실제 기업·수치 아님)':'사용자 입력 (원문 자동 검증 미실행)'}\n스냅샷: ${data.snapshot_id}\n엔진: ${P.VERSION}\n\n의견은 의사결정 보조이며 매매 지시·수익 보장·손실 한도 보장이 아닙니다.\n\n## 보유종목\n`;
@@ -109,20 +110,21 @@
     if(a?.rejected?.length)s+='\n제외·확인 대기: '+a.rejected.map(r=>`${r.name} (${r.code}): ${r.reasons.join(' / ')}`).join('\n')+'\n';
     s+='\n실제 시세·공시 수집, 계좌 연결, 외부 LLM 호출, 상관관계 추정, 거래비용, 자동 주문은 미구현입니다.\n';return s;
   }
+  $('pEntry').addEventListener('click',()=>{$('pCode').scrollIntoView({behavior:'smooth',block:'center'});$('pCode').focus();});
   $('pImport').addEventListener('click',()=>$('pFile').click());
   $('pFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>12*1024*1024)throw Error('12MB 이하 JSON만 지원합니다.');const x=JSON.parse(await f.text());P.validate(x);if(protectReplace()){apply(x);toast('입력 파일을 검사해 불러왔습니다. 원문 검증이나 실제 계좌 연결은 아닙니다.');}}catch(err){toast('보유·연구 불러오기 실패: '+err.message);}e.target.value='';});
   $('pTemplate').addEventListener('click',()=>download('holdings_research_empty.json',JSON.stringify(P.empty(today()),null,2)));
   $('pFixture').addEventListener('click',()=>{if(protectReplace()){apply(P.fixture());$('pLossLimit').value=25;toast('모든 기업·가격·출처가 허구인 테스트 예제입니다.');}});
   $('pExport').addEventListener('click',()=>download('holdings_research_private.json',JSON.stringify(data,null,2)));
-  $('pClear').addEventListener('click',()=>{if(protectReplace()){apply(P.empty(today()));$('pJsonEditor').value='';toast('새 보유·연구 입력만 비웠습니다. 원본 파일과 기존 조건검색 자료는 유지합니다.');}});
+  $('pClear').addEventListener('click',()=>{if(protectReplace()){if(data.mode==='fixture'){syncRestoring=true;try{apply(P.empty(today()));}finally{syncRestoring=false;}sync?.restore();}else apply(P.empty(today()));$('pJsonEditor').value='';toast('보유 입력 비우기를 반영했습니다. 저장된 실제 입력은 가상 예제로 교체하지 않습니다.');}});
   $('pLoadEditor').addEventListener('click',()=>{$('pJsonEditor').value=JSON.stringify(data,null,2);});
   $('pApplyEditor').addEventListener('click',()=>{try{apply(JSON.parse($('pJsonEditor').value));toast('형식 검사를 통과한 편집 내용을 적용했습니다.');}catch(e){toast('편집 적용 실패: '+e.message);}});
   $('pCode').addEventListener('input',loadHoldingForm);
   $('pSaveHolding').addEventListener('click',()=>{try{const code=$('pCode').value.trim(),r=data.research.find(v=>v.code===code),price=n('pQuote'),label=$('pQuoteSource').value.trim();let quote=null;if(price!==null){const unchanged=r?.price_krw===price&&r.price_date===$('pQuoteDate').value&&!label;if(!unchanged)quote={price,date:$('pQuoteDate').value,label,name:$('pHoldingName').value};}else if(label)throw Error('출처와 함께 현재가를 입력하세요.');const x=P.saveHolding(data,{code,quantity:n('pQty'),avg_cost_krw:n('pCost')},n('pCash'),quote);apply(x);toast('보유·가격·현금을 반영했습니다. 부족한 자료는 표 아래 안내를 확인하세요.');}catch(e){toast('보유 입력 실패: '+e.message);}});
   $('pDeleteHolding').addEventListener('click',()=>{const code=$('pCode').value.trim();if(!data.holdings.some(h=>h.code===code)){toast('보유목록에 없는 코드입니다.');return;}if(!confirm('보유 입력에서 이 종목을 제거할까요? 실제 주식 매도가 아닙니다.'))return;const x=P.clone(data);x.holdings=x.holdings.filter(h=>h.code!==code);apply(x);});
   $('pSaveCash').addEventListener('click',()=>{try{const x=P.clone(data);x.cash_krw=n('pCash');apply(x);toast('입력한 현금을 평가액에 반영했습니다.');}catch(e){toast('현금 입력 실패: '+e.message);}});
-  for(const id of ['pMax','pCompanyCap','pSectorCap','pGroupCap','pCashMin','pShock','pLossLimit','pPriceAge','pReviewAge'])$(id).addEventListener('input',()=>{proposal=null;$('pConfirm').checked=false;refresh();});
-  $('pConfirm').addEventListener('change',()=>{proposal=null;refresh();});
+  for(const id of ['pMax','pCompanyCap','pSectorCap','pGroupCap','pCashMin','pShock','pLossLimit','pPriceAge','pReviewAge'])$(id).addEventListener('input',()=>{proposal=null;$('pConfirm').checked=false;refresh();persist();});
+  $('pConfirm').addEventListener('change',()=>{proposal=null;refresh();persist();});
   $('pGenerate').addEventListener('click',()=>{try{proposal=P.propose(data,policy());renderHoldings(policy());renderProposal();}catch(e){proposal=null;renderProposal();toast('구성안 계산 실패: '+e.message);}});
   $('pExportReport').addEventListener('click',()=>download('INVESTMENT_Review_'+data.as_of+'.md',report(),'text/markdown;charset=utf-8'));
   if(marketInput){try{
@@ -137,4 +139,14 @@
     activate('holdings');
   }catch(e){toast('저장 시장자료 연결 실패: '+e.message);refresh();}}
   else {loadHoldingForm();refresh();}
+  for(const id of ['pCode','pHoldingName','pQty','pCost','pCash','pQuote','pQuoteDate','pQuoteSource'])$(id).addEventListener('input',()=>{holdingDraft=true;});
+  sync=HoldingsSyncUI.create({
+    getState:()=>{let p;try{p=policy();}catch{p=sync?.policy()||P.DEFAULT;}return {version:1,input:P.clone(data),policy:p};},
+    applyState:s=>{
+      const ids=['pCode','pHoldingName','pQty','pCost','pCash','pQuote','pQuoteDate','pQuoteSource'];
+      const focused=holdingDraft||ids.includes(document.activeElement?.id),draft=focused?ids.map(id=>[$(id),$(id).value]):[];
+      syncRestoring=true;try{window.INVESTMENT_RESTORE_SESSION(s.input,s.policy);loadHoldingForm();}finally{syncRestoring=false;}
+      for(const [el,value] of draft)el.value=value;
+    }
+  });
 })();

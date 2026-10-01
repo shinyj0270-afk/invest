@@ -41,6 +41,10 @@ tracked_private_paths는 경로 기반 경고일 뿐 비밀 탐지 인증이 아
 
 제외: config/local.json, runtime.local.json, .env, private_data/, data/, SQLite와 sidecar, 보유내역/투자노트, validation/current/, 로그·전체 세션·기존 dist/. 기존 ZIP과 과거 감사/상태 문서에는 실제 수치나 로컬 경로가 포함될 수 있어 외부 공유 승인본으로 간주하지 않는다. PROJECT_STATE.md도 기존 역사 기록을 포함하므로 전송 전 내용 검토가 필요하다.
 
+## 보유내역 자동 동기화 · 사용자 선택 2026-10-01
+
+보유 직접 입력을 기본으로 하고 GitHub 전용 비공개 저장소의 같은 보유내역을 두 PC에서 사용한다. scripts/open-investment.cmd가 연결 앱을 연다. 각 PC의 GitHub CLI 인증은 따로 준비한다. 보유·현금·연구/가격 입력·구성 설정의 저장과 복원은 코드 수신과 별도다. 충돌 시 덮어쓰지 않고 입력을 보관한다. 실제 사용법과 최초 이전은 [HOLDINGS_SYNC.md](HOLDINGS_SYNC.md)를 따른다. 집 PC 실제 실행은 해당 PC에서 별도로 확인한다.
+
 ## 다른 PC에서 할 일
 
 첫 PC에서 기존 작업본의 변경과 진행 중인 작업부터 점검한다. 깨끗하고 분기되지 않은 `main`에서만 아래 순서로 수신한다.

@@ -25,11 +25,12 @@
 <section id="panel-holdings" class="tab-panel" role="tabpanel" hidden>
   <div class="section-head"><div><h2>보유종목 점검</h2><p class="sub">기업의 투자 논리와 포트폴리오 내 비중을 따로 판단합니다.</p></div><span id="pMode" class="tag warning">보유·연구 입력 대기</span></div>
   <div class="p-intro">이 기능은 <b>입력된 연구 상태와 근거를 이용하는 규칙형 시제품</b>입니다. 실제 공시를 자동 분석하거나 증권계좌에 연결하지 않습니다. 의견은 매매 지시가 아니며 손실을 방지하지 못합니다.</div>
-  <div class="p-toolbar card"><button id="pImport" class="primary">보유·연구 JSON 가져오기</button><input id="pFile" type="file" accept=".json,application/json" hidden><button id="pTemplate">빈 입력 형식</button><button id="pFixture">가상 예제 실행</button><button id="pExport">현재 입력 내보내기</button><button id="pClear" class="danger">입력 비우기</button><span class="sub">새로고침 시 제거 · 계좌번호·인증키 불필요</span></div>
+  <div class="p-toolbar card"><button id="pEntry" class="primary">보유 직접 입력</button><button id="pImport">입력 파일 불러오기</button><input id="pFile" type="file" accept=".json,application/json" hidden><button id="pTemplate">빈 입력 형식</button><button id="pFixture">가상 예제 실행</button><button id="pExport">현재 입력 내보내기</button><button id="pClear" class="danger">입력 비우기</button><span class="sub">직접 입력 자동 보관 · 계좌번호·인증키 불필요</span></div>
+  <div class="card p-space"><p id="pSaveStatus" class="hint" role="status" aria-live="polite"></p><div class="p-toolbar"><button id="pSyncNow">지금 동기화 확인</button><a id="pOpenSync" href="http://127.0.0.1:8767/" target="_blank" rel="noopener">회사·집 동기화 대시보드 열기</a><button id="pReturnSaved">저장된 내 보유내역으로 돌아가기</button></div><div id="pSyncConflict" hidden><p id="pConflictText" class="hint"></p><div class="p-toolbar"><button id="pKeepLocal">충돌 항목에 내 입력 적용</button><button id="pUseRemote">충돌 항목에 다른 PC 값 적용</button></div></div></div>
   <div id="pScope" class="scope-bar"></div>
   <div class="cards"><div class="card stat"><div class="label">입력 범위 평가액</div><div class="big" id="pValue">—</div><div class="sub">보유주식 + 입력 현금 · 전체 자산 아님</div></div><div class="card stat"><div class="label">재검토·매도 검토</div><div class="big" id="pReviewCount">—</div><div class="sub">손익률 자체는 판정 기준이 아닙니다.</div></div><div class="card stat"><div class="label">판단 보류</div><div class="big" id="pWaitCount">—</div><div class="sub">자료 부족을 보유 의견으로 바꾸지 않습니다.</div></div></div>
+  <div class="p-space"><div class="card"><h3>보유종목 직접 추가·수정</h3><p class="hint">수량·매입가·현재가로 평가액과 손익을 계산합니다. 현금도 함께 반영합니다. 기업 검토에는 연구 근거를 추가해야 합니다.</p><div class="p-form"><label>종목코드<input id="pCode" list="pKnownCodes" inputmode="numeric" maxlength="6" placeholder="6자리 코드"></label><datalist id="pKnownCodes"></datalist><label>기업명 · 새 종목 선택 입력<input id="pHoldingName" maxlength="200" placeholder="연결된 기업명은 유지됩니다"></label><label>보유수량<input id="pQty" type="number" min="1" step="1" placeholder="주"></label><label>평균 매입가 · 원<input id="pCost" type="number" min="0" placeholder="미입력 가능"></label><label>현재가 · 원<input id="pQuote" type="number" min="0.01" step="any" placeholder="연결 가격이 없으면 입력"></label><label>가격 기준일<input id="pQuoteDate" type="date"></label><label>가격 출처<input id="pQuoteSource" maxlength="200" placeholder="예: 인포맥스 종가 / 가상 입력"></label><label>현금 · 원<input id="pCash" type="number" min="0" placeholder="현금 없음은 0, 모르면 미입력"></label></div><div class="p-toolbar"><button id="pSaveHolding" class="primary">보유·가격·현금 반영</button><button id="pDeleteHolding">해당 보유 삭제</button><button id="pSaveCash">현금 반영</button></div><p id="pInputStatus" class="hint" aria-live="polite"></p><p class="sub">현재가를 비워 두면 연결된 가격을 유지합니다. 수기 가격은 출처와 기준일을 남깁니다. 평가손익에는 세금·수수료·배당을 포함하지 않습니다.</p></div><details class="card p-space"><summary>연구 입력 고급 편집</summary><h3>현재 입력 JSON 편집</h3><p class="hint">연구 상태·긍정/반대 근거·공개일을 함께 입력합니다. 아래 예제는 형식 확인용입니다.</p><textarea id="pJsonEditor" spellcheck="false" aria-label="보유 연구 JSON 편집"></textarea><div class="p-toolbar"><button id="pLoadEditor">현재 입력 표시</button><button id="pApplyEditor">검사 후 적용</button></div></details></div>
   <div class="card p-space"><div class="card-head"><h3>현재 보유목록</h3><span class="sub">기업 의견 / 비중 의견 분리</span></div><div class="scroll"><table><thead><tr><th class="left">기업</th><th>수량</th><th>매입금액 · 원</th><th>평가액 · 원</th><th>평가손익 · 원</th><th>평가손익률</th><th>현재 비중</th><th class="left">기업 의견</th><th class="left">비중 의견</th><th>근거</th></tr></thead><tbody id="pHoldBody"></tbody></table></div><p id="pBookNote" class="hint"></p></div>
-  <div class="grid-two p-space"><div class="card"><h3>보유종목 직접 추가·수정</h3><p class="hint">수량·매입가·현재가로 평가액과 손익을 계산합니다. 현금도 함께 반영합니다. 기업 검토에는 연구 근거를 추가해야 합니다.</p><div class="p-form"><label>종목코드<input id="pCode" list="pKnownCodes" inputmode="numeric" maxlength="6" placeholder="6자리 코드"></label><datalist id="pKnownCodes"></datalist><label>기업명 · 새 종목 선택 입력<input id="pHoldingName" maxlength="200" placeholder="연결된 기업명은 유지됩니다"></label><label>보유수량<input id="pQty" type="number" min="1" step="1" placeholder="주"></label><label>평균 매입가 · 원<input id="pCost" type="number" min="0" placeholder="미입력 가능"></label><label>현재가 · 원<input id="pQuote" type="number" min="0.01" step="any" placeholder="연결 가격이 없으면 입력"></label><label>가격 기준일<input id="pQuoteDate" type="date"></label><label>가격 출처<input id="pQuoteSource" maxlength="200" placeholder="예: 인포맥스 종가 / 가상 입력"></label><label>현금 · 원<input id="pCash" type="number" min="0" placeholder="현금 없음은 0, 모르면 미입력"></label></div><div class="p-toolbar"><button id="pSaveHolding">보유·가격·현금 반영</button><button id="pDeleteHolding">해당 보유 삭제</button><button id="pSaveCash">현금 반영</button></div><p id="pInputStatus" class="hint" aria-live="polite"></p><p class="sub">현재가를 비워 두면 연결된 가격을 유지합니다. 수기 가격은 출처와 기준일을 남깁니다. 평가손익에는 세금·수수료·배당을 포함하지 않습니다.</p></div><div class="card"><h3>현재 입력 JSON 편집</h3><p class="hint">연구 상태·긍정/반대 근거·공개일을 함께 입력합니다. 아래 예제는 형식 확인용입니다.</p><textarea id="pJsonEditor" spellcheck="false" aria-label="보유 연구 JSON 편집"></textarea><div class="p-toolbar"><button id="pLoadEditor">현재 입력 표시</button><button id="pApplyEditor">검사 후 적용</button></div></div></div>
   <div id="pDetail" class="card p-space"><h3>판단 근거</h3><p class="hint">보유목록의 근거 버튼을 누르면 투자 논리·반대 근거·출처·재검토 조건을 확인할 수 있습니다.</p></div>
 </section>
 <section id="panel-portfolio" class="tab-panel" role="tabpanel" hidden>
@@ -509,13 +510,168 @@ const PortfolioEngine = (() => {
   return Object.freeze({VERSION,LABEL,DEFAULT,dateOK,urlOK,validate,cleanPolicy,companyReview,bookSummary,reviewHoldings,propose,stress,empty,fixture,clone,attachMarket,candidateChecks,saveHolding});
 })();
 if(typeof module!=='undefined')module.exports=PortfolioEngine;
-</script><script>/* Browser-only UI. All imported holdings stay in memory until explicit export. */
+
+/* Shared browser/server contract. Three-way merges never guess between conflicting edits. */
+'use strict';
+const HoldingsSync = (() => {
+  const P=typeof PortfolioEngine!=='undefined'?PortfolioEngine:require('./portfolio_engine.js');
+  const copy=v=>v===undefined?undefined:P.clone(v);
+  const canonical=v=>v===undefined?'undefined':JSON.stringify(v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.keys(v).sort().map(k=>[k,JSON.parse(canonical(v[k]))])):Array.isArray(v)?v.map(x=>JSON.parse(canonical(x))):v);
+  const equal=(a,b)=>canonical(a)===canonical(b);
+  function keys(x,allowed){if(!x||Object.keys(x).some(k=>!allowed.includes(k)))throw Error('보유 동기화에 알 수 없는 입력 항목이 있습니다. 입력 파일을 확인하세요.');}
+  function validate(s){
+    if(!s||s.version!==1)throw Error('보유 저장 형식을 확인하세요.');
+    P.validate(s.input);if(s.input.mode!=='user_input')throw Error('가상 예제는 PC 간 보유 동기화에 포함하지 않습니다.');
+    keys(s,['version','input','policy']);keys(s.input,['schema_version','mode','as_of','snapshot_id','cash_krw','holdings','research','market_data_as_of']);keys(s.policy,Object.keys(P.DEFAULT));
+    for(const h of s.input.holdings)keys(h,['code','quantity','avg_cost_krw','thesis_note']);
+    for(const r of s.input.research){
+      keys(r,['code','issuer_id','name','market','security_type','analysis_profile','sector','risk_group','price_krw','price_date','price_source','review','evidence','pending_events']);
+      keys(r.review,['thesis','business','finance','valuation','material_risk','reviewed_on','financial_period','positives','negatives','invalidation','next_review_on']);
+      if(r.price_source)keys(r.price_source,['kind','label','snapshot_id','url']);
+      for(const e of r.evidence)keys(e,['id','label','url','available_on','reviewed']);
+      for(const e of r.pending_events||[])keys(e,['id','title','url','published_on']);
+    }
+    P.cleanPolicy(s.policy);return s;
+  }
+  function pack(input,policy){return validate({version:1,input:copy(input),policy:P.cleanPolicy(policy)});}
+  function shape(s){
+    if(!s)return undefined;
+    const x=copy(validate(s));
+    for(const k of ['as_of','snapshot_id','market_data_as_of'])delete x.input[k];
+    for(const r of x.input.research){
+      r.price_record={};r.identity_record={};
+      for(const k of ['price_krw','price_date','price_source']){r.price_record[k]=r[k];delete r[k];}
+      for(const k of ['issuer_id','name','market','security_type','analysis_profile']){r.identity_record[k]=r[k];delete r[k];}
+    }
+    return x;
+  }
+  function merge(base,local,remote,choice=null){
+    const conflicts=[];
+    function walk(b,l,r,path){
+      if(equal(l,r))return copy(l);
+      if(equal(l,b))return copy(r);
+      if(equal(r,b))return copy(l);
+      const last=path.split('/').pop();
+      if(l&&r&&typeof l==='object'&&typeof r==='object'&&!Array.isArray(l)&&!Array.isArray(r)&&b!==undefined&&!['price_record','identity_record'].includes(last)){
+        const x=Object.create(null);for(const k of new Set([...Object.keys(b||{}),...Object.keys(l),...Object.keys(r)])){
+          const v=walk(b?.[k],l[k],r[k],path+'/'+k);if(v!==undefined)x[k]=v;
+        }return x;
+      }
+      const key=['holdings','research'].includes(last)?'code':['evidence','pending_events'].includes(last)?'id':null;
+      if(key&&Array.isArray(l)&&Array.isArray(r)){
+        const maps=[b||[],l,r].map(a=>new Map(a.map(v=>[v[key],v]))),items=[];
+        for(const id of [...new Set(maps.flatMap(m=>[...m.keys()]))].sort()){
+          const v=walk(maps[0].get(id),maps[1].get(id),maps[2].get(id),path+'/'+id);if(v!==undefined)items.push(v);
+        }return items;
+      }
+      conflicts.push({path,local:copy(l)??null,remote:copy(r)??null});
+      return copy(choice==='remote'?r:l);
+    }
+    // An absent initial base is an empty collection, not permission to overwrite another PC.
+    const shapedLocal=shape(local),shapedRemote=shape(remote);
+    let shapedBase=shape(base);
+    if(!shapedBase&&shapedLocal&&shapedRemote)shapedBase={version:1,input:{schema_version:'holdings-portfolio-0.1',mode:'user_input',cash_krw:null,holdings:[],research:[]},policy:P.cleanPolicy()};
+    const state=walk(shapedBase,shapedLocal,shapedRemote,'');
+    if(state){
+      const template=local||remote;
+      for(const k of ['as_of','snapshot_id','market_data_as_of'])if(template.input[k]!==undefined)state.input[k]=template.input[k];
+      for(const r of state.input.research){Object.assign(r,r.price_record,r.identity_record);delete r.price_record;delete r.identity_record;}
+      validate(state);
+    }
+    return {state:state||null,conflicts};
+  }
+  return Object.freeze({pack,validate,merge,equal});
+})();
+if(typeof module!=='undefined')module.exports=HoldingsSync;
+
+/* Local first, authenticated loopback sync. GitHub credentials never enter this page. */
+'use strict';
+const HoldingsSyncUI = (() => {
+  function create({getState,applyState}){
+    const H=HoldingsSync,config=window.INVESTMENT_HOLDINGS_SYNC;
+    const namespace=window.INVESTMENT_INITIAL_SNAPSHOT?.meta?.data_mode||'standalone';
+    const key='investment-holdings-private-v1-'+namespace;
+    const note=document.getElementById('pSaveStatus'),conflictBox=document.getElementById('pSyncConflict');
+    let state=null,base=null,dirty=false,busy=false,conflict=null,timer=null,stopped=false,storage=null,localSaved=false,unreadable=null,retryAt=0,retryMs=3000;
+    const say=t=>note.textContent=t;
+    try{storage=(window.parent===window?window:window.parent).localStorage;}catch{}
+    function save(){
+      try{if(!storage)throw Error();if(unreadable!==null){storage.setItem(key+'-unreadable-backup',unreadable);unreadable=null;}storage.setItem(key,JSON.stringify({version:1,state,base,dirty}));localSaved=true;return true;}
+      catch{localSaved=false;say('이 브라우저의 저장이 차단됐습니다. 현재 입력 내보내기로 보관하세요.');return false;}
+    }
+    function showConflict(c){
+      conflict=c;conflictBox.hidden=false;
+      const names={quantity:'수량',avg_cost_krw:'평균 매입가',cash_krw:'현금',price_record:'가격·기준일·출처',identity_record:'기업 식별',review:'기업 검토',policy:'구성 설정'};
+      const summary=c.conflicts.map(v=>v.path.split('/').filter(Boolean).map(k=>names[k]||k).join(' · ')).join(' / ');
+      document.getElementById('pConflictText').textContent='두 PC에서 다르게 수정한 항목: '+summary+'. 내 입력을 유지하고 자동 덮어쓰기를 멈췄습니다.';
+      say('동기화 충돌 · 적용할 값을 선택하세요.');
+    }
+    function accept(result,sent){
+      if(result.status==='conflict'){
+        showConflict({base:result.base,local:state||sent,remote:result.remote,conflicts:result.conflicts});return;
+      }
+      if(result.status!=='synced'){
+        const saved=localSaved||result.local_saved===true;
+        say((dirty?(saved?'이 PC에 저장 · 연결되면 자동 전송':'현재 화면에만 입력 유지 · 내보내기로 보관하세요.'):'마지막 저장내역 유지 · 연결 대기')+(result.message?' · '+result.message:''));return;
+      }
+      if(!result.state){say(state?'마지막 입력 유지 · 원격 저장내역 확인 필요':'PC 동기화 연결됨 · 보유종목을 직접 입력하세요.');return;}
+      const merged=H.merge(sent,state||sent,result.state);
+      if(merged.conflicts.length){showConflict({base:sent,local:state,remote:result.state,conflicts:merged.conflicts});return;}
+      state=merged.state;base=result.state;dirty=!H.equal(state,base);conflict=null;conflictBox.hidden=true;
+      const stored=save();applyState(state);
+      if(stored)say(dirty?'이 PC에 저장 · 변경사항 전송 대기':'회사·집 동기화 완료 · '+new Date().toLocaleTimeString('ko-KR',{timeZone:'Asia/Seoul'}));
+      else if(!dirty)say('회사·집 동기화 완료 · 이 브라우저의 로컬 저장은 차단됐습니다.');
+    }
+    async function sync(){
+      if(stopped||!config?.enabled||busy||conflict||Date.now()<retryAt||getState().input.mode!=='user_input')return;
+      busy=true;const sent=state,wasDirty=dirty;say('동기화 확인 중 · 입력은 이 PC에 유지됩니다.');
+      try{
+        const headers={'X-Dashboard-Token':config.token};let options={headers,cache:'no-store'};
+        if(wasDirty){options={...options,method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({state:sent,base})};}
+        const response=await fetch(config.endpoint||'/holdings',options);
+        if(!response.ok)throw Error();const result=await response.json();
+        // Changes made while a request was in flight are rebased, not replaced.
+        accept(result,sent);
+        if(result.status==='synced'){retryMs=3000;retryAt=0;}else {retryAt=Date.now()+retryMs;retryMs=Math.min(60000,retryMs*2);}
+      }catch{retryAt=Date.now()+retryMs;retryMs=Math.min(60000,retryMs*2);say(dirty?(localSaved?'이 PC에 저장 · 연결되면 자동 전송':'현재 화면에만 입력 유지 · 내보내기로 보관하세요.'):'마지막 입력 유지 · 동기화 연결 대기');}
+      finally{busy=false;if(dirty&&!conflict&&!stopped)timer=setTimeout(sync,Math.max(250,retryAt-Date.now()));}
+    }
+    function changed(next){
+      if(next.input.mode!=='user_input'){say('가상 예제 · 저장된 실제 보유내역은 유지됩니다.');return;}
+      H.validate(next);state=PortfolioEngine.clone(next);dirty=true;
+      const stored=save();if(stored)say(config?.enabled?'이 PC에 저장 · 동기화 대기':'이 브라우저에 저장 완료 · PC 동기화는 연결 앱에서 사용하세요.');
+      if(config?.enabled&&!conflict){retryAt=0;clearTimeout(timer);timer=setTimeout(sync,250);}
+    }
+    function restore(){if(state){applyState(state);say(config?.enabled?'저장된 보유내역 복원 · 동기화 확인 중':'이 브라우저의 보유내역 복원 완료');}if(config?.enabled)sync();}
+    function resolve(choice){
+      if(!conflict)return;
+      const result=H.merge(conflict.base,state||conflict.local,conflict.remote,choice);
+      base=conflict.remote;conflict=null;conflictBox.hidden=true;state=result.state;dirty=true;retryAt=0;save();applyState(state);sync();
+    }
+    document.getElementById('pKeepLocal').onclick=()=>resolve('local');
+    document.getElementById('pUseRemote').onclick=()=>resolve('remote');
+    document.getElementById('pSyncNow').onclick=()=>{retryAt=0;if(!conflict)sync();};
+    document.getElementById('pReturnSaved').onclick=restore;
+    document.getElementById('pOpenSync').hidden=!!config?.enabled;
+    document.getElementById('pSyncNow').hidden=!config?.enabled;
+    try{
+      const raw=storage?.getItem(key);
+      if(raw){const v=JSON.parse(raw);if(v.version!==1)throw Error();H.validate(v.state);if(v.base)H.validate(v.base);state=v.state;base=v.base||null;dirty=v.dirty===true;localSaved=true;restore();}
+      else say(config?.enabled?'PC 동기화 연결 확인 중':'직접 입력을 반영하면 이 브라우저에 자동 저장합니다.');
+    }catch{try{unreadable=storage?.getItem(key)??null;}catch{}say('저장된 보유내역 형식 확인 필요 · 기존 저장 내용을 보존합니다.');}
+    if(config?.enabled){sync();const interval=setInterval(sync,20000);window.addEventListener('pagehide',()=>{stopped=true;clearInterval(interval);clearTimeout(timer);});}
+    return {changed,restore,policy:()=>state?.policy||PortfolioEngine.DEFAULT};
+  }
+  return Object.freeze({create});
+})();
+</script><script>/* Manual entry with local persistence and optional private PC sync. */
 'use strict';
 (() => {
   const P=PortfolioEngine;
   const marketInput=window.INVESTMENT_HOLDINGS_INPUT||null;
   const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-  let data=P.empty(today()),proposal=null,detailCode='';
+  let data=P.empty(today()),proposal=null,detailCode='',sync=null,syncRestoring=false,holdingDraft=false;
+  function persist(){if(sync&&!syncRestoring){let p;try{p=policy();}catch{p=sync.policy();}sync.changed({version:1,input:P.clone(data),policy:p});}}
   window.INVESTMENT_GET_HOLDINGS=()=>P.clone(data);
   window.INVESTMENT_GET_POLICY=()=>policy();
   window.INVESTMENT_RESTORE_SESSION=(input,savedPolicy)=>{
@@ -608,8 +764,8 @@ if(typeof module!=='undefined')module.exports=PortfolioEngine;
     bindDetails('pProposalBody');
   }
   function refresh(){try{renderHoldings(policy());renderProposal();}catch(e){proposal=null;renderProposal();$('pHoldBody').innerHTML='<tr><td colspan="10">설정 오류로 재계산을 보류합니다.</td></tr>';$('pValue').textContent='—';$('pReviewCount').textContent='—';$('pWaitCount').textContent='—';$('pDetail').innerHTML='<h3>설정 확인 필요</h3><p class="hint">포트폴리오 설정을 확인하면 다시 계산합니다.</p>';$('pBookNote').textContent='설정 오류로 재계산을 보류합니다.';toast('설정 검사: '+e.message);}}
-  function apply(x){P.validate(x);data=marketInput&&x.mode==='user_input'?P.attachMarket(x,marketInput):P.clone(x);proposal=null;detailCode='';$('pConfirm').checked=false;$('pCash').value=data.cash_krw??'';loadHoldingForm();refresh();}
-  function protectReplace(){return !data.holdings.length&&!data.research.length||confirm('현재 입력을 교체합니다. 필요한 내용은 먼저 내보내세요. 원본 파일은 변경하지 않습니다.');}
+  function apply(x){P.validate(x);if(x.mode==='user_input'){let p;try{p=policy();}catch{p=sync?.policy()||P.DEFAULT;}HoldingsSync.validate({version:1,input:x,policy:p});}data=marketInput&&x.mode==='user_input'?P.attachMarket(x,marketInput):P.clone(x);proposal=null;detailCode='';$('pConfirm').checked=false;$('pCash').value=data.cash_krw??'';if(!syncRestoring)holdingDraft=false;loadHoldingForm();refresh();persist();}
+  function protectReplace(){return !data.holdings.length&&!data.research.length||confirm('현재 입력을 교체합니다. 보유 입력 변경은 저장 및 PC 동기화에 반영됩니다. 필요한 내용은 먼저 내보내세요.');}
   function report(){
     const h=P.reviewHoldings(data,policy()),a=proposal;
     let s=`# INVESTMENT 보유·포트폴리오 검토\n\n평가일: ${data.as_of}\n데이터 모드: ${data.mode==='fixture'?'가상 테스트 (실제 기업·수치 아님)':'사용자 입력 (원문 자동 검증 미실행)'}\n스냅샷: ${data.snapshot_id}\n엔진: ${P.VERSION}\n\n의견은 의사결정 보조이며 매매 지시·수익 보장·손실 한도 보장이 아닙니다.\n\n## 보유종목\n`;
@@ -620,20 +776,21 @@ if(typeof module!=='undefined')module.exports=PortfolioEngine;
     if(a?.rejected?.length)s+='\n제외·확인 대기: '+a.rejected.map(r=>`${r.name} (${r.code}): ${r.reasons.join(' / ')}`).join('\n')+'\n';
     s+='\n실제 시세·공시 수집, 계좌 연결, 외부 LLM 호출, 상관관계 추정, 거래비용, 자동 주문은 미구현입니다.\n';return s;
   }
+  $('pEntry').addEventListener('click',()=>{$('pCode').scrollIntoView({behavior:'smooth',block:'center'});$('pCode').focus();});
   $('pImport').addEventListener('click',()=>$('pFile').click());
   $('pFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>12*1024*1024)throw Error('12MB 이하 JSON만 지원합니다.');const x=JSON.parse(await f.text());P.validate(x);if(protectReplace()){apply(x);toast('입력 파일을 검사해 불러왔습니다. 원문 검증이나 실제 계좌 연결은 아닙니다.');}}catch(err){toast('보유·연구 불러오기 실패: '+err.message);}e.target.value='';});
   $('pTemplate').addEventListener('click',()=>download('holdings_research_empty.json',JSON.stringify(P.empty(today()),null,2)));
   $('pFixture').addEventListener('click',()=>{if(protectReplace()){apply(P.fixture());$('pLossLimit').value=25;toast('모든 기업·가격·출처가 허구인 테스트 예제입니다.');}});
   $('pExport').addEventListener('click',()=>download('holdings_research_private.json',JSON.stringify(data,null,2)));
-  $('pClear').addEventListener('click',()=>{if(protectReplace()){apply(P.empty(today()));$('pJsonEditor').value='';toast('새 보유·연구 입력만 비웠습니다. 원본 파일과 기존 조건검색 자료는 유지합니다.');}});
+  $('pClear').addEventListener('click',()=>{if(protectReplace()){if(data.mode==='fixture'){syncRestoring=true;try{apply(P.empty(today()));}finally{syncRestoring=false;}sync?.restore();}else apply(P.empty(today()));$('pJsonEditor').value='';toast('보유 입력 비우기를 반영했습니다. 저장된 실제 입력은 가상 예제로 교체하지 않습니다.');}});
   $('pLoadEditor').addEventListener('click',()=>{$('pJsonEditor').value=JSON.stringify(data,null,2);});
   $('pApplyEditor').addEventListener('click',()=>{try{apply(JSON.parse($('pJsonEditor').value));toast('형식 검사를 통과한 편집 내용을 적용했습니다.');}catch(e){toast('편집 적용 실패: '+e.message);}});
   $('pCode').addEventListener('input',loadHoldingForm);
   $('pSaveHolding').addEventListener('click',()=>{try{const code=$('pCode').value.trim(),r=data.research.find(v=>v.code===code),price=n('pQuote'),label=$('pQuoteSource').value.trim();let quote=null;if(price!==null){const unchanged=r?.price_krw===price&&r.price_date===$('pQuoteDate').value&&!label;if(!unchanged)quote={price,date:$('pQuoteDate').value,label,name:$('pHoldingName').value};}else if(label)throw Error('출처와 함께 현재가를 입력하세요.');const x=P.saveHolding(data,{code,quantity:n('pQty'),avg_cost_krw:n('pCost')},n('pCash'),quote);apply(x);toast('보유·가격·현금을 반영했습니다. 부족한 자료는 표 아래 안내를 확인하세요.');}catch(e){toast('보유 입력 실패: '+e.message);}});
   $('pDeleteHolding').addEventListener('click',()=>{const code=$('pCode').value.trim();if(!data.holdings.some(h=>h.code===code)){toast('보유목록에 없는 코드입니다.');return;}if(!confirm('보유 입력에서 이 종목을 제거할까요? 실제 주식 매도가 아닙니다.'))return;const x=P.clone(data);x.holdings=x.holdings.filter(h=>h.code!==code);apply(x);});
   $('pSaveCash').addEventListener('click',()=>{try{const x=P.clone(data);x.cash_krw=n('pCash');apply(x);toast('입력한 현금을 평가액에 반영했습니다.');}catch(e){toast('현금 입력 실패: '+e.message);}});
-  for(const id of ['pMax','pCompanyCap','pSectorCap','pGroupCap','pCashMin','pShock','pLossLimit','pPriceAge','pReviewAge'])$(id).addEventListener('input',()=>{proposal=null;$('pConfirm').checked=false;refresh();});
-  $('pConfirm').addEventListener('change',()=>{proposal=null;refresh();});
+  for(const id of ['pMax','pCompanyCap','pSectorCap','pGroupCap','pCashMin','pShock','pLossLimit','pPriceAge','pReviewAge'])$(id).addEventListener('input',()=>{proposal=null;$('pConfirm').checked=false;refresh();persist();});
+  $('pConfirm').addEventListener('change',()=>{proposal=null;refresh();persist();});
   $('pGenerate').addEventListener('click',()=>{try{proposal=P.propose(data,policy());renderHoldings(policy());renderProposal();}catch(e){proposal=null;renderProposal();toast('구성안 계산 실패: '+e.message);}});
   $('pExportReport').addEventListener('click',()=>download('INVESTMENT_Review_'+data.as_of+'.md',report(),'text/markdown;charset=utf-8'));
   if(marketInput){try{
@@ -648,5 +805,15 @@ if(typeof module!=='undefined')module.exports=PortfolioEngine;
     activate('holdings');
   }catch(e){toast('저장 시장자료 연결 실패: '+e.message);refresh();}}
   else {loadHoldingForm();refresh();}
+  for(const id of ['pCode','pHoldingName','pQty','pCost','pCash','pQuote','pQuoteDate','pQuoteSource'])$(id).addEventListener('input',()=>{holdingDraft=true;});
+  sync=HoldingsSyncUI.create({
+    getState:()=>{let p;try{p=policy();}catch{p=sync?.policy()||P.DEFAULT;}return {version:1,input:P.clone(data),policy:p};},
+    applyState:s=>{
+      const ids=['pCode','pHoldingName','pQty','pCost','pCash','pQuote','pQuoteDate','pQuoteSource'];
+      const focused=holdingDraft||ids.includes(document.activeElement?.id),draft=focused?ids.map(id=>[$(id),$(id).value]):[];
+      syncRestoring=true;try{window.INVESTMENT_RESTORE_SESSION(s.input,s.policy);loadHoldingForm();}finally{syncRestoring=false;}
+      for(const [el,value] of draft)el.value=value;
+    }
+  });
 })();
 </script></body></html>
