@@ -8,6 +8,7 @@ from .workspace_research import build_research
 from .naver_reference import sanitize_references
 from .market_discovery import build_discovery
 from .financial_table import build_table
+from .company_detail import build_details
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -27,6 +28,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     research = build_research(analysis, events=events)
     discovery = build_discovery(analysis, research, market_cache)
     financial_tables = {r['code']: build_table(r, analysis, (financials or {}).get(r['code'])) for r in analysis['companies']}
+    company_details = build_details(analysis, financial_tables, market_cache)
     # Every analysis view uses the same date-checked metrics; keep original payload intact.
     for row in analysis['companies']:
         facts = research['rows'].get(row['code'])
@@ -47,10 +49,11 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     html = (src / 'workspace.html').read_text(encoding='utf-8')
     # Insert payload last so data containing template marker text stays literal.
     for marker, name in [('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*WORKSPACE_JS*/', 'workspace.js'),
+                         ('/*COMPANY_DETAIL_CSS*/', 'company_detail.css'), ('/*COMPANY_DETAIL_ENGINE*/', 'company_detail_engine.js'), ('/*COMPANY_DETAIL_UI*/', 'company_detail_ui.js'),
                          ('/*DISCOVERY_ENGINE*/', 'discovery_engine.js'), ('/*EBITDA_INPUTS*/', 'ebitda_inputs.js'), ('/*EBITDA_EDITOR*/', 'ebitda_editor.js'), ('/*FINANCIAL_TABLE_UI*/', 'financial_table_ui.js'), ('/*ADVANCED_VISUALS*/', 'advanced_visuals.js'), ('/*RESEARCH_UI*/', 'research_ui.js'),
                          ('/*ENGINE*/', 'engine.js'), ('/*PORTFOLIO_ENGINE*/', 'portfolio_engine.js')]:
         html = html.replace(marker, (src / name).read_text(encoding='utf-8'))
     html = html.replace('/*LIVE_CONFIG*/', script_json(live))
     return html.replace('/*PAYLOAD*/', script_json(dict(snapshot=snapshot, analysis_snapshot=analysis,
-        research=research, discovery=discovery, financial_tables=financial_tables,
+        research=research, discovery=discovery, financial_tables=financial_tables, company_details=company_details,
         references=sanitize_references(references or {}, snapshot), detail_html=legacy)))

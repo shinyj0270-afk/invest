@@ -72,6 +72,7 @@ def build_table(row, snapshot, supplemental=None):
         if cadence!='annual':cell_notes['debt_ebitda']='연간 EBITDA가 필요합니다. 분기·누적 EBITDA를 연간으로 환산하지 않습니다.'
         groups.setdefault((basis,cadence),[]).append(dict(period_end=end,available_at=available,
             source=r.get('source','저장 재무자료'),values=values(r,cadence),
+            statement_values={k:r.get(k)/1e8 if num(r.get(k)) else None for k in INPUTS},
             interest_expense_eok=r.get('interest_expense')/1e8 if num(r.get('interest_expense')) else None,cell_notes=cell_notes))
     result=[]
     for (basis,cadence),columns in groups.items():

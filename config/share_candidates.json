@@ -183,6 +183,14 @@
     "tests/test_financial_table_ui.py": "tests/test_financial_table_ui.py",
     "src/ebitda_inputs.js": "src/ebitda_inputs.js",
     "src/ebitda_editor.js": "src/ebitda_editor.js",
-    "tests/test_ebitda_inputs.js": "tests/test_ebitda_inputs.js"
+    "tests/test_ebitda_inputs.js": "tests/test_ebitda_inputs.js",
+    "investment/company_detail.py": "investment/company_detail.py",
+    "src/company_detail.css": "src/company_detail.css",
+    "src/company_detail_engine.js": "src/company_detail_engine.js",
+    "src/company_detail_ui.js": "src/company_detail_ui.js",
+    "tests/test_company_detail.py": "tests/test_company_detail.py",
+    "tests/test_company_detail.js": "tests/test_company_detail.js",
+    "tests/test_company_detail_ui.py": "tests/test_company_detail_ui.py",
+    "docs/COMPANY_DETAIL.md": "docs/COMPANY_DETAIL.md"
   }
 }

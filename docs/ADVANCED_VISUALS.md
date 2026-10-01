@@ -66,3 +66,7 @@
 검증: node tests/test_advanced_visuals.js, Python tests/test_advanced_visuals_ui.py. ADVANCED_SCALE_FIXTURE=1이면 2,455개 별도 가상 발굴 후보를 주입하며 기존 상세 8개와 분리한다. ADVANCED_ACTUAL_HTML은 실제 기존 내보내기 HTML 경로를 명시하면 읽기 전용으로 그 자료를 검증한다. 실자료를 Git에 포함하지 않는다.
 
 이 PC에는 실제 2,455개 공개 캐시가 없다. 회사 PC에서 main 수신 후 기존 저장자료로 내보내기/서버를 다시 열고 실제 2,455개·일봉 2,454개·RS 2,290개 및 출처를 확인해야 실데이터 완료 기준을 충족한다. 이 수치를 상수로 화면에 만들어 넣지 않았다. 전체 데이터 및 포트폴리오 엔진 결과의 부족은 unknown/unavailable로 보존한다.
+
+## 검토 상세분석
+
+로그인 후 스탁이지의 6개 탭 구성을 참고한 새 검토 상세분석은 [COMPANY_DETAIL.md](COMPANY_DETAIL.md)를 참고한다. 상세분석과 기업 간단 분석은 동일한 관심목록·EBITDA 입력 도구를 사용한다. 고급 시각화와 보유·포트폴리오 화면은 기존 엔진을 유지한다.

@@ -33,7 +33,7 @@ with sync_playwright() as p:
     selected=page.locator('#focusCompany').input_value()
     page.locator('[data-page=company]').click()
     frame=page.frame_locator('#detailFrame')
-    expect(frame.locator('#companySelect')).to_have_value(selected)
+    expect(page.locator('#sdCompany')).to_have_value(selected)
     page.locator('[data-page=bars]').click()
     page.locator('#viewSearch').fill('900002')
     expect(page.locator('#mainChart .bar-row')).to_have_count(1)
