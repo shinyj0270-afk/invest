@@ -759,15 +759,6 @@ const HoldingsSyncUI = (() => {
     $('pQty').value=h?.quantity??'';$('pCost').value=h?.avg_cost_krw??'';
     paintCompany(r);
   }
-  function missingValue(r,p){
-    if(r.value_krw!==null)return `가격 ${fmt(r.research.price_krw,'원',0)} · ${r.research.price_date} · ${r.research.price_source?.label||''}`;
-    const v=r.research;
-    if(!v?.price_krw)return '현재가 입력 필요';
-    if(!v.price_date)return '가격 기준일 입력 필요';
-    if(v.price_date>data.as_of)return '평가일 이후 가격 · 기준일 확인 필요';
-    if(!v.price_source)return '가격 출처 입력 필요';
-    return `가격 ${v.price_date} · 경과일 한도 ${p.maxPriceAgeDays}일 확인 또는 가격 갱신 필요`;
-  }
   function renderHoldings(p){
     const result=P.reviewHoldings(data,p),b=result.book;
     $('pMode').textContent=data.mode==='fixture'?'가상 테스트 · 실제 투자 자료 아님':data.holdings.length||data.research.length?'사용자 입력 · 원문 대조 미실행':'보유·연구 입력 대기';
@@ -780,8 +771,8 @@ const HoldingsSyncUI = (() => {
     $('pValue').textContent=fmt(b.total_krw,'원',0);
     $('pReviewCount').textContent=data.holdings.length?String(result.rows.filter(r=>['SELL','REVIEW','REDUCE'].includes(r.opinion)).length):'—';
     $('pWaitCount').textContent=data.holdings.length?String(result.rows.filter(r=>r.opinion==='WAIT').length):'—';
-    $('pHoldBody').innerHTML=result.rows.length?result.rows.map(r=>`<tr><td class="left">${window.parent!==window&&window.parent.INVESTMENT_CAN_OPEN_HOLDING_COMPANY?.(r.code)?`<button class="p-company-link" data-holding-company="${esc(r.code)}">${esc(r.name)}</button>`:`<b>${esc(r.name)}</b>`}<div class="sub">${esc(r.code)}</div><div class="sub">${esc(missingValue(r,p))}</div>${r.cost_krw===null?'<div class="sub">매입가 입력 필요 · 손익 계산 대기</div>':''}</td><td>${fmt(r.quantity,'',0)}</td><td>${fmt(r.cost_krw,'',0)}</td><td>${fmt(r.value_krw,'',0)}</td><td>${fmt(r.pnl_krw,'',0)}</td><td>${fmt(r.pnl_pct,'%',2)}</td><td>${fmt(r.weight_pct,'%',2)}</td><td class="left">${tag(r.opinion)}</td><td class="left">${esc(r.portfolio_action)}</td><td><button class="small" data-holding-edit="${esc(r.code)}">입력 수정</button> <button class="small" data-review-detail="${esc(r.code)}">근거 보기</button></td></tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:40px">보유목록을 직접 입력하거나 JSON 파일을 가져오세요. 실제 보유종목은 포함되어 있지 않습니다.</td></tr>';
-    $('pBookNote').textContent=b.complete?'':[data.cash_krw===null?'현금 미입력: 현금이 없으면 0을 입력하세요.':'',b.missing_codes.length?'가격 확인 필요: '+b.missing_codes.join(', ')+'. 표의 가격 안내를 확인하고 입력 수정 버튼을 누르세요.':'','전체 평가액·비중은 모든 보유종목 가격과 현금을 확인한 뒤 계산합니다.'].filter(Boolean).join(' ');
+    $('pHoldBody').innerHTML=result.rows.length?result.rows.map(r=>`<tr><td class="left">${window.parent!==window&&window.parent.INVESTMENT_CAN_OPEN_HOLDING_COMPANY?.(r.code)?`<button class="p-company-link" data-holding-company="${esc(r.code)}">${esc(r.name)}</button>`:`<b>${esc(r.name)}</b>`}<div class="sub">${esc(r.code)}</div></td><td>${fmt(r.quantity,'',0)}</td><td>${fmt(r.cost_krw,'',0)}</td><td>${fmt(r.value_krw,'',0)}</td><td>${fmt(r.pnl_krw,'',0)}</td><td>${fmt(r.pnl_pct,'%',2)}</td><td>${fmt(r.weight_pct,'%',2)}</td><td class="left">${tag(r.opinion)}</td><td class="left">${esc(r.portfolio_action)}</td><td><button class="small" data-holding-edit="${esc(r.code)}">입력 수정</button> <button class="small" data-review-detail="${esc(r.code)}">근거 보기</button></td></tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:40px">보유목록을 직접 입력하거나 JSON 파일을 가져오세요. 실제 보유종목은 포함되어 있지 않습니다.</td></tr>';
+    $('pBookNote').textContent=b.complete?'':[data.cash_krw===null?'현금 미입력: 현금이 없으면 0을 입력하세요.':'',b.missing_codes.length?'가격 확인 필요: '+b.missing_codes.join(', ')+'. 입력 수정에서 현재가·기준일·출처를 확인하거나 가격을 갱신하세요.':'','전체 평가액·비중은 모든 보유종목 가격과 현금을 확인한 뒤 계산합니다.'].filter(Boolean).join(' ');
     $('pKnownCodes').innerHTML=[...new Map([...catalog,...data.research.map(r=>[r.code,r])]).values()].map(r=>`<option value="${esc(r.code)}">${esc(r.name)}</option>`).join('');
     $('pHoldBody').querySelectorAll('[data-holding-edit]').forEach(el=>el.onclick=()=>{openEntry();$('pCode').value=el.dataset.holdingEdit;loadHoldingForm();$('pCode').scrollIntoView({behavior:'smooth',block:'center'});});
     $('pHoldBody').querySelectorAll('[data-holding-company]').forEach(el=>el.onclick=()=>window.parent.INVESTMENT_OPEN_HOLDING_COMPANY(el.dataset.holdingCompany));
