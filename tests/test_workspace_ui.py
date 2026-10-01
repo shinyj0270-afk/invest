@@ -48,7 +48,7 @@ with sync_playwright() as p:
     expect(page.locator('#mainChart')).to_contain_text('자료 대기')
     page.locator('#reset').click()
     page.locator('[data-page=holdings]').click()
-    frame.locator('#pFixture').click()
+    frame.locator('#pManagement summary').click();frame.locator('#pFixture').click()
     page.locator('[data-page=waterfall]').click()
     expect(page.locator('#waterfallScope')).to_contain_text('가상 테스트')
     expect(page.locator('#waterfallChart svg')).to_be_visible()

@@ -26,7 +26,7 @@ with sync_playwright() as pw:
     if artifact:page.goto(Path(artifact).resolve().as_uri(),timeout=60000)
     else:page.set_content(export_workspace(make_fixture()),wait_until='load')
     page.locator('[data-page=holdings]').click();f=page.frame_locator('#detailFrame')
-    f.locator('#pClear').click()
+    f.locator('#pManagement summary').click();f.locator('#pClear').click()
     asof=page.locator('#detailFrame').evaluate('e=>e.contentWindow.INVESTMENT_GET_HOLDINGS().as_of')
     f.locator('#pCode').fill('000001');f.locator('#pHoldingName').fill('가상 기업');f.locator('#pQty').fill('10');f.locator('#pCost').fill('10000')
     f.locator('#pCash').fill('200000');f.locator('#pQuote').fill('12000');f.locator('#pQuoteDate').fill(asof);f.locator('#pQuoteSource').fill('가상 입력')
