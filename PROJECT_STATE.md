@@ -1,3 +1,12 @@
+# 회사 PC 로컬·원격 통합 인계 · 2026-10-02
+
+- 사용자 명시 요청으로 시작: work/main, clean HEAD fe470f3 / 원격 bcf3ccd,2 ahead/1 behind. fetch로 원격 최신 확인. 원격 변경3파일(AGENTS.md, GLOBAL_WORKFLOW_REFERENCE.md, investment-session 지침)은 로컬292e4a5에 이미 같은 내용이 있어 직접 비교 차이0.
+- 양쪽 커밋 이력을 보존한 merge7ec2b7e로 통합, 충돌0·회사 PC 개선 소스 내용 변화0. 기존 코드·개인 입력·원자료·DB·인증·PC설정 보존. 자동 stash/force/reset/rebase 없음.
+- 이번 실제 검증: 통합 후 공유251개 문제0, 격리 home portable 전체 통과 및 실자료 없는 화면 검사 통과, pc-finish 변경0/진행 Git작업0/추적 비공개 경로0, 전송 차이77개 경로/인증정보 패턴 문제0, 공백 검사 통과. 앞선116개/JS/UI 기록은 이전 CLOSE 검사이며 이번 재실행으로 표기하지 않는다.
+- 이 상태 기록을 커밋한 뒤 원격 재확인·일반 push·HEAD/origin/main/실제remote main SHA 대조 순서로 전송한다. 최종 전송 확인은 완료 응답에서 보고한다. 다른 PC 수신·실행은 별도 미확인.
+- 미해결 재무49개·원천 가격 기준·추천 성과 누적은 유지한다. 다음 시작: 집 PC의 기존 작업본에서 INVESTMENT START, clean/main 확인 후 최신 수신·scripts/open-investment.cmd 실행. 로컬DB/원자료/추천 기록은 코드 전송에 포함되지 않아 각 PC의 확보 상태를 별도 확인한다.
+
+---
 # INVESTMENT CLOSE · 2026-10-02
 
 - 마감 시작: work / main, HEAD와 캐시 origin/main 666ed66943261e616e9dd0372a3941f0ab60bf5c. 기존 미완료 변경80개와 개인 입력 보존, 진행 중 Git 작업·추적된 비공개 경로 없음. 원격 최신성은 전송 직전 별도 확인한다.
