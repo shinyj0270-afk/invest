@@ -49,6 +49,14 @@
   function persist(){if(sync&&!syncRestoring){let p;try{p=policy();}catch{p=sync.policy();}sync.changed({version:1,input:P.clone(data),policy:p});}}
   window.INVESTMENT_GET_HOLDINGS=()=>P.clone(data);
   window.INVESTMENT_GET_POLICY=()=>policy();
+  const draftIds=['pCode','pHoldingName','pQty','pCost','pCash','pQuote','pQuoteDate','pQuoteSource'];
+  window.INVESTMENT_GET_DRAFT=()=>holdingDraft?{values:Object.fromEntries(draftIds.map(id=>[id,$(id).value])),quoteDraft,open:$('pCode').closest('details')?.open}:null;
+  window.INVESTMENT_RESTORE_DRAFT=draft=>{
+    if(!draft?.values)return;
+    for(const id of draftIds)if(typeof draft.values[id]==='string')$(id).value=draft.values[id];
+    holdingDraft=true;entryAuto=false;quoteDraft=!!draft.quoteDraft;
+    const details=$('pCode').closest('details');if(details)details.open=draft.open!==false;
+  };
   window.INVESTMENT_RESTORE_SESSION=(input,savedPolicy)=>{
     let result='market_updated';
     try{apply(input);}catch{

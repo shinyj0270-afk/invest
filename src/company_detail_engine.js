@@ -36,6 +36,8 @@ const CompanyDetailEngine=(()=>{
       profit=x=>basis==='OFS'?x.net_income:x.parent_net;
     const eps=ratio(profit(v)*1e8,shares),bps=ratio(equity(v)*1e8,shares),cps=ratio(v.ocf*1e8,shares);
     const current={per:ratio(price,eps),pbr:ratio(price,bps),pcr:ratio(price,cps),eps,bps,cps,price,shares,date:model?.chart?.as_of,period:last?.period_end};
+    const common=model?.common_financial||row.common_financial;
+    if(common?.basis===basis){Object.assign(current,{per:common.metrics.per,pbr:common.metrics.pbr,eps:ratio(price,common.metrics.per),bps:ratio(price,common.metrics.pbr),period:common.period});}
     const history=(model?.chart?.bars||[]).map(p=>{
       const c=ttm.filter(c=>c.period_end<=p.date&&(c.available_at||c.filing_available_at)&& (c.available_at||c.filing_available_at)<=p.date).at(-1);
       const cv=c?.values||{},book=ratio(equity(cv)*1e8,shares),earn=ratio(profit(cv)*1e8,shares),cash=ratio(cv.ocf*1e8,shares);
@@ -53,15 +55,23 @@ const CompanyDetailEngine=(()=>{
   }
   function decomposition(startCap,endCap,startProfit,endProfit){if(![startCap,endCap,startProfit,endProfit].every(v=>num(v)&&v>0))return null;const initialMultiple=startCap/startProfit,profit=(endProfit-startProfit)*initialMultiple,multiple=endCap-startCap-profit;return {start:startCap,profit,multiple,end:endCap,initialMultiple,finalMultiple:endCap/endProfit};}
   function summary(row,model,research,meta,basis=meta.financial_basis){const qs=periods(model,basis,'quarter'),latest=qs.at(-1),v=latest?.values||{},m=basis===meta.financial_basis?(row.metrics||{}):{market_cap_eok:row.metrics?.market_cap_eok},f=research.rows?.[row.code]?.fundamental?.metrics||{},val=valuation(row,model,basis).current;
+    const common=model?.common_financial||row.common_financial;
+    if(common&&common.basis===basis){const c=common.metrics,a=common.amounts,d=common.metric_details,n=k=>[d[k]?.period,d[k]?.reason].filter(Boolean).join(' · ');return [
+      ['cap','시가총액',row.metrics?.market_cap_eok,'억원',row.latest_quote?.retrieved_at?.slice(0,10)||meta.price_date],
+      ['revenue','매출액',a.revenue,'억원',common.period],['op','영업이익',a.operating_profit,'억원',common.period],['net','당기순이익',a.net_income,'억원',common.period],
+      ['opMargin','영업이익률',c.operating_margin_pct,'%',n('operating_margin_pct')],['growth','매출성장률',c.revenue_growth_pct,'%',n('revenue_growth_pct')],
+      ['roe',d.roe_pct?.within_tolerance?'ROE 참고':'ROE',c.roe_pct,'%',n('roe_pct')],['per',d.per?.status==='estimated'?'PER 근사':'PER',c.per,'배',n('per')],['pbr',d.pbr?.status==='estimated'?'PBR 근사':'PBR',c.pbr,'배',n('pbr')],
+      ['debt','부채비율',c.debt_ratio_pct,'%',n('debt_ratio_pct')],['borrowings',num(a.total_borrowings)?'총차입금':'확인 차입금·사채',a.total_borrowings??a.balance_debt,'억원',common.period+(num(a.total_borrowings)?'':' · 공개 재무상태표 표시 계정 합계·리스 제외·전체 차입금 아님')]];}
+    const reference=k=>row.metric_details?.[k]?.status==='reference_only';
     const prior=qs.find(c=>c.period_end===String(Number(latest?.period_end?.slice(0,4))-1)+latest?.period_end?.slice(4)),growth=ratio(v.revenue-prior?.values.revenue,prior?.values.revenue,100),ttm=periods(model,basis,'ttm').at(-1),bookKey=basis==='OFS'?'equity':'parent_equity',profitKey=basis==='OFS'?'net_income':'parent_net',oldBook=prior?.values[bookKey],roe=num(oldBook)&&num(v[bookKey])?ratio(ttm?.values[profitKey],(oldBook+v[bookKey])/2,100):null;
     return [
-      ['cap','시가총액',m.market_cap_eok,'억원',meta.price_date],['revenue','매출액',v.revenue,'억원',latest?.period_end],
+      ['cap','시가총액',m.market_cap_eok,'억원',num(row.latest_quote?.market_cap_eok)&&row.latest_quote.market_cap_eok===m.market_cap_eok?row.latest_quote.retrieved_at?.slice(0,10):meta.price_date],['revenue','매출액',v.revenue,'억원',latest?.period_end],
       ['op','영업이익',v.operating_profit,'억원',latest?.period_end],['net','당기순이익',v.net_income,'억원',latest?.period_end],
       ['opMargin','영업이익률',v.operating_margin??m.operating_margin_pct,'%',latest?.period_end],
-      ['growth','매출성장률',(basis===meta.financial_basis?f.revenue_growth_pct??m.revenue_growth_pct:null)??growth,'%','전년 동기 대비 · '+(latest?.period_end||'기간 미확인')],
-      ['roe','ROE',m.roe_pct??roe,'%',num(m.roe_pct)?'검토 TTM 기준':'TTM 이익 / 전년동기·현재 평균자본'],
-      ['per','PER',m.per??val.per,'배',num(m.per)?'검토 지표':'시총 / TTM 지배순이익 근사'],
-      ['pbr','PBR',m.pbr??val.pbr,'배',num(m.pbr)?'검토 지표':'시총 / 지배자본 근사'],
+      ['growth','매출성장률',reference('revenue_growth_pct')?(growth??m.revenue_growth_pct):(basis===meta.financial_basis?f.revenue_growth_pct??m.revenue_growth_pct:null)??growth,'%',reference('revenue_growth_pct')&&!num(growth)?'공개 참고값 · 기간 미확인':'전년 동기 대비 · '+(latest?.period_end||'기간 미확인')],
+      ['roe','ROE',m.roe_pct??roe,'%',reference('roe_pct')?'공개 참고값 · 기간·기준 미확인':num(m.roe_pct)?'검토 TTM 기준':'TTM 이익 / 전년동기·현재 평균자본'],
+      ['per','PER',m.per??val.per,'배',reference('per')?'공개 참고값 · 기간·기준 미확인':num(m.per)?'검토 지표':'시총 / TTM 지배순이익 근사'],
+      ['pbr','PBR',m.pbr??val.pbr,'배',reference('pbr')?'공개 참고값 · 기간·기준 미확인':num(m.pbr)?'검토 지표':'시총 / 지배자본 근사'],
       ['debt','부채비율',v.debt_ratio??m.debt_ratio_pct,'%',latest?.period_end],
       ['borrowings','총차입금',v.total_borrowings,'억원',latest?.cell_notes?.total_borrowings||latest?.period_end]
     ];

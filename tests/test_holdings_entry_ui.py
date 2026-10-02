@@ -5,6 +5,11 @@ import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
+def open_tools(page):
+    if page.locator('#moreNavigation').get_attribute('open') is None:
+        page.locator('#moreNavigation summary').click()
+
+
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from investment.fixture import make_fixture
@@ -37,7 +42,7 @@ with sync_playwright() as pw:
     check('unknown review does not suppress known arithmetic','판단 보류' in row.inner_text())
     expect(f.locator('#pScope')).to_be_visible()
     check('company cell stays compact',row.locator('td').first.inner_text()=='가상 기업\n000001')
-    page.locator('[data-page=waterfall]').click();expect(page.locator('#waterfallChart svg')).to_be_visible()
+    open_tools(page);page.locator('[data-page=waterfall]').click();expect(page.locator('#waterfallChart svg')).to_be_visible()
     check('stock cost plus profit reconciles','100,000 + 20,000 = 120,000' in page.locator('#waterfallChart').inner_text())
     page.locator('[data-page=holdings]').click();f.locator('[data-holding-edit="000001"]').click()
     expect(f.locator('#pQty')).to_have_value('10');expect(f.locator('#pQuote')).to_have_value('12000')
@@ -70,17 +75,17 @@ with sync_playwright() as pw:
     f.locator('#pFile').set_input_files({'name':'aged-fixture.json','mimeType':'application/json','buffer':json.dumps(fixture).encode()})
     expect(f.locator('#pValue')).to_have_text('—')
     check('stale quote prompts price update','가격을 갱신' in f.locator('#pBookNote').inner_text())
-    page.locator('[data-page=portfolio]').click();f.locator('#pPriceAge').fill('10')
+    page.locator('#pageSelect').select_option('portfolio',force=True);f.locator('#pPriceAge').fill('10')
     page.locator('[data-page=holdings]').click();expect(f.locator('#pValue')).to_have_text('1,150,000 원')
-    page.locator('[data-page=waterfall]').click();expect(page.locator('#waterfallChart svg')).to_be_visible()
+    open_tools(page);page.locator('[data-page=waterfall]').click();expect(page.locator('#waterfallChart svg')).to_be_visible()
     check('waterfall honors configured age','890,000 + 60,000 = 950,000' in page.locator('#waterfallChart').inner_text())
     page.locator('[data-page=holdings]').click();f.locator('[data-review-detail="990001"]').click()
-    page.locator('[data-page=portfolio]').click();f.locator('#pMax').fill('')
+    page.locator('#pageSelect').select_option('portfolio',force=True);f.locator('#pMax').fill('')
     page.locator('[data-page=holdings]').click()
     expect(f.locator('#pReviewCount')).to_have_text('—');expect(f.locator('#pWaitCount')).to_have_text('—')
     check('invalid policy clears old detail','설정 확인 필요' in f.locator('#pDetail').inner_text())
-    page.locator('[data-page=waterfall]').click();expect(page.locator('#waterfallChart')).to_contain_text('설정')
-    page.locator('[data-page=portfolio]').click();f.locator('#pMax').fill('5')
+    open_tools(page);page.locator('[data-page=waterfall]').click();expect(page.locator('#waterfallChart')).to_contain_text('설정')
+    page.locator('#pageSelect').select_option('portfolio',force=True);f.locator('#pMax').fill('5')
     page.locator('[data-page=holdings]').click();page.set_viewport_size({'width':390,'height':844})
     check('mobile no document overflow',page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'))
     check('no script errors',not errors);check('no external automatic requests',not external)

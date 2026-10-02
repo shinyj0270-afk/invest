@@ -1,7 +1,7 @@
 import unittest
 from datetime import date, timedelta
 
-from investment.market_discovery import build_discovery, technical
+from investment.market_discovery import build_discovery, technical,discovery_candidate
 
 
 def bars(days, *, index=False, start=100):
@@ -12,6 +12,15 @@ def bars(days, *, index=False, start=100):
 
 
 class MarketDiscoveryTests(unittest.TestCase):
+    def test_market_cap_boundary_and_fresh_identity(self):
+        row=dict(name='기업',market='KOSPI',eligibility='candidate',metrics={})
+        for cap,expected in [(849.9,False),(850,False),(850.01,True),(None,False)]:
+            row['metrics']['market_cap_eok']=cap
+            self.assertEqual(discovery_candidate(row),expected)
+        row['metrics']['market_cap_eok']=1000
+        self.assertFalse(discovery_candidate(row,dict(name='기업',market='KOSPI',market_cap_eok=850)))
+        self.assertTrue(discovery_candidate(row,dict(name='다른 기업',market='KOSPI',market_cap_eok=850)))
+
     def test_source_sessions_compute_price_trend_without_claiming_liquidity(self):
         days = [(date(2025, 1, 1)+timedelta(days=i)).isoformat() for i in range(253)]
         calendar = dict(sessions=days, valid_through=days[-1])
@@ -46,6 +55,19 @@ class MarketDiscoveryTests(unittest.TestCase):
         self.assertEqual(result['coverage']['total'], 2)
         self.assertEqual(result['coverage']['candidates'], 1)
         self.assertEqual(result['coverage']['both_valuation'], 1)
+        candidate['metrics']['market_cap_eok']=850
+        limited=build_discovery(base,research,cache)
+        self.assertFalse(limited['snapshot']['companies'][0]['discovery_allowed'])
+        self.assertEqual(limited['coverage']['discovery_candidates'],0)
+        candidate['metrics']['market_cap_eok']=1000
+        cache['quotes']={'quotes':{'123456':dict(code='123456',name='후보기업',market='KOSPI',price=999,
+            retrieved_at='2026-10-02T10:00:00+09:00',final=False)}}
+        refreshed=build_discovery(base,research,cache)
+        self.assertEqual(refreshed['snapshot']['companies'][0]['latest_quote']['price'],999)
+        self.assertEqual(refreshed['snapshot']['companies'][0]['metrics']['per'],9)
+        self.assertEqual(refreshed['research']['rows']['123456']['technical'],result['research']['rows']['123456']['technical'])
+        cache['quotes']['quotes']['123456']['name']='식별 다른 기업'
+        self.assertNotIn('latest_quote',build_discovery(base,research,cache)['snapshot']['companies'][0])
 
     def test_fixture_and_missing_cache_do_not_gain_public_rows(self):
         self.assertIsNone(build_discovery({'meta': {'data_mode': 'fixture'}}, {}, {}))

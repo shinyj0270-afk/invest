@@ -10,6 +10,20 @@ from .core import num
 from .local_config import load_local
 from .market_history import benchmark_calendar, ADJUSTMENT_NOTE
 from .workspace_research import METRICS, RS_LABEL
+from .trend_diagnostics import diagnose, update_rank
+
+MIN_DISCOVERY_CAP_EOK=850
+
+
+def discovery_cap(row,quote=None):
+    if (quote and (quote.get('name'),quote.get('market'))==(row.get('name'),row.get('market'))
+            and num(quote.get('market_cap_eok'))):return quote['market_cap_eok']
+    return row.get('metrics',{}).get('market_cap_eok')
+
+
+def discovery_candidate(row,quote=None):
+    cap=discovery_cap(row,quote)
+    return row.get('eligibility')=='candidate' and num(cap) and cap>MIN_DISCOVERY_CAP_EOK
 
 
 def load_market_cache(root, snapshot):
@@ -22,16 +36,22 @@ def load_market_cache(root, snapshot):
         history = json.loads((folder/'histories.json').read_text(encoding='utf-8')) if (folder/'histories.json').exists() else {}
         if universe.get('schema_version') != 'naver-universe-0.1':
             return None
-        return dict(universe=universe, history=history)
+        quotes = {}
+        try:
+            saved=json.loads((folder/'latest-quotes.json').read_text(encoding='utf-8'))
+            if saved.get('schema_version')=='market-quotes-0.1':quotes=saved
+        except (OSError, ValueError, TypeError):
+            pass
+        return dict(universe=universe, history=history, quotes=quotes)
     except (OSError, ValueError, TypeError):
         return None
 
 
-def technical(record, benchmark, calendar, suspended=False):
+def technical(record, benchmark, calendar, suspended=False, include_series=True):
     cutoff = calendar.get('valid_through')
     result = dict(status='unknown', reason='네이버 완료 일봉 253개와 지수 관측일 일치 필요',
         price_trend_status='unknown', price_trend_reason='가격 이력 확인 필요',
-        source_note=ADJUSTMENT_NOTE, history_count=0, as_of=cutoff, series=[],
+        source_note=ADJUSTMENT_NOTE, history_count=0, as_of=cutoff, series=[],suspended=suspended,
         sma={}, close=None, high_52w_close=None, gap_to_52w_high_pct=None,
         contraction=None, breakout=None, rs126_pct=None, rs252_pct=None,
         price_strength=dict(status='unknown', reason='253일 연속 관측과 유효 표본 필요',
@@ -55,15 +75,19 @@ def technical(record, benchmark, calendar, suspended=False):
     def average(i, n):
         return (totals[i+1]-totals[i+1-n])/n if i+1 >= n else None
     result.update(history_count=len(bars), close=closes[-1],
-        sma={str(n): average(len(bars)-1, n) for n in (50, 150, 200)},
+        sma={str(n): average(len(bars)-1, n) for n in (20, 50, 150, 200)},
         series=[dict(date=bars[i]['date'], close=closes[i],
-            **{'ma'+str(n): average(i, n) for n in (50, 150, 200)})
-            for i in range(max(0, len(bars)-160), len(bars))])
+            volume=bars[i].get('volume'), **{'ma'+str(n): average(i, n) for n in (20, 50, 150, 200)})
+            for i in range(max(0, len(bars)-253), len(bars))] if include_series else [])
     lower = (date.fromisoformat(cutoff)-timedelta(weeks=52)).isoformat()
     if dates[0] <= lower:
         high = max(b['close'] for b in bars if b['date'] > lower)
+        result['low_52w_close']=min(b['close'] for b in bars if b['date'] > lower)
         result.update(high_52w_close=high, gap_to_52w_high_pct=(closes[-1]/high-1)*100,
-            high_52w_reason='네이버 지수 관측일과 일치하는 직전 52주 종가 최고')
+                      high_52w_reason='네이버 지수 관측일과 일치하는 직전 52주 종가 최고')
+    if include_series:
+        result['suspended']=suspended
+        result['trend_analysis']=diagnose(bars,result)
     if len(bars) < 253:
         return result
     if suspended or bars[-1].get('no_trade') or bars[-1].get('volume') == 0:
@@ -88,7 +112,7 @@ def technical(record, benchmark, calendar, suspended=False):
     return result
 
 
-def build_discovery(analysis, research, cache):
+def build_discovery(analysis, research, cache, *, include_series=True):
     if not cache or analysis['meta']['data_mode'] == 'fixture':
         return None
     bundle = cache['universe']; histories = cache.get('history') or {}
@@ -111,6 +135,12 @@ def build_discovery(analysis, research, cache):
             continue
         row = {k: deepcopy(source.get(k)) for k in ('code','name','market','industry','security_type','analysis_profile','eligibility','classification_note')}
         row['metrics'] = {k: v if num(v) else None for k,v in source.get('metrics', {}).items()}
+        quote=(cache.get('quotes') or {}).get('quotes',{}).get(row['code'])
+        row['metrics']['market_cap_eok']=discovery_cap(source,quote)
+        row['discovery_allowed']=discovery_candidate(source,quote)
+        if (isinstance(quote,dict) and (quote.get('name'),quote.get('market'))==(row['name'],row['market'])
+                and num(quote.get('price')) and quote['price']>0):
+            row['latest_quote']=deepcopy(quote)
         row['legacy_available'] = False
         row['metric_details'] = {k: dict(source=source.get('source'), period=None, basis=None,
             observed_on=source.get('observed_on'), reason=source.get('derived_metrics', {}).get(k, source.get('metric_basis')),
@@ -131,7 +161,7 @@ def build_discovery(analysis, research, cache):
         if record and record.get('symbol') != row['code']:
             record = None
         t = technical(record, histories.get('benchmarks', {}).get(row['market']), calendar,
-            suspended=source.get('trading_status', {}).get('tradeStopYn') == 'Y')
+            suspended=source.get('trading_status', {}).get('tradeStopYn') == 'Y', include_series=include_series)
         metric_facts = {k: row['metrics'].get(k) for k in METRICS}
         facts[row['code']] = dict(fundamental=dict(metrics=metric_facts, metric_details=row['metric_details'],
             period=None, basis=None, notes=['지표별 출처·기간을 확인하세요. 네이버 목록 재무 요약의 기간·연결/별도는 미명시.']),
@@ -150,13 +180,16 @@ def build_discovery(analysis, research, cache):
         if num(value) and len(scores) >= 5:
             s.update(score=min(99.99, 100*(bisect_left(scores,value)+bisect_right(scores,value))/2/len(scores)),
                 status='ready', reason=f'네이버 제공 조정 차트·{market} 지수 공통 관측일·동일 시장 순위 기준')
+        if f['technical'].get('trend_analysis'):update_rank(f['technical']['trend_analysis'],s['score'])
     score_count = sum(map(len, scores_by_market.values()))
     coverage.update(candidates=len(rows), rs_ready=score_count,
         rs_ready_by_market={k: len(v) for k,v in scores_by_market.items()},
         metrics={k:sum(num(r['metrics'].get(k)) for r in rows) for k in METRICS},
         both_valuation=sum(all(num(r['metrics'].get(k)) and r['metrics'][k] > 0 for k in ('per','pbr')) for r in rows),
         price_trend_pass=sum(f['technical']['price_trend_status']=='pass' for f in facts.values()))
-    note = (f"네이버 공개 목록 {coverage['total']:,}개 중 비금융 후보 {len(rows):,}개 · 조회 {bundle.get('retrieved_on')} · "
+    coverage['discovery_candidates']=sum(r['discovery_allowed'] for r in rows)
+    coverage['cap_excluded']=len(rows)-coverage['discovery_candidates']
+    note = (f"네이버 공개 목록 {coverage['total']:,}개 중 시가총액 850억원 초과 탐색 대상 {coverage['discovery_candidates']:,}개 · 조회 {bundle.get('retrieved_on')} · "
             f"일봉 {calendar.get('valid_through', '미확보')} · 동일 시장 순위 유효 {score_count:,}개. "
             '재무 기간·연결/별도 미명시 수치는 발굴 참고용이며, 기존 인포맥스 수치가 있으면 우선합니다.')
     return dict(snapshot=dict(meta=dict(discovery=True, discovery_note=note, data_mode=analysis['meta']['data_mode'],

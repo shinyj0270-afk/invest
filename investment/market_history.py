@@ -50,7 +50,14 @@ def _now(value=None):
     return value.astimezone(KST)
 
 
-def parse_history(payload, *, symbol, kind, start, end, fetched_at):
+def completed_cutoff(now, allow_same_day=False):
+    now=_now(now)
+    # Conservative provider settlement buffer also covers delayed regular sessions.
+    if allow_same_day and now.weekday()<5 and (now.hour,now.minute)>=(18,30):return now.date()
+    return now.date()-timedelta(days=1)
+
+
+def parse_history(payload, *, symbol, kind, start, end, fetched_at, allow_same_day=False):
     """Parse exact source bytes; exclude today's still-revisable session entirely."""
     url, params = _request(symbol, kind, start, end)
     fetched = _now(fetched_at)
@@ -59,7 +66,7 @@ def parse_history(payload, *, symbol, kind, start, end, fetched_at):
     data = json.loads(payload)
     if not isinstance(data, list) or len(data) > 4000:
         raise ValueError('일봉 배열/행수 확인 필요')
-    cutoff = min(_date(end), fetched.date()-timedelta(days=1)).isoformat()
+    cutoff = min(_date(end), completed_cutoff(fetched,allow_same_day)).isoformat()
     prices = []; prior = ''; excluded = 0
     for item in data:
         if not isinstance(item, dict) or not re.fullmatch(r'\d{8}', str(item.get('localDate', ''))):
@@ -108,7 +115,7 @@ def parse_history(payload, *, symbol, kind, start, end, fetched_at):
             endpoint_evidence=SCRIPT_SOURCE, requested_start=start, requested_end=end,
             excluded_outside_completed_window=excluded,
             adjustment_note='일반 KOSPI/KOSDAQ 가격지수 수준 · 총수익지수 아님' if kind == 'index' else ADJUSTMENT_NOTE,
-            final_basis='KST 조회일 이전 날짜의 제공자 일봉 관측; 당일 제외, 사후 제공자 정정 가능'))
+            final_basis=('KST 18:30 이후 제공자 장후 일봉 · 양대 지수 날짜 대조 필요 · 공식 확정 보증 아님; 사후 정정 가능' if allow_same_day else 'KST 조회일 이전 날짜의 제공자 일봉 관측; 당일 제외, 사후 제공자 정정 가능')))
 
 
 def _write(path, content):
@@ -121,7 +128,7 @@ def _write(path, content):
             temporary.unlink()
 
 
-def fetch_history(symbol, *, kind='item', start, end, cache_dir, now=None, session=None, force=False):
+def fetch_history(symbol, *, kind='item', start, end, cache_dir, now=None, session=None, force=False, allow_same_day=False):
     """Fetch one public series, or resume a hash-verified exact-range local cache.
 
     The caller paces batches. No implicit retries, credentials, DB writes, or
@@ -129,7 +136,7 @@ def fetch_history(symbol, *, kind='item', start, end, cache_dir, now=None, sessi
     """
     url, params = _request(symbol, kind, start, end)
     now = _now(now)
-    if _date(end) >= now.date():
+    if _date(end) > completed_cutoff(now,allow_same_day):
         raise ValueError('당일을 제외한 완료일까지만 요청하세요')
     folder = Path(cache_dir)
     name = f'naver-{kind}-{symbol}-{start}-{end}'
@@ -140,8 +147,8 @@ def fetch_history(symbol, *, kind='item', start, end, cache_dir, now=None, sessi
             fetched = datetime.fromisoformat(meta['fetched_at'])
             if (meta['sha256'] == sha256(payload).hexdigest() and meta['url'] == url
                 and meta['parameters'] == params and fetched.tzinfo is not None
-                and fetched <= now and fetched.astimezone(KST).date() > _date(end)):
-                return parse_history(payload, symbol=symbol, kind=kind, start=start, end=end, fetched_at=fetched)
+                and fetched <= now and completed_cutoff(fetched,allow_same_day)>=_date(end)):
+                return parse_history(payload, symbol=symbol, kind=kind, start=start, end=end, fetched_at=fetched,allow_same_day=allow_same_day)
         except (ValueError, KeyError, TypeError, OSError):
             pass
     client = session or requests
@@ -156,7 +163,7 @@ def fetch_history(symbol, *, kind='item', start, end, cache_dir, now=None, sessi
                 raise ValueError('일봉 응답 크기 제한')
             chunks.append(chunk)
         payload = b''.join(chunks)
-    result = parse_history(payload, symbol=symbol, kind=kind, start=start, end=end, fetched_at=now)
+    result = parse_history(payload, symbol=symbol, kind=kind, start=start, end=end, fetched_at=now,allow_same_day=allow_same_day)
     folder.mkdir(parents=True, exist_ok=True)
     _write(raw_path, payload)
     _write(meta_path, json.dumps(result['source'], ensure_ascii=False).encode('utf-8'))

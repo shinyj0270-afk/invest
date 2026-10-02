@@ -54,11 +54,11 @@ def api_check(session, key, corp, year, quarter, basis, record):
     record['api_checked'] = checked
 
 
-def collect(session, code, basis, year, quarter, cache, source, key=None):
-    corp, name = COMPANIES[code]
+def collect(session, code, basis, year, quarter, cache, source, key=None, *, identity=None, market='KOSPI', force=False, display_name=None):
+    corp, name = identity or COMPANIES[code]
     prefix = f'{code}-{basis}-{year}q{quarter}'
     saved = cache / (prefix + '.html'); metadata = cache / (prefix + '.json')
-    if saved.is_file() and metadata.is_file():
+    if not force and saved.is_file() and metadata.is_file():
         info = json.loads(metadata.read_text(encoding='utf-8'))
         payload = saved.read_bytes()
         if hashlib.sha256(payload).hexdigest() != info.get('sha256'):
@@ -80,9 +80,11 @@ def collect(session, code, basis, year, quarter, cache, source, key=None):
         except requests.RequestException:
             raise ValueError('DART 공개 조회 통신 실패') from None
         if len(payload)>4*1024*1024: raise ValueError('원문 크기 초과')
-    record = parse_viewer(payload.decode('utf-8'), code=code, name=name, market='KOSPI',
+    record = parse_viewer(payload.decode('utf-8'), code=code, name=display_name or name, market=market,
         basis=basis, year=year, quarter=quarter, receipt=receipt, url=url)
     record['sha256'] = hashlib.sha256(payload).hexdigest()
+    record['corp_code']=corp
+    record['legal_name']=name
     if not valid_report(record): raise ValueError('재무제표 검증 실패')
     if source=='api': api_check(session, key, corp, year, quarter, basis, record)
     saved.write_bytes(payload)

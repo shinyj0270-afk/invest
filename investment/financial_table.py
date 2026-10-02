@@ -18,7 +18,7 @@ ROWS = [
     ('debt_ratio', '부채비율', '%', 'ratio'),
     ('borrowing_dependence', '차입금의존도', '%', 'ratio'),
 ]
-INPUTS = {'revenue','operating_profit','net_income','ebitda','borrowings','total_borrowings',
+INPUTS = {'balance_debt','revenue','operating_profit','net_income','ebitda','borrowings','total_borrowings',
           'equity','liabilities','assets','interest_expense','cost_of_sales','gross_profit','sga',
           'finance_income','finance_cost','other_income','other_cost','pretax','tax','parent_net','nci_net','eps',
           'current_assets','noncurrent_assets','current_liabilities','noncurrent_liabilities','parent_equity','nci',
@@ -72,7 +72,7 @@ def build_table(row, snapshot, supplemental=None, max_columns=6):
         if identity in seen:
             return dict(groups=[],rows=ROWS,notes=['동일 기간·기준의 재무자료가 중복되어 표 연결을 보류했습니다.'])
         seen.add(identity)
-        cell_notes={k:v for k,v in r.get('cell_notes',{}).items() if k in {x[0] for x in ROWS} and isinstance(v,str)}
+        cell_notes={k:v for k,v in r.get('cell_notes',{}).items() if k in INPUTS|{x[0] for x in ROWS} and isinstance(v,str)}
         if cadence!='annual':cell_notes['debt_ebitda']='연간 EBITDA가 필요합니다. 분기·누적 EBITDA를 연간으로 환산하지 않습니다.'
         groups.setdefault((basis,cadence),[]).append(dict(period_end=end,available_at=available,
             source=r.get('source','저장 재무자료'),values=values(r,cadence),
@@ -170,7 +170,7 @@ def merge_financials(provider, official):
                 note=dict(prior.get('cell_notes',{}),**raw.get('cell_notes',{}))
                 for field in INPUTS:
                     if num(raw.get(field)):
-                        if num(prior.get(field)) and raw[field]!=prior[field]:note[field]='인포맥스 관측값 우선 · 공시값과 금액 차이 보존'
+                        if num(prior.get(field)) and abs(raw[field]-prior[field])>=1e8:note[field]='인포맥스 관측값 우선 · 공시값과 1억원 이상 차이 보존'
                         prior[field]=raw[field]
                 prior['source']='인포맥스 저장 XLSX 우선 / DART 미확보 계정 보충'
                 # The provider's publication date remains unknown; do not lend it a filing date.

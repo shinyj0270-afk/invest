@@ -6,6 +6,11 @@ from investment.fixture import make_fixture
 from investment.workspace_export import export_workspace,script_json
 from playwright.sync_api import sync_playwright,expect
 
+def open_tools(page):
+    if page.locator('#moreNavigation').get_attribute('open') is None:
+        page.locator('#moreNavigation summary').click()
+
+
 html=export_workspace(make_fixture())
 payload=json.JSONDecoder().raw_decode(html.split('const WORKSPACE_DATA=',1)[1])[0]
 snapshot=payload['analysis_snapshot']
@@ -19,6 +24,7 @@ with sync_playwright() as p:
     page.on('pageerror',lambda e:errors.append(str(e)))
     page.route('http://127.0.0.1:8799/**',lambda r:r.fulfill(body=html,content_type='text/html'))
     page.goto('http://127.0.0.1:8799/')
+    page.locator('[data-page=finder]').click()
     star=page.locator('[data-watch]').first;code=star.get_attribute('data-watch');star.click()
     page.locator('#discoveryFilters [name=query]').fill(code)
     page.locator('#discoveryFilters button[type=submit]').click()
@@ -33,11 +39,14 @@ with sync_playwright() as p:
     page.locator('#watchImport').set_input_files({'name':'watch.json','mimeType':'application/json','buffer':saved})
     expect(page.locator(f'[data-watch="{code}"]')).to_have_attribute('aria-pressed','true')
     page.locator('[data-research-code]').first.click()
+    page.reload()
+    expect(page.locator('body')).to_have_attribute('data-current-page','brief')
+    expect(page.locator('#researchCompany')).to_have_value(code)
     expect(page.locator('[data-research-go=company]')).to_be_disabled()
     for target in ['holdings','portfolio']:
-        page.locator('[data-page='+target+']').click();expect(page.locator('#legacy')).to_be_visible()
+        open_tools(page);page.locator('[data-page='+target+']').click();expect(page.locator('#legacy')).to_be_visible()
         expect(page.locator('#legacyTitle')).to_contain_text('보유' if target=='holdings' else '포트폴리오')
-    page.locator('[data-page=advanced]').click()
+    open_tools(page);page.locator('[data-page=advanced]').click()
     second=page.locator('[data-av-code]').nth(1);name=second.inner_text().split(' · ')[0]
     page.locator('#avFilters [name=query]').fill(name);page.locator('#avFilters button').first.click()
     expect(page.locator('#avCompany')).to_contain_text(name)

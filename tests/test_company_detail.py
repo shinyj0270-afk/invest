@@ -19,6 +19,20 @@ class CompanyDetailTests(unittest.TestCase):
         chart=chart_history(self.r,self.s)
         self.assertIsNone(chart['bars'][0]['high']);self.assertGreater(chart['bars'][0]['close'],0)
 
+    def test_financial_cutoff_today_uses_last_complete_price_session(self):
+        from datetime import date,timedelta
+        final_day=self.s['meta']['price_date']
+        self.s['meta']['price_date']=(date.fromisoformat(final_day)+timedelta(days=1)).isoformat()
+        cache={'history':{'histories':{self.r['code']:dict(kind='item',symbol=self.r['code'],prices=self.r['prices'])},
+            'benchmarks':{market:dict(kind='index',symbol=market,source={'url':'https://example.test/index'},
+                prices=[dict(p,final=True,venue='KRX',adjustment_basis='index_level') for p in prices])
+                for market,prices in [('KOSPI',self.s['benchmarks']['KOSPI']),('KOSDAQ',self.s['benchmarks']['KOSPI'])]}}}
+        chart=chart_history(self.r,self.s,cache)
+        self.assertEqual(chart['as_of'],final_day)
+        self.assertIsNotNone(chart['high_52w'])
+        del cache['history']['histories'][self.r['code']]['prices'][-8]
+        self.assertIsNone(chart_history(self.r,self.s,cache)['high_52w'])
+
     def test_invalid_ohlc_falls_back_to_close(self):
         self.r['prices'][0]['low']=self.r['prices'][0]['high']*2
         self.assertIsNone(chart_history(self.r,self.s)['bars'][0]['open'])

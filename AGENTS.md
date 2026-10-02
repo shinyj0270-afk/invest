@@ -19,3 +19,7 @@
 - 인포맥스와 공식 재무 차이는 기존 사용자 결정(인포맥스 우선, 1억 미만 오차 무시)을 유지하며 출처·불확실성을 보존한다.
 - C:\AI\llm-wiki를 수정하거나 /wiki-sync를 실행하지 않는다. Wiki와 Git 인계는 별개이며 Wiki 없이 개발할 수 있다.
 <!-- END DUAL-PC -->
+
+## GLOBAL WORKFLOW 상속
+
+[공통 파일 참조](GLOBAL_WORKFLOW_REFERENCE.md)에 지정된 GLOBAL_WORKFLOW.md를 읽고 공통 START/CLOSE 골격을 상속한다. 충돌 시 기존 INVESTMENT 규칙이 우선한다. 독립 investment-session 스킬, SYNC_CONTRACT, 상태 원본과 Git/데이터/인증/PC별 예외를 유지한다.

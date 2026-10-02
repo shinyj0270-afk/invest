@@ -5,6 +5,11 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from investment.fixture import make_fixture
 from investment.workspace_export import export_workspace
 from playwright.sync_api import sync_playwright,expect
+
+def open_tools(page):
+    if page.locator('#moreNavigation').get_attribute('open') is None:
+        page.locator('#moreNavigation summary').click()
+
 actual=os.environ.get('FINANCIAL_ACTUAL_HTML')
 html=Path(actual).read_text(encoding='utf-8') if actual else export_workspace(make_fixture())
 with sync_playwright() as p:
@@ -25,7 +30,7 @@ with sync_playwright() as p:
         for k in ['revenue','op','net','borrowings']:
             expect(page.locator(f'[data-brief-metric={k}] b')).to_have_text('—')
         page.locator('#researchCompany').select_option('005930')
-    page.locator('[data-page=company]').click();page.locator('#sd-tab-financial').click()
+    open_tools(page);page.locator('[data-page=company]').click();page.locator('#sd-tab-financial').click()
     page.locator('[data-sd-field=cadence][data-value=annual]').first.click()
     page.locator('#financialPeriodSelect').select_option('CFS-annual')
     expect(page.locator('#sd-statement .sd-table')).to_be_visible()
@@ -49,7 +54,7 @@ with sync_playwright() as p:
     expect(page.locator('#ebitdaPreview')).to_have_text('550')
     page.locator('#ebitdaForm button[type=submit]').click()
     expect(page.locator('[data-sd-account=ebitda] td').last).to_contain_text('550')
-    page.reload();page.locator('[data-page=company]').click();page.locator('#sd-tab-financial').click()
+    page.reload();open_tools(page);page.locator('[data-page=company]').click();page.locator('#sd-tab-financial').click()
     if actual:page.locator('#sdCompany').select_option('005930')
     page.locator('#financialPeriodSelect').select_option('CFS-annual')
     page.locator('#ebitdaEditor').evaluate("e=>e.open=true")

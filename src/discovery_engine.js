@@ -19,6 +19,7 @@ const DiscoveryEngine = (() => {
   function filter(rows, f={}, research={}, watch=[]){
     const q=String(f.query||'').trim().toLocaleLowerCase(), ids=new Set(watch.map(w=>w.code));
     return rows.filter(r=>{
+      if(!f.watch&&r.discovery_allowed===false)return false;
       if(f.market&&r.market!==f.market||f.industry&&r.industry!==f.industry||f.watch&&!ids.has(r.code))return false;
       if(q&&!`${r.code} ${r.name}`.toLocaleLowerCase().includes(q))return false;
       for(const [key,[k,direction]] of Object.entries(limits)){

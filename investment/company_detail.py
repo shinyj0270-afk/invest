@@ -6,6 +6,14 @@ from .financial_table import valid_day
 
 def chart_history(row, snapshot, cache=None):
     cutoff = snapshot['meta']['price_date']
+    # Financial availability can be today while the last completed price is yesterday.
+    # Use the independently validated common index session for chart completeness.
+    if cache:
+        from .market_history import benchmark_calendar
+        try:
+            calendar=benchmark_calendar((cache.get('history') or {}).get('benchmarks',{}))
+            cutoff=min(cutoff,calendar['valid_through'])
+        except (ValueError,KeyError,TypeError):pass
     record = ((cache or {}).get('history') or {}).get('histories', {}).get(row['code'])
     source = '저장 가격 이력'
     bars = row.get('trend_prices') or row.get('prices') or []
@@ -65,4 +73,7 @@ def build_details(snapshot, tables, cache=None):
         result[r['code']]=dict(code=r['code'],name=r['name'],market=r['market'],
             chart=chart_history(r,snapshot,cache),groups=statement_groups,dividends=dividends,
             notes=tables[r['code']]['notes'])
+        from .market_insights import reconcile_prices
+        record=((cache or {}).get('history') or {}).get('histories',{}).get(r['code'])
+        result[r['code']]['price_audit']=reconcile_prices(r,record)
     return result

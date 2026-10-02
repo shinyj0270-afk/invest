@@ -43,14 +43,16 @@ class WorkspaceResearchTests(unittest.TestCase):
 
     def test_ma_series_uses_only_preceding_prices(self):
         tech = self.result()['technical']
-        self.assertEqual(len(tech['series']), 160)
-        index = len(self.row['prices'])-160
-        first = tech['series'][0]
+        self.assertEqual(len(tech['series']), 253)
+        index = len(self.row['prices'])-253
+        offset=max(0,49-index)
+        index+=offset
+        first = tech['series'][offset]
         expected = mean(b['close'] for b in self.row['prices'][index-49:index+1])
         self.assertAlmostEqual(first['ma50'], expected)
         self.assertIsNone(first['ma150'])
         self.row['prices'][-1]['close'] *= 2
-        self.assertEqual(self.result()['technical']['series'][0], first)
+        self.assertEqual(self.result()['technical']['series'][offset], first)
 
     def test_52_weeks_uses_calendar_window_not_252_bars(self):
         cutoff = date.fromisoformat(self.snapshot['meta']['price_date'])

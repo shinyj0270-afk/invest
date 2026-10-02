@@ -7,6 +7,7 @@ from .core import eligible, num
 from .market_events import safe_url
 from .trend import MODEL, calculate
 from .price_strength import analyze_price_strength, benchmark_excess
+from .trend_diagnostics import diagnose, update_rank
 
 
 METRICS = {'roe_pct': 'ROE', 'operating_margin_pct': '영업이익률',
@@ -74,10 +75,10 @@ def _technical(row, snapshot):
         return result
     closes = [b['close'] for b in bars]
     result['close'] = closes[-1]
-    result['sma'] = {str(n): mean(closes[-n:]) if len(closes) >= n else None for n in (50, 150, 200)}
-    result['series'] = [dict(date=bars[i]['date'], close=closes[i],
-        **{'ma'+str(n): mean(closes[i-n+1:i+1]) if i+1 >= n else None for n in (50, 150, 200)})
-        for i in range(max(0, len(bars)-160), len(bars))]
+    result['sma'] = {str(n): mean(closes[-n:]) if len(closes) >= n else None for n in (20, 50, 150, 200)}
+    result['series'] = [dict(date=bars[i]['date'], close=closes[i],volume=bars[i].get('volume'),
+        **{'ma'+str(n): mean(closes[i-n+1:i+1]) if i+1 >= n else None for n in (20, 50, 150, 200)})
+        for i in range(max(0, len(bars)-253), len(bars))]
     result['reason'] = '기존 추세 판정에 253거래일·확정 벤치마크·OHLCV 필요'
     lower = (_day(cutoff)-timedelta(weeks=52)).isoformat()
     calendar_ok = meta.get('calendar_basis') == 'verified_exchange_sessions' or (
@@ -92,6 +93,7 @@ def _technical(row, snapshot):
     elif bars[0]['date'] <= lower:
         window = [b['close'] for b in bars if b['date'] > lower]
         high = max(window)
+        result['low_52w_close']=min(window)
         result.update(high_52w_close=high, gap_to_52w_high_pct=(closes[-1]/high-1)*100,
                       high_52w_reason='기준일 포함 직전 52주 수정종가 최고 · 장중 고가 기준 아님')
     benchmark = snapshot.get('benchmarks', {}).get(row['market'], [])
@@ -112,6 +114,7 @@ def _technical(row, snapshot):
     for n in (126, 252):
         value = result['rs'+str(n)]
         result['rs'+str(n)+'_pct'] = value*100 if num(value) else None
+    result['trend_analysis']=diagnose(bars,result)
     return result
 
 
@@ -179,6 +182,7 @@ def build_research(snapshot, events=None):
             continue
         technical = _technical(row, snapshot)
         technical['price_strength'] = strength[row['code']]
+        if technical.get('trend_analysis'):update_rank(technical['trend_analysis'],technical['price_strength']['score'])
         extra = benchmark_excess(row, snapshot)
         # Main and companion measures use the same canonical, verified dates.
         # Do not retain legacy RS values from an unverified source intersection.

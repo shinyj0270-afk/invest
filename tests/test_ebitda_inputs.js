@@ -17,6 +17,11 @@ assert.equal(store.apply(other,tables[other.code]).groups[0].columns[0].values.e
 assert.equal(JSON.stringify(tables),before,'source remains intact');
 assert.equal(make().find(row,group,column).value,100,'reload restores');
 const payload=store.pack();assert.throws(()=>store.import({...payload,data_mode:'fixture'}));assert.throws(()=>store.import({...payload,unit:'원'}));
+const lazyTables={},lazyStore=make({tables:lazyTables,lazyTables:true,initial:payload});
+assert.equal(lazyStore.pack().entries.length,1,'lazy loading preserves a known company input until its table arrives');
+assert.throws(()=>lazyStore.save(row,group,column,{method:'direct',value:120,note:''}),'saving still requires a verified table');
+lazyTables[row.code]=tables[row.code];
+assert.equal(lazyStore.apply(row,lazyTables[row.code]).groups[0].columns[0].values.ebitda,100,'loaded table restores saved input');
 assert.throws(()=>store.import({...payload,entries:[payload.entries[0],payload.entries[0]]}));
 assert.equal(store.find(row,group,column).value,100,'invalid import is atomic');
 assert.equal(make({rows:[{...row,name:'식별 변경'}]}).pack().entries.length,0,'renamed company held back');

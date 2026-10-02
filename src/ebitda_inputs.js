@@ -18,7 +18,7 @@ const EbitdaInputs = (() => {
     if (!numeric(value)) throw Error('계산 결과가 유효하지 않습니다.');
     return value;
   }
-  function create({dataMode, rows, tables, initial}) {
+  function create({dataMode, rows, tables, initial, lazyTables=false}) {
     let entries = [], storageNote = '';
     const storageKey = 'investment-ebitda-v1-' + dataMode;
     function pack() { return {version:1, kind:'investment-ebitda', data_mode:dataMode, unit:'억원', entries:entries.map(e => ({...e, components:e.components ? {...e.components} : undefined}))}; }
@@ -55,7 +55,8 @@ const EbitdaInputs = (() => {
         const entry = validate(raw), id = key(entry);
         if (seen.has(id)) throw Error('같은 기업·기간·회계기준의 EBITDA 입력이 중복되었습니다.');
         seen.add(id);
-        if (compatible(entry)) accepted.push(entry);
+        const awaitingTable=lazyTables&&!tables[entry.code]&&rows.some(r=>r.code===entry.code&&r.name===entry.name&&r.market===entry.market);
+        if (compatible(entry)||awaitingTable) accepted.push(entry);
       }
       entries = accepted;
       return {accepted:accepted.length, skipped:payload.entries.length - accepted.length};

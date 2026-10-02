@@ -4,6 +4,11 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from investment.fixture import make_fixture
 from investment.workspace_export import export_workspace,script_json
 from playwright.sync_api import sync_playwright,expect
+
+def open_tools(page):
+    if page.locator('#moreNavigation').get_attribute('open') is None:
+        page.locator('#moreNavigation summary').click()
+
 actual=os.environ.get('ADVANCED_ACTUAL_HTML')
 html=export_workspace(make_fixture())
 population=8
@@ -30,7 +35,7 @@ with sync_playwright() as p:
     page.on('pageerror',lambda e:errors.append(str(e)))
     # HTTP origin gives sessionStorage a real same-origin refresh contract. No data leaves loopback.
     page.route('http://127.0.0.1:8799/**',lambda route:route.fulfill(status=200,content_type='text/html',body=html))
-    page.goto('http://127.0.0.1:8799/');page.locator('[data-page=advanced]').click()
+    page.goto('http://127.0.0.1:8799/');open_tools(page);page.locator('[data-page=advanced]').click()
     expect(page.locator('#avCount')).to_contain_text(f'원본 모집단 {population}개')
     initial=float(page.locator('#advanced').get_attribute('data-render-ms'));assert initial<2000
     assert page.locator('.av-density>div').count()==100
@@ -62,7 +67,7 @@ with sync_playwright() as p:
     # The real payload already has reviewed research, so switching to a fixture needs confirmation.
     page.once('dialog', lambda dialog: dialog.accept())
     frame.locator('#pManagement summary').click();frame.locator('#pFixture').click()
-    page.locator('[data-page=portfolio]').click()
+    page.locator('#pageSelect').select_option('portfolio',force=True)
     frame.locator('#pConfirm').check();frame.locator('#pGenerate').click()
     # This synthetic holdings input is browser-local and explicitly labelled as a fixture.
     expected=page.evaluate('''() => {
@@ -75,7 +80,7 @@ with sync_playwright() as p:
     }''')
     assert expected['status']=='MODEL_PROPOSAL',expected['status']
     assert 0<len(expected['items'])<=5
-    page.locator('[data-page=advanced]').click();expect(page.locator('#avHoldings')).to_contain_text('가상 테스트')
+    open_tools(page);page.locator('[data-page=advanced]').click();expect(page.locator('#avHoldings')).to_contain_text('가상 테스트')
     assert page.locator('.av-holding').count()==len(expected['rows'])
     expect(page.locator('#avHoldings')).to_contain_text(expected['status'])
     for i,row in enumerate(expected['rows']):
