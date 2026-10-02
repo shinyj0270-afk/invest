@@ -56,7 +56,7 @@ function renderCompany(){
  const hist=(row.history||[]).slice().sort((a,b)=>a.year-b.year).slice(-5);
  $('historyBody').innerHTML=hist.length?hist.map(h=>`<tr><td>${h.year}</td><td>${fmt(h.revenue_eok)}</td><td>${fmt(h.operating_profit_eok)}</td><td>${fmt(isNum(h.revenue_eok)&&h.revenue_eok>0&&isNum(h.operating_profit_eok)?h.operating_profit_eok/h.revenue_eok*100:null)}</td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;padding:30px">연간 이력 없음 · 수집된 최신 지표만 표시합니다.</td></tr>';
  $('historyChart').innerHTML=lineChart(hist);
- $('companySources').innerHTML=(row.sources||[]).length?row.sources.map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)}</a>`).join(''):'공시·시장자료 원문 출처 미입력. 수치의 실제 출처를 검증하지 않은 상태입니다.';
+ $('companySources').innerHTML=(row.sources||[]).length?row.sources.map(s=>s.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)}</a>`:`<span>${esc(s.label)} · ${esc(s.file)}</span>`).join(''):'공시·시장자료 원문 출처 미입력. 수치의 실제 출처를 검증하지 않은 상태입니다.';
  if(row.data_quality?.length)$('companySources').innerHTML+=`<p><strong>자료 확인이 필요한 항목</strong></p><ul>${row.data_quality.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`;
 }
 function lineChart(hist){

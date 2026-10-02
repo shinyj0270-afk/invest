@@ -55,4 +55,12 @@ test('평가 관측 근거 계약 검사',()=>{
   for(const change of [{value:'10'},{source:''},{observed_on:'2025-02-30'},{denominator_positive:'true'},{period_type:'annual'}])assert.throws(()=>E.validateSnapshot(snapshot([{...record,...change}])));
   assert.throws(()=>E.validateSnapshot(snapshot([record,record])));
 });
+test('해시가 있는 로컬 파일 출처 허용',()=>{
+  for(const url of [undefined,''])assert.equal(E.validateSnapshot({...base,companies:[{...base.companies[0],sources:[{label:'로컬 Excel',url,file:'daily.xlsx',sha256:'a'.repeat(64)}]}]}).companies.length,1);
+});
+test('로컬 출처의 파일과 해시 검사',()=>{
+  for(const source of [{label:'로컬 Excel',url:'',file:'daily.xlsx'}, {label:'로컬 Excel',file:'',sha256:'a'.repeat(64)}])
+    assert.throws(()=>E.validateSnapshot({...base,companies:[{...base.companies[0],sources:[source]}]}));
+});
+test('로컬 파일 근거가 있어도 악성 URL 거부',()=>assert.throws(()=>E.validateSnapshot({...base,companies:[{...base.companies[0],sources:[{label:'로컬 Excel',url:'javascript:alert(1)',file:'daily.xlsx',sha256:'a'.repeat(64)}]}]})));
 console.log(`${n} tests passed.`);

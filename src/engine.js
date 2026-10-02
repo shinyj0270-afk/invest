@@ -101,7 +101,10 @@ function validateSnapshot(data){
     }
     if(row.sources!=null&&!Array.isArray(row.sources))throw new Error('sources는 배열입니다.');
     if(row.sources?.length>50)throw new Error('종목당 출처는 50개까지 가능합니다.');
-    for(const s of row.sources||[])if(typeof s.label!=='string'||typeof s.url!=='string'||!/^https?:\/\//i.test(s.url))throw new Error('출처에는 label과 http(s) URL이 필요합니다.');
+    for(const s of row.sources||[]){
+      const local=s&&(s.url==null||s.url==='')&&typeof s.file==='string'&&s.file.length>0&&typeof s.sha256==='string'&&/^[a-f0-9]{64}$/i.test(s.sha256);
+      if(!s||typeof s.label!=='string'||(!local&&(typeof s.url!=='string'||!/^https?:\/\//i.test(s.url))))throw new Error('출처에는 label과 http(s) URL 또는 해시가 있는 로컬 파일이 필요합니다.');
+    }
   }
   return data;
 }
