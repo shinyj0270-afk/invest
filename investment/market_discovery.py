@@ -8,6 +8,7 @@ from statistics import mean
 
 from .core import num
 from .local_config import load_local
+from .naver_universe import classify
 from .market_history import benchmark_calendar, ADJUSTMENT_NOTE
 from .workspace_research import METRICS, RS_LABEL
 from .trend_diagnostics import diagnose, update_rank
@@ -36,6 +37,12 @@ def load_market_cache(root, snapshot):
         history = json.loads((folder/'histories.json').read_text(encoding='utf-8')) if (folder/'histories.json').exists() else {}
         if universe.get('schema_version') != 'naver-universe-0.1':
             return None
+        # Apply newly recognized exclusions to old caches without rewriting source data.
+        for row in universe.get('companies', []):
+            if row.get('eligibility') == 'candidate':
+                classification = classify(row)
+                if classification['eligibility'] == 'excluded':
+                    row.update(classification)
         quotes = {}
         try:
             saved=json.loads((folder/'latest-quotes.json').read_text(encoding='utf-8'))

@@ -8,6 +8,8 @@ from html.parser import HTMLParser
 from datetime import date
 from .financial_table import valid_day
 
+PARSER_VERSION = 11
+
 
 class Tables(HTMLParser):
     def __init__(self):
@@ -44,9 +46,9 @@ def amount(value):
 
 ALIASES={
  'balance':{
-  'assets':['자산총계','자산합계'], 'current_assets':['유동자산'], 'noncurrent_assets':['비유동자산'],
-  'liabilities':['부채총계','부채합계'], 'current_liabilities':['유동부채'], 'noncurrent_liabilities':['비유동부채'],
-  'equity':['기말자본','자본','자본총계','자본합계'], 'parent_equity':['지배기업소유주지분','지배기업의소유주에게귀속되는자본','지배기업의소유주에게귀속되는지분','지배기업의소유주지분','지배기업소유주에게귀속되는자본','지배기업의소유지분'],
+  'assets':['자산총계','자산합계','총자산','자산'], 'current_assets':['유동자산'], 'noncurrent_assets':['비유동자산'],
+  'liabilities':['부채총계','부채합계','총부채','부채','부채(A)'], 'current_liabilities':['유동부채'], 'noncurrent_liabilities':['비유동부채'],
+  'equity':['기말자본','자본','자본총계','자본합계','자본(B)'], 'parent_equity':['지배기업소유주지분','지배기업의소유주에게귀속되는자본','지배기업의소유주에게귀속되는지분','지배기업의소유주지분','지배기업소유주에게귀속되는자본','지배기업의소유지분'],
   'nci':['비지배주주지분','비지배지분'], 'cash':['현금및현금성자산'], 'retained_earnings':['이익잉여금','이익잉여금(결손금)'],
  },
  'income':{
@@ -56,7 +58,7 @@ ALIASES={
   'finance_cost':['금융원가','금융비용','금융손실'], 'other_income':['기타수익','기타영업외수익'],
   'other_cost':['기타비용','기타영업외비용'], 'pretax':['법인세비용차감전순이익','법인세비용차감전순이익(손실)','법인세비용차감전계속사업이익','법인세비용차감전계속사업이익(손실)','법인세차감전순이익','법인세차감전순이익(손실)'],
   'tax':['법인세수익(비용)','법인세비용','법인세비용(수익)'],
-  'net_income':['당기순이익','당기순이익(손실)','반기순이익','반기순이익(손실)','분기순이익','분기순이익(손실)','당기순손익','반기순손익','분기순손익','연결당기순이익','연결반기순이익','연결분기순이익','연결당기순이익(손실)','연결반기순이익(손실)','연결분기순이익(손실)'],
+  'net_income':['당기순이익','당기순이익(손실)','반기순이익','반기순이익(손실)','분기순이익','분기순이익(손실)','당기순손익','반기순손익','분기순손익','당기순손실','반기순손실','분기순손실','연결당기순이익','연결반기순이익','연결분기순이익','연결당기순이익(손실)','연결반기순이익(손실)','연결분기순이익(손실)'],
   'parent_net':['지배기업의소유주에게귀속되는당기순이익(손실)','지배기업의소유주에게귀속되는반기순이익(손실)','지배기업의소유주에게귀속되는분기순이익(손실)','지배기업소유주','지배기업의소유주','지배회사지분당기순이익','지배회사지분반기순이익','지배회사지분분기순이익','지배기업의소유주에게귀속되는당기순이익','지배기업의소유주에게귀속되는반기순이익','지배기업의소유주에게귀속되는분기순이익','지배기업의소유주지분','지배기업소유주지분'],
   'nci_net':['비지배지분','비지배지분에귀속되는당기순이익(손실)','비지배지분에귀속되는반기순이익(손실)','비지배지분에귀속되는분기순이익(손실)'],
   'eps':['기본주당이익(손실)','기본주당이익','기본주당순이익(손실)','기본주당순이익','기본주당분기순이익','기본주당반기순이익','보통주기본주당이익','보통주기본주당이익(손실)'],
@@ -191,7 +193,7 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
                         if dest not in mandatory:
                             ambiguous.add(dest);values.pop(dest,None);continue
                         raise ValueError('계정 중복: '+dest)
-                    values[dest]=-value if dest=='tax' and key=='법인세수익(비용)' else -abs(value) if dest=='operating_profit' and key=='영업손실' else value
+                    values[dest]=-value if dest=='tax' and key=='법인세수익(비용)' else -abs(value) if (dest=='operating_profit' and key=='영업손실' or dest=='net_income' and key in ('당기순손실','반기순손실','분기순손실')) else value
         # Some public viewers abbreviate the total label to just "분기".
         # Accept only one numeric row corroborated by BOTH independent equations.
         if context=='income' and 'net_income' not in values and len(abbreviated_net)==1:
@@ -234,7 +236,7 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
     if not all(k in i for k in ('revenue','operating_profit','net_income')):raise ValueError('주요 손익 계정 미확인')
     return dict(code=code,name=name,market=market,basis=basis,year=year,quarter=quarter,period_end=end,
         available_at=available,receipt=receipt,url=url,values={**b,**i,**result['cash']},raw=raw,
-        source='금융감독원 DART 공개 재무제표',unit='KRW',units=units,reconciliation_notes=reconciliation_notes,parser_version=10)
+        source='금융감독원 DART 공개 재무제표',unit='KRW',units=units,reconciliation_notes=reconciliation_notes,parser_version=PARSER_VERSION)
 
 
 def quarter_records(reports, cutoff):

@@ -52,8 +52,9 @@ def _now(value=None):
 
 def completed_cutoff(now, allow_same_day=False):
     now=_now(now)
-    # Conservative provider settlement buffer also covers delayed regular sessions.
-    if allow_same_day and now.weekday()<5 and (now.hour,now.minute)>=(18,30):return now.date()
+    # Provider after-market runs through 20:00; retain a 30-minute publication buffer.
+    # https://help.pay.naver.com/faq/content.help?faqId=18245
+    if allow_same_day and now.weekday()<5 and (now.hour,now.minute)>=(20,30):return now.date()
     return now.date()-timedelta(days=1)
 
 
@@ -115,7 +116,7 @@ def parse_history(payload, *, symbol, kind, start, end, fetched_at, allow_same_d
             endpoint_evidence=SCRIPT_SOURCE, requested_start=start, requested_end=end,
             excluded_outside_completed_window=excluded,
             adjustment_note='일반 KOSPI/KOSDAQ 가격지수 수준 · 총수익지수 아님' if kind == 'index' else ADJUSTMENT_NOTE,
-            final_basis=('KST 18:30 이후 제공자 장후 일봉 · 양대 지수 날짜 대조 필요 · 공식 확정 보증 아님; 사후 정정 가능' if allow_same_day else 'KST 조회일 이전 날짜의 제공자 일봉 관측; 당일 제외, 사후 제공자 정정 가능')))
+            final_basis=('KST 20:30 이후 제공자 장후 일봉 · 양대 지수 날짜 대조 필요 · 정규장 종가/공식 확정 보증 아님; 사후 정정 가능' if allow_same_day else 'KST 조회일 이전 날짜의 제공자 일봉 관측; 당일 제외, 사후 제공자 정정 가능')))
 
 
 def _write(path, content):

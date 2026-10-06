@@ -57,7 +57,8 @@ class FinancialContractTests(unittest.TestCase):
 
 class DailyPolicyTests(unittest.TestCase):
     def test_after_close_boundary_weekend_and_future(self):
-        tz=ZoneInfo('Asia/Seoul');morning=datetime(2026,10,2,18,29,tzinfo=tz);evening=datetime(2026,10,2,18,30,tzinfo=tz)
+        tz=ZoneInfo('Asia/Seoul');morning=datetime(2026,10,2,20,29,tzinfo=tz);evening=datetime(2026,10,2,20,30,tzinfo=tz)
+        self.assertEqual(completed_cutoff(datetime(2026,10,2,18,30,tzinfo=tz),True).isoformat(),'2026-10-01')
         self.assertEqual(str(completed_cutoff(morning,True)),'2026-10-01');self.assertEqual(str(completed_cutoff(evening,True)),'2026-10-02')
         self.assertEqual(str(completed_cutoff(datetime(2026,10,3,19,tzinfo=tz),True)),'2026-10-02')
         payload=json.dumps([{'localDate':'20261002','closePrice':100},{'localDate':'20261005','closePrice':999}]).encode()

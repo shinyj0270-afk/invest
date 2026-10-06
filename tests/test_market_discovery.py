@@ -1,7 +1,11 @@
 import unittest
+import json
+import tempfile
+from pathlib import Path
+from unittest.mock import patch
 from datetime import date, timedelta
 
-from investment.market_discovery import build_discovery, technical,discovery_candidate
+from investment.market_discovery import build_discovery, technical,discovery_candidate,load_market_cache
 
 
 def bars(days, *, index=False, start=100):
@@ -12,6 +16,18 @@ def bars(days, *, index=False, start=100):
 
 
 class MarketDiscoveryTests(unittest.TestCase):
+    def test_old_cache_exclusions_are_reapplied_without_rewriting_source(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);folder=root/'work'/'market-expansion';folder.mkdir(parents=True)
+            rows=[dict(code='90000K',name='가상4우(전환)',eligibility='candidate',industry='기계',source_security_type='ST'),
+                  dict(code='900000',name='가상보통',eligibility='candidate',industry='기계',source_security_type='ST')]
+            path=folder/'universe.json';path.write_text(json.dumps(dict(schema_version='naver-universe-0.1',companies=rows)),encoding='utf-8')
+            original=path.read_bytes()
+            with patch('investment.market_discovery.load_local',return_value=dict(data_dir=root,profile='work')):
+                cache=load_market_cache(root,dict(meta=dict(data_mode='user_input')))
+            self.assertEqual([r['eligibility'] for r in cache['universe']['companies']],['excluded','candidate'])
+            self.assertEqual(path.read_bytes(),original)
+
     def test_market_cap_boundary_and_fresh_identity(self):
         row=dict(name='기업',market='KOSPI',eligibility='candidate',metrics={})
         for cap,expected in [(849.9,False),(850,False),(850.01,True),(None,False)]:

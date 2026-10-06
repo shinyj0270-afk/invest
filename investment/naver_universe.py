@@ -89,7 +89,7 @@ def classify(row):
     kind = row.get('source_security_type')
     if kind is not None and kind != 'ST':
         reasons.append('네이버 주식(ST) 이외 상품')
-    if re.search(r'(?:\d+)?우(?:[BC])?$|우선주$', name):
+    if re.search(r'(?:\d+)?우(?:[BC])?(?:\s*\(전환\))?$|우선주$', name):
         reasons.append('종목명에 우선주 표기')
     if re.search(r'스팩|기업인수목적|\bSPAC\b', name, re.I):
         reasons.append('기업인수목적회사 표기')

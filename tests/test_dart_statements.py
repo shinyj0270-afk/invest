@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock
 
-from investment.dart_statements import amount, quarter_records, valid_report, load_bundle, displayed_debt, parse_viewer, reconciliation_reference
+from investment.dart_statements import amount, quarter_records, valid_report, load_bundle, displayed_debt, parse_viewer, reconciliation_reference, PARSER_VERSION
 from tools.company_statements import api_check
 
 
@@ -22,6 +22,26 @@ def report(q, values=None, available=None):
 
 
 class DartStatementsTests(unittest.TestCase):
+    def test_plain_balance_totals_require_unique_numeric_accounts_and_balance(self):
+        def table(title, rows):
+            return '<table><tr><td>'+title+'</td></tr><tr><td>2026.06.30 단위 : 원</td></tr></table><table>'+''.join('<tr><td>'+a+'</td><td>'+str(b)+'</td></tr>' for a,b in rows)+'</table>'
+        balance=[('자산',''),('자산',20000000),('유동자산',8000000),('비유동자산',12000000),
+                 ('부채',''),('부채',8000000),('자본',''),('자본',12000000)]
+        other=table('손익계산서',[('매출액',100),('영업이익',15),('반기순이익',10)])+table('현금흐름표',[('영업활동현금흐름',9)])
+        def parse(rows):
+            return parse_viewer(table('재무상태표',rows)+other,code='900000',name='가상',market='KOSPI',basis='OFS',year=2026,quarter=2,receipt='20260813001554',url='https://dart.fss.or.kr/report/viewer.do?rcpNo=20260813001554')
+        self.assertTrue(valid_report(parse(balance)))
+        self.assertEqual(parse(balance)['values']['assets'],20000000)
+        for aliases in ({'자산':'총자산','부채':'총부채'}, {'부채':'부채(A)','자본':'자본(B)'}):
+            self.assertTrue(valid_report(parse([(aliases.get(a,a),b) for a,b in balance])))
+        for loss in (10,-10):
+            loss_html=table('재무상태표',balance)+other.replace('<td>반기순이익</td><td>10</td>',f'<td>반기순손실</td><td>{loss}</td>')
+            r=parse_viewer(loss_html,code='900000',name='가상',market='KOSPI',basis='OFS',year=2026,quarter=2,receipt='20260813001554',url='https://dart.fss.or.kr/report/viewer.do?rcpNo=20260813001554')
+            self.assertEqual(r['values']['net_income'],-10)
+        with self.assertRaises(ValueError):parse(balance+[('자산',21000000)])
+        with self.assertRaises(ValueError):parse([(a,16000000 if a=='자본' and b else b) for a,b in balance])
+        with self.assertRaises(ValueError):parse([(a,b) for a,b in balance if a!='자산'])
+
     def test_explicit_same_statement_reference_discloses_small_residual(self):
         r=report(1);r['values'].update(net_income=13351375878,parent_net=12526499343,nci_net=824876444)
         raw=[{'label':'지배기업의 소유주에게 귀속되는 당기순이익(손실)','value':12526499343},
@@ -68,7 +88,7 @@ class DartStatementsTests(unittest.TestCase):
             result=repair_saved(dest)
             self.assertEqual(result['repaired_companies'],1);self.assertEqual(result['revalidation_failures'],[])
             repaired=json.loads(target.read_text(encoding='utf-8'))['companies']['005930']['reports'][0]
-            self.assertEqual(repaired['values'],parsed['values']);self.assertEqual(repaired['parser_version'],10)
+            self.assertEqual(repaired['values'],parsed['values']);self.assertEqual(repaired['parser_version'],PARSER_VERSION)
             self.assertEqual(repaired['sha256'],old['sha256'])
 
     def test_displayed_debt_does_not_add_subtotals_leases_or_missing_as_zero(self):

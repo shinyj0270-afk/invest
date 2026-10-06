@@ -10,7 +10,7 @@ import requests
 from .local_config import load_local
 from .market_discovery import load_market_cache,discovery_candidate
 from .market_refresh import write_json
-from .dart_statements import Tables, load_bundle
+from .dart_statements import Tables, load_bundle, PARSER_VERSION
 from .financial_update_policy import decide_update
 _COLLECTION_LOCK=Lock()
 
@@ -119,9 +119,9 @@ def _collect_company(root,row,cutoff,progress=lambda _:None, *, force=False, ext
         for record in prior:observed.setdefault((record['basis'],record['year'],record['quarter']),record)
         bundle['companies'][row['code']]['reports']=list(observed.values())
     decision=decide_update(previous,bundle)
-    if previous and any(r.get('parser_version',0)<10 for r in previous['companies'].get(row['code'],{}).get('reports',[])):
+    if previous and any(r.get('parser_version',0)<PARSER_VERSION for r in previous['companies'].get(row['code'],{}).get('reports',[])):
         old={(r['basis'],r['year'],r['quarter']):r for r in previous['companies'][row['code']]['reports']}
-        reparsed=[r for r in records if r.get('parser_version')==10 and old.get((r['basis'],r['year'],r['quarter']),{}).get('parser_version',0)<10 and r.get('sha256') and old.get((r['basis'],r['year'],r['quarter']),{}).get('sha256')==r['sha256']]
+        reparsed=[r for r in records if r.get('parser_version')==PARSER_VERSION and old.get((r['basis'],r['year'],r['quarter']),{}).get('parser_version',0)<PARSER_VERSION and r.get('sha256') and old.get((r['basis'],r['year'],r['quarter']),{}).get('sha256')==r['sha256']]
         if reparsed and decision['action'] in ('review','defer','unchanged'):
             # Parser repairs are distinct from new provider corrections (<7% remains deferred).
             corrected=dict(old)

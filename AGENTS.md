@@ -23,3 +23,13 @@
 ## GLOBAL WORKFLOW 상속
 
 [공통 파일 참조](GLOBAL_WORKFLOW_REFERENCE.md)에 지정된 GLOBAL_WORKFLOW.md를 읽고 공통 START/CLOSE 골격을 상속한다. 충돌 시 기존 INVESTMENT 규칙이 우선한다. 독립 investment-session 스킬, SYNC_CONTRACT, 상태 원본과 Git/데이터/인증/PC별 예외를 유지한다.
+
+
+## 기존 AI 통합 구조 · 로컬 실행 레이어
+
+- ChatGPT는 최상위 오케스트레이션·판단·계획·조율, Codex는 구현·코딩·테스트, Claude는 검토·문서화·보조 분석을 담당한다. 사용자의 현재 명시 지시가 우선한다.
+- Remote Desktop Commander는 회사 PC의 파일·PowerShell·Git·기존 프로젝트에 접근하는 I/O 및 로컬 실행 통로다. 독립 에이전트·판단 주체·별도 통합축이나 작업 상태 저장소로 취급하지 않는다.
+- GitHub와 LLM Wiki는 공용 상태·기억·인계 레이어다. 현재 개발 상태는 해당 프로젝트의 기존 상태/인계 문서, 장기 지식은 Wiki를 참조한다. 회사 PC와 집 PC는 각각 실행 환경이며 브리지 연결만으로 PC간 동기화가 완료되지 않는다.
+- 공통 규칙 원본은 shinyj0270-afk/personal-ai-wiki의 main:GLOBAL_WORKFLOW.md, 프로젝트 연결 원본은 main:control/projects.json이다. 로컬 사본의 HEAD·미전송 변경·원격 최신성을 확인하고 오래된 로컬 사본을 최신 규칙으로 간주하지 않는다. 접근 불가 시 미확인을 보고하고 기존 프로젝트 규칙으로 가능한 작업을 계속한다.
+- LLM Wiki 프로그램 저장소의 origin(Pratiyush/llm-wiki)은 개인 지식 인계 대상이 아니다. 기존 personal-ai-wiki와 선별 Wiki 보존 절차를 유지하고, 전체 세션 자동 수집·자동 /wiki-sync·임의 push를 실행하지 않는다.
+- 기존 START/CLOSE·한 쓰기 세션·미완료 변경 보존 규칙을 유지한다. 브리지 시작/종료와 프로젝트 START/CLOSE는 별개다. 각 AI의 자동 호출·메시지 교환은 브리지 기능이 아니며, 실행 담당자는 요청 범위와 실제 검증 결과를 기존 인계 문서로 전달한다.

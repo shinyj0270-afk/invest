@@ -66,6 +66,12 @@ class NaverUniverseTests(unittest.TestCase):
                 data = raw(name=patch.get('name', '가상제조'), **{k:v for k,v in patch.items() if k != 'name'})
                 self.assertEqual(normalize(data, 'KOSPI', TIME, industry)['eligibility'], 'excluded')
 
+    def test_convertible_preferred_suffix_is_not_an_ordinary_candidate(self):
+        for name in ('가상4우(전환)', '가상2우B(전환)', '가상우 (전환)'):
+            self.assertEqual(normalize(raw(name=name), 'KOSPI', TIME, '기계')['eligibility'], 'excluded')
+        for name in ('가상우주', '가상(전환)', '가상우성'):
+            self.assertEqual(normalize(raw(name=name), 'KOSPI', TIME, '기계')['eligibility'], 'candidate')
+
     def test_loss_negative_equity_missing_and_zero(self):
         for patch in (dict(eps='-1'), dict(eps='0'), dict(eps=None), dict(per='-1')):
             self.assertIsNone(normalize(raw(**patch), 'KOSPI', TIME)['metrics']['per'])
