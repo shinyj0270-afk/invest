@@ -1,9 +1,14 @@
+---
+name: investment-session
+description: INVESTMENT START/시작 및 CLOSE/마감 요청에서 PC와 Git 상태를 확인하고 공통 인계 문서와 안전한 수신·전송 절차를 적용한다.
+---
+
 # INVESTMENT Session Skill
 
 ## 목적
 
 회사 PC, 집 PC, Claude, Codex에서 같은 절차로 INVESTMENT 작업을 시작하고 마감한다.
-이 스킬은 `SYNC_CONTRACT.md`와 `PROJECT_STATE.md`를 기준으로 동작한다.
+이 스킬은 [SYNC_CONTRACT.md](../../SYNC_CONTRACT.md), `PROJECT_STATE.md`, `CURRENT_HANDOFF.md`를 기준으로 동작한다. 문서별 책임·PC 우선순위·인계 필드의 단일 정의는 SYNC_CONTRACT.md에 둔다.
 
 ## 호출어
 
@@ -26,10 +31,13 @@
 
 ### 1. 로컬 안전 점검
 
-저장소 루트에서 먼저 기존 점검을 실행한다.
+현재 PC의 사용자 확인과 config/local.json의 profile을 대조한다. work는 Primary, home은 Secondary다. unknown/불일치이면 추측으로 설정하지 않는다. 같은 branch의 다른 쓰기 세션이 있는지 인계 기록과 현재 작업을 확인한다(기술적 잠금은 아님). 저장소 루트에서 기존 점검을 실행한다.
 
 ```powershell
 .\scripts\pc-start.ps1
+git status --short --branch
+git branch --show-current
+git rev-parse HEAD
 ```
 
 PowerShell 실행 정책이 스크립트를 차단하면 정책을 우회하지 말고 다음 대체 경로를 사용한다.
@@ -47,12 +55,13 @@ PowerShell 실행 정책이 스크립트를 차단하면 정책을 우회하지 
 - upstream 없음
 - 로컬과 원격의 divergence
 - 로컬 ahead 상태
+- 확인된 다른 쓰기 세션 또는 충돌
 
 자동 stash, `reset --hard`, `git clean`, force 작업으로 해결하지 않는다.
 
 ### 2. 원격 최신 확인
 
-안전 점검이 통과한 clean `main`에서만 실행한다.
+SYNC_CONTRACT.md의 승인 원격과 일치하는지 확인한다. 안전 점검이 통과한 clean `main`에서만 실행한다. 각 명령의 성공을 확인한 뒤 다음 단계로 이동하며 fetch 실패 시 캐시를 최신 원격으로 보고하지 않는다.
 
 ```powershell
 git fetch origin main
@@ -76,11 +85,14 @@ git rev-parse origin/main
 
 수신이 끝난 뒤 반드시 다음 순서로 읽는다.
 
-1. `AGENTS.md`
-2. `SYNC_CONTRACT.md`
-3. `CLAUDE.md`
-4. `PROJECT_STATE.md`
-5. 현재 작업에 필요한 관련 문서
+1. `PROJECT_STATE.md`
+2. `CURRENT_HANDOFF.md`
+3. `AGENTS.md`
+4. `SYNC_CONTRACT.md`
+5. Claude이면 `CLAUDE.md`의 추가 규칙
+6. `docs/DUAL_PC_WORKFLOW.md`와 현재 작업에 필요한 관련 문서
+
+수신을 보류했어도 로컬 문서는 읽을 수 있다. 미수신/캐시 기준임을 표시하고 충돌하는 구현은 진행하지 않는다. 필수 파일이 없으면 미확인으로 보고한다.
 
 과거 대화나 오래된 Wiki 요약을 최신 상태보다 우선하지 않는다.
 
@@ -88,14 +100,14 @@ git rev-parse origin/main
 
 사용자에게 짧게 다음만 보고한다.
 
-- profile: work/home
+- profile: work/home/unknown 및 Primary/Secondary
 - branch
 - HEAD short SHA
 - origin/main short SHA
 - clean 여부
 - `PROJECT_STATE.md`의 최신 완료 작업
 - 미해결 1~3개
-- 이어서 할 다음 작업 1개
+- `CURRENT_HANDOFF.md`의 다음 작업 1개, 권장 실행 주체/모델/Reasoning 및 escalation 조건
 
 사용자가 이미 구체적인 오늘 작업을 지정했다면 그 작업을 다음 작업으로 사용한다.
 
@@ -128,21 +140,13 @@ git diff --check
 과거 세션의 테스트 결과를 이번 실행 결과처럼 복사하지 않는다.
 실행하지 않은 검증은 미실행이라고 기록한다.
 
-### 3. PROJECT_STATE 갱신
+### 3. 상태와 단기 인계 갱신
 
-`PROJECT_STATE.md` 맨 위에 이번 세션의 새 블록을 추가한다.
+전체 프로젝트 상태·주요 단계·검증·미해결이 실제로 바뀐 경우에만 `PROJECT_STATE.md` 맨 위에 날짜/작업명, 시작 branch/SHA, 실제 변경·실행 검증·미해결을 추가한다. 기존 과거 기록은 보존한다. 다음 실행 지점과 전송 상태는 `CURRENT_HANDOFF.md`를 참조하며 반복 복사하지 않는다.
 
-반드시 포함할 내용:
+`CURRENT_HANDOFF.md`는 무변경 세션도 항상 갱신한다. SYNC_CONTRACT.md의 필수 필드에 따라 다음 작업자가 바로 실행할 Next action, 권장 실행 주체·모델·Reasoning, escalation 조건을 작성한다. commit/push 전에는 pending으로 기록하고 성공을 선기록하지 않는다.
 
-- 날짜와 작업명
-- 시작 branch/기준 SHA
-- 실제 변경
-- 실제 실행한 검증과 결과
-- 미해결 사항
-- 다음 작업
-- commit/push 여부
-
-기존 과거 기록을 삭제하거나 덮어쓰지 않는다.
+갱신 후 `git diff`와 새 파일 내용도 검토한다.
 
 ### 4. 공유 범위 점검
 
@@ -165,7 +169,7 @@ git diff --check
 
 ### 5. commit/push
 
-사용자가 작업 마감을 요청한 CLOSE 모드에서는 공유 가능한 변경과 검증이 정상일 때 commit/push까지 진행한다.
+사용자가 작업 마감을 요청한 CLOSE 모드 또는 이번 작업에 commit/push를 포함해 요청한 경우에는 공유 가능한 변경과 검증이 정상일 때 commit/push까지 진행한다. 실제 오류가 나면 중단하며 아래 명령을 무조건 연속 실행하지 않는다. 기본 대상은 main이고, 사용자가 승인한 별도 branch는 그 원격 branch/ref를 일관되게 사용한다.
 
 순서:
 
@@ -187,7 +191,9 @@ git rev-parse origin/main
 git ls-remote origin refs/heads/main
 ```
 
-HEAD, origin/main, 실제 원격 main SHA가 일치해야 원격 인계 완료로 보고한다.
+HEAD, origin/main, 실제 원격 main SHA가 일치해야 원격 인계 완료로 보고한다. `CURRENT_HANDOFF.md`의 마지막 검증된 commit/remote 상태는 SYNC_CONTRACT.md의 전송 기록 규칙으로 갱신한다. 실패/미전송이면 실제 local commit 유무와 remote handoff 미완료를 구분하고 원인·재개 명령을 남긴다.
+
+중요한 장기 결정이 생겼을 때만 SYNC_CONTRACT.md의 Wiki 절차를 확인한다. 현재 정의가 전체 세션 수집이면 /wiki-sync를 실행하지 않고 선별 보존 미반영을 보고한다.
 
 ### 6. CLOSE 완료 보고
 
@@ -209,7 +215,7 @@ push가 완료되지 않았으면 반드시
 
 - 한 시점에 한 PC·한 쓰기 세션을 기본으로 한다.
 - 회사 PC와 집 PC의 로컬 설정/DB/원자료는 서로 복사하지 않는다.
-- `PROJECT_STATE.md`는 현재 개발 상태의 단일 기준이다.
+- `PROJECT_STATE.md`는 전체 개발 상태, `CURRENT_HANDOFF.md`는 다음 세션의 단기 인계 기준이다.
 - LLM Wiki와 `/wiki-sync`는 장기 지식 보존용이며 Git 수신/전송을 대신하지 않는다.
 - 자동 stash, force push, `reset --hard`, `git clean`, 충돌 자동 덮어쓰기를 하지 않는다.
 - 실데이터 실패를 fixture 성공으로 대체해 보고하지 않는다.

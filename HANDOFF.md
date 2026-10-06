@@ -1,3 +1,9 @@
+# 과거 인계 기록 — Project Sync v2 이전
+
+이 파일의 아래 내용은 당시 이력으로 보존한다. 최신 코드/전체 상태는 원격 main과 [PROJECT_STATE.md](PROJECT_STATE.md), 바로 다음 세션은 [CURRENT_HANDOFF.md](CURRENT_HANDOFF.md), 실행 규칙은 [SYNC_CONTRACT.md](SYNC_CONTRACT.md)를 따른다. 아래 ZIP 업로드·구버전·미전송 문구를 현재 지시로 실행하지 않는다.
+
+---
+
 # 최신 인계 상태 · work13
 
 로컬 적용 완료 / 원격 전송 미실행 / 다른 PC 수신·실행 미검증. 이번 변경은 기존 작업폴더에 있습니다. 기존 ZIP은 이전 버전이며 승인된 공유본이 아닙니다. [두 PC 운영](docs/DUAL_PC_WORKFLOW.md)과 [검증 내역](docs/DUAL_PC_VALIDATION.md)을 따르세요. 아래는 이전 인계 기록으로 보존합니다.

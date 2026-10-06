@@ -1,3 +1,9 @@
+# 집 PC Secondary 인계
+
+집 PC는 필요할 때 이어받는 Secondary 환경이다. 기존 작업본에서 `INVESTMENT START`로 [공통 스킬](skills/investment-session/SKILL.md)을 실행하고 [CURRENT_HANDOFF.md](CURRENT_HANDOFF.md)의 다음 작업을 읽는다. 회사 PC와 같은 branch에 동시에 쓰지 않는다. 아래는 과거 도입 기록이며 최신 수신/실행 상태가 아니다.
+
+---
+
 # 최신 수신 조건 · work13
 
 집 PC에서 아직 실행하지 않았습니다. 사용할 원격·브랜치를 확인하고 기존 집 PC 작업본을 보존하세요. 로컬 설정·인증·DB·원자료를 복사하지 않고 home 프로필을 별도로 설정합니다. Git 연결 전 기존 ZIP을 최신본으로 덮어씌우지 마세요. [공통 절차](docs/DUAL_PC_WORKFLOW.md)가 아래 과거 인계 안내보다 우선합니다.

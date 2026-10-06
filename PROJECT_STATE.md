@@ -1,3 +1,14 @@
+# Project Sync v2 · 회사 Primary 공통 인계 계층 · 2026-10-06
+
+- 현재 전체 상태: 기존 분석·Infomax·포트폴리오 기능 위에 파일 기반 공통 인계 계층을 적용했다. PROJECT_STATE는 전체 상태/주요 단계, CURRENT_HANDOFF는 바로 다음 세션, AGENTS는 공통 규칙, CLAUDE는 공통 import와 전용 보충, SYNC_CONTRACT는 PC/AI/Git/Wiki 계약이다. 사용법·도입 조사·충돌 근거는 docs/PROJECT_SYNC_V2.md에 있다.
+- 작업 기준: work(Primary)/main, 시작 HEAD e58d677efca9e235e6ee41a6232b945f356df847, clean. 실제 fetch에서 원격 2커밋 앞섬을 확인하고 집 PC 출처 호환 수정/검증 기록을 ff-only 수신해 구현 기준은 699a13a56be5456d8e190e90dfb44a15a532e532다. 기존 로컬 미커밋 작업은 없었고, 아래 집 PC 이력은 그대로 보존했다.
+- 운영 변경: work Primary/home Secondary, 같은 branch 한 PC 한 쓰기 세션. 기존 investment-session에 필수 문서 읽기·매 CLOSE 단기 인계·조건부 전체 상태 갱신·실제 원격 확인을 통합했다. 오래된 인계/ZIP 문서는 역사로 표시했다. 기존 오프라인 점검 스크립트와 분석 코드, 개인 입력·원자료·DB·인증·PC 설정은 수정하지 않았다. GLOBAL_WORKFLOW v1.0을 원격에서 실제 읽었으며 중앙 Wiki 수정·예약 등록·신규 API 도입은 없다.
+- 이번 실제 검증: tests.test_dual_pc 13개 통과. 공유 후보 253개 문제 0, 격리 home 사본에서 verify_portable.py 14명령 전체 통과 및 실제 저장자료 없는 화면 검사 통과. Git diff 공백 검사·11파일 범위/내용 검토 통과, 과거 문서3개 원문 보존, 링크 누락0·추가 내용 인증정보 패턴0·분석 코드 변경0 확인. finish 점검의 진행 Git 작업/추적 비공개 경로0. 검증 근거는 공유 제외 validation/current/project-sync-v2/에 있다. skill-creator의 quick_validate.py는 이 프로젝트 .venv에 PyYAML이 없어 실행 실패했으며 frontmatter/참조/절차는 직접 검토했다. 과거 테스트를 이번 결과로 사용하지 않았다.
+- 남은 상태: 새 Claude 세션의 실제 시작과 실제 home PC의 v2 수신/실행은 미검증이다. 기존 재무 미확보49개·가격 시장/권리변동 기준·추천 성과 누적, 집 PC의 가격/재무 최신화 미확인은 후속 범위다. 이번 격리 가상 검증은 실데이터 최신화 성공이 아니다. /wiki-sync 실체가 전체 세션 수집이므로 실행하지 않았으며 장기 결정 선별 Wiki 보존은 별도 미구현이다.
+- 다음 실행 지점·권장 실행 주체·commit/push 확인은 CURRENT_HANDOFF.md를 따른다. 이 아래 내용의 다음 작업/원격 상태는 각 날짜의 과거 관측이다.
+
+---
+
 # INVESTMENT 10번 집 PC 수신·검증 마무리 · 2026-10-02
 
 - 사용자 요청으로 회사1~9번 후속인 집 PC10번을 재개했다. 시작 home/main clean, 기준 HEAD `a35c18bdb2e60bc46e45b02f28d4c7c0d3c18459`. 실제 fetch 후 HEAD/origin/main 차이0/0으로 추가 수신은 불필요했다. 회사 인계 `e58d677`은 앞선28커밋 ff-only 수신에 포함됐고 집 PC 출처 호환 수정은 a35c18b에 반영됐다.
