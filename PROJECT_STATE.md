@@ -1,3 +1,13 @@
+# Phase 0 Portability & Migration Audit · 2026-10-06
+
+- work/Primary, main 10eb926cafb3ac175a764e54d9797c317d396361에서 clean 시작. 실제 fetch 후 원격 차이0/0, 수신 불필요. 공통 인계의 Phase 0를 수행해 docs/PORTABILITY_AUDIT.md에 경로·PC 설정·외부 도구 의존성과 우선순위8개를 기록했다.
+- 주요 발견: 보조 PS 실행기의 다른 작업본 식별 누락, UI 테스트4개 Edge 경로 고정, Playwright 설치 목록 버전 차이, 검증기 쓰기 범위, legacy ZIP 목록 누락, data_dir와 .local 상태의 분리. 조사 범위에서 대규모 구조 변경 필요는 확인하지 못했으며 제안은 아직 미구현이다.
+- 이번 실제 검증: 두 PC/경로/Git 안전 기존 테스트13개 재실행 통과. 추적 scripts/tools/config 42개 검색과 직접 코드 검토, 인계 목록 AST 비교(legacy105/기존 공유253), 실행 도구 버전 및 설치 메타데이터 확인. 최종 공유 후보254개 문제0, 변경4파일 범위·내용·인증정보 패턴·과거 상태 원문 보존·diff 공백 검사 통과. 이전 portable 검사를 재실행 결과로 표기하지 않는다.
+- 감사 문서·상태·단기 인계·공유 목록만 변경. 분석/Infomax/포트폴리오/실행기 소스·PC 설정·인증·실데이터 수정 없음. 서버·수집·보유 동기화·예약·Wiki·패키지 설치 미실행. 실제 home와 새 Claude 세션의 v2 검증은 여전히 미확인.
+- 다음 실행 지점 및 원격 인계 증거는 CURRENT_HANDOFF.md를 따른다.
+
+---
+
 # Project Sync v2 · 회사 Primary 공통 인계 계층 · 2026-10-06
 
 - 현재 전체 상태: 기존 분석·Infomax·포트폴리오 기능 위에 파일 기반 공통 인계 계층을 적용했다. PROJECT_STATE는 전체 상태/주요 단계, CURRENT_HANDOFF는 바로 다음 세션, AGENTS는 공통 규칙, CLAUDE는 공통 import와 전용 보충, SYNC_CONTRACT는 PC/AI/Git/Wiki 계약이다. 사용법·도입 조사·충돌 근거는 docs/PROJECT_SYNC_V2.md에 있다.
