@@ -33,9 +33,10 @@ Escalation condition:
 - 데이터 이전·인증 복제·광범위 구조 변경이 필요하면 범위를 분리하고 High 검토.
 
 Branch: main
-Commit: 9663dc82cdc75bcdd48f88683b498a3a64c2aeac (이번 작업 시작 기준)
+Commit: 8f0e84cefbf5d3262386d5fc6cd27f788503fc6b (회사 PC Phase 1A–1C 구현 완료)
 Remote status:
-- verification pending: 이번 Phase 1 변경의 commit/push 확인 전.
+- pushed (verified): 2026-10-06 KST, HEAD/origin/main/실제 refs/heads/main = 8f0e84cefbf5d3262386d5fc6cd27f788503fc6b.
+- 이 확인 결과를 담는 후속 기록 commit 자체는 최종 보고 및 다음 START의 실제 Git 조회로 검증한다. 위 SHA는 기록 commit의 자기 SHA가 아니다.
 
 Notes:
 - 회사 PC의 이식성 후속 구현은 완료. 실제 home/별도 Claude/Wiki 반영을 완료했다고 주장하지 않는다.
