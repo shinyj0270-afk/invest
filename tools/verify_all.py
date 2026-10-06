@@ -1,10 +1,16 @@
-"""Fresh local verification; does not register tasks or call external data APIs."""
+"""Legacy in-place checks; prefer validate_share_candidates.py --ui for isolated checks."""
+import argparse
 import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 from datetime import datetime,timezone
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--in-place', action='store_true', help='Explicitly permit writes to this checkout and its fixture data')
+args = parser.parse_args()
+if not args.in_place:
+    parser.error('Use tools/validate_share_candidates.py --ui; legacy worktree writes require --in-place')
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from investment.local_config import load_local,require_profile

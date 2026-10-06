@@ -3,6 +3,7 @@ import sys,json
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from playwright.sync_api import sync_playwright,expect
+from tools.browser_runtime import chromium_options
 from investment.fixture import make_fixture
 from investment.workspace_export import export_workspace
 from investment.recommendations import propose
@@ -13,7 +14,7 @@ second=propose(recommendation_context(),created_on='2026-10-03',kind='exception'
 second['performance']=first['performance']
 records=[first];requests=[]
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path='C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe')
+    browser=p.chromium.launch(headless=True,**chromium_options())
     page=browser.new_page(viewport={'width':1440,'height':1000});errors=[]
     page.on('pageerror',lambda e:errors.append(str(e)))
     html=export_workspace(make_fixture(),live={'token':'synthetic','daily_prices':True})

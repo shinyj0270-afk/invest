@@ -1,4 +1,8 @@
-"""Package explicitly selected project files; never crawl a working directory."""
+"""Legacy partial ZIP packager, not a Project Sync v2 handoff. Use Git for current code.
+
+The historical FILES list is intentionally preserved. ZIP hash verification proves
+archive integrity, not completeness of the current application or session files.
+"""
 import argparse
 import hashlib
 import json
@@ -80,6 +84,7 @@ def verify(path):
 
 
 def package(version):
+    print('LEGACY partial ZIP only; current code/session handoff uses Git and SYNC_CONTRACT.md.')
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,63}', version):
         raise ValueError('Version must use letters, digits, dots, underscores or hyphens')
     state = (ROOT / 'PROJECT_STATE.md').read_text(encoding='utf-8')

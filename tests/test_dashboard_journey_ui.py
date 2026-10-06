@@ -3,6 +3,7 @@ import json,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from playwright.sync_api import sync_playwright,expect
+from tools.browser_runtime import chromium_options
 from investment.fixture import make_fixture
 from investment.workspace_export import export_workspace,script_json
 from investment.financial_metrics import common_metrics
@@ -23,7 +24,7 @@ html=prefix+'const WORKSPACE_DATA='+script_json(data)+tail[tail.index(';</script
 record=propose(recommendation_context(),created_on='2026-10-02')
 record['performance']={'status':'ready','return_pct':2.4,'parts':[{'code':t['code'],'name':t['name'],'return_pct':i+1,'contribution_pct':(i+1)*.16} for i,t in enumerate(record['targets'])],'benchmark_returns':{'KOSPI':2},'entry_date':'2026-10-05','as_of':'2026-10-06'}
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path='C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe')
+    browser=p.chromium.launch(headless=True,**chromium_options())
     page=browser.new_page(viewport={'width':1440,'height':1000});errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
     def route(r):
         if r.request.url.endswith('/recommendations'):r.fulfill(content_type='application/json',body=json.dumps({'records':[record]}))

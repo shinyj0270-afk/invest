@@ -1,2 +1,2 @@
-# Optional UI verification; version used in the supplied baseline report.
-playwright==1.57.0
+# Optional UI verification; keep aligned with requirements.lock.txt.
+playwright==1.63.0

@@ -134,8 +134,9 @@ git diff --check
 이번 세션에서 변경한 범위에 맞는 실제 테스트만 실행한다.
 
 - 문서/지침만 변경: 최소 `git diff --check` + 관련 파일 내용 검토
-- 코드/공유 동작 변경: 관련 단위 테스트 + 필요하면 `tools/verify_portable.py`
-- 전체 검증이 필요한 변경: 기존 프로젝트 지침에 따라 `tools/verify_all.py`
+- 코드/공유 동작 변경: 관련 단위 테스트 + `tools/validate_share_candidates.py`의 격리 portable 검사
+- UI/실행 환경 변경: `tools/validate_share_candidates.py --ui`로 격리 portable 및 합성 UI 검증. pc-finish.ps1 -RunTests도 같은 경로다.
+- legacy `tools/verify_all.py --in-place`는 작업본/fixture에 쓰므로 범위를 명시적으로 정한 경우에만 사용한다. 일반 마감 검증으로 실행하지 않는다.
 
 과거 세션의 테스트 결과를 이번 실행 결과처럼 복사하지 않는다.
 실행하지 않은 검증은 미실행이라고 기록한다.

@@ -1,3 +1,22 @@
+# 후속 구현 상태 · 2026-10-06
+
+회사 PC에서 Phase 1A–1C를 적용했다. 아래 Phase 0 원문은 수정 전의 감사 근거로 보존한다. 현재 사용법은 [PC 실행·검증·인계](PC_MIGRATION.md)를 따른다.
+
+| 항목 | 회사 PC 완료 범위 |
+|---|---|
+| A01 | PowerShell을 기존 Python 실행기로 위임. 같은 루트/버전 확인, 포트 충돌 거부, 인자·실패 코드 전달 회귀 검증 |
+| A02 | 고정 Edge 경로 UI4개를 공통 브라우저 선택기로 변경. 환경변수·PATH·Windows 설치 위치·Playwright fallback과 잘못된 명시 경로 검증 |
+| A03 | 선택적 UI 설치 목록도 lock과 같은 Playwright1.63.0 사용. 회사에 설치된 이 버전으로 UI4개 실행, 패키지 설치 변경 없음 |
+| A04 | 마감 -RunTests를 격리 portable/UI 검사로 전환. legacy in-place는 명시 플래그 없으면 실행 거부. 공유 목록에서 .local/DB/sidecar/로그 차단 추가 |
+| A05 | 과거 부분 ZIP 도구의 범위·최신 인계 불가를 help/생성 안내에 표시. 과거105파일 목록은 보존 |
+| A06 | data_dir 밖 .local 캐시/pending/로그와 브라우저 상태를 별도 로컬 자산으로 문서화. 복사/이전은 수행하지 않음 |
+| A07 | Windows 두 PC 지원 범위를 명시. 다른 OS 이전은 추가 구현하지 않음 |
+| A08 | README/ENVIRONMENT 상단에 현행 실행·검증·인계 링크 추가. 이전 내용은 역사로 보존 |
+
+실제 실행한 검증과 미확인 범위는 PROJECT_STATE의 이번 블록, 다음 세션은 CURRENT_HANDOFF를 따른다. 실제 home 수신/실행과 별도 Claude 세션 확인은 회사 검증으로 대체하지 않는다.
+
+---
+
 # Phase 0 Portability & Migration Audit
 
 작성: 2026-10-06 KST · 실행 PC: work (Primary) · 조사 기준: main `10eb926cafb3ac175a764e54d9797c317d396361`.

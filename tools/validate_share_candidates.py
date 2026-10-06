@@ -1,8 +1,9 @@
 """Review an explicit source list and test a temporary, local home-profile checkout.
 
 This never creates an archive, initializes Git, accesses a remote or transmits files.
-Content scanning is a heuristic; human review and company authorization remain necessary.
+Content scanning is a heuristic; direct review of the shared content remains necessary.
 """
+import argparse
 import hashlib
 import json
 import os
@@ -17,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / 'config/share_candidates.json'
 OUT = ROOT / 'validation/current'
-BLOCKED_PARTS = {'.git', '.venv', 'data', 'private_data', 'dist', 'validation',
+BLOCKED_PARTS = {'.git', '.venv', '.local', 'data', 'private_data', 'dist', 'validation',
                  'node_modules', '__pycache__', '.codex', '.claude', 'logs'}
 BLOCKED_NAMES = {'local.json', 'runtime.local.json', 'secrets.toml'}
 SUSPICIOUS = {
@@ -32,6 +33,8 @@ def relative_file(name):
         raise ValueError('Excluded or unsafe candidate path: ' + name)
     if path.name.lower() in BLOCKED_NAMES or path.name.lower().startswith('.env'):
         raise ValueError('Local settings in candidate path: ' + name)
+    if re.search(r'\.(?:db|sqlite3?)(?:$|[-.])', path.name, re.I) or path.suffix.lower() == '.log':
+        raise ValueError('Local database or log in candidate path: ' + name)
     return path
 
 
@@ -68,7 +71,7 @@ def audit():
     return entries, digests, issues
 
 
-def main():
+def main(*, ui=False):
     OUT.mkdir(parents=True, exist_ok=True)
     entries, digests, issues = audit()
     report = dict(executed_at=datetime.now(timezone.utc).isoformat(),
@@ -102,6 +105,10 @@ def main():
                  "assert any('실제 저장자료가 없습니다' in x.value for x in a.info); "
                  "print('PASS home actual mode empty without manual file')"],
             ]
+            if ui:
+                commands += [[sys.executable, 'tests/' + name] for name in (
+                    'test_dashboard_journey_ui.py', 'test_dashboard_upgrade_ui.py',
+                    'test_trend_diagnostics_ui.py', 'test_trend_chart_ui.py')]
             results = []
             for command in commands:
                 run = subprocess.run(command, cwd=stage, env=env, capture_output=True,
@@ -119,4 +126,8 @@ def main():
     return 1 if issues or any(x['exit_code'] for x in report.get('validation', [])) else 0
 
 
-if __name__ == '__main__': sys.exit(main())
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--ui', action='store_true', help='Also run four synthetic UI journeys in the isolated copy')
+    args = parser.parse_args()
+    sys.exit(main(ui=args.ui))

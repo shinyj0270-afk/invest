@@ -1,3 +1,9 @@
+# 현재 환경 안내
+
+현재 실행·설치·검증은 [PC 실행/이전 안내](docs/PC_MIGRATION.md), 실제 최신 상태는 [PROJECT_STATE.md](PROJECT_STATE.md)를 확인한다. 아래 Git 미설정/Wiki 부재/집 PC 미검증 문구는 작성 당시 이력이며 현재 환경 판정에 사용하지 않는다. PC별 인증·설정·데이터는 자동 이전하지 않는다.
+
+---
+
 # PC별 설정 적용 · work13
 
 work14 추가: `manual_snapshot_file`을 PC별 비공개 설정으로 읽는다. 회사 PC는 기존 수동 검토 파일을 계속 사용하고 예시/임시 home 환경은 null로 검증했다. 실제 집 PC의 파일·인증 상태는 확인하지 않았다.

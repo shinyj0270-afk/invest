@@ -1,3 +1,11 @@
+# 현재 실행·인계 안내
+
+기본 실행은 `scripts/open-investment.cmd`이며 PowerShell 실행기도 같은 Python 실행기를 사용합니다. 설치·브라우저·격리 검증·로컬 자산 경계는 [PC 실행/이전 안내](docs/PC_MIGRATION.md), 시작/마감은 [Project Sync v2](docs/PROJECT_SYNC_V2.md)를 따릅니다. 전체 상태는 [PROJECT_STATE.md](PROJECT_STATE.md), 다음 작업은 [CURRENT_HANDOFF.md](CURRENT_HANDOFF.md)입니다. work Primary/home Secondary로 운영합니다.
+
+일반 마감 검증은 `scripts/pc-finish.ps1 -RunTests` 또는 프로젝트 .venv의 `tools/validate_share_candidates.py --ui`입니다. 아래 과거 직접 fixture/verify_all/ZIP 안내는 당시 기록이며 최신 인계 절차가 아닙니다. verify_all은 작업본 쓰기를 허용하는 `--in-place`가 있어야 실행됩니다.
+
+---
+
 # 검토 상세분석·DART 재무 연결 · 2026-10-01
 
 최신 통합 화면은 요약·사업·재무·밸류에이션 4개 탭입니다. 간단 분석은 11개 재무 카드와 분기 비교 막대이며 이전 주요 지표 표를 삭제했습니다. 3사의 실제 연결/별도 공시 재무제표와 PER/PBR/PCR 분포·밴드·RIM·시총 변화 분석을 연결했습니다. [현재 기능·자료 한계](docs/COMPANY_DETAIL.md), [OpenDART 인증키와 수집](docs/OPENDART_STATEMENTS.md)을 확인하세요.

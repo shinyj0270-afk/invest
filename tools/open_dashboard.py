@@ -9,7 +9,7 @@ def health(port):
     try:
         with urlopen(f'http://127.0.0.1:{port}/health',timeout=2) as r:
             data=json.load(r)
-        return data.get('app')=='investment-holdings-sync' and data.get('version')==1 and data.get('root_id')==hashlib.sha256(str(ROOT.resolve()).encode()).hexdigest()
+        return isinstance(data,dict) and data.get('app')=='investment-holdings-sync' and data.get('version')==1 and data.get('root_id')==hashlib.sha256(str(ROOT.resolve()).encode()).hexdigest()
     except (OSError,ValueError,URLError):return False
 
 def main():

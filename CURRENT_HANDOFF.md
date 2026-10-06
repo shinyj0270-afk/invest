@@ -3,40 +3,42 @@
 Updated: 2026-10-06 KST
 Last agent: Codex
 Last PC: work (Primary)
-Last task: Phase 0 Portability & Migration Audit
+Last task: 회사 PC Portability Phase 1A–1C 완료
 
 Completed:
-- docs/PORTABILITY_AUDIT.md에 경로·설정·외부 의존성 조사와 우선순위8개 기록.
-- 기존 두 PC 안전 테스트13개 재실행 통과, 인계 목록과 설치 메타데이터 비교.
-- 분석/Infomax/포트폴리오 및 실행기 코드는 변경하지 않음.
-- 최종 공유 후보254개·4파일 범위/내용·과거 상태 보존·공백 검사 통과, 감사 결과 원격 반영 확인.
+- 감사 A01–A08의 회사 PC 조치 완료: 실행기 위임/작업본 식별, UI4개 브라우저 선택, Playwright 기준 통일, 마감 검증 격리.
+- .local/DB/sidecar/로그 공유 차단, legacy ZIP 범위 표시, Windows/로컬 자산 및 과거 문서 안내 정리.
+- 실행기/브라우저/격리/PowerShell 회귀13개와 기존 두 PC 안전13개 통과.
+- 실제 pc-finish -RunTests의 공유257개 검사, 격리 portable15명령·실자료 없는 화면·합성 UI4개 최종 통과.
 
 Pending:
-- 발견 항목 A01–A08의 수정은 미구현.
-- 실제 home/새 Claude 세션의 v2 실행과 Wiki 선별 보존은 미검증/미구현.
+- 실제 home PC 최신 코드 수신·실행 검증은 해당 PC에서 필요.
+- 별도 Claude 세션의 공통 지침/인계 읽기 확인은 미실행.
+- 중앙 Wiki 선별 보존 경로는 기존 범위 밖이며 /wiki-sync는 전체 세션 수집이므로 미실행.
 
-Next task: Phase 1A — 보조 실행기의 동일 작업본 식별 통일
-Recommended next agent: Codex
-Recommended model: GPT-6 Astra
+Next task: 필요 시 home Secondary에서 최신 코드 수신 및 실제 실행 확인
+Recommended next agent: Codex (또는 Claude)
+Recommended model: GPT-6 Astra (Codex 선택 시)
 Recommended reasoning: Medium
 
 Next action:
-- 회사 PC 기존 작업본에서 INVESTMENT START 후 공통 문서와 docs/PORTABILITY_AUDIT.md의 A01을 읽는다.
-- scripts/open-investment.ps1이 기존 tools/open_dashboard.py에 실행을 위임하도록 최소 변경을 설계·적용한다. 포트 인자, 오류 종료코드, 프로젝트 .venv, 기존 CMD 진입점은 유지한다.
-- 동일 루트 서버 재사용, 다른 루트/버전 거부, 포트 점유, 잘못된 포트 및 시작 실패를 격리 환경에서 검증한다. 실제 사용자 서버는 종료하지 않는다.
-- 양쪽 실행기가 다른 작업본 서버를 정상으로 오인하지 않고 오류를 호출자에게 전달하면 완료다. 분석/데이터 로직 및 보유 동기화는 변경하지 않는다.
+- 실제 집 PC에서 사용자 확인 후 home 프로필을 확인하고 기존 작업본에서 INVESTMENT START를 실행한다. 회사 PC 설정을 home으로 바꾸지 않는다.
+- 로컬 변경/진행 작업/다른 쓰기 세션을 먼저 확인하고 승인 원격에서 안전하게 최신 main을 수신한다. CURRENT_HANDOFF, PROJECT_STATE, 공통 규칙과 docs/PC_MIGRATION.md를 읽는다.
+- 해당 PC의 .venv/Node/브라우저를 확인한 뒤 scripts/pc-finish.ps1 -RunTests로 격리 검증한다. 정책 차단 시 문서의 Python 대체 경로를 사용한다.
+- 기본 실행기로 앱을 열어 현재 작업본/포트/화면/자료 상태를 확인한다. 보유 pending/충돌은 기존 HOLDINGS_SYNC 절차로 보존하며 캐시/DB를 덮어쓰지 않는다.
+- 실제 받은 SHA와 home 실행 결과를 구분해 인계한다. 별도 Claude 사용 시 @AGENTS.md와 CURRENT_HANDOFF 로딩을 확인한다.
 
 Escalation condition:
-- branch divergence/로컬 충돌: 자동 통합 중단, 보존 후 High 검토.
-- 공통 실행기 변경이 데이터 이전·광범위 설정 재구성을 요구하면 근거를 기록하고 High 검토.
+- Git divergence/로컬 충돌/동시 쓰기 발견 시 보존 후 자동 수신 중단.
+- 데이터 이전·인증 복제·광범위 구조 변경이 필요하면 범위를 분리하고 High 검토.
 
 Branch: main
-Commit: bb29a08e5f9e66d3f04251c450662a4205307932 (감사 결과 및 문서 공백 정리 완료 기준)
+Commit: 9663dc82cdc75bcdd48f88683b498a3a64c2aeac (이번 작업 시작 기준)
 Remote status:
-- pushed (verified): 2026-10-06 KST, HEAD/origin/main/실제 refs/heads/main = bb29a08e5f9e66d3f04251c450662a4205307932.
-- 이 결과를 담는 후속 기록 commit의 전송은 최종 보고 및 다음 START의 실제 Git 조회로 확인한다. 위 SHA는 기록 commit의 자기 SHA가 아니다.
+- verification pending: 이번 Phase 1 변경의 commit/push 확인 전.
 
 Notes:
-- work의 정적 감사/합성 테스트이며 실제 home·다른 OS 실행 성공을 뜻하지 않는다.
-- 앞선 portable14명령은 이번 재실행 결과가 아니다. PyYAML 미설치를 확인했으며 설치하지 않았다.
-- 인증·원자료·DB·개인 입력 내용 미수집. PC 설정/서버/예약/패키지/Wiki 변경 없음.
+- 회사 PC의 이식성 후속 구현은 완료. 실제 home/별도 Claude/Wiki 반영을 완료했다고 주장하지 않는다.
+- 분석·Infomax·포트폴리오 로직/실데이터/보유/인증/PC 설정/운영 서버/예약 변경 없음.
+- 패키지는 설치하지 않았다. PyYAML 기반 외부 스킬 형식 검사기는 미실행이며 스킬은 직접 검토했다.
+- 기존 재무 미확보·가격 기준·성과 누적은 별도 데이터 작업 범위이며 이번 이식성 작업에서 해결한 것이 아니다.

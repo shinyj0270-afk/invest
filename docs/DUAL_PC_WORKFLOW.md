@@ -23,13 +23,13 @@ enabled_data_adapters의 kiwoom/dart는 별도 runtime.local.json의 같은 프�
 .\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1
 .\scripts\pc-finish.ps1 -RunTests
 ```
-실행 정책이 스크립트를 차단하면 정책을 우회하지 말고 `.\.venv\Scripts\python.exe tools\pc_check.py --phase start`로 점검한다. 가상 테스트는 앱에서 직접 선택한다. 실제 연결 실패의 대체가 아니다. 선별 인계본에는 `tools/verify_all.py` 대신 `tools/verify_portable.py`를 사용한다.
+실행 정책이 스크립트를 차단하면 정책을 우회하지 말고 `.\.venv\Scripts\python.exe tools\pc_check.py --phase start`로 점검한다. `-RunTests`의 Python 대체는 `tools/validate_share_candidates.py --ui`다. portable 검증은 이 도구가 만든 격리 사본에서 실행한다. 가상 테스트는 실제 연결 실패의 대체가 아니다. 설치/브라우저/로컬 자산별 경계는 [PC 실행·이전 안내](PC_MIGRATION.md)를 따른다.
 
 새 PC에서 작업본을 확보한 뒤 그 PC의 Python으로 `python -m venv .venv`, `.\.venv\Scripts\python.exe -m pip install -r requirements.lock.txt`를 실행한다. .venv/node_modules는 복제하지 않는다.
 
 ## 시작과 마감
 
-두 보조 스크립트는 기본적으로 로컬 Git만 점검한다. 네트워크/commit/push/pull을 수행하지 않는다. `-RunTests`도 검증만 실행한다. 출력의 clean_cached_refs는 과거 로컬 참조 상태이며 원격 최신 확인이 아니다. Git 미설정/dirty/진행 중 merge·rebase/divergence에서는 자동 수신을 보류한다.
+두 보조 스크립트는 기본적으로 로컬 Git만 점검한다. 네트워크/commit/push/pull을 수행하지 않는다. `-RunTests`는 격리 home 사본에서 portable와 합성 UI 검증을 실행하고 원래 작업본에는 공유 제외 검증 로그만 남긴다. 출력의 clean_cached_refs는 과거 로컬 참조 상태이며 원격 최신 확인이 아니다. Git 미설정/dirty/진행 중 merge·rebase/divergence에서는 자동 수신을 보류한다.
 
 수신·문서 갱신·전송 명령의 단일 실행 절차는 [investment-session](../skills/investment-session/SKILL.md)이다. `INVESTMENT START`와 `INVESTMENT CLOSE`를 사용한다. CLOSE 요청은 검증된 공유 변경의 commit/push를 포함하지만 pc-finish 스크립트 단독 실행은 전송하지 않는다. CURRENT_HANDOFF는 매 CLOSE 갱신하며 PROJECT_STATE는 상태가 실제 바뀔 때 갱신한다.
 

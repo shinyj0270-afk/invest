@@ -1,3 +1,14 @@
+# 회사 PC Portability Phase 1A–1C 완료 · 2026-10-06
+
+- 사용자 요청으로 회사 PC에서 가능한 이식성 후속 A01–A08을 완료했다. work/Primary, main 9663dc82cdc75bcdd48f88683b498a3a64c2aeac clean에서 시작, 실제 fetch 후 차이0/0. 감사 원문은 보존하고 docs/PORTABILITY_AUDIT.md 앞에 항목별 조치 상태를 추가했다.
+- 실행: PS 실행기를 기존 Python 실행기로 위임해 같은 작업본/버전 확인을 공유하고 포트·NoBrowser·종료코드를 전달한다. 비객체 health 응답도 거부한다. 고정 Edge 경로 UI4개는 공통 브라우저 탐색으로 전환했고 UI 의존성 목록을 기존 lock의 Playwright1.63.0에 맞췄다. 새 패키지 설치 없음.
+- 검증/이전: pc-finish -RunTests는 격리 home 사본에서 portable+UI를 실행한다. legacy in-place 검증은 명시 플래그 없으면 실행 거부, 부분 ZIP은 과거 범위를 help/생성 안내에 표시한다. 공유 후보의 .local/DB/sidecar/로그 차단을 추가했다. docs/PC_MIGRATION.md에 Windows 설치·실행·브라우저·로컬 자산/보유 pending 경계를 문서화하고 README/ENVIRONMENT/공통 스킬을 연결했다.
+- 이번 실제 검증: 최종 portability 회귀13개, 기존 dual_pc13개 통과. 실제 pc-finish -RunTests로 최종 공유257개 문제0, 격리 portable15명령·실자료 없는 화면·합성 UI4개(여정/추천/추세 진단/차트, 모바일 포함) 모두 통과. PS 실제 호출의 포트/NoBrowser/실패코드 및 마감 위임은 임시 fixture에서 검증했다. legacy 무플래그 실행 거부와 ZIP help도 실제 확인. 변경 범위/내용·인증정보 패턴·과거 기록 보존·Git 공백 검토를 수행했다. 실행 증거는 공유 제외 validation/current/share-test-*.txt와 share-candidate-review.json에 있다.
+- 분석/Infomax/포트폴리오 소스 및 개인 입력·원자료·DB·인증·PC 설정·운영 서버·예약·Wiki 변경 없음. .venv에 PyYAML이 없어 외부 스킬 형식 검사기는 미실행, 지침은 직접 검토했다. 실제 home 수신/실행 및 별도 Claude 세션 확인은 남아 있다. 다른 OS 지원·데이터 미해결을 완료로 보고하지 않는다.
+- 회사 PC의 이번 후속 구현 범위는 완료했다. 다음 실제 PC 확인 및 원격 인계 증거는 CURRENT_HANDOFF.md를 따른다.
+
+---
+
 # Phase 0 Portability & Migration Audit · 2026-10-06
 
 - work/Primary, main 10eb926cafb3ac175a764e54d9797c317d396361에서 clean 시작. 실제 fetch 후 원격 차이0/0, 수신 불필요. 공통 인계의 Phase 0를 수행해 docs/PORTABILITY_AUDIT.md에 경로·PC 설정·외부 도구 의존성과 우선순위8개를 기록했다.

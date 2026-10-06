@@ -254,6 +254,9 @@
     "GLOBAL_WORKFLOW_REFERENCE.md": "GLOBAL_WORKFLOW_REFERENCE.md",
     "CURRENT_HANDOFF.md": "CURRENT_HANDOFF.md",
     "docs/PROJECT_SYNC_V2.md": "docs/PROJECT_SYNC_V2.md",
-    "docs/PORTABILITY_AUDIT.md": "docs/PORTABILITY_AUDIT.md"
+    "docs/PORTABILITY_AUDIT.md": "docs/PORTABILITY_AUDIT.md",
+    "tools/browser_runtime.py": "tools/browser_runtime.py",
+    "tests/test_portability.py": "tests/test_portability.py",
+    "docs/PC_MIGRATION.md": "docs/PC_MIGRATION.md"
   }
 }

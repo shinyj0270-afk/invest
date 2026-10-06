@@ -5,9 +5,10 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from investment.fixture import make_fixture
 from investment.workspace_export import export_workspace
 from playwright.sync_api import sync_playwright,expect
+from tools.browser_runtime import chromium_options
 
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path='C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe')
+    browser=p.chromium.launch(headless=True,**chromium_options())
     page=browser.new_page(viewport={'width':1440,'height':1050});errors=[]
     page.on('pageerror',lambda error:errors.append(str(error)))
     snapshot=make_fixture()
