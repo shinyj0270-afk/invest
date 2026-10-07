@@ -135,7 +135,9 @@ class IsolationTests(unittest.TestCase):
                  patch.object(sharing, 'audit', return_value=(entries, {}, [])), \
                  patch.object(sharing.subprocess, 'run', side_effect=run):
                 self.assertEqual(sharing.main(ui=True), 0)
-            self.assertEqual(len(calls), 6)
+            self.assertEqual(len(calls), 8)
+            self.assertIn('tests/test_portfolio_risk_ui.py', [command[1] for command in calls])
+            self.assertIn('tests/test_trend_following_ui.py', [command[1] for command in calls])
             self.assertEqual(source.read_text(), '# original')
             self.assertEqual(json.loads(private.read_text())['profile'], 'work')
             self.assertEqual((root / '.local/input.txt').read_text(), 'synthetic local sentinel')

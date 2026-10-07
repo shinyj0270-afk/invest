@@ -12,6 +12,7 @@ from .company_detail import build_details
 from .market_history import benchmark_calendar
 from .financial_metrics import common_metrics,apply_common
 from .market_insights import enrich_market
+from .trend_following import build_trend_following
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -117,6 +118,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     # Insert payload last so data containing template marker text stays literal.
     for marker, name in [('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*WORKSPACE_JS*/', 'workspace.js'),
                          ('/*DASHBOARD_JOURNEY*/', 'dashboard_journey.js'),
+                         ('/*TREND_FOLLOWING_UI*/', 'trend_following_ui.js'), ('/*TREND_FOLLOWING_CSS*/', 'trend_following.css'),
                          ('/*COMPANY_DETAIL_CSS*/', 'company_detail.css'), ('/*COMPANY_DETAIL_ENGINE*/', 'company_detail_engine.js'), ('/*COMPANY_DETAIL_UI*/', 'company_detail_ui.js'),
                          ('/*DISCOVERY_ENGINE*/', 'discovery_engine.js'), ('/*EBITDA_INPUTS*/', 'ebitda_inputs.js'), ('/*EBITDA_EDITOR*/', 'ebitda_editor.js'), ('/*FINANCIAL_TABLE_UI*/', 'financial_table_ui.js'), ('/*ADVANCED_VISUALS*/', 'advanced_visuals.js'), ('/*TREND_CHART_UI*/', 'trend_chart_ui.js'), ('/*DASHBOARD_UPGRADE_UI*/', 'dashboard_upgrade_ui.js'), ('/*RESEARCH_UI*/', 'research_ui.js'),
                          ('/*ENGINE*/', 'engine.js'), ('/*PORTFOLIO_ENGINE*/', 'portfolio_engine.js')]:
@@ -124,5 +126,6 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     html = html.replace('/*LIVE_CONFIG*/', script_json(live))
     return html.replace('/*PAYLOAD*/', script_json(dict(snapshot=snapshot, analysis_snapshot=analysis,
         research=research, discovery=discovery, financial_tables=financial_tables, company_details=company_details,market_insights=market_insights,
+        trend_following=build_trend_following(discovery['snapshot'] if discovery else analysis,discovery['research'] if discovery else research,market_cache),
         market_summary=market_summary(analysis, market_cache, discovery['snapshot']['meta']['price_date'] if discovery else analysis['meta']['price_date']),
         references=sanitize_references(references or {}, snapshot), detail_html=legacy)))

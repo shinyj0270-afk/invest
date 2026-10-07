@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>INVESTMENT · 통합 투자 대시보드</title><style>/*WORKSPACE_CSS*/
+/*TREND_FOLLOWING_CSS*/
 /*COMPANY_DETAIL_CSS*/</style></head>
 <body>
 <header class="mast"><div class="mast-in"><h1><i aria-hidden="true"></i>통합 투자 대시보드</h1><span class="subtitle">INVESTMENT · 기업 · 재무 · 포트폴리오</span><div class="asof">종가 기준일 <b id="asof">—</b><button id="print">인쇄 / PDF</button></div></div></header>
@@ -23,6 +24,7 @@
 <section id="companyDetail" class="view" hidden></section>
 <section id="advanced" class="view" hidden></section>
 <section id="research" class="view" hidden></section>
+<section id="trendFollowing" class="view" hidden></section>
 <section id="overview" class="view"><div class="section-title"><h2>주요 기업과 재무 한눈에</h2><p>현재 저장된 기업 범위의 규모와 수익성</p></div><div class="rail" id="kpis"></div>
 <div class="grid2"><article class="panel"><div class="panel-heading"><h3>기업별 시가총액</h3><button data-go="bars" class="link">상세 비교 →</button></div><p class="psub">억원 · 0 기준선 · 현재 선택 기업</p><div id="overviewBars"></div></article><article class="panel"><div class="panel-heading"><h3>수익성과 재무 구조</h3><button data-go="heatmap" class="link">전체 지표 →</button></div><p class="psub">ROE · 영업이익률 · 부채비율 (%)</p><div id="overviewHeat"></div></article></div>
 <article class="panel below"><div class="panel-heading"><h3>기업별 원수치</h3><button data-go="company" class="link">기업 분석 →</button></div><div id="overviewTable" class="tscroll"></div></article></section>
@@ -34,4 +36,4 @@
 <section id="waterfall" class="view" hidden><div class="section-title"><h2>보유 평가손익 기여</h2><p>주식 원가 + 종목별 평가손익 = 주식 평가액</p></div><article class="panel"><p id="waterfallScope" class="psub"></p><div id="waterfallChart"></div><p class="psub">현금·배당·실현손익·수수료 제외. 절대 손익 상위 10종목 외에는 합산합니다.</p><button data-go="holdings">보유 입력 · 검토 열기 →</button></article></section>
 <section id="legacy" class="view" hidden><div class="section-title"><h2 id="legacyTitle"></h2><p>시장자료 기준의 기업 분석 · 보유 입력은 자동 보관하며, 연결 앱에서 회사·집 PC와 동기화됩니다.</p></div><iframe id="detailFrame" title="기존 기업·보유·포트폴리오 분석" sandbox="allow-scripts allow-same-origin allow-downloads allow-modals"></iframe></section>
 <footer><p id="footerScope"></p><p>결측은 — 로 표시합니다. 저장자료의 일부 기업 비교이며 전체 시장을 대표하지 않습니다. 가격·재무의 기간과 출처는 원수치에서 확인하세요.</p></footer>
-</main></div><script>const INVESTMENT_LIVE=/*LIVE_CONFIG*/;const WORKSPACE_DATA=/*PAYLOAD*/;</script><script>/*ENGINE*/</script><script>/*PORTFOLIO_ENGINE*/</script><script>/*DISCOVERY_ENGINE*/</script><script>/*EBITDA_INPUTS*/</script><script>/*EBITDA_EDITOR*/</script><script>/*FINANCIAL_TABLE_UI*/</script><script>/*TREND_CHART_UI*/</script><script>/*DASHBOARD_UPGRADE_UI*/</script><script>/*DASHBOARD_JOURNEY*/</script><script>/*RESEARCH_UI*/</script><script>/*COMPANY_DETAIL_ENGINE*/</script><script>/*COMPANY_DETAIL_UI*/</script><script>/*ADVANCED_VISUALS*/</script><script>/*WORKSPACE_JS*/</script></body></html>
+</main></div><script>const INVESTMENT_LIVE=/*LIVE_CONFIG*/;const WORKSPACE_DATA=/*PAYLOAD*/;</script><script>/*ENGINE*/</script><script>/*PORTFOLIO_ENGINE*/</script><script>/*DISCOVERY_ENGINE*/</script><script>/*EBITDA_INPUTS*/</script><script>/*EBITDA_EDITOR*/</script><script>/*FINANCIAL_TABLE_UI*/</script><script>/*TREND_CHART_UI*/</script><script>/*DASHBOARD_UPGRADE_UI*/</script><script>/*DASHBOARD_JOURNEY*/</script><script>/*RESEARCH_UI*/</script><script>/*COMPANY_DETAIL_ENGINE*/</script><script>/*COMPANY_DETAIL_UI*/</script><script>/*ADVANCED_VISUALS*/</script><script>/*TREND_FOLLOWING_UI*/</script><script>/*WORKSPACE_JS*/</script></body></html>

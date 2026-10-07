@@ -14,6 +14,7 @@ from .workspace_research import build_research
 from .market_discovery import build_discovery
 from .market_insights import enrich_market
 from .market_refresh import write_json
+from .portfolio_risk import portfolio_risk
 
 _LOCK=Lock()
 
@@ -52,6 +53,7 @@ def research_context(snapshot,cache,financials,as_of):
             table=build_table(r,scope,financials[r['code']],max_columns=48)
             apply_common(r,d['research']['rows'][r['code']],common_metrics(r,table,d['research']['rows'][r['code']]['technical']))
     d['market_insights']=enrich_market(d,cache)
+    d['_risk_cache']=cache  # In-memory only; never serialized into a recommendation.
     return d
 
 def propose(context, *, created_on, kind='monthly', reason='', previous=None):
@@ -89,13 +91,15 @@ def propose(context, *, created_on, kind='monthly', reason='', previous=None):
     changes=[dict(code=code,name=(new.get(code) or old[code])['name'],action='편입' if code not in old else '제외' if code not in new else '유지',
         before_pct=old.get(code,{}).get('weight_pct',0),after_pct=new.get(code,{}).get('weight_pct',0),
         reason=(reason.strip()+' · ' if kind=='exception' else '')+new.get(code,{}).get('reason',excluded.get(code,'새 월간 기준 미충족 또는 산업 집중도 조정'))) for code in sorted(set(old)|set(new))]
+    risk_summary=portfolio_risk(picks,100-16*len(picks),context.get('_risk_cache'),as_of)
     return dict(id=uuid4().hex,month=created_on[:7],created_on=created_on,price_date=as_of,kind=kind,
         reason=reason.strip() or '월간 성장형 기준 재검토',targets=picks,cash_pct=100-16*len(picks),changes=changes,
         coverage=dict(eligible=sum(r.get('discovery_allowed',False) for r in context['snapshot']['companies']),qualified=len(candidates),selected=len(picks),excluded=len(excluded)),
         assumptions='연구용 초안: 최대5종목·종목16%·같은 산업 최대32%·현금 최소20%. 성장/추세 중심 자체 규칙이며 개인 손실 허용도 확정값·매매 주문이 아닙니다. 자료 부족 슬롯은 현금으로 남깁니다.',
         method='RS12개월40% + RS1개월20% + 상한100 매출성장률25% + 상한100 ROE15%; 최신 연결·연속4분기·양수 TTM 영업현금흐름과 성장/추세 필터 적용. 기대수익률·검증된 최적화 점수 아님',
         review_status='자료 기준 추천 초안',
-        review_needed=bool(not picks or any(not p.get('business_review') or p['business_review'].get('stale') for p in picks)),
+        portfolio_risk=risk_summary,
+        review_needed=bool(not picks or risk_summary['status']=='pending' or any(not p.get('business_review') or p['business_review'].get('stale') for p in picks)),
         exclusion_reasons={reason:sum(v==reason for v in excluded.values()) for reason in set(excluded.values())},
         input_digest=digest(dict(as_of=as_of,targets=picks)))
 
@@ -137,7 +141,9 @@ class RecommendationBook:
     def view(self,cache):
         data=self.read();today=datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat()
         # Supplement old records at a separately labelled review date; never rewrite their decision.
+        cutoff=(cache or {}).get('history',{}).get('calendar',{}).get('valid_through')
         return dict(version=1,records=[dict(r,performance=performance(r,cache),
+            current_portfolio_risk=portfolio_risk(r['targets'],r['cash_pct'],cache,cutoff),
             supplemental_reviews={t['code']:business_review(t['code'],t['name'],today) for t in r['targets']}) for r in data['records']])
     def append(self,context,kind='monthly',reason='',today=None):
         day=today or datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat()

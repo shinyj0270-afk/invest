@@ -48,3 +48,5 @@
 @media(max-width:700px){.journey-sectors,.journey-history{grid-template-columns:repeat(2,minmax(0,1fr))}.journey-company .panel-heading{align-items:flex-start;flex-direction:column}.journey-presets .research-actions>*{max-width:100%}.journey-presets label{width:100%}}
 
 .recommendation-preview{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.recommendation-preview span{padding:10px}
+
+.risk-figure{margin:16px 0;min-width:0}.risk-figure svg{display:block;width:100%;max-width:800px;height:auto;font-size:12px}.risk-figure figcaption{font-weight:600}.financial-series{min-width:0}.financial-series .rail{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}.financial-series .kpi{padding:16px}.financial-series .kpi strong{font-size:24px;white-space:nowrap;font-variant-numeric:tabular-nums}

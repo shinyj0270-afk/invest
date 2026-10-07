@@ -2,6 +2,7 @@
 from datetime import date, timedelta
 from .core import num
 from .financial_table import valid_day
+from .portfolio_risk import time_series
 
 
 def chart_history(row, snapshot, cache=None):
@@ -51,6 +52,7 @@ def chart_history(row, snapshot, cache=None):
     complete=bool(result and result[0]['date'] <= lower and result[-1]['date']==cutoff
                   and expected and expected==actual)
     return dict(bars=result,benchmark=benchmark,source=source,as_of=result[-1]['date'] if result else None,
+        time_series=time_series(bars,bm,cutoff),
         low_52w=min(window) if complete else None, high_52w=max(window) if complete else None,
         reason='종가 기준 52주 범위' if complete else '52주 전체 이력 또는 기준일 가격 미확보')
 

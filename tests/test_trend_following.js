@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('assert');
+const {select,miniChart}=require('../src/trend_following_ui.js');
+const state={market:'',industry:'',query:'',capMin:1000,rsMin:70,setup:'all',sort:'rs'};
+const row=(code,cap_eok,rs,extra={})=>({code,name:code,cap_eok,rs,ready:true,market:'KOSPI',industry:'test',...extra});
+const rows=[row('A',1000,70),row('B',999.99,99),row('C',2000,69.99),row('D',1200,95),row('E',null,90),row('F',2000,null),row('G',2000,98,{ready:false})];
+assert.deepEqual(select(rows,state).map(r=>r.code),['D','A']);
+assert.equal(select(rows,{...state,query:'a'})[0].code,'A');
+assert.equal(select(rows,{...state,setup:'template'}).length,0);
+assert.equal(select([row('A',1000,70,{analysis:{status:'pass'}})],{...state,setup:'template'}).length,1);
+assert.equal(select([row('A',1000,70,{analysis:{pivot_gap_pct:0}})],{...state,setup:'near'}).length,1);
+assert.equal(select([row('A',1000,70,{analysis:{pivot_gap_pct:.01}})],{...state,setup:'near'}).length,0);
+assert.equal(select([row('A',1000,70,{analysis:{contraction:null}})],{...state,setup:'contraction'}).length,0);
+const svg=miniChart([{date:'2026-01-01',close:100,volume:null},{date:'2026-01-02',close:110,volume:200}],{label:'<img onerror=alert(1)>'});
+assert(svg.includes('&lt;img'));assert(!svg.includes('<img'));assert(!svg.includes('NaN'));assert(svg.includes('가격(원)'));assert(svg.includes('거래량 (주)'));
+assert(miniChart([{date:'a',close:NaN}]).includes('연결 대기'));
+console.log('PASS trend filters: 1000 inclusive, RS70, missing exclusions, setup boundaries, escaped SVG labels');

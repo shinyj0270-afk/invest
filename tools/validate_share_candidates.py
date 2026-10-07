@@ -108,7 +108,7 @@ def main(*, ui=False):
             if ui:
                 commands += [[sys.executable, 'tests/' + name] for name in (
                     'test_dashboard_journey_ui.py', 'test_dashboard_upgrade_ui.py',
-                    'test_trend_diagnostics_ui.py', 'test_trend_chart_ui.py')]
+                    'test_trend_diagnostics_ui.py', 'test_trend_chart_ui.py', 'test_portfolio_risk_ui.py', 'test_trend_following_ui.py')]
             results = []
             for command in commands:
                 run = subprocess.run(command, cwd=stage, env=env, capture_output=True,
@@ -128,6 +128,6 @@ def main(*, ui=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--ui', action='store_true', help='Also run four synthetic UI journeys in the isolated copy')
+    parser.add_argument('--ui', action='store_true', help='Also run six synthetic UI journeys in the isolated copy')
     args = parser.parse_args()
     sys.exit(main(ui=args.ui))
