@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-08 07:57 KST
+Updated: 2026-10-08 07:59 KST
 Handoff version: 2026-10-08-company-dashboard-review
 Last agent: Codex orchestration; Astra High review; Sol High implementation
 Last PC: work (company Primary)
@@ -15,9 +15,10 @@ Completed:
 - 검증한 코드/검사12개와 문서3개만 회사 main에 저장, 총15개 파일과 승인 수정본의 바이트 일치 확인. git diff --check PASS, 진행 Git 작업/추적 private 경로 없음. 기존 Orca tracked 변경은 보존.
 - 실자료 읽기 전용: 참고가격2454개10/02·완료10/06에서 파생 주식수 모두 보류, 정적 상세/발굴10/06·원스냅샷9/23 보존. 공개 시장 원자료3파일 SHA 불변.
 - 사용자 재시작 후 연결 거부 보고에 따라 8767 리스너/기존 서버·별도 수집 프로세스 부재를 확인하고 회사 .venv tools/open_dashboard.py --no-browser로 재시작. health version2/build-source 일치/restart_required=false, 준비화면 HTTP200(0.05초), dashboard HTTP200(22,932,841bytes/35.77초, 단일 관측) 확인. 실제 브라우저 렌더/새 수집 완료와 구분.
+- CLOSE 공유15개 파일 커밋 및 전송 완료. 2026-10-08 07:59 KST HEAD/origin/main/실제 원격 main 모두 8fd72ebac5d38cf4739061a11ba48fa7a173251b 확인.
 
 Pending:
-- CLOSE 요청으로 검증된 공유15개 파일 commit/push 진행 예정. 실제 원격 SHA 확인 전까지 전송 pending.
+- home의 이번 코드 수신·실행은 미확인. 회사 원격 전송 성공과 상대 PC 반영을 구분한다.
 - 새 서버 자동 가격/재무 수집 최종 완료와 사용자 실제 브라우저 새로고침 결과는 미확인. 정상 시작/HTTP 응답을 데이터 수집 성공으로 확대하지 않는다.
 - home 재무 수집 최종 결과 회사에서 미확인(직전 home304/1376 처리). 비12월/USD7기업 인접기간·TTM/ROE·검증환율, 정기조회미제공6기업/일부계정·기간, 가격084180 후속 유지.
 - 개인 위험 한도·ETF/기관/촉매/FTD/베이스패턴·전체 권리변동/공식 달력·전체자료 준비시간 개선은 별도 미해결.
@@ -33,8 +34,8 @@ Recommended model: Sol High 중심, Astra High 핵심 검토(실행된 이번 �
 Recommended reasoning: High
 Escalation condition: HEAD/소스 동시 변경·divergence·다른 쓰기/수집·옛/새 잠금 동시 실행·자료 식별/공개일/통화 근거 부족 시 보존 후 해당 작업 중단.
 Branch: main (회사 기준 작업본); shinyj0270-afk/invest (Orca 미완료 검토 사본 보존)
-Commit: fe36baa4ae36b31c23152c8b1cbf495f46b27ff4 (시작 기준 SHA; 이번 수정 commit 없음)
-Remote status: START origin/main=시작SHA fetch 확인. CLOSE commit/push pending / remote handoff 미완료.
+Commit: 8fd72ebac5d38cf4739061a11ba48fa7a173251b — Fix dashboard valuation, performance validation, locks and chart dates (전송 검증된 수정 commit)
+Remote status: origin/main; pushed (verified). 2026-10-08 07:59 KST HEAD = origin/main = 실제 remote main = 8fd72ebac5d38cf4739061a11ba48fa7a173251b 확인. 이 전송 증거만 기록하는 후속 commit 자체는 최종 보고 및 다음 START의 실제 Git 조회로 검증한다. 상대 PC 수신·실행 미확인.
 
 Notes:
 - CLOSE 점검: Astra 승인12개 파일 해시 일치, 이번 세션 최종 전체 검증11개 프로세스 exit0 확인, 회사 공유302개 audit 경고0, health build/source 일치·restart_required=false. 소스 변경 없이 전체 테스트를 마감에서 재실행하지 않았으며 같은 세션의 실제 실행 결과와 현재 해시/상태 점검을 구분한다.
