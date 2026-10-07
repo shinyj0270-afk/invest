@@ -1,7 +1,7 @@
 # CURRENT HANDOFF
 
 Updated: 2026-10-07 15:00 KST
-Handoff version: 2026-10-07-close-1
+Handoff version: 2026-10-07-close-2
 Last agent: Codex
 Last PC: work (company Primary)
 Last task: 추세추종 및 포트폴리오 위험·시계열 공유 마감
@@ -26,8 +26,8 @@ Recommended model: 현재 선택 모델 유지
 Recommended reasoning: 금융·자료 계약 변경에 충분한 검토 수준
 Escalation condition: 다른 쓰기 세션·divergence·예상 밖 로컬 변경은 보존 후 자동 통합 중단. 대규모 구조/자료 계약 변경은 High 검토. 미확인 환율·권리변동·개인 한도는 추정 금지.
 Branch: main
-Commit: be1c1e1ce36f12195900e1f2836b6407de2e83cd (마감 시작 기준; 구현 commit 생성 전)
-Remote status: origin/main; verification pending. 이번 공유 변경의 commit/push는 아직 완료하지 않음.
+Commit: 20ccca1a801059537b97d008d8c22ebb16d93e6b (이미 생성된 두 기능 구현 commit)
+Remote status: origin/main; pushed (verified). 2026-10-07 15:01 KST에 HEAD = origin/main = 실제 remote main = 20ccca1a801059537b97d008d8c22ebb16d93e6b 확인. 이 증거를 기록하는 후속 문서 commit 자체의 전송은 최종 보고와 다음 START의 실제 Git 조회로 검증한다.
 
 Notes:
 - 소스 저장, 원격 반영, 집 PC 수신/실행, 운영 서버 재시작은 각각 확인한다. CLOSE는 서버 종료 명령이 아니다.
