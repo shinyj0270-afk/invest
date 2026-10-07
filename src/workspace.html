@@ -2,8 +2,13 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>INVESTMENT · 통합 투자 대시보드</title><style>/*WORKSPACE_CSS*/
 /*TREND_FOLLOWING_CSS*/
-/*COMPANY_DETAIL_CSS*/</style></head>
-<body>
+/*COMPANY_DETAIL_CSS*/
+/*MARKET_EXPLANATION_CSS*/
+/*FINANCIAL_REVIEW_CSS*/
+/*AURORA_GLASS_CSS*/</style></head>
+<body class="aurora-glass">
+<section id="initializationError" role="alert" hidden style="max-width:760px;margin:24px auto;padding:24px;background:#fff2e8;border:1px solid #edb991;border-radius:12px"><h2>화면 연결을 다시 확인하세요</h2><p id="initializationErrorText"></p><p>입력한 내용은 먼저 보관하세요. 이전 INVESTMENT 서버를 종료한 뒤 scripts/open-investment.cmd를 다시 실행하세요.</p><button onclick="location.reload()">다시 실행 후 화면 확인</button></section>
+<script>window.INVESTMENT_SHOW_INIT_ERROR=()=>{const box=document.getElementById('initializationError');box.hidden=false;document.getElementById('initializationErrorText').textContent='화면 구성 요소를 불러오지 못했습니다. 서버와 화면의 코드 버전이 다르거나 실행 오류가 발생했습니다.';};window.addEventListener('error',()=>window.INVESTMENT_SHOW_INIT_ERROR());</script>
 <header class="mast"><div class="mast-in"><h1><i aria-hidden="true"></i>통합 투자 대시보드</h1><span class="subtitle">INVESTMENT · 기업 · 재무 · 포트폴리오</span><div class="asof">종가 기준일 <b id="asof">—</b><button id="print">인쇄 / PDF</button></div></div></header>
 <div class="app-layout"><aside class="side-nav"><p class="side-title">투자 데이터</p><nav id="navigation" aria-label="분석 메뉴"></nav><p class="side-source" id="sideSource"></p><p class="manage">장기연구 · 공시/뉴스 관리는 기존 Streamlit 앱에서 이용합니다.</p><p class="side-source" id="sourceModeHint">HTML은 내보낸 시점의 자료입니다.<br>갱신 앱에서 새 결과물을 받으세요.</p></aside>
 <main>
@@ -13,10 +18,11 @@
 <details id="sourceDetails"><summary>자료 기준·연결 상태</summary><div id="sourceNotice" class="source-note"></div></details>
 <nav id="contextNavigation" class="context-nav" aria-label="현재 화면의 상세 보기"></nav>
 <section id="home" class="view" hidden>
-<div class="section-title"><h2>시장과 내 투자 한눈에</h2></div>
-<div id="marketSummary" class="rail"></div><div id="upgradeOverview"></div><article class="panel below"><div class="panel-heading"><h3>월간 추천과 검토 기록</h3><button data-go="recommendations">추천안 보기 →</button></div><div id="recommendationHome" class="psub" role="status">월간 추천 기록을 불러오는 중…</div></article>
+<div class="section-title"><h2>내 투자, 한눈에.</h2></div>
+<div id="marketSummary" class="rail"></div>
+<section id="homeMarketCharts" aria-label="시장 지수 가격 흐름"></section><div id="upgradeOverview"></div><article class="panel below"><div class="panel-heading"><h3>월간 추천과 검토 기록</h3><button data-go="recommendations">추천안 보기 →</button></div><div id="recommendationHome" class="psub" role="status">월간 추천 기록을 불러오는 중…</div></article>
 <form id="homeSearch" class="panel home-search"><label for="homeQuery">기업 찾기</label><input id="homeQuery" placeholder="기업명 또는 종목코드" autocomplete="off"><button type="submit">검색</button></form>
-<p class="psub">최신 제공 가격은 장중 참고값입니다. 원천 시세시각·지연은 미확인이며 종가 분석과 보유 평가에는 완료 종가를 사용합니다.</p>
+<p class="psub">참고가격은 조회일이 오래되었을 수 있습니다. 표시된 조회일과 시세시각을 확인하세요. 원천 시세시각·지연은 미확인이며 종가 분석과 보유 평가에는 완료 종가를 사용합니다.</p>
 <div class="grid2 below"><article class="panel"><div class="panel-heading"><h3>관심 기업</h3><button class="link" data-go="watch">전체 보기 →</button></div><div id="homeWatch"></div></article><article class="panel"><div class="panel-heading"><h3>내 보유종목</h3><button class="link" data-go="holdings">입력 · 검토 →</button></div><div id="homeHoldings"></div></article></div>
 <article class="panel below"><div class="panel-heading"><h3>강한 업종에서 후보 찾기</h3><button class="link" data-go="sectors">산업별 보기 →</button></div><div id="homeSectors"></div></article>
 </section>
@@ -36,4 +42,4 @@
 <section id="waterfall" class="view" hidden><div class="section-title"><h2>보유 평가손익 기여</h2><p>주식 원가 + 종목별 평가손익 = 주식 평가액</p></div><article class="panel"><p id="waterfallScope" class="psub"></p><div id="waterfallChart"></div><p class="psub">현금·배당·실현손익·수수료 제외. 절대 손익 상위 10종목 외에는 합산합니다.</p><button data-go="holdings">보유 입력 · 검토 열기 →</button></article></section>
 <section id="legacy" class="view" hidden><div class="section-title"><h2 id="legacyTitle"></h2><p>시장자료 기준의 기업 분석 · 보유 입력은 자동 보관하며, 연결 앱에서 회사·집 PC와 동기화됩니다.</p></div><iframe id="detailFrame" title="기존 기업·보유·포트폴리오 분석" sandbox="allow-scripts allow-same-origin allow-downloads allow-modals"></iframe></section>
 <footer><p id="footerScope"></p><p>결측은 — 로 표시합니다. 저장자료의 일부 기업 비교이며 전체 시장을 대표하지 않습니다. 가격·재무의 기간과 출처는 원수치에서 확인하세요.</p></footer>
-</main></div><script>const INVESTMENT_LIVE=/*LIVE_CONFIG*/;const WORKSPACE_DATA=/*PAYLOAD*/;</script><script>/*ENGINE*/</script><script>/*PORTFOLIO_ENGINE*/</script><script>/*DISCOVERY_ENGINE*/</script><script>/*EBITDA_INPUTS*/</script><script>/*EBITDA_EDITOR*/</script><script>/*FINANCIAL_TABLE_UI*/</script><script>/*TREND_CHART_UI*/</script><script>/*DASHBOARD_UPGRADE_UI*/</script><script>/*DASHBOARD_JOURNEY*/</script><script>/*RESEARCH_UI*/</script><script>/*COMPANY_DETAIL_ENGINE*/</script><script>/*COMPANY_DETAIL_UI*/</script><script>/*ADVANCED_VISUALS*/</script><script>/*TREND_FOLLOWING_UI*/</script><script>/*WORKSPACE_JS*/</script></body></html>
+</main></div><script>const INVESTMENT_LIVE=/*LIVE_CONFIG*/;const WORKSPACE_DATA=/*PAYLOAD*/;</script><script>/*DASHBOARD_STABILITY*/</script><script>/*ENGINE*/</script><script>/*PORTFOLIO_ENGINE*/</script><script>/*DISCOVERY_ENGINE*/</script><script>/*EBITDA_INPUTS*/</script><script>/*EBITDA_EDITOR*/</script><script>/*FINANCIAL_TABLE_UI*/</script><script>/*TREND_CHART_UI*/</script><script>/*MARKET_EXPLANATION_UI*/</script><script>/*TREND_CHANGES_UI*/</script><script>/*RISK_REVIEW_UI*/</script><script>/*FINANCIAL_COMPLETENESS_UI*/</script><script>/*DASHBOARD_UPGRADE_UI*/</script><script>/*DASHBOARD_JOURNEY*/</script><script>/*RESEARCH_UI*/</script><script>/*COMPANY_DETAIL_ENGINE*/</script><script>/*COMPANY_DETAIL_UI*/</script><script>/*ADVANCED_VISUALS*/</script><script>/*TREND_FOLLOWING_UI*/</script><script>/*WORKSPACE_JS*/</script></body></html>

@@ -11,13 +11,14 @@ from tests.test_trend_following import trend_fixture
 snapshot=trend_fixture()
 html=export_workspace(snapshot,live={'token':'synthetic','lazy_company_views':True})
 prefix,tail=html.split('const WORKSPACE_DATA=',1);payload=json.JSONDecoder().raw_decode(tail)[0]
-models=payload['company_details'];facts=payload['research']['rows'];tables=payload['financial_tables']
+standalone=json.JSONDecoder().raw_decode(export_workspace(snapshot).split('const WORKSPACE_DATA=',1)[1])[0]
+models=standalone['company_details'];facts=standalone['research']['rows'];tables=standalone['financial_tables']
 payload['market_insights']={'sectors':[dict(market='KOSPI',industry='가상 산업 1',count=10,short_rs={'1m':{'score':80}})]}
 # Force the bounded lazy path so every visible card has to obtain verified prices.
 payload['company_details']={};payload['trend_following']['previews']={}
 for fact in payload['research']['rows'].values():fact['technical']['series']=[]
 # Preserve complete synthetic reference series for responses.
-original=json.JSONDecoder().raw_decode(tail)[0]
+original=standalone
 html=prefix+'const WORKSPACE_DATA='+script_json(payload)+tail[tail.index(';</script>'):]
 loads=[];errors=[]
 with sync_playwright() as p:

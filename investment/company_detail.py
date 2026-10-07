@@ -66,7 +66,8 @@ def build_details(snapshot, tables, cache=None):
             dict(period_end=c['period_end'],available_at=c['available_at'],source=c['source'],
                  source_url=c.get('source_url'),receipt=c.get('receipt'),
                  filing_available_at=c.get('filing_available_at'),
-                 values=c['statement_values'],cell_notes=c['cell_notes']) for c in g['columns']]) for g in groups]
+                 values=c['statement_values'],cell_notes=c['cell_notes'],
+                 **{k:c[k] for k in ('period_start','fiscal_year','fiscal_quarter','year_end_month','calendar_segment','currency','cell_provenance','dependencies','dependency_dates') if k in c}) for c in g['columns']]) for g in groups]
         dividends=[dict(period_end=a['period_end'],dps=a['dps'],source='저장 연간 자료')
             for a in r.get('annual',[]) if valid_day(a.get('period_end')) and a['period_end'] <= snapshot['meta']['price_date']
             and valid_day(a.get('available_at')) and a['available_at'] <= snapshot['meta']['price_date']
@@ -74,7 +75,9 @@ def build_details(snapshot, tables, cache=None):
             and a['dps'] >= 0 and a.get('dps_basis')=='ordinary_split_adjusted' and a.get('special_dividend') is False]
         result[r['code']]=dict(code=r['code'],name=r['name'],market=r['market'],
             chart=chart_history(r,snapshot,cache),groups=statement_groups,dividends=dividends,
-            notes=tables[r['code']]['notes'])
+            notes=tables[r['code']]['notes'],
+            financial_completeness=tables[r['code']].get('financial_completeness'),
+            native_financial=tables[r['code']].get('native_financial'))
         from .market_insights import reconcile_prices
         record=((cache or {}).get('history') or {}).get('histories',{}).get(r['code'])
         result[r['code']]['price_audit']=reconcile_prices(r,record)

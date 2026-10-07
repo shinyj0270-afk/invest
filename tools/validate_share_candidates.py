@@ -108,7 +108,7 @@ def main(*, ui=False):
             if ui:
                 commands += [[sys.executable, 'tests/' + name] for name in (
                     'test_dashboard_journey_ui.py', 'test_dashboard_upgrade_ui.py',
-                    'test_trend_diagnostics_ui.py', 'test_trend_chart_ui.py', 'test_portfolio_risk_ui.py', 'test_trend_following_ui.py')]
+                    'test_trend_diagnostics_ui.py', 'test_trend_chart_ui.py', 'test_portfolio_risk_ui.py', 'test_trend_following_ui.py', 'test_dashboard_stability_ui.py', 'test_market_trend_changes_ui.py', 'test_upgrade_panels_ui.py')]
             results = []
             for command in commands:
                 run = subprocess.run(command, cwd=stage, env=env, capture_output=True,

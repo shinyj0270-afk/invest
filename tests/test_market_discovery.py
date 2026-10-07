@@ -5,7 +5,8 @@ from pathlib import Path
 from unittest.mock import patch
 from datetime import date, timedelta
 
-from investment.market_discovery import build_discovery, technical,discovery_candidate,load_market_cache
+from investment.market_discovery import build_discovery, technical,discovery_candidate,load_market_cache,MarketCacheReader
+from concurrent.futures import ThreadPoolExecutor
 
 
 def bars(days, *, index=False, start=100):
@@ -16,6 +17,41 @@ def bars(days, *, index=False, start=100):
 
 
 class MarketDiscoveryTests(unittest.TestCase):
+    def test_runtime_reader_reuses_stable_sources_and_refreshes_replacements(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);folder=root/'work/market-expansion';folder.mkdir(parents=True)
+            (folder/'universe.json').write_text(json.dumps(dict(schema_version='naver-universe-0.1',companies=[])),encoding='utf-8')
+            history=folder/'histories.json'
+            history.write_text(json.dumps(dict(histories={'A':{'prices':[{'close':100}]},'B':{'prices':[{'close':200}]}})),encoding='utf-8')
+            reader=MarketCacheReader();snap=dict(meta=dict(data_mode='user_input'))
+            with patch('investment.market_discovery.load_local',return_value=dict(data_dir=root,profile='work')),patch('investment.market_discovery.load_market_cache',wraps=load_market_cache) as loader:
+                with ThreadPoolExecutor(max_workers=6) as pool:
+                    values=list(pool.map(lambda _:reader.get(root,snap,codes=['A']),range(6)))
+                self.assertEqual(loader.call_count,1)
+                self.assertEqual(set(values[0]['history']['histories']),{'A'})
+                values[0]['history']['histories']['A']['prices'][0]['close']=999
+                self.assertEqual(reader.get(root,snap,codes=['A'])['history']['histories']['A']['prices'][0]['close'],100)
+                replacement=folder/'new.json';replacement.write_text(json.dumps(dict(histories={'A':{'prices':[{'close':333}]}})),encoding='utf-8');replacement.replace(history)
+                self.assertEqual(reader.get(root,snap,codes=['A'])['history']['histories']['A']['prices'][0]['close'],333)
+                self.assertEqual(loader.call_count,2)
+                history.write_text('invalid',encoding='utf-8');self.assertIsNone(reader.get(root,snap))
+                self.assertIsNone(reader.get(root,dict(meta=dict(data_mode='fixture'))))
+
+    def test_runtime_reader_rejects_structurally_invalid_json_without_old_success(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);folder=root/'work/market-expansion';folder.mkdir(parents=True)
+            universe=folder/'universe.json';history=folder/'histories.json';quote=folder/'latest-quotes.json'
+            valid={'schema_version':'naver-universe-0.1','companies':[]};snap={'meta':{'data_mode':'user_input'}}
+            with patch('investment.market_discovery.load_local',return_value=dict(data_dir=root,profile='work')):
+                reader=MarketCacheReader();universe.write_text(json.dumps(valid));history.write_text('{}')
+                self.assertIsNotNone(reader.get(root,snap))
+                for malformed in [[1],None,3,{'histories':[]},{'benchmarks':None},{'histories':{'A':[]}}]:
+                    history.write_text(json.dumps(malformed));self.assertIsNone(reader.get(root,snap))
+                history.write_text('{}')
+                for malformed in [[],None,3,dict(valid,companies=[[]])]:
+                    universe.write_text(json.dumps(malformed));self.assertIsNone(reader.get(root,snap))
+                universe.write_text(json.dumps(valid));quote.write_text('[1]');self.assertIsNone(reader.get(root,snap))
+
     def test_old_cache_exclusions_are_reapplied_without_rewriting_source(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);folder=root/'work'/'market-expansion';folder.mkdir(parents=True)

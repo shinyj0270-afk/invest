@@ -71,8 +71,18 @@ class LiveDashboardTests(unittest.TestCase):
         self.server.server_close()
         self.thread.join(timeout=3)
 
-    def test_startup_refresh_and_manual_refresh(self):
+    def test_root_shows_loading_before_data_or_collection(self):
         with urlopen(self.base + '/') as response:
+            html=response.read().decode('utf-8')
+            self.assertEqual(response.headers['Cache-Control'],'no-store')
+        self.assertIn('저장된 자료를 준비',html)
+        self.assertIn("fetch('/dashboard'",html)
+        self.assertNotIn('const WORKSPACE_DATA=',html)
+        self.assertEqual(self.provider.calls,[])
+        self.assertEqual(self.daily.automatic_checks,0)
+
+    def test_startup_refresh_and_manual_refresh(self):
+        with urlopen(self.base + '/dashboard') as response:
             html = response.read().decode('utf-8')
             self.assertEqual(response.headers['Cache-Control'], 'no-store')
         self.assertIn('통합 투자 대시보드', html)
@@ -98,11 +108,11 @@ class LiveDashboardTests(unittest.TestCase):
     def test_old_preview_path_opens_live_dashboard(self):
         with urlopen(self.base + '/investment_dashboard_20260923.html') as response:
             self.assertIn('통합 투자 대시보드', response.read().decode('utf-8'))
-        self.assertEqual(self.provider.calls, [False])
+        self.assertEqual(self.provider.calls, [])
 
     def test_missing_data_stays_missing(self):
         self.provider.snapshot = None
-        with urlopen(self.base + '/') as response:
+        with urlopen(self.base + '/dashboard') as response:
             html = response.read().decode('utf-8')
         self.assertIn('실제 저장자료 대기', html)
         self.assertNotIn('가상 연구기업', html)
@@ -129,7 +139,7 @@ class LiveDashboardTests(unittest.TestCase):
         self.assertEqual(self.daily.calls,1)
 
     def test_page_open_checks_automatic_daily_refresh(self):
-        with urlopen(self.base+'/') as response:
+        with urlopen(self.base+'/dashboard') as response:
             html=response.read().decode('utf-8')
         self.assertEqual(self.daily.automatic_checks,1)
         live=json.loads(re.search(r'const INVESTMENT_LIVE=(.*?);const WORKSPACE_DATA=',html,re.S).group(1))

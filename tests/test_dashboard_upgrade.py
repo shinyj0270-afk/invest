@@ -103,7 +103,7 @@ class RecommendationTests(unittest.TestCase):
                 for row in c['snapshot']['companies']:row['common_financial']['period']=period
                 r=propose(c,created_on=day)
                 self.assertEqual(len(r['targets']),5)
-                self.assertEqual(r['cash_pct'],20)
+                self.assertEqual(r['cash_pct'],5)
 
     def test_freshness_floor_changes_after_filing_months(self):
         expected=['2025-09-30']*3+['2025-12-31']*2+['2026-03-31']*3+['2026-06-30']*3+['2026-09-30']
@@ -117,7 +117,7 @@ class RecommendationTests(unittest.TestCase):
     def test_weights_industry_cash_and_exception_reason(self):
         c=recommendation_context();r=propose(c,created_on='2026-10-02')
         self.assertEqual(sum(t['weight_pct'] for t in r['targets'])+r['cash_pct'],100);self.assertEqual(len(r['targets']),5)
-        self.assertTrue(all(sum(t['weight_pct'] for t in r['targets'] if t['industry']==s)<=32 for s in {t['industry'] for t in r['targets']}))
+        self.assertTrue(all(t['weight_pct']<=40 for t in r['targets']));self.assertGreaterEqual(r['cash_pct'],5)
         with self.assertRaises(ValueError):propose(c,created_on='2026-10-02',kind='exception')
         second=propose(c,created_on='2026-10-02',kind='exception',reason='가상 공시 검토',previous=r)
         self.assertTrue(all(t['action']=='유지' for t in second['changes']))

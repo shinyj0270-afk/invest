@@ -1,0 +1,11 @@
+.risk-review,.financial-completeness{padding:16px;margin:12px 0;border:1px solid var(--line,#d3dae3);border-radius:12px;background:var(--panel,#fff)}
+.risk-review p,.financial-completeness p{overflow-wrap:anywhere}
+.risk-review-scroll{overflow:auto;max-width:100%}
+.risk-review table,.financial-completeness table{border-collapse:collapse;min-width:440px;width:100%}
+.risk-review th,.risk-review td,.financial-completeness th,.financial-completeness td{padding:8px;border-bottom:1px solid var(--line,#d3dae3);text-align:right;white-space:nowrap}
+.risk-review th:first-child,.financial-completeness th:first-child{text-align:left}
+.financial-completeness-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.financial-completeness-grid article{padding:12px;background:var(--soft,#f4f6f9);border-radius:8px}
+.risk-review-flags{font-weight:600;color:var(--warning,#92520b)}
+@media(max-width:720px){.financial-completeness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:360px){.financial-completeness-grid{grid-template-columns:1fr}.risk-review,.financial-completeness{padding:12px}}

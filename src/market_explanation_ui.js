@@ -1,0 +1,8 @@
+'use strict';
+const MarketExplanationUI=(()=>{
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const fmt=v=>typeof v==='number'&&Number.isFinite(v)?v.toLocaleString('ko-KR',{maximumFractionDigits:1}):'—';
+ function render(data={}){return `<section class="market-explanation" aria-label="시장 신호 설명"><p class="psub">${esc(data.as_of||'대기')} 완료 관측 · ${esc(data.definition||'자료 대기')}</p><div class="me-grid">${(data.markets||[]).map(m=>{const b=m.breadth||{},v=m.volatility||{};return `<article class="panel me-card"><h3>${esc(m.market)} · 시장 신호 설명</h3><dl><div><dt>지수 방향</dt><dd>${esc(m.index?.label)} <small>${fmt(m.index?.close)} pt</small></dd></div><div><dt>기업 참여</dt><dd>${esc(b.label)}</dd><small>200일선 위 ${b.above?.['200']?.count??0}/${b.above?.['200']?.eligible??0}개 (${fmt(b.above?.['200']?.pct)}%) · 50일선 위 ${b.above?.['50']?.count??0}/${b.above?.['50']?.eligible??0}개 (${fmt(b.above?.['50']?.pct)}%)</small><small>관찰 대상 ${b.population??0}개 · 유효 ${b.valid??0}개 · 상승/하락/보합 ${b.advancing??0}/${b.declining??0}/${b.unchanged??0} (분모 ${b.change_eligible??0})</small></div><div><dt>변동성</dt><dd>${fmt(v.annual20_pct)}% 연율 · ${esc(v.label)}</dd><small>${esc(v.start_date||'구간 대기')} ~ ${esc(m.as_of)} · ${v.returns??0}개 수익률 · 이전20개 ${fmt(v.prior20_pct)}%</small></div></dl><p class="me-reason">${esc(m.explanation)}</p><details><summary>분모·출처·판정 기준</summary><p>${esc(m.index?.definition)}</p><p>${esc(b.definition)}</p><p>${esc(v.definition)}</p><p>${esc(m.source_note)}</p><p>${esc(m.verification)}</p></details></article>`;}).join('')}</div><p class="psub">${esc(data.universe)}</p></section>`;}
+ return {render};
+})();
+if(typeof module!=='undefined')module.exports=MarketExplanationUI;

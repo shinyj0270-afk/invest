@@ -8,9 +8,9 @@ from investment.fixture import make_fixture
 from investment.workspace_export import export_workspace
 from investment.recommendations import propose
 from tests.test_dashboard_upgrade import recommendation_context
-first=propose(recommendation_context(),created_on='2026-10-02')
+first=propose(recommendation_context(),created_on='2026-10-07')
 first['performance']={'status':'pending','reason':'작성 후 첫 완료 거래일 대기'}
-second=propose(recommendation_context(),created_on='2026-10-03',kind='exception',reason='가상 검증 공시',previous=first)
+second=propose(recommendation_context(),created_on='2026-10-07',kind='exception',reason='가상 검증 공시',previous=first)
 second['performance']=first['performance']
 records=[first];requests=[]
 with sync_playwright() as p:
@@ -32,7 +32,8 @@ with sync_playwright() as p:
     page.route('http://127.0.0.1:8767/**',routes)
     page.goto('http://127.0.0.1:8767/',wait_until='load')
     expect(page.locator('#recommendationHome')).to_contain_text('가상0')
-    expect(page.locator('#recommendationHome')).to_contain_text('16%')
+    expect(page.locator('#recommendationHome')).to_contain_text('현금 5%')
+    assert page.locator('#recommendationHome [data-home-rec-code]').count()==5
     page.locator('#navigation > [data-page=recommendations]').click()
     expect(page.locator('body')).to_have_attribute('data-current-page','recommendations')
     assert '条件' not in page.locator('#contextNavigation').inner_text()

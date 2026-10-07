@@ -12,6 +12,7 @@ from .naver_universe import classify
 from .market_history import benchmark_calendar, ADJUSTMENT_NOTE
 from .workspace_research import METRICS, RS_LABEL
 from .trend_diagnostics import diagnose, update_rank
+from threading import RLock
 
 MIN_DISCOVERY_CAP_EOK=850
 
@@ -35,8 +36,9 @@ def load_market_cache(root, snapshot):
     try:
         universe = json.loads((folder/'universe.json').read_text(encoding='utf-8'))
         history = json.loads((folder/'histories.json').read_text(encoding='utf-8')) if (folder/'histories.json').exists() else {}
-        if universe.get('schema_version') != 'naver-universe-0.1':
+        if not isinstance(universe,dict) or not isinstance(universe.get('companies'),list) or any(not isinstance(r,dict) for r in universe['companies']) or universe.get('schema_version') != 'naver-universe-0.1':
             return None
+        if not isinstance(history,dict) or any(not isinstance(history.get(k,{}),dict) for k in ('histories','benchmarks')) or any(not isinstance(r,dict) or not isinstance(r.get('prices',[]),list) for k in ('histories','benchmarks') for r in history.get(k,{}).values()):return None
         # Apply newly recognized exclusions to old caches without rewriting source data.
         for row in universe.get('companies', []):
             if row.get('eligibility') == 'candidate':
@@ -46,12 +48,57 @@ def load_market_cache(root, snapshot):
         quotes = {}
         try:
             saved=json.loads((folder/'latest-quotes.json').read_text(encoding='utf-8'))
+            if not isinstance(saved,dict) or not isinstance(saved.get('quotes',{}),dict):return None
             if saved.get('schema_version')=='market-quotes-0.1':quotes=saved
         except (OSError, ValueError, TypeError):
             pass
         return dict(universe=universe, history=history, quotes=quotes)
     except (OSError, ValueError, TypeError):
         return None
+
+
+class MarketCacheReader:
+    """One source-versioned runtime entry. Full histories are read-only internally.
+
+    Detail callers receive a private copy of only their requested histories;
+    whole-market builders already copy derived rows and must not edit source bars.
+    """
+    def __init__(self):
+        self.lock=RLock();self.version=None;self.value=None
+
+    def get(self,root,snapshot,*,codes=None):
+        if snapshot['meta']['data_mode']=='fixture':return None
+        cfg=load_local(root);folder=cfg['data_dir']/cfg['profile']/'market-expansion'
+        def version():
+            parts=[str(folder.resolve())]
+            for name in ('universe.json','histories.json','latest-quotes.json'):
+                path=folder/name
+                try:
+                    s=path.stat();parts.append((name,s.st_mtime_ns,s.st_size,s.st_ino))
+                except FileNotFoundError:parts.append((name,None))
+            return tuple(parts)
+        try:
+            with self.lock:
+                observed=version()
+                if self.version!=observed:
+                    value=load_market_cache(root,snapshot)
+                    if version()!=observed:
+                        # A provider replaced a file during the read. Never mark
+                        # mixed input as a reusable version or serve old data.
+                        self.version=None;self.value=None;return None
+                    self.value=value;self.version=observed
+                if self.value is None:return None
+                result=dict(universe=deepcopy(self.value['universe']),quotes=deepcopy(self.value['quotes']))
+                history=self.value['history']
+                if codes is None:result['history']=history
+                else:result['history']=deepcopy(dict(history,histories={c:history.get('histories',{}).get(c,{}) for c in set(codes)}))
+                return result
+        except (OSError,ValueError,TypeError):return None
+
+
+_runtime_market_reader=MarketCacheReader()
+def read_market_cache(root,snapshot,*,codes=None):
+    return _runtime_market_reader.get(root,snapshot,codes=codes)
 
 
 def technical(record, benchmark, calendar, suspended=False, include_series=True):

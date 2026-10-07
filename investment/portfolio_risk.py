@@ -93,7 +93,7 @@ def time_series(prices, benchmark, cutoff):
         return dict(status='pending',state='PENDING',reason=str(exc),definition=PRICE_NOTE)
 
 
-def portfolio_risk(targets, cash_pct, cache, cutoff):
+def portfolio_risk(targets, cash_pct, cache, cutoff, *, observation_dates=None):
     result=dict(status='pending',state='PENDING',as_of=cutoff,definition=NOTE)
     try:
         weights=[t.get('weight_pct') for t in targets]
@@ -131,6 +131,10 @@ def portfolio_risk(targets, cash_pct, cache, cutoff):
             raise ValueError('종목 간 수정주가 기준 일치 확인 필요')
         first=max(s[0]['date'] for s in series)
         dates=[d for d in calendar['sessions'] if first<=d<=cutoff][-WINDOW:]
+        if observation_dates is not None:
+            if not isinstance(observation_dates,list) or not observation_dates or len(observation_dates)>WINDOW or observation_dates!=[d for d in calendar['sessions'] if observation_dates[0]<=d<=cutoff] or observation_dates[-1]!=cutoff or any(d<first for d in observation_dates):
+                raise ValueError('동일 비교 관측 구간 확인 필요')
+            dates=observation_dates
         if len(dates)<MIN_RETURNS+1:
             raise ValueError('공통 관측 구간 최소 63개 일별 수익률 필요')
         values=[]
@@ -166,4 +170,84 @@ def portfolio_risk(targets, cash_pct, cache, cutoff):
             adjustment_basis=next(iter(bases)),benchmark_definition='목표 시장 비중의 KOSPI/KOSDAQ 혼합 가격지수 + 동일 현금 비중')
     except (ValueError,TypeError,KeyError,OverflowError) as exc:
         result['reason']=str(exc)
+    return result
+
+
+def common_window(targets, cache, cutoff):
+    """One exact index calendar for every composition in a review universe."""
+    from .market_history import benchmark_calendar
+    history=(cache or {}).get('history',{})
+    calendar=benchmark_calendar(history.get('benchmarks',{}))
+    if not day(cutoff) or cutoff not in calendar['sessions']:
+        raise ValueError('평가일의 양대 지수 완료 관측일 대기')
+    first=None;bases=set()
+    for target in {t['code']:t for t in targets}.values():
+        record=history.get('histories',{}).get(target['code'],{})
+        if record.get('kind')!='item' or record.get('symbol')!=target['code']:
+            raise ValueError(target['code']+' 가격 식별정보·이력 대기')
+        rows=checked(record.get('prices'),cutoff)
+        if rows[0]['adjustment_basis']=='index_level':raise ValueError('종목 수정 기준 확인 필요')
+        bases.add(rows[0]['adjustment_basis'])
+        first=max(first or rows[0]['date'],rows[0]['date'])
+    if len(bases)>1:raise ValueError('종목 간 수정 기준 일치 확인 필요')
+    dates=[d for d in calendar['sessions'] if (first is None or d>=first) and d<=cutoff][-WINDOW:]
+    if len(dates)<MIN_RETURNS+1:raise ValueError('공통 관측 구간 최소 63개 일별 수익률 필요')
+    for target in {t['code']:t for t in targets}.values():
+        rows=checked(history['histories'][target['code']]['prices'],cutoff)
+        if [p['date'] for p in rows if p['date']>=dates[0]]!=dates:
+            raise ValueError(target['code']+' 누락·추가 거래일 또는 평가일 가격 대기')
+    return dates
+
+
+def validate_policy(policy, cutoff):
+    if policy is None:return dict(status='not_configured',limits={})
+    if not day(cutoff) or not isinstance(policy,dict) or policy.get('state')!='USER_CONFIRMED' or not day(policy.get('effective_on')) or policy['effective_on']>cutoff or not isinstance(policy.get('provenance'),str) or not policy['provenance'].strip():
+        return dict(status='pending',reason='사용자 확인·근거·효력일 확인 필요',limits={})
+    limits={k:policy.get(k) for k in ('max_positions','max_position_pct','min_cash_pct')}
+    if type(limits['max_positions']) is not int or not 1<=limits['max_positions']<=5 or not all(numeric(limits[k]) and 0<=limits[k]<=100 for k in ('max_position_pct','min_cash_pct')) or limits['max_position_pct']<=0:
+        return dict(status='pending',reason='집중도·현금 한도 확인 필요',limits={})
+    return dict(status='configured',state='USER_CONFIRMED',effective_on=policy['effective_on'],provenance=policy['provenance'],limits=limits)
+
+
+def compare_portfolios(proposed, previous, cache, cutoff, policy=None, *, observation_dates=None, policy_as_of=None):
+    """Compare both compositions on their combined universe, never different windows."""
+    result=dict(status='pending',as_of=cutoff,policy_status='not_configured',deltas={},flags=[],definition=NOTE)
+    policy_on=policy_as_of if policy_as_of is not None else proposed.get('created_on') if day(proposed.get('created_on')) else cutoff
+    configured=validate_policy(policy,policy_on);result['policy']=configured;result['policy_status']=configured['status'];result['policy_assessed_on']=policy_on
+    targets=proposed.get('targets',[]);old=(previous or {}).get('targets',[])
+    if any(not t.get('industry') or t.get('industry')=='산업 미확인' for t in targets+old):result['flags'].append('unknown_industry')
+    if configured['status']=='configured':
+        limits=configured['limits'];violations=[]
+        if len(targets)>limits['max_positions']:violations.append('max_positions')
+        if any(not numeric(t.get('weight_pct')) or t['weight_pct']>limits['max_position_pct']+1e-8 for t in targets):violations.append('max_position_pct')
+        if not numeric(proposed.get('cash_pct')) or proposed['cash_pct']<limits['min_cash_pct']-1e-8:violations.append('min_cash_pct')
+        result['policy_violations']=violations
+        result['policy_status']='violated' if violations else 'within_limits'
+    if previous is None:
+        result['proposed']=portfolio_risk(targets,proposed.get('cash_pct'),cache,cutoff,observation_dates=observation_dates)
+        result['reason']='이전 추천안 없음; 작성 당시 위험을 별도 보존'
+        return result
+    try:
+        dates=observation_dates if observation_dates is not None else common_window(targets+old,cache,cutoff)
+        a=portfolio_risk(targets,proposed.get('cash_pct'),cache,cutoff,observation_dates=dates)
+        b=portfolio_risk(old,previous.get('cash_pct'),cache,cutoff,observation_dates=dates)
+        result.update(proposed=a,previous=b,window=dict(start_date=dates[0],as_of=dates[-1],observations=len(dates)-1))
+        if a['status'] not in ('ready','cash_only') or b['status'] not in ('ready','cash_only'):
+            raise ValueError(a.get('reason') or b.get('reason') or '比較資料 대기')
+        def metric(r,k):return 0.0 if r['status']=='cash_only' else r[k]
+        for k in ('annual_volatility_pct','max_drawdown_pct'):
+            result['deltas'][k]=metric(a,k)-metric(b,k)
+        for k in ('largest_position_pct','equity_hhi'):
+            av=a['concentration'].get(k);bv=b['concentration'].get(k)
+            result['deltas'][k]=av-bv if numeric(av) and numeric(bv) else None
+        result['deltas']['cash_pct']=a['concentration']['cash_pct']-b['concentration']['cash_pct']
+        sector_a=max(a['concentration']['sector_weights'].values(),default=0)
+        sector_b=max(b['concentration']['sector_weights'].values(),default=0)
+        result['deltas']['largest_sector_pct']=sector_a-sector_b
+        if any(numeric(result['deltas'].get(k)) and result['deltas'][k]>1e-8 for k in ('largest_position_pct','equity_hhi','largest_sector_pct')):result['flags'].append('concentration_increased')
+        if result['deltas']['annual_volatility_pct']>1e-8:result['flags'].append('volatility_higher')
+        if result['deltas']['max_drawdown_pct']<-1e-8:result['flags'].append('drawdown_deeper')
+        result['status']='ready'
+    except (ValueError,TypeError,KeyError,OverflowError) as exc:
+        result.update(reason=str(exc),deltas={});result['flags'].append('missing_price')
     return result

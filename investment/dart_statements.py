@@ -2,13 +2,14 @@
 import re
 import json
 import math
+import hashlib
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 from html.parser import HTMLParser
 from datetime import date
 from .financial_table import valid_day
 
-PARSER_VERSION = 12
+PARSER_VERSION = 13
 
 
 class Tables(HTMLParser):
@@ -173,10 +174,15 @@ def displayed_debt(rows):
     return total if found else None
 
 
-def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url):
+def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url, period_contract=None):
     if basis not in ('CFS','OFS') or quarter not in (1,2,3,4): raise ValueError('회계기준·분기 오류')
     available=date.fromisoformat(receipt[:4]+'-'+receipt[4:6]+'-'+receipt[6:8]).isoformat()
     end=f'{year}-{["03-31","06-30","09-30","12-31"][quarter-1]}'
+    contract=None;currency='KRW';current_evidence={};title_table=None
+    if period_contract is not None:
+        from .fiscal_contract import validate_contract
+        contract=validate_contract(period_contract,year=year,quarter=quarter,receipt=receipt,url=url,sha256=hashlib.sha256(text.encode('utf-8')).hexdigest())
+        end=contract['period_end'];currency=contract['currency']
     parser=Tables();parser.feed(text);result={};raw={};units={};reconciliation_notes={};account_reconciliation={};context=None;unit=None
     for table in parser.tables:
         # The title/unit/date table directly precedes its account table.
@@ -186,11 +192,20 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
                      else 'income' if '손익계산서' in title and '포괄' not in title else
                      'income' if '포괄손익계산서' in title and 'income' not in result else None)
             joined=' '.join(c for row in table for c in row)
-            unit=1e6 if '백만원' in joined else 1e3 if '천원' in joined else 1 if re.search(r'단위\s*:\s*원',joined) else None
+            if contract:
+                unit_text=next((c for row in table for c in row if re.search(r'단위\s*:',c)), '')
+                detected='USD' if re.search(r'USD|미국달러|달러',unit_text,re.I) else 'KRW' if re.search(r'원',unit_text) else None
+                if context and detected!=currency:raise ValueError('재무제표 표시 통화 불일치')
+                token=re.sub(r'\s+','',unit_text).strip('()（）')
+                allowed=(r'단위:(?:백만원|천원|원)' if currency=='KRW' else r'단위:(?:(?:백만|천)?USD|(?:million|thousand)?USD|미국달러|달러)')
+                if context and not re.fullmatch(allowed,token,re.I):raise ValueError('지원·검증하지 않은 표시 단위')
+                unit=1e6 if re.search(r'백만|million',unit_text,re.I) else 1e3 if re.search(r'천|thousand',unit_text,re.I) else 1 if detected else None
+                title_table=table
+            else:unit=1e6 if '백만원' in joined else 1e3 if '천원' in joined else 1 if re.search(r'단위\s*:\s*원',joined) else None
             if context and basis=='CFS' and '연결' not in title:raise ValueError('연결 제목 불일치')
             if context and basis=='OFS' and '연결' in title:raise ValueError('별도 제목 불일치')
-            if context and not re.search(rf'{year}\s*(?:\.|-|년)',joined):raise ValueError('보고서 연도 불일치')
-            if context:
+            if context and not contract and not re.search(rf'{year}\s*(?:\.|-|년)',joined):raise ValueError('보고서 연도 불일치')
+            if context and not contract:
                 expected=end.split('-')
                 date_pattern=rf"{expected[0]}\s*(?:\.|-|년)\s*0?{int(expected[1])}\s*(?:\.|-|월)\s*0?{int(expected[2])}(?:\D|$)"
                 if not re.search(date_pattern,joined):raise ValueError('보고기간 종료일 불일치')
@@ -198,6 +213,9 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
         if not context or unit is None or context in result:continue
         quarter_column=context=='income' and quarter!=4 and any('3개월' in ''.join(row) for row in table[:3])
         col=2 if quarter_column else 1  # Store YTD so Q4 and CF are reconstructed consistently.
+        if contract:
+            from .fiscal_contract import verify_current_table
+            col,current_evidence[context]=verify_current_table(title_table,table,context,contract)
         pre_rows=[dict(label=row[0],value=amount(row[col])*unit) for row in table
                   if len(row)>col and amount(row[col]) is not None]
         recovered,notes=reconciled_accounts(pre_rows,context,unit) if context=='cash' else ({},{})
@@ -207,11 +225,11 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
         for row in table:
             if len(row)<=col:continue
             v=amount(row[col]);key=label(row[0])
-            if '순이익의귀속' in key:attribution=True
+            if re.search(r'순(?:이익|손익)(?:\(손실\))?의귀속$',key):attribution=True
             if not key or v is None:continue
             is_eps='주당' in key
             value=v if is_eps else v*unit
-            original.append(dict(label=row[0],value=value,unit='원/주' if is_eps else 'KRW'))
+            original.append(dict(label=row[0],value=value,unit=currency+'/주' if is_eps else currency))
             if context=='income' and not any(w in key for w in ('포괄','계속','중단','주당','희석','기본','우선','보통')):
                 if '지배' in key and '비지배' not in key:
                     parent_candidates.append(value);pending_parent=value
@@ -257,7 +275,7 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
                 abs(values['parent_net']+values['nci_net']-candidate)<=unit):
                 values['net_income']=candidate
         if attributed_net is not None:
-            if explicit_total and (not all(k in values for k in ('pretax','tax')) or abs(values['pretax']-values['tax']-values['net_income'])>unit):
+            if (not all(k in values for k in ('pretax','tax')) or abs(values['pretax']-values['tax']-values['net_income'])>unit):
                 raise ValueError('연결 총손익 독립 대조 미확인')
             if 'nci_net' not in values or abs(attributed_net+values['nci_net']-values['net_income'])>unit:
                 raise ValueError('귀속 손익 대조 불일치')
@@ -268,13 +286,13 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
             matches={(p,n) for p,n in pairs if abs(p+n-values['net_income'])<=unit}
             if len(matches)==1:values['parent_net'],values['nci_net']=next(iter(matches))
             elif parent_candidates and nci_candidates:
-                reference=reconciliation_reference(values,original,'income',unit)
+                reference=reconciliation_reference(values,original,'income',unit) if currency=='KRW' else {}
                 if reference:reconciliation_notes.update(reference)
                 else:values.pop('parent_net',None);values.pop('nci_net',None)
         if context=='income' and 'parent_net' not in reconciliation_notes and all(k in values for k in ('parent_net','nci_net','net_income')) and abs(values['parent_net']+values['nci_net']-values['net_income'])>unit:
             values.pop('parent_net',None);values.pop('nci_net',None)
         if context=='balance' and all(k in values for k in ('parent_equity','nci','equity')) and abs(values['parent_equity']+values['nci']-values['equity'])>unit:
-            reference=reconciliation_reference(values,original,'balance',unit)
+            reference=reconciliation_reference(values,original,'balance',unit) if currency=='KRW' else {}
             if reference:reconciliation_notes.update(reference)
             else:values.pop('parent_equity',None);values.pop('nci',None)
         if context=='balance' and 'parent_equity' not in values and all(k in values for k in ('equity','nci')):
@@ -286,15 +304,22 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
         context=None
     if not all(k in result for k in ('balance','income','cash')):raise ValueError('3개 재무제표 또는 단위 미확인')
     b=result['balance'];i=result['income']
-    if not all(k in b for k in ('assets','liabilities','equity')) or abs(b['assets']-b['liabilities']-b['equity'])>1e6:raise ValueError('대차 불일치')
+    if not all(k in b for k in ('assets','liabilities','equity')) or abs(b['assets']-b['liabilities']-b['equity'])>(units['balance'] if currency!='KRW' else 1e6):raise ValueError('대차 불일치')
     if not all(k in i for k in ('revenue','operating_profit','net_income')):raise ValueError('주요 손익 계정 미확인')
-    return dict(code=code,name=name,market=market,basis=basis,year=year,quarter=quarter,period_end=end,
+    record=dict(code=code,name=name,market=market,basis=basis,year=year,quarter=quarter,period_end=end,
         available_at=available,receipt=receipt,url=url,values={**b,**i,**result['cash']},raw=raw,
-        source='금융감독원 DART 공개 재무제표',unit='KRW',units=units,reconciliation_notes=reconciliation_notes,account_reconciliation=account_reconciliation,parser_version=PARSER_VERSION)
+        source='금융감독원 DART 공개 재무제표',unit=currency,units=units,reconciliation_notes=reconciliation_notes,account_reconciliation=account_reconciliation,parser_version=PARSER_VERSION)
+    if contract:record.update(period_contract=contract,currency=currency,period_start=contract['period_start'],fiscal_year=contract['fiscal_year'],fiscal_quarter=quarter,year_end_month=contract['year_end_month'],calendar_segment=contract['calendar_segment'],current_column_evidence=current_evidence,sha256=contract['source']['sha256'])
+    return record
 
 
 def quarter_records(reports, cutoff):
     """YTD differences within the same year/basis only; no 0 imputation."""
+    if any(r.get('period_contract') for r in reports):
+        from .native_financial import fiscal_quarter_records
+        explicit=[r for r in reports if r.get('period_contract')]
+        legacy=[r for r in reports if not r.get('period_contract')]
+        return quarter_records(legacy,cutoff)+fiscal_quarter_records(explicit,cutoff)
     reports=sorted(reports,key=lambda r:(r['basis'],r['period_end']));lookup={(r['basis'],r['year'],r['quarter']):r for r in reports}
     periods=[]
     for report in reports:
@@ -310,7 +335,6 @@ def quarter_records(reports, cutoff):
         # Cash opening balance is preceding quarter's closing cash, never a YTD sum.
         values['cash_start']=current.get('cash_start') if q==1 else prior['values'].get('cash_end') if prior else None
         available=max(report['available_at'],prior['available_at']) if prior else report['available_at']
-        if available > cutoff: continue
         record=dict(period_end=report['period_end'],available_at=available,basis=report['basis'],cadence='quarter',
                     source=report['source'],source_url=report['url'],receipt=report['receipt'],**values)
         special=[r['label'] for r in report.get('raw',{}).get('income',[]) if label(r['label']) in ('매출액및기타수익','매출액및지분법손익','매출및지분법손익')]
@@ -327,8 +351,8 @@ def quarter_records(reports, cutoff):
                 message=f"{source_report['period_end']} 원문 명시 계정 참고 사용 · 귀속 합계 잔차 {note['difference_krw']:+,.0f}원 (1억원 미만) · 분기·TTM·비율의 오차 범위를 보장하지 않음"
                 notes=record.setdefault('cell_notes',{})
                 notes[field]=(notes.get(field,'')+' · '+message).strip(' ·')
-        periods.append(record)
-        if q==4:periods.append(dict(record,cadence='annual',**current))
+        if available<=cutoff:periods.append(record)
+        if q==4:periods.append(dict(record,cadence='annual',available_at=report['available_at'],**current))
     return periods
 
 
@@ -337,18 +361,23 @@ def load_bundle(path, snapshot):
     if not path.is_file():return {}
     try:
         data=json.loads(path.read_text(encoding='utf-8'))
-        if data.get('schema')!='dart-public-statements-1' or data.get('unit')!='KRW':return {}
+        if data.get('schema') not in ('dart-public-statements-1','dart-native-statements-1') or data.get('unit') not in ('KRW','native'):return {}
         result={}
         for row in snapshot['companies']:
             reports=data.get('companies',{}).get(row['code'],{}).get('reports',[])
             if not reports or any((r.get('code'),r.get('name'),r.get('market'))!=(row['code'],row['name'],row['market'])
-                or r.get('unit')!='KRW' or not valid_day(r.get('available_at')) or not valid_day(r.get('period_end')) for r in reports):continue
+                or r.get('unit') not in ('KRW','USD') or not valid_day(r.get('available_at')) or not valid_day(r.get('period_end')) for r in reports):continue
             if not all(valid_report(r) for r in reports): continue
-            keys=[(r['basis'],r['year'],r['quarter']) for r in reports]
+            keys=[(r['basis'],r['year'],r['quarter'],r.get('currency','KRW'),r.get('calendar_segment','legacy-december')) for r in reports]
             if len(keys)!=len(set(keys)): continue
             periods=quarter_records(reports,snapshot['meta']['price_date'])
-            if periods:result[row['code']]=dict(code=row['code'],name=row['name'],market=row['market'],periods=periods,
+            krw_periods=[r for r in periods if r.get('currency','KRW')=='KRW']
+            if periods:result[row['code']]=dict(code=row['code'],name=row['name'],market=row['market'],periods=krw_periods,
                 notes=['DART 최초 제출본이 아닌 현재 조회본입니다. 제출일 이전 값은 제외하며 정정 이력의 과거 재현은 보장하지 않습니다.'])
+            if periods:
+                from .native_financial import build_native_payload,financial_completeness
+                result[row['code']]['native_financial']=build_native_payload(reports,snapshot['meta']['price_date'])
+                result[row['code']]['financial_completeness']=financial_completeness(periods,snapshot['meta']['price_date'],errors=data.get('errors',[]))
             if periods and data.get('errors'):
                 result[row['code']]['notes'].append('일부 과거 보고서는 조회·검증 대기입니다. 확보되지 않은 기간과 계정은 추정하지 않습니다.')
             if periods and data.get('cfs_unverified'):
@@ -363,7 +392,13 @@ def valid_report(r):
         q=r['quarter']; y=r['year']; receipt=r['receipt']; url=urlsplit(r['url'])
         if type(q) is not int or q not in (1,2,3,4) or type(y) is not int: return False
         if r['basis'] not in ('CFS','OFS'): return False
-        if r['period_end']!=f'{y}-{["03-31","06-30","09-30","12-31"][q-1]}': return False
+        currency=r.get('unit','KRW')
+        if r.get('period_contract'):
+            from .fiscal_contract import validate_contract
+            contract=validate_contract(r['period_contract'],year=y,quarter=q,receipt=receipt,url=r['url'],sha256=r.get('sha256'))
+            if r['period_end']!=contract['period_end'] or currency!=contract['currency'] or set(r.get('current_column_evidence',{}))!={'balance','income','cash'}:return False
+            if any(r.get(k)!=contract[k] for k in ('period_start','fiscal_year','year_end_month','calendar_segment','currency')):return False
+        elif currency!='KRW' or r['period_end']!=f'{y}-{["03-31","06-30","09-30","12-31"][q-1]}': return False
         if not re.fullmatch(r'\d{14}',receipt) or r['available_at']!=date(int(receipt[:4]),int(receipt[4:6]),int(receipt[6:8])).isoformat(): return False
         if url.scheme!='https' or url.netloc!='dart.fss.or.kr' or url.path.replace('//','/')!='/report/viewer.do' or parse_qs(url.query).get('rcpNo')!=[receipt]: return False
         v=r['values']
@@ -373,6 +408,7 @@ def valid_report(r):
             unit=r.get('units',{}).get(context,1)
             if type(unit) not in (int,float) or unit not in (1,1000,1000000):return False
             if all(k in v for k in (a,b,total)) and abs(v[a]+v[b]-v[total])>unit:
+                if currency!='KRW':return False
                 observed=dict(v);reference=reconciliation_reference(observed,r.get('raw',{}).get(context,[]),context,unit)
                 if observed!=v or not reference or any(r.get('reconciliation_notes',{}).get(k)!=note for k,note in reference.items()):return False
         recovered={};notes={}
@@ -382,5 +418,5 @@ def valid_report(r):
             found,evidence=reconciled_accounts(r.get('raw',{}).get(context,[]),context,unit,v)
             recovered.update(found);notes.update(evidence)
         if r.get('account_reconciliation',{})!=notes or any(v.get(k)!=x for k,x in recovered.items()):return False
-        return abs(v['assets']-v['liabilities']-v['equity'])<=1e6
+        return abs(v['assets']-v['liabilities']-v['equity'])<=(r.get('units',{}).get('balance',1) if currency!='KRW' else 1e6)
     except (ValueError,KeyError,TypeError,AttributeError): return False

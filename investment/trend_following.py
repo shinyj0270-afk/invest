@@ -1,8 +1,10 @@
 """Chart-first trend workspace from validated saved prices; no retrieval or orders."""
 from copy import deepcopy
-from .portfolio_risk import checked, numeric
+from .portfolio_risk import checked, numeric, day
 from .market_history import benchmark_calendar, ADJUSTMENT_NOTE
 from .trend_diagnostics import diagnose
+from .market_explanation import build_market_explanation
+from .trend_checkpoints import summarize, compare_observations
 
 
 def chart_series(bars, count=253):
@@ -42,12 +44,12 @@ def build_trend_following(snapshot,research,cache=None):
         markets.append(result)
     rows=[];previews={};raw_by_code={}
     for row in snapshot['companies']:
-        if row.get('discovery_allowed') is False:continue
-        t=deepcopy(research.get('rows',{}).get(row['code'],{}).get('technical',{}))
+        t=research.get('rows',{}).get(row['code'],{}).get('technical',{})
         item=dict(code=row['code'],name=row['name'],market=row['market'],industry=row.get('industry','산업 미확인'),
+            discovery_allowed=row.get('discovery_allowed'),
             cap_eok=row.get('metrics',{}).get('market_cap_eok'),rs=t.get('price_strength',{}).get('score'),
             rs1m=t.get('short_rs',{}).get('1m',{}).get('score'),ready=False,reason='완료 가격 이력 대기',
-            technical={k:t.get(k) for k in ('close','as_of','sma','price_strength','source_note','high_52w_close','gap_to_52w_high_pct')})
+            technical={k:deepcopy(t.get(k)) for k in ('close','as_of','sma','price_strength','source_note','high_52w_close','gap_to_52w_high_pct')})
         try:
             record=history.get('histories',{}).get(row['code'])
             if record is not None:
@@ -65,17 +67,23 @@ def build_trend_following(snapshot,research,cache=None):
                 raise ValueError('분석 가격과 차트 기준일 대조 필요')
             # Use the established price-only 8-condition variant, including its RS population.
             diagnostic=diagnose(bars,t)
-            item['technical']['trend_analysis']=diagnostic
             item.update(ready=not diagnostic.get('blocked',False),reason='거래 없음 · 판정 보류' if diagnostic.get('blocked') else '',
                 phase=diagnostic['phase'],analysis=diagnostic)
             raw_by_code[row['code']]=bars
         except (ValueError,KeyError,TypeError) as exc:
             item['reason']=str(exc);item['technical'].update(close=None,trend_analysis=None)
         rows.append(item)
-    ranked=sorted((r for r in rows if r['ready'] and numeric(r['rs']) and r['rs']>=70 and numeric(r['cap_eok']) and r['cap_eok']>=1000),key=lambda r:(-r['rs'],r['code']))
+    ranked=sorted((r for r in rows if r['discovery_allowed'] is not False and r['ready'] and numeric(r['rs']) and r['rs']>=70 and numeric(r['cap_eok']) and r['cap_eok']>=1000),key=lambda r:(-r['rs'],r['code']))
     # Bound initial payload. Other cards reuse lazy company views, no new data API.
     for row in ranked[:21]:previews[row['code']]=chart_series(raw_by_code[row['code']])
-    return dict(as_of=cutoff,mode=snapshot['meta']['data_mode'],markets=markets,rows=rows,previews=previews,
+    data=dict(as_of=cutoff,mode=snapshot['meta']['data_mode'],markets=markets,rows=rows,previews=previews,
         default_cap_eok=1000,default_rs=70,preview_limit=21,
         source_note=ADJUSTMENT_NOTE if history else '저장 수정주가 · 완료 종가·거래소·지수 날짜 대조',
         market_definition='자체 지수 참고: 종가>50일선>200일선 및 200일선>21거래일 전이면 상승 정렬, 반대면 하락 정렬. 스탁이지 신호등·FTD 판정 아님')
+    data['market_explanation']=build_market_explanation(cutoff,markets,rows,raw_by_code,market_bars,data['source_note'])
+    if day(cutoff):
+        data['changes']=compare_observations(summarize(data))
+    else:
+        data['changes']=dict(status='pending',as_of=None,comparison='완료 관측일 미확보 · 체크포인트 비교 대기',
+            reason='같은 완료 관측일의 양대 지수와 종목 이력이 필요합니다.',new_qualified=[],dropouts=[],pending=[],near=[],breakouts=[],ma_fail=[])
+    return data

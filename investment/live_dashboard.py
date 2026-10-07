@@ -5,7 +5,8 @@ import secrets
 import sqlite3
 import hashlib
 import gzip
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 from zoneinfo import ZoneInfo
 from pathlib import Path
 from html import escape
@@ -13,12 +14,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from .auto_refresh import ensure_data
 from .core import digest
-from .workspace_export import export_workspace
+from .workspace_export import export_workspace, export_holdings_frame
+from .dashboard_build import source_fingerprint, build_identity, restart_page, loading_page
 from .naver_reference import load_cached_references
 from .workspace_events import load_cached_events
-from .market_discovery import load_market_cache, technical
+from .market_discovery import read_market_cache as load_market_cache, technical
 from .market_history import benchmark_calendar
-from .financial_table import load_local_financials, build_table
+from .financial_table import load_local_financials, build_table, merge_financials
 from .company_detail import build_details
 from .holdings_sync import load_service, SyncError, LIMIT
 from .local_config import load_local
@@ -31,10 +33,24 @@ from urllib.parse import urlsplit, parse_qs
 
 def public_receipt(receipt):
     """Keep provider paths and credentials out of browser responses."""
-    return {key: receipt.get(key) for key in (
+    result={key: receipt.get(key) for key in (
         'status', 'success', 'checked_at', 'data_as_of', 'target_date',
         'stale', 'updated_companies', 'price_records', 'failed_companies',
         'fallback', 'error')}
+    error=result.get('error')
+    if error and (not isinstance(error,str) or re.search(r'https?://|[A-Z]:[\\/]|(?:api[_-]?key|token|password|secret)\s*[=:]',error,re.I)):
+        result['error']='자료 조회·검증 대기 · 연결 설정을 확인하고 다시 시도하세요.'
+    return result
+
+
+def daily_status(service):
+    state=service.ensure_due() if service and hasattr(service,'ensure_due') else service.poll() if service else dict(status='unavailable')
+    state=dict(state)
+    attempt=getattr(service,'last_attempt',0)
+    if attempt and state.get('status')!='running':
+        remaining=max(0,1800-(time.monotonic()-attempt))
+        state['next_retry_at']=(datetime.now(ZoneInfo('Asia/Seoul'))+timedelta(seconds=remaining)).isoformat(timespec='seconds')
+    return state
 
 
 def saved_data(root, *, force=False):
@@ -52,6 +68,7 @@ def saved_data(root, *, force=False):
 
 def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=None, daily=None, latest=None, financial=None, financial_monitor=None):
     token = token or secrets.token_urlsafe(32)
+    loaded_build_id = source_fingerprint(root)
 
     class DashboardHandler(BaseHTTPRequestHandler):
         def send_body(self, status, content, content_type):
@@ -76,6 +93,21 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                     (self.headers.get('Origin')==origin if mutation else self.headers.get('Origin') in (None,origin)))
 
         def do_GET(self):
+            current_build_id=source_fingerprint(root)
+            if self.path=='/health':
+                identity=build_identity(root,loaded_build_id)
+                identity.update(source_build_id=current_build_id,restart_required=current_build_id!=loaded_build_id)
+                self.send_body(200,json.dumps(identity),'application/json');return
+            if current_build_id!=loaded_build_id:
+                self.send_body(503,restart_page() if self.path in ('/','/dashboard') else '{"error":"서버 다시 실행 필요"}',
+                    'text/html' if self.path in ('/','/dashboard') else 'application/json');return
+            if self.path=='/holdings-frame':
+                if not self.authorized():self.send_body(403,'{"error":"요청 거부"}','application/json');return
+                result=refresh(root)
+                if not result['snapshot']:self.send_body(404,'저장자료 대기','text/plain');return
+                live=dict(token=token,holdings_sync=holdings is not None,holdings_market=quotes is not None)
+                cache=load_market_cache(root,result['snapshot'])
+                self.send_body(200,export_holdings_frame(result['snapshot'],live=live,market_cache=cache),'text/html');return
             if self.path=='/recommendations':
                 if not self.authorized():self.send_body(403,'{"error":"요청 거부"}','application/json');return
                 from .recommendations import RecommendationBook
@@ -91,19 +123,14 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                     self.send_body(400,'{"error":"종목코드 확인 필요"}','application/json');return
                 result=refresh(root);snapshot=result['snapshot'];code=q['code'][0]
                 if not snapshot:self.send_body(404,'{"error":"저장자료 대기"}','application/json');return
-                cache=load_market_cache(root,snapshot) or {}
+                cache=load_market_cache(root,snapshot,codes=[code]) or {}
                 row=next((r for r in snapshot['companies'] if r['code']==code),None)
                 if row is None:row=next((r for r in cache.get('universe',{}).get('companies',[]) if r['code']==code and r.get('eligibility')=='candidate'),None)
                 if row is None:self.send_body(404,'{"error":"저장기업 확인 필요"}','application/json');return
                 cutoff=datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat()
                 bundles=load_company_financials(root,snapshot,[row],as_of=cutoff) if financial else {}
                 manual=load_local_financials(root,snapshot).get(code)
-                if manual:
-                    keys={(p['basis'],p['cadence'],p['period_end']) for p in manual['periods']}
-                    manual['periods'].extend(p for p in bundles.get(code,{}).get('periods',[]) if (p['basis'],p['cadence'],p['period_end']) not in keys)
-                    manual['notes'].extend(bundles.get(code,{}).get('notes',[]))
-                    manual['collection_health']=bundles.get(code,{}).get('collection_health',{})
-                    bundles[code]=manual
+                bundles=merge_financials({code:manual} if manual else {},bundles,as_of=cutoff)
                 scope=dict(meta=dict(snapshot['meta'],price_date=cutoff),companies=[row])
                 table=build_table(row,scope,bundles.get(code),max_columns=48)
                 model=build_details(scope,{code:table},cache)[code]
@@ -149,7 +176,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                 self.send_body(200,json.dumps(latest.poll() if latest else dict(status='unavailable'),ensure_ascii=False),'application/json');return
             if self.path == '/market-refresh':
                 if not self.authorized():self.send_body(403,'{"error":"요청 거부"}','application/json');return
-                state=daily.ensure_due() if daily and hasattr(daily,'ensure_due') else daily.poll() if daily else dict(status='unavailable')
+                state=daily_status(daily)
                 self.send_body(200,json.dumps(state,ensure_ascii=False),'application/json')
                 return
             if urlsplit(self.path).path=='/holding-market':
@@ -162,9 +189,6 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                     self.send_body(200,json.dumps(result,ensure_ascii=False),'application/json')
                 except ValueError:self.send_body(400,'{"error":"종목코드 형식 확인 필요"}','application/json')
                 return
-            if self.path=='/health':
-                root_id=hashlib.sha256(str(Path(root).resolve()).encode()).hexdigest()
-                self.send_body(200,json.dumps(dict(app='investment-holdings-sync',version=1,root_id=root_id)),'application/json');return
             if self.path=='/holdings':
                 if not self.authorized():self.send_body(403,'{"error":"요청 거부"}','application/json');return
                 if holdings is None:self.send_body(200,'{"status":"offline","message":"동기화 연결 설정 필요"}','application/json');return
@@ -178,6 +202,8 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
             if self.path not in ('/', '/dashboard'):
                 self.send_body(404, '찾을 수 없습니다', 'text/plain')
                 return
+            if self.path == '/':
+                self.send_body(200, loading_page(), 'text/html');return
             result = refresh(root)
             if daily and hasattr(daily,'ensure_due'):daily.ensure_due()
             if financial_monitor:financial_monitor.ensure_due()
@@ -197,24 +223,21 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
             all_financial_rows={r['code']:r for r in (cache or {}).get('universe',{}).get('companies',[]) if r.get('eligibility')=='candidate'}
             all_financial_rows.update({r['code']:r for r in result['snapshot']['companies']})
             finances=load_company_financials(root,result['snapshot'],list(all_financial_rows.values()),as_of=financial_as_of,cache=cache) if financial else {}
-            for code,manual in load_local_financials(root,result['snapshot']).items():
-                public=finances.get(code)
-                if public:
-                    manual_keys={(p['basis'],p['cadence'],p['period_end']) for p in manual['periods']}
-                    manual['periods'].extend(p for p in public['periods'] if (p['basis'],p['cadence'],p['period_end']) not in manual_keys)
-                    manual['notes'].extend(public.get('notes',[]))
-                    manual['collection_health']=public.get('collection_health',{})
-                finances[code]=manual
+            finances=merge_financials(load_local_financials(root,result['snapshot']),finances,as_of=financial_as_of)
             live = dict(token=token, receipt=receipt, snapshot_id=digest(result['snapshot']),holdings_sync=holdings is not None,holdings_market=quotes is not None, daily_prices=daily is not None, latest_prices=latest is not None, company_financials=financial is not None)
             live['financial_monitor']=financial_monitor is not None
             live['financial_revision']=financial_revision
             live['financial_versions']=financial_state.get('versions',{})
             live['financial_as_of']=financial_as_of
             live['lazy_company_views']=True
+            live['lazy_holdings_frame']=True
+            live['build_id']=loaded_build_id
+            live['protocol_version']=build_identity(root,loaded_build_id)['version']
             self.send_body(200, export_workspace(result['snapshot'], live=live,
                 events=load_cached_events(root, result['snapshot']),
                 references=load_cached_references(root, result['snapshot']),
-                market_cache=cache, financials=finances), 'text/html')
+                market_cache=cache, financials=finances,
+                    trend_checkpoint_directory=Path(root)/'.local'/'trend-checkpoints'), 'text/html')
 
         def empty_refresh_request(self):
             if not self.authorized(mutation=True):
@@ -234,6 +257,8 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
             return False
 
         def do_POST(self):
+            if source_fingerprint(root)!=loaded_build_id:
+                self.send_body(503,'{"error":"코드 버전이 달라 서버 다시 실행 필요 · 기존 입력 유지"}','application/json');return
             if self.path=='/recommendations':
                 if not self.authorized(mutation=True):self.send_body(403,'{"error":"요청 거부"}','application/json');return
                 from .recommendations import RecommendationBook,research_context
@@ -246,9 +271,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                     rows={r['code']:r for r in cache.get('universe',{}).get('companies',[]) if r.get('eligibility')=='candidate'};rows.update({r['code']:r for r in snapshot['companies']})
                     today=datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat()
                     finances=load_company_financials(root,snapshot,list(rows.values()),as_of=today,cache=cache)
-                    for code,manual in load_local_financials(root,snapshot).items():
-                        keys={(p['basis'],p['cadence'],p['period_end']) for p in manual['periods']}
-                        manual['periods'].extend(p for p in finances.get(code,{}).get('periods',[]) if (p['basis'],p['cadence'],p['period_end']) not in keys);finances[code]=manual
+                    finances=merge_financials(load_local_financials(root,snapshot),finances,as_of=today)
                     book=RecommendationBook(root);book.append(research_context(snapshot,cache,finances,today),kind,reason,today)
                     self.send_body(200,json.dumps(book.view(cache),ensure_ascii=False),'application/json')
                 except ValueError:self.send_body(400,'{"error":"최근 종가·추천 종류·월중 조정 이유를 확인하세요"}','application/json')

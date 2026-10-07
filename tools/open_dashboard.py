@@ -5,12 +5,18 @@ from urllib.request import urlopen
 from urllib.error import URLError
 
 ROOT=Path(__file__).resolve().parents[1]
-def health(port):
+sys.path.insert(0,str(ROOT))
+from investment.dashboard_build import build_identity
+def server_identity(port):
     try:
         with urlopen(f'http://127.0.0.1:{port}/health',timeout=2) as r:
             data=json.load(r)
-        return isinstance(data,dict) and data.get('app')=='investment-holdings-sync' and data.get('version')==1 and data.get('root_id')==hashlib.sha256(str(ROOT.resolve()).encode()).hexdigest()
-    except (OSError,ValueError,URLError):return False
+        return data if isinstance(data,dict) else None
+    except (OSError,ValueError,URLError):return None
+
+def health(port):
+    data=server_identity(port)
+    return bool(data and all(data.get(k)==v for k,v in build_identity(ROOT).items()) and not data.get('restart_required'))
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--port',type=int,default=8767);parser.add_argument('--no-browser',action='store_true');args=parser.parse_args()
@@ -18,7 +24,11 @@ def main():
     if not health(args.port):
         import socket
         with socket.socket() as s:
-            if s.connect_ex(('127.0.0.1',args.port))==0:raise RuntimeError('이 포트를 기존 프로그램이 사용 중입니다. 이전 서버를 종료하거나 다른 포트를 지정하세요.')
+            if s.connect_ex(('127.0.0.1',args.port))==0:
+                existing=server_identity(args.port);expected=build_identity(ROOT)
+                if existing and existing.get('app')==expected['app'] and existing.get('root_id')==expected['root_id']:
+                    raise RuntimeError('이 작업본의 이전 INVESTMENT 서버가 실행 중입니다. 보유 입력·작성 중인 내용을 보관하고 기존 서버를 종료한 뒤 scripts/open-investment.cmd를 다시 실행하세요. 새 코드가 실행되기 전에는 기존 서버를 재사용하지 않습니다.')
+                raise RuntimeError('이 포트를 기존 프로그램이 사용 중입니다. 이전 서버를 종료하거나 다른 포트를 지정하세요.')
         log=ROOT/'.local/holdings-sync/server.log';log.parent.mkdir(parents=True,exist_ok=True)
         with log.open('ab') as f:
             proc=subprocess.Popen([sys.executable,str(ROOT/'tools/serve_dashboard.py'),'--saved-only','--port',str(args.port)],cwd=ROOT,

@@ -50,11 +50,14 @@ def _now(value=None):
     return value.astimezone(KST)
 
 
+DAILY_PUBLICATION_TIME = (20, 30)
+
+
 def completed_cutoff(now, allow_same_day=False):
     now=_now(now)
     # Provider after-market runs through 20:00; retain a 30-minute publication buffer.
     # https://help.pay.naver.com/faq/content.help?faqId=18245
-    if allow_same_day and now.weekday()<5 and (now.hour,now.minute)>=(20,30):return now.date()
+    if allow_same_day and now.weekday()<5 and (now.hour,now.minute)>=DAILY_PUBLICATION_TIME:return now.date()
     return now.date()-timedelta(days=1)
 
 

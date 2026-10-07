@@ -19,6 +19,47 @@ import requests
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from investment.dart_statements import parse_viewer, valid_report, amount
 
+
+def collect_receipt(session,entry,cache, *, code,name,market,force=False):
+    """Fetch one inventoried official viewer; never infer report kind from calendar Q4."""
+    from investment.fiscal_contract import validate_contract
+    contract=validate_contract(entry['period_contract'],year=entry['year'],quarter=entry['quarter'])
+    if entry.get('basis') not in ('CFS','OFS'):raise ValueError('원문 목록 회계기준 미확인')
+    source=contract['source'];prefix=f"{code}-{entry['basis']}-{source['receipt']}-{contract['currency']}"
+    from investment.company_financials import resolve_company,fetch_filings
+    corp,legal_name=resolve_company(session,code,name)
+    filings=fetch_filings(source['available_at'],session=session)
+    matches=[r for r in filings if r['receipt']==source['receipt'] and r['corp']==corp]
+    kind='사업보고서' if contract['report_kind']=='annual' else '반기보고서' if contract['report_kind']=='half' else '분기보고서'
+    if len(matches)!=1 or matches[0]['name']!=legal_name or kind not in matches[0]['title']:
+        raise ValueError('공식 종목·법인·제출번호·보고서종류 연결 미확인')
+    from investment.dart_receipt_identity import verify_receipt_section
+    try:
+        main_url='https://dart.fss.or.kr/dsaf001/main.do?rcpNo='+source['receipt']
+        response=session.get(main_url,timeout=(5,30));response.raise_for_status()
+        if len(response.content)>4*1024*1024:raise ValueError('제출 원문 목차 크기 초과')
+        section_evidence=verify_receipt_section(response.content.decode('utf-8'),source['url'],source['receipt'],corp,legal_name)
+        main_sha256=hashlib.sha256(response.content).hexdigest()
+    except requests.RequestException:raise ValueError('DART 제출 원문 목차 통신 실패') from None
+    saved=Path(cache)/(prefix+'.html');metadata=Path(cache)/(prefix+'.json')
+    if saved.is_file() and not force:payload=saved.read_bytes()
+    else:
+        try:
+            response=session.get(source['url'],timeout=(5,30));response.raise_for_status();payload=response.content
+        except requests.RequestException:raise ValueError('검증 목록 DART 원문 통신 실패') from None
+    if len(payload)>4*1024*1024 or hashlib.sha256(payload).hexdigest()!=source['sha256']:
+        raise ValueError('검증 목록 원문 해시 불일치; 정정 원문 목록 재확인 필요')
+    record=parse_viewer(payload.decode('utf-8'),code=code,name=name,market=market,basis=entry['basis'],
+        year=entry['year'],quarter=entry['quarter'],receipt=source['receipt'],url=source['url'],period_contract=contract)
+    record['collection_route']='verified_receipt_inventory'
+    record['identity_evidence']=dict(stock_code=code,corp_code=corp,legal_name=legal_name,receipt=source['receipt'],
+        report_title=matches[0]['title'],checked_on=date.today().isoformat(),source='DART exact-ticker corporation search + complete official daily filing list',
+        search_url='https://dart.fss.or.kr/corp/searchCorp.ax',filings_url='https://dart.fss.or.kr/dsac001/search.ax',filing_date=source['available_at'])
+    record['identity_evidence'].update(main_url=main_url,main_sha256=main_sha256,section_evidence=section_evidence)
+    if not valid_report(record):raise ValueError('원문 목록 재무 검증 실패')
+    Path(cache).mkdir(parents=True,exist_ok=True);saved.write_bytes(payload);metadata.write_text(json.dumps(record,ensure_ascii=False),encoding='utf-8')
+    return record
+
 COMPANIES = {'005930': ('00126380', '삼성전자'),
              '000660': ('00164779', 'SK하이닉스'), '005380': ('00164742', '현대차')}
 REPORTS = {1: '11013', 2: '11012', 3: '11014', 4: '11011'}

@@ -8,7 +8,7 @@ from uuid import uuid4
 from html import unescape
 import requests
 from .local_config import load_local
-from .market_discovery import load_market_cache,discovery_candidate
+from .market_discovery import read_market_cache as load_market_cache,discovery_candidate
 from .market_refresh import write_json
 from .dart_statements import Tables, load_bundle, PARSER_VERSION
 from .financial_update_policy import decide_update
@@ -72,6 +72,8 @@ def collect_company(root,row,cutoff,progress=lambda _:None, *, force=False, extr
 
 
 def _collect_company(root,row,cutoff,progress=lambda _:None, *, force=False, extra_targets=()):
+    inventory=folder(root)/'fiscal-inventory'/(row['code']+'.json')
+    if inventory.is_file():return _collect_inventory(root,row,cutoff,inventory,progress,force=force)
     from tools.company_statements import collect
     cache=folder(root)/'sources';cache.mkdir(parents=True,exist_ok=True)
     year=int(cutoff[:4]);month=int(cutoff[5:7])
@@ -122,7 +124,7 @@ def _collect_company(root,row,cutoff,progress=lambda _:None, *, force=False, ext
     if previous and any(r.get('parser_version',0)<PARSER_VERSION for r in previous['companies'].get(row['code'],{}).get('reports',[])):
         old={(r['basis'],r['year'],r['quarter']):r for r in previous['companies'][row['code']]['reports']}
         reparsed=[r for r in records if r.get('parser_version')==PARSER_VERSION and old.get((r['basis'],r['year'],r['quarter']),{}).get('parser_version',0)<PARSER_VERSION and r.get('sha256') and old.get((r['basis'],r['year'],r['quarter']),{}).get('sha256')==r['sha256']]
-        if reparsed and decision['action'] in ('review','defer','unchanged'):
+        if reparsed and decision['action'] in ('review','defer','unchanged') and decision.get('reason')!='financial_contract_changed':
             # Parser repairs are distinct from new provider corrections (<7% remains deferred).
             corrected=dict(old)
             corrected.update({(r['basis'],r['year'],r['quarter']):r for r in reparsed})
@@ -131,6 +133,46 @@ def _collect_company(root,row,cutoff,progress=lambda _:None, *, force=False, ext
     decision['failed_reports']=len(errors)
     write_json(path.with_suffix('.observed.json'),dict(bundle,update_decision=decision))
     if decision['action'] in ('update','unchanged'):write_json(path,bundle)
+    return decision
+
+
+def _collect_inventory(root,row,cutoff,inventory,progress=lambda _:None, *, force=False):
+    from tools.company_statements import collect_receipt
+    from .fiscal_contract import validate_contract
+    data=json.loads(Path(inventory).read_text(encoding='utf-8'))
+    if data.get('schema')!='dart-fiscal-inventory-1' or (data.get('code'),data.get('name'),data.get('market'))!=(row['code'],row['name'],row['market']):raise ValueError('검증 원문 목록 기업 식별 불일치')
+    entries=data.get('reports',[])
+    if not isinstance(entries,list) or not entries:raise ValueError('검증 원문 목록 미확보')
+    checked=[];identities=set()
+    for entry in entries:
+        c=validate_contract(entry['period_contract'],year=entry['year'],quarter=entry['quarter'])
+        key=(entry['basis'],c['fiscal_year'],c['fiscal_quarter'],c['currency'],c['calendar_segment'])
+        if key in identities:raise ValueError('검증 원문 목록 기간 중복')
+        identities.add(key)
+        if c['source']['available_at']<=cutoff and c['period_end']<=cutoff:checked.append(entry)
+    cache=folder(root)/'sources';records=[];errors=[]
+    with requests.Session() as session:
+        session.headers['User-Agent']='INVESTMENT public fiscal statement review'
+        for entry in checked:
+            try:records.append(collect_receipt(session,entry,cache,code=row['code'],name=row['name'],market=row['market'],force=force))
+            except (ValueError,KeyError,AttributeError,OSError):errors.append(dict(basis=entry['basis'],year=entry['year'],quarter=entry['quarter'],reason='verified_receipt_validation_pending'))
+            progress(dict(completed=len(records)+len(errors),total=len(checked)))
+    bundle=dict(schema='dart-native-statements-1',unit='native',companies={row['code']:dict(reports=records)},errors=errors,
+        collection_route='verified_receipt_inventory',retrieved_on=datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat(),
+        cfs_unverified=bool(records and not any(r['basis']=='CFS' for r in records)))
+    path=folder(root)/(row['code']+'.json')
+    if errors:write_json(path.with_suffix('.incomplete.json'),bundle)
+    if not records:raise ValueError('원문 목록 조회·검증 대기; 이전 유효 자료 보존')
+    previous=json.loads(path.read_text(encoding='utf-8')) if path.is_file() else None
+    if previous:
+        prior=previous.get('companies',{}).get(row['code'],{}).get('reports',[])
+        observed={(r['basis'],r['year'],r['quarter']):r for r in records}
+        for r in prior:observed.setdefault((r['basis'],r['year'],r['quarter']),r)
+        bundle['companies'][row['code']]['reports']=list(observed.values())
+    decision=decide_update(previous,bundle);decision['failed_reports']=len(errors)
+    write_json(path.with_suffix('.observed.json'),dict(bundle,update_decision=decision))
+    if decision['action'] in ('update','unchanged'):write_json(path,bundle)
+    if not errors:path.with_suffix('.incomplete.json').unlink(missing_ok=True)
     return decision
 
 def load_cached(root,snapshot,rows, *, as_of=None, cache=None):
@@ -143,6 +185,19 @@ def load_cached(root,snapshot,rows, *, as_of=None, cache=None):
         if row and re.fullmatch(r'[0-9A-Z]{6}',code):
             scope=dict(meta=dict(snapshot['meta'],price_date=cutoff),companies=[row])
             result.update(load_bundle(path,scope))
+    # Derived, revalidated native bundles live separately from the applied cache.
+    # Reading this sidecar never rewrites an original public viewer or provider row.
+    for path in (folder(root)/'native-derived').glob('*.json'):
+        row=identities.get(path.stem)
+        if not row or not re.fullmatch(r'[0-9A-Z]{6}',path.stem):continue
+        scope=dict(meta=dict(snapshot['meta'],price_date=cutoff),companies=[row])
+        derived=load_bundle(path,scope).get(path.stem)
+        if not derived:continue
+        if path.stem not in result:result[path.stem]=derived
+        else:
+            existing=result[path.stem];keys={(p['basis'],p['cadence'],p['period_end']) for p in existing['periods']}
+            existing['periods'].extend(p for p in derived['periods'] if (p['basis'],p['cadence'],p['period_end']) not in keys)
+            existing['native_financial']=derived.get('native_financial');existing['financial_completeness']=derived.get('financial_completeness')
     from .financial_health import collection_health
     dest=folder(root)
     for code,row in identities.items():
@@ -175,7 +230,8 @@ class CompanyFinancials:
             if prior.get('status')=='running':return dict(prior)
             if prior.get('status')=='complete' and prior.get('checked_on')==now.date().isoformat():return dict(prior)
             stored=folder(self.root)/(code+'.json')
-            if stored.is_file():return dict(status='cached',code=code,cache_revision=str(stored.stat().st_mtime_ns))
+            derived=folder(self.root)/'native-derived'/(code+'.json')
+            if stored.is_file() or derived.is_file():return dict(status='cached',code=code,cache_revision=str((stored if stored.is_file() else derived).stat().st_mtime_ns))
             if prior.get('status')=='failed' and time.monotonic()-prior.get('attempt',0)<3600:return dict(prior)
             if any(j.get('status')=='running' for j in self.jobs.values()):return dict(status='busy',code=code,message='다른 기업의 재무자료 조회 중')
             self.jobs[code]=dict(status='running',code=code,completed=0,total=0,attempt=time.monotonic())

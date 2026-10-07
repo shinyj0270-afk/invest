@@ -20,10 +20,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class LauncherTests(unittest.TestCase):
     def test_health_requires_matching_app_version_and_checkout(self):
-        expected = dict(app='investment-holdings-sync', version=1,
-                        root_id=hashlib.sha256(str(launcher.ROOT.resolve()).encode()).hexdigest())
+        expected = launcher.build_identity(launcher.ROOT)
         for record, valid in [(expected, True), ({**expected, 'root_id': 'other'}, False),
-                              ({**expected, 'version': 2}, False),
+                              ({**expected, 'version': 1}, False), ({**expected, 'build_id': 'old'}, False), ({**expected, 'restart_required': True}, False),
                               ({**expected, 'app': 'other'}, False), ([], False), (None, False)]:
             with self.subTest(record=record), patch.object(launcher, 'urlopen',
                     return_value=io.BytesIO(json.dumps(record).encode())):
@@ -45,6 +44,7 @@ class LauncherTests(unittest.TestCase):
         with patch.object(sys, 'argv', ['launch', '--no-browser']), \
              patch.object(launcher, 'health', return_value=False), \
              patch('socket.socket', return_value=sock), \
+             patch.object(launcher, 'server_identity', return_value=None), \
              patch.object(launcher.subprocess, 'Popen') as spawn:
             with self.assertRaisesRegex(RuntimeError, '기존 프로그램'):
                 launcher.main()
@@ -135,7 +135,7 @@ class IsolationTests(unittest.TestCase):
                  patch.object(sharing, 'audit', return_value=(entries, {}, [])), \
                  patch.object(sharing.subprocess, 'run', side_effect=run):
                 self.assertEqual(sharing.main(ui=True), 0)
-            self.assertEqual(len(calls), 8)
+            self.assertEqual(len(calls), 11)
             self.assertIn('tests/test_portfolio_risk_ui.py', [command[1] for command in calls])
             self.assertIn('tests/test_trend_following_ui.py', [command[1] for command in calls])
             self.assertEqual(source.read_text(), '# original')

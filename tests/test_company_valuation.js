@@ -3,7 +3,7 @@ const qs=['2023-03-31','2023-06-30','2023-09-30','2023-12-31','2024-03-31'].map(
 const model={groups:[{basis:'CFS',cadence:'quarter',columns:qs}],chart:{as_of:'2024-06-01',bars:[{date:'2024-03-14',close:100},{date:'2024-03-15',close:100},{date:'2024-05-15',close:120},{date:'2024-06-01',close:120}]}};
 const row={code:'x',metrics:{market_cap_eok:120}},v=E.valuation(row,model);
 assert.equal(v.history[0].per,null);assert.equal(v.history[1].period,'2023-12-31');assert.equal(v.history[2].period,'2024-03-31');assert.equal(v.current.per,5);assert.equal(v.current.pbr,1);
-const ttm=E.periods(model,'CFS','ttm')[0].values;assert.equal(ttm.ocf,80);assert.equal(ttm.fcf,52);assert.equal(ttm.cash_start,40);assert.equal(ttm.cash_end,44);assert.equal(ttm.eps,12);
+const ttm=E.periods(model,'CFS','ttm')[0].values;assert.equal(ttm.ocf,80);assert.equal(ttm.fcf,52);assert.equal(ttm.cash_start,40);assert.equal(ttm.cash_end,44);assert.equal(ttm.eps,null);
 const missing=structuredClone(model);missing.groups[0].columns[1].values.ocf=null;assert.equal(E.periods(missing,'CFS','ttm')[0].values.ocf,null);assert.equal(E.valuation(row,missing).history[1].pcr,null);
 const loss=structuredClone(model);loss.groups[0].columns.forEach(c=>c.values.parent_net=-2);assert.equal(E.valuation(row,loss).current.per,null);
 const dist=E.distribution(Array.from({length:30},(_,i)=>({per:i+1})),'per',15);assert.equal(dist.percentile,50);assert.equal(dist.histogram.reduce((s,b)=>s+b.count,0),30);

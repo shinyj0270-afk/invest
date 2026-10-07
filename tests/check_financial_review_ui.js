@@ -1,0 +1,17 @@
+'use strict';
+const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
+const context=vm.createContext({URL});
+for(const file of ['risk_review_ui.js','financial_completeness_ui.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../src',file),'utf8'),context);
+context.payload={status:'pending',reason:'<script>bad()</script>',policy_status:'not_configured',flags:['missing_price'],deltas:{annual_volatility_pct:999}};
+const pending=vm.runInContext('RiskReviewUI.render(payload)',context);
+assert(pending.includes('&lt;script&gt;'));assert(!pending.includes('<script>'));assert(!pending.includes('999'));
+assert(pending.includes('개인 위험 정책 미설정'));assert(pending.includes('위험 차이를 계산하거나 순위를 정하지 않습니다'));
+context.payload={financial_completeness:{latest_stored:{status:'ready',period_end:'2026-06-30'},ttm:{status:'pending',reason:'인접분기대기'},required_accounts:{status:'pending',missing:['ocf']},roe:{status:'pending',reason:'귀속계정대기'},currency:'USD',basis:'CFS',source_urls:['javascript:bad()','https://dart.fss.or.kr/report/viewer.do?rcpNo=20260813001554']},native_financial:{groups:[{basis:'CFS',currency:'USD',cadence:'cumulative',amount_unit:'백만 USD',amount_divisor:1000000,columns:[{period_start:'2026-01-01',period_end:'2026-06-30',fiscal_year:2026,fiscal_quarter:2,revenue:2000000,ocf:-1000000,cell_notes:{revenue:'<img onerror=bad()>'}}]}],fx:{reason:'환산근거대기'}}};
+const native=vm.runInContext('FinancialCompletenessUI.render(payload)',context);
+for(const label of ['최근 저장 원문','TTM 연속 4분기','필수 계정','ROE 계산 조건','백만 USD','환산근거대기'])assert(native.includes(label));
+assert(!native.includes('억원'));assert(!native.includes('javascript:'));assert(!native.includes('<img'));assert(native.includes('&lt;img'));
+assert(native.includes('>2 *'));assert(native.includes('>-1'));
+context.payload.native_financial.groups[0].currency='KRW';context.payload.native_financial.groups[0].amount_unit='억원';context.payload.native_financial.groups[0].amount_divisor=100000000;
+const krw=vm.runInContext('FinancialCompletenessUI.render(payload)',context);
+assert(krw.includes('통화 환산 불필요'));assert(!krw.includes('PER/PBR 환산 대기'));assert(!krw.includes('환산근거대기'));
+console.log('Risk review and native completeness render checks passed');
