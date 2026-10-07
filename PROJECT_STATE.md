@@ -1,3 +1,15 @@
+# home Secondary 최초 시장 수집·실행 확인 · 2026-10-07 23:08 KST
+
+- 기존 home main 작업본을 be3ff965cb61cf38daac9e34dec0d27d02965e28에서 21130f411581694bfbf4640f88ff3c69356c31ce로 7개 commit fast-forward 수신. clean·진행 Git 작업 없음·HEAD/origin/main 일치 확인. 별도 Orca 작업본은 기존 branch와 설정을 보존.
+- 기존 Python 3.12.14/.venv 사용, requirements.lock.txt 44개 버전 일치·pip check 통과. 새 환경/패키지 설치 없음.
+- 자동 갱신 실패 원인은 home 시장 캐시 universe.json/histories.json 부재. 네이버 공개 목록·양대 지수/종목 일봉·DART 기업 검색 접근 확인 후 기존 tools/expand_market.py로 최초 수집: 목록2,767개·후보2,452개, 목록/가격 수집 오류0, 최초 기준일2026-10-06.
+- 해당 작업본 서버 재시작 후 기존 일별 자동 갱신으로 2,452개 모두2026-10-07 확보, 실패0. 실제 home 화면의 종가 기준일2026-10-07·양대 지수 그래프 표시·health build/source 일치·restart_required=false 확인(LIVE_VERIFIED). 인포맥스 검토 종가2026-09-23/재무2026-06-30은 별도 보존.
+- 이번 CLOSE 실제 검증: pc_check.py --phase finish 정상, 캐시 구조·양대 지수 달력·2,452개 기준일·갱신 완료상태·health 대조 PASS. 코드 변경 없으므로 portable/합성 UI/단위검사 재실행 없음. 근거 validation/current/home-close-20261007/verification.json 및 해당 home 캐시. 문서 변경은 별도 diff 점검.
+- 재무 자동 수집은 계속 진행 중(PENDING). 마감 직전 화면 관측304/1,376 처리·302반영·일부기간28·미확보2는 그 시점 수치이며 최종 결과 아님. CLOSE는 서버 종료가 아니며 앱을 유지한다.
+- 설정·인포맥스 원본·코드 수동 변경 없음. 공개 수집 캐시·자동 재무 저장·로그는 home 로컬에만 보존하며 개인입력·DB·인증·PC설정과 함께 코드 전송에서 제외. 원격 전송 및 다음 실행 지점은 CURRENT_HANDOFF.md와 실제 Git 조회 기준.
+
+---
+
 # INVESTMENT CLOSE 검증 · 2026-10-07 17:41 KST
 
 - 회사work/Primary, main 시작3747eaddd3b4103d0fd3b75c87b840c485c52744. 사용자 CLOSE 요청으로 미전송 10개 개선과 선택1번 오로라 글라스의 공유 변경을 마감한다. 기존 날짜별 기록과 개인/PC별 자료를 보존한다.
