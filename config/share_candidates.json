@@ -223,6 +223,7 @@
     "investment/company_financials.py": "investment/company_financials.py",
     "investment/financial_update_policy.py": "investment/financial_update_policy.py",
     "tests/test_company_financials.py": "tests/test_company_financials.py",
+    "tests/test_financial_account_recovery.py": "tests/test_financial_account_recovery.py",
     "tests/test_financial_update_policy.py": "tests/test_financial_update_policy.py",
     "docs/FINANCIAL_SOURCE_COMPARISON.md": "docs/FINANCIAL_SOURCE_COMPARISON.md",
     "docs/FINANCIAL_UPDATE_POLICY.md": "docs/FINANCIAL_UPDATE_POLICY.md",

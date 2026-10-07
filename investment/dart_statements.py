@@ -8,7 +8,7 @@ from html.parser import HTMLParser
 from datetime import date
 from .financial_table import valid_day
 
-PARSER_VERSION = 11
+PARSER_VERSION = 12
 
 
 class Tables(HTMLParser):
@@ -52,7 +52,7 @@ ALIASES={
   'nci':['비지배주주지분','비지배지분'], 'cash':['현금및현금성자산'], 'retained_earnings':['이익잉여금','이익잉여금(결손금)'],
  },
  'income':{
-  'revenue':['매출액(매출액)','수익','매출액및기타수익','매출및지분법손익','매출','매출액','수익(매출액)','영업수익','매출액(영업수익)'], 'cost_of_sales':['매출원가'],
+  'revenue':['매출액(매출액)','수익','매출액및기타수익','매출액및지분법손익','매출및지분법손익','매출','매출액','수익(매출액)','영업수익','매출액(영업수익)'], 'cost_of_sales':['매출원가'],
   'gross_profit':['매출총이익','매출총이익(손실)'], 'sga':['판매비와관리비','판매비와관리비용'],
   'operating_profit':['영업손실','영업순손익','영업손익','영업이익','영업이익(손실)'], 'finance_income':['금융수익','금융이익'],
   'finance_cost':['금융원가','금융비용','금융손실'], 'other_income':['기타수익','기타영업외수익'],
@@ -81,6 +81,51 @@ ALIASES={
 }
 FLOW=set(ALIASES['income'])-{'eps'}
 CASH_FLOW=set(ALIASES['cash'])-{'cash_start','cash_end'}
+
+def reconciled_accounts(rows, context, unit, values=None):
+    """Resolve two known ambiguous presentations using independent equations."""
+    def unique(names):
+        matches=[r['value'] for r in rows if label(r['label']) in names]
+        return matches[0] if len(matches)==1 else None
+    if context=='cash':
+        # The first row is a total; the next row is before interest and tax.
+        operating=[(i,r) for i,r in enumerate(rows) if label(r['label']) in ALIASES['cash']['ocf']]
+        if len(operating)!=2:return {},{}
+        (i,total),(j,subtotal)=operating
+        if (label(total['label']),label(subtotal['label']))!=('영업활동현금흐름','영업활동으로인한현금흐름') or j!=i+1:return {},{}
+        investing=[k for k,r in enumerate(rows) if label(r['label']) in ALIASES['cash']['icf']]
+        if len(investing)!=1 or investing[0]<=j:return {},{}
+        adjustments=rows[j+1:investing[0]]
+        expected={'이자수취액','이자지급액','법인세납부액'}
+        if len(adjustments)!=3 or {label(r['label']) for r in adjustments}!=expected:return {},{}
+        if any(unique([name]) is None for name in expected):return {},{}
+        if any(label(r['label']) in ALIASES['cash']['cash_generated'] for r in rows):return {},{}
+        icf=unique(ALIASES['cash']['icf']);financing=unique(ALIASES['cash']['financing_cf'])
+        opening=unique(ALIASES['cash']['cash_start']);closing=unique(ALIASES['cash']['cash_end'])
+        fx=unique(['외화표시현금및현금성자산의환율변동효과'])
+        if any(v is None for v in (icf,financing,opening,closing,fx)):return {},{}
+        delta1=subtotal['value']+sum(r['value'] for r in adjustments)-total['value']
+        delta2=opening+total['value']+icf+financing+fx-closing
+        if abs(delta1)>unit or abs(delta2)>unit:return {},{}
+        recovered={'ocf':total['value'],'cash_generated':subtotal['value']}
+        note=dict(method='operating_subtotal_interest_tax_and_cash_balance',
+                  adjustment_residual_krw=delta1,cash_balance_residual_krw=delta2)
+        return recovered,{k:dict(note) for k in recovered}
+    if context=='income' and values is not None:
+        if any(label(r['label']) in ALIASES['income']['net_income'] for r in rows):return {},{}
+        repeated=[r['value'] for r in rows if label(r['label'])=='계속영업이익(손실)']
+        discontinued=unique(['중단영업이익(손실)'])
+        parent=unique(['지배기업지분순이익(손실)']);nci=unique(['비지배지분순이익'])
+        pretax=unique(['법인세비용차감전계속영업이익'])
+        if len(repeated)!=2 or any(v is None for v in (discontinued,parent,nci,pretax)) or 'tax' not in values:return {},{}
+        continuing,total=repeated
+        residuals=[pretax-values['tax']-continuing,continuing+discontinued-total,parent+nci-total]
+        if any(abs(v)>unit for v in residuals):return {},{}
+        recovered=dict(net_income=total,parent_net=parent,nci_net=nci)
+        note=dict(method='repeated_continuing_label_with_discontinued_and_total_attribution',
+                  pretax_tax_residual_krw=residuals[0],operations_residual_krw=residuals[1],attribution_residual_krw=residuals[2])
+        return recovered,{k:dict(note) for k in recovered}
+    return {},{}
 
 def reconciliation_reference(values, rows, context, unit):
     """Keep unique explicit accounts with a disclosed residual below KRW 100m."""
@@ -132,7 +177,7 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
     if basis not in ('CFS','OFS') or quarter not in (1,2,3,4): raise ValueError('회계기준·분기 오류')
     available=date.fromisoformat(receipt[:4]+'-'+receipt[4:6]+'-'+receipt[6:8]).isoformat()
     end=f'{year}-{["03-31","06-30","09-30","12-31"][quarter-1]}'
-    parser=Tables();parser.feed(text);result={};raw={};units={};reconciliation_notes={};context=None;unit=None
+    parser=Tables();parser.feed(text);result={};raw={};units={};reconciliation_notes={};account_reconciliation={};context=None;unit=None
     for table in parser.tables:
         # The title/unit/date table directly precedes its account table.
         title=' '.join(c for row in table[:1] for c in row)
@@ -153,7 +198,12 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
         if not context or unit is None or context in result:continue
         quarter_column=context=='income' and quarter!=4 and any('3개월' in ''.join(row) for row in table[:3])
         col=2 if quarter_column else 1  # Store YTD so Q4 and CF are reconstructed consistently.
+        pre_rows=[dict(label=row[0],value=amount(row[col])*unit) for row in table
+                  if len(row)>col and amount(row[col]) is not None]
+        recovered,notes=reconciled_accounts(pre_rows,context,unit) if context=='cash' else ({},{})
+        account_reconciliation.update(notes)
         values={};original=[];attribution=False;attributed_net=None; abbreviated_net=[];parent_candidates=[];nci_candidates=[];pairs=[];pending_parent=None;ambiguous=set();explicit_total=False
+        values.update(recovered)
         for row in table:
             if len(row)<=col:continue
             v=amount(row[col]);key=label(row[0])
@@ -183,6 +233,7 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
                 values['nci_net']=value
             for dest,names in ALIASES[context].items():
                 if key in names:
+                    if dest in recovered:continue
                     if dest in ambiguous:continue
                     if dest in values:
                         if dest=='revenue' and values[dest]==value:continue  # Identical parent/child presentation, never sum.
@@ -194,6 +245,9 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
                             ambiguous.add(dest);values.pop(dest,None);continue
                         raise ValueError('계정 중복: '+dest)
                     values[dest]=-value if dest=='tax' and key=='법인세수익(비용)' else -abs(value) if (dest=='operating_profit' and key=='영업손실' or dest=='net_income' and key in ('당기순손실','반기순손실','분기순손실')) else value
+        if context=='income' and 'net_income' not in values:
+            recovered,notes=reconciled_accounts(original,context,unit,values)
+            values.update(recovered);account_reconciliation.update(notes)
         # Some public viewers abbreviate the total label to just "분기".
         # Accept only one numeric row corroborated by BOTH independent equations.
         if context=='income' and 'net_income' not in values and len(abbreviated_net)==1:
@@ -236,7 +290,7 @@ def parse_viewer(text, *, code, name, market, basis, year, quarter, receipt, url
     if not all(k in i for k in ('revenue','operating_profit','net_income')):raise ValueError('주요 손익 계정 미확인')
     return dict(code=code,name=name,market=market,basis=basis,year=year,quarter=quarter,period_end=end,
         available_at=available,receipt=receipt,url=url,values={**b,**i,**result['cash']},raw=raw,
-        source='금융감독원 DART 공개 재무제표',unit='KRW',units=units,reconciliation_notes=reconciliation_notes,parser_version=PARSER_VERSION)
+        source='금융감독원 DART 공개 재무제표',unit='KRW',units=units,reconciliation_notes=reconciliation_notes,account_reconciliation=account_reconciliation,parser_version=PARSER_VERSION)
 
 
 def quarter_records(reports, cutoff):
@@ -259,8 +313,14 @@ def quarter_records(reports, cutoff):
         if available > cutoff: continue
         record=dict(period_end=report['period_end'],available_at=available,basis=report['basis'],cadence='quarter',
                     source=report['source'],source_url=report['url'],receipt=report['receipt'],**values)
-        special=[r['label'] for r in report.get('raw',{}).get('income',[]) if label(r['label']) in ('매출액및기타수익','매출및지분법손익')]
+        special=[r['label'] for r in report.get('raw',{}).get('income',[]) if label(r['label']) in ('매출액및기타수익','매출액및지분법손익','매출및지분법손익')]
         if special:record['cell_notes']={'revenue':'공시 표시 항목: '+special[0]+'; 순수 제품매출과 구성 차이 확인 필요'}
+        for source_report in [report]+([prior] if prior else []):
+            for field,note in source_report.get('account_reconciliation',{}).items():
+                message=(f"{source_report['period_end']} 원문 계정명 중복: "
+                         +('현금흐름 총계·이자/세금 조정·기초/기말 현금 독립 검산' if field in ('ocf','cash_generated') else '계속/중단영업 및 지배/비지배 총손익 독립 검산'))
+                notes=record.setdefault('cell_notes',{})
+                notes[field]=(notes.get(field,'')+' · '+message).strip(' ·')
         for source_report in [report]+([prior] if prior else []):
             for field,note in source_report.get('reconciliation_notes',{}).items():
                 if source_report is prior and field not in FLOW:continue
@@ -315,5 +375,12 @@ def valid_report(r):
             if all(k in v for k in (a,b,total)) and abs(v[a]+v[b]-v[total])>unit:
                 observed=dict(v);reference=reconciliation_reference(observed,r.get('raw',{}).get(context,[]),context,unit)
                 if observed!=v or not reference or any(r.get('reconciliation_notes',{}).get(k)!=note for k,note in reference.items()):return False
+        recovered={};notes={}
+        for context in ('income','cash'):
+            unit=r.get('units',{}).get(context,1)
+            if type(unit) not in (int,float) or unit not in (1,1000,1000000):return False
+            found,evidence=reconciled_accounts(r.get('raw',{}).get(context,[]),context,unit,v)
+            recovered.update(found);notes.update(evidence)
+        if r.get('account_reconciliation',{})!=notes or any(v.get(k)!=x for k,x in recovered.items()):return False
         return abs(v['assets']-v['liabilities']-v['equity'])<=1e6
     except (ValueError,KeyError,TypeError,AttributeError): return False
