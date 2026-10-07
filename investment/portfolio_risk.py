@@ -93,6 +93,26 @@ def time_series(prices, benchmark, cutoff):
         return dict(status='pending',state='PENDING',reason=str(exc),definition=PRICE_NOTE)
 
 
+def verified_price_inputs(targets, cache, cutoff):
+    """Shared source identity, completed calendar and adjustment contract."""
+    from .market_history import benchmark_calendar
+    history=(cache or {}).get('history',{})
+    calendar=benchmark_calendar(history.get('benchmarks',{}))
+    if not day(cutoff) or cutoff not in calendar['sessions']:
+        raise ValueError('평가일의 양대 지수 완료 관측일 대기')
+    series=[];bases=set()
+    for target in targets:
+        record=history.get('histories',{}).get(target['code'],{})
+        if record.get('kind')!='item' or record.get('symbol')!=target['code']:
+            raise ValueError(target['code']+' 가격 식별정보·이력 대기')
+        rows=checked(record.get('prices'),cutoff)
+        if rows[0]['adjustment_basis']=='index_level':
+            raise ValueError('종목 수정주가 기준 확인 필요')
+        bases.add(rows[0]['adjustment_basis']);series.append(rows)
+    if len(bases)>1:raise ValueError('종목 간 수정주가 기준 일치 확인 필요')
+    return calendar,series,bases
+
+
 def portfolio_risk(targets, cash_pct, cache, cutoff, *, observation_dates=None):
     result=dict(status='pending',state='PENDING',as_of=cutoff,definition=NOTE)
     try:
@@ -114,21 +134,8 @@ def portfolio_risk(targets, cash_pct, cache, cutoff, *, observation_dates=None):
             result.update(status='cash_only',state='SAFE_DEFAULT',reason='현금 100%; 주식 상관관계·과거 주식 위험 적용 대상 없음')
             return result
         history=(cache or {}).get('history',{})
-        from .market_history import benchmark_calendar
-        calendar=benchmark_calendar(history.get('benchmarks',{}))
-        if not day(cutoff) or cutoff not in calendar['sessions']:
-            raise ValueError('평가일의 양대 지수 완료 관측일 대기')
-        histories=history.get('histories',{});series=[];bases=set()
-        for target in targets:
-            record=histories.get(target['code'],{})
-            if record.get('kind')!='item' or record.get('symbol')!=target['code']:
-                raise ValueError(target['code']+' 가격 식별정보·이력 대기')
-            rows=checked(record.get('prices'),cutoff)
-            if rows[0]['adjustment_basis']=='index_level':
-                raise ValueError('종목에 지수 기준 적용 불가')
-            bases.add(rows[0]['adjustment_basis']);series.append(rows)
-        if len(bases)!=1:
-            raise ValueError('종목 간 수정주가 기준 일치 확인 필요')
+        calendar,series,bases=verified_price_inputs(targets,cache,cutoff)
+        histories=history.get('histories',{})
         first=max(s[0]['date'] for s in series)
         dates=[d for d in calendar['sessions'] if first<=d<=cutoff][-WINDOW:]
         if observation_dates is not None:
@@ -175,25 +182,12 @@ def portfolio_risk(targets, cash_pct, cache, cutoff, *, observation_dates=None):
 
 def common_window(targets, cache, cutoff):
     """One exact index calendar for every composition in a review universe."""
-    from .market_history import benchmark_calendar
-    history=(cache or {}).get('history',{})
-    calendar=benchmark_calendar(history.get('benchmarks',{}))
-    if not day(cutoff) or cutoff not in calendar['sessions']:
-        raise ValueError('평가일의 양대 지수 완료 관측일 대기')
-    first=None;bases=set()
-    for target in {t['code']:t for t in targets}.values():
-        record=history.get('histories',{}).get(target['code'],{})
-        if record.get('kind')!='item' or record.get('symbol')!=target['code']:
-            raise ValueError(target['code']+' 가격 식별정보·이력 대기')
-        rows=checked(record.get('prices'),cutoff)
-        if rows[0]['adjustment_basis']=='index_level':raise ValueError('종목 수정 기준 확인 필요')
-        bases.add(rows[0]['adjustment_basis'])
-        first=max(first or rows[0]['date'],rows[0]['date'])
-    if len(bases)>1:raise ValueError('종목 간 수정 기준 일치 확인 필요')
+    targets=list({t['code']:t for t in targets}.values())
+    calendar,series,_=verified_price_inputs(targets,cache,cutoff)
+    first=max((rows[0]['date'] for rows in series),default=None)
     dates=[d for d in calendar['sessions'] if (first is None or d>=first) and d<=cutoff][-WINDOW:]
     if len(dates)<MIN_RETURNS+1:raise ValueError('공통 관측 구간 최소 63개 일별 수익률 필요')
-    for target in {t['code']:t for t in targets}.values():
-        rows=checked(history['histories'][target['code']]['prices'],cutoff)
+    for target,rows in zip(targets,series):
         if [p['date'] for p in rows if p['date']>=dates[0]]!=dates:
             raise ValueError(target['code']+' 누락·추가 거래일 또는 평가일 가격 대기')
     return dates

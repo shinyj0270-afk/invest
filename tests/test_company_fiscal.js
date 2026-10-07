@@ -28,7 +28,7 @@ assert.equal(E.valuation(row,{groups:[],common_financial:common},'CFS').current.
 console.log('PASS fiscal quarters: February leap year, explicit fiscal YoY/annual, identity/gap/unknown rejection, native USD units and valuation exclusion');
 // A filing date establishes only the official cells; it cannot date provider cells.
 const mixedProof=q.map(c=>({...c,available_at:null,filing_available_at:'2024-04-01',cell_provenance:{parent_net:{source:'provider',available_at:null},parent_equity:{source:'provider',available_at:null},ocf:{source:'DART',available_at:'2024-04-01'}}}));
-const historical=E.valuation({metrics:{market_cap_eok:10}},{groups:[{basis:'CFS',cadence:'quarter',columns:mixedProof}],chart:{bars:[{date:'2024-03-29',close:1000},{date:'2024-04-01',close:1000}],as_of:'2024-04-01'}}).history;
+const historical=E.valuation({metrics:{market_cap_eok:10},latest_quote:{market_cap_eok:10,price:1000,retrieved_at:'2024-04-01T10:00:00+09:00'}},{groups:[{basis:'CFS',cadence:'quarter',columns:mixedProof}],chart:{bars:[{date:'2024-03-29',close:1000},{date:'2024-04-01',close:1000}],as_of:'2024-04-01'}}).history;
 assert.equal(historical[0].pcr,null);assert.equal(historical[1].pcr,1);
 for(const p of historical){assert.equal(p.per,null);assert.equal(p.pbr,null);assert.equal(p.eps,null);assert.equal(p.bps,null);}
 const missingProof=mixedProof.map((c,i)=>i===1?{...c,cell_provenance:{...c.cell_provenance,ocf:{available_at:null}}}:c);

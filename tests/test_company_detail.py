@@ -1,4 +1,4 @@
-import copy, unittest
+import copy, json, unittest
 from investment.fixture import make_fixture
 from investment.company_detail import chart_history, build_details
 from investment.financial_table import build_table
@@ -64,6 +64,29 @@ class CompanyDetailTests(unittest.TestCase):
         value=result[self.r['code']]['groups'][0]['columns'][0]['values']['revenue']
         self.assertEqual(value,self.r['annual'][0]['revenue']/1e8)
         self.assertEqual(result[self.r['code']]['dividends'][-1]['period_end'],'2025-12-31')
+
+    def test_static_export_matches_live_detail_latest_validated_price_date(self):
+        from investment.workspace_export import export_workspace
+        from investment.market_history import benchmark_calendar
+        self.s['meta']['data_mode']='user_input';original=copy.deepcopy(self.s)
+        bars=[dict(p,final=True,venue='KRX',adjustment_basis='naver_chart_adjusted') for p in self.r['prices']]
+        bars.append(dict(bars[-1],date='2026-09-24',close=bars[-1]['close']*1.01))
+        index=[dict(p,final=True,venue='KRX',adjustment_basis='index_level') for p in self.s['benchmarks']['KOSPI']]
+        index.append(dict(index[-1],date='2026-09-24',close=index[-1]['close']*1.01))
+        benchmarks={m:dict(symbol=m,kind='index',prices=copy.deepcopy(index),source={'url':'https://example.test/synthetic'}) for m in ('KOSPI','KOSDAQ')}
+        cache=dict(universe=dict(schema_version='naver-universe-0.1',companies=[dict(self.r,eligibility='candidate')]),history=dict(histories={self.r['code']:dict(symbol=self.r['code'],kind='item',prices=bars)},benchmarks=benchmarks,calendar=benchmark_calendar(benchmarks)))
+        before=copy.deepcopy(cache)
+        html=export_workspace(self.s,market_cache=cache,live={'financial_as_of':'2026-09-25'})
+        payload=json.JSONDecoder().raw_decode(html.split('const WORKSPACE_DATA=',1)[1])[0]
+        detail=payload['company_details'][self.r['code']]
+        self.assertEqual(detail['chart']['as_of'],'2026-09-24')
+        self.assertEqual(detail['chart']['as_of'],payload['discovery']['research']['rows'][self.r['code']]['technical']['series'][-1]['date'])
+        # The live endpoint passes today's financial scope to build_details; its price cutoff is independently validated.
+        live_scope=dict(self.s,meta=dict(self.s['meta'],price_date='2026-09-25'),companies=[self.r])
+        table=build_table(self.r,live_scope,max_columns=48)
+        live_detail=build_details(live_scope,{self.r['code']:table},cache)[self.r['code']]
+        self.assertEqual(detail['chart'],live_detail['chart'])
+        self.assertEqual(detail['groups'],live_detail['groups']);self.assertEqual(self.s,original);self.assertEqual(cache,before)
 
     def test_bad_supplement_identity_and_duplicates_stay_missing(self):
         table=build_table(self.r,self.s,dict(code='other',name=self.r['name'],market=self.r['market'],periods=[]))

@@ -189,18 +189,16 @@ class DailyMarketRefresh:
             self.state.update(values)
 
     def _run(self):
+        from .company_financials import acquire_lock
         lease = None
         try:
             cfg = load_local(self.root)
             folder = cfg['data_dir']/cfg['profile']/'market-expansion'
             folder.mkdir(parents=True, exist_ok=True)
-            lease = folder/(self.kind+'-refresh.lock')
             try:
-                with lease.open('x', encoding='utf-8') as stream:
-                    stream.write(datetime.now(ZoneInfo('Asia/Seoul')).isoformat())
-            except FileExistsError:
-                lease = None
-                self._progress(dict(status='failed', message='다른 일별 가격 갱신이 진행 중이거나 이전 실행 점검이 필요합니다. 기존 자료를 유지합니다.'))
+                lease = acquire_lock(folder/(self.kind+'-refresh.lock'))
+            except ValueError:
+                self._progress(dict(status='failed', message='다른 가격 갱신이 진행 중입니다. 기존 자료를 유지합니다.'))
                 return
             checked_on=datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat()
             result = self.collector(folder, self._progress)
@@ -213,4 +211,5 @@ class DailyMarketRefresh:
             self._progress(dict(status='failed', message='가격 조회·검증 실패 · 기존 자료 유지. 연결 상태와 시장 캐시를 확인하고 다시 시도하세요.'))
         finally:
             if lease is not None:
-                lease.unlink(missing_ok=True)
+                # Keep the marker inode. The OS releases ownership on close/crash.
+                lease.close()

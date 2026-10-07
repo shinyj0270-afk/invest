@@ -126,9 +126,11 @@ class RecommendationTests(unittest.TestCase):
         for r in c['snapshot']['companies']:r.pop('common_financial')
         with self.assertRaises(ValueError):propose(c,created_on='2026-10-02')
     def test_performance_never_uses_price_before_publication_or_missing_as_zero(self):
-        r=dict(created_on='2026-10-02',targets=[dict(code='900000',name='가상',weight_pct=80)],cash_pct=20)
-        cache={'history':dict(calendar={'valid_through':'2026-10-06'},benchmarks={'KOSPI':{'prices':[{'date':d,'close':1} for d in ['2026-10-01','2026-10-05','2026-10-06']]}},histories={'900000':{'prices':[dict(date=d,close=v,final=True) for d,v in [('2026-10-01',10),('2026-10-05',100),('2026-10-06',110)]]}})}
-        value=performance(r,cache);self.assertEqual(value['entry_date'],'2026-10-05');self.assertAlmostEqual(value['return_pct'],8)
+        from tests.test_portfolio_risk import risk_fixture
+        _,cache,cutoff=risk_fixture();bars=cache['history']['histories']['900000']['prices']
+        r=dict(created_on=bars[-3]['date'],targets=[dict(code='900000',name='가상',weight_pct=80)],cash_pct=20)
+        bars[-3]['close']=10;bars[-2]['close']=100;bars[-1]['close']=110
+        value=performance(r,cache);self.assertEqual(value['entry_date'],bars[-2]['date']);self.assertAlmostEqual(value['return_pct'],8)
         cache['history']['histories']['900000']['prices'].pop();self.assertEqual(performance(r,cache)['status'],'missing')
     def test_monthly_idempotency_and_immutable_prior_version(self):
         with tempfile.TemporaryDirectory() as tmp,patch('investment.recommendations.load_local',return_value={'data_dir':Path(tmp),'profile':'test'}):

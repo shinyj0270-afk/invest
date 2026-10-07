@@ -1,3 +1,21 @@
+# 회사 운영 서버 재시작 확인 · 2026-10-08
+
+- 사용자 재시작 중 ERR_CONNECTION_REFUSED 보고. 8767 리스너 및 기존 서버/별도 수집 프로세스 부재를 조회한 뒤 기존 회사 .venv tools/open_dashboard.py --no-browser로 서버 시작했다. 이전 실행의 강제 종료·실제 잠금 파일 삭제는 하지 않았다.
+- 실제 검증: 새 저장 소스와 실행 build 일치, health version2/restart_required=false. 준비화면 HTTP200/0.05초, 전체 dashboard HTTP200/22,932,841bytes/35.77초(각 단일 관측). 코드 수정본의 제공까지 확인했고 실제 사용자 브라우저 렌더와 자동 신규 수집 완료는 별도 미확인이다.
+- 이번에는 실행과 인계 증거만 갱신. 추가 코드/계산 변경 없음, commit/push 미실행. 이전 재점검 기록의 재시작 미실행은 당시 상태이며 최신 다음 작업은 CURRENT_HANDOFF.md를 따른다.
+
+---
+
+# 통합 투자 대시보드 재점검 · 2026-10-08
+
+- 회사 work/Primary main fe36baa4ae36b31c23152c8b1cbf495f46b27ff4 clean에서 시작. 사용자 지정 Astra High 전체 리뷰 → Sol High 수정·회귀 → Astra 최종검토를 실제 분리 실행. 기존 Orca 미완료 변경은 보존하고 최신 공유302개 파일의 격리 사본에서 수정했다.
+- 확정 P1 없음/P2 네 건 재현·수정: 상세 배수/주당값의 시총·제공가격·완료가격/조회일 불일치, 추천 성과 가격 검증 누락, 비정상 종료 후 잠금 영구 차단, 정적 상세/발굴 차트 기준일 불일치. 인포맥스 검토값 우선과 현재 관측/역사 공개일 구분 유지. 상세 계약은 docs/DASHBOARD_TEN_UPGRADES.md.
+- 이번 초기 기준본과 최종 확정본을 각각 새로 검사해 공유302개 경고0·격리portable21명령·실자료 없는 AppTest·합성UI9개 PASS. Sol 최종 관련 Python79개·Node3개 PASS. Astra 수정12파일 검토 및 원결함4개 별도 재현·마지막 가치평가 경계검사 재실행 후 APPROVED. 실제 적용/전송 상태는 CURRENT_HANDOFF.md.
+- Astra 실자료 읽기 전용 대조:10/02 참고가격2454개·완료10/06에서 새 추정 주식수 모두 보류, 원스냅샷9/23 불변·정적 상세/발굴 모두10/06. 시장 원자료3파일 SHA 일치. 증거 Orca validation/current/dashboard-review-20261008/는 공유 제외.
+- 기존 비12월/USD TTM·환율·공식 달력/조정 기준·home 재무 수집 최종 완료를 해결했다고 보고하지 않는다. 운영 collector·잠금 삭제·서버 재시작·DB·보유·인증·예약·Wiki·commit/push 없음. 운영 전환에는 옛 방식 수집 종료 확인이 필요하다.
+
+---
+
 # home Secondary 최초 시장 수집·실행 확인 · 2026-10-07 23:08 KST
 
 - 기존 home main 작업본을 be3ff965cb61cf38daac9e34dec0d27d02965e28에서 21130f411581694bfbf4640f88ff3c69356c31ce로 7개 commit fast-forward 수신. clean·진행 Git 작업 없음·HEAD/origin/main 일치 확인. 별도 Orca 작업본은 기존 branch와 설정을 보존.

@@ -165,7 +165,11 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     financial_cutoff=(live or {}).get('financial_as_of') or (discovery or {}).get('snapshot',{}).get('meta',{}).get('price_date') or analysis['meta']['price_date']
     financial_scope=dict(analysis,meta=dict(analysis['meta'],price_date=financial_cutoff))
     financial_tables = {r['code']: build_table(r, financial_scope, (financials or {}).get(r['code']),max_columns=48) for r in analysis['companies']}
-    company_details = {} if (live or {}).get('lazy_company_views') else build_details(analysis, financial_tables, market_cache)
+    # Keep the reviewed snapshot intact; charts follow the validated discovery price date.
+    # Financial availability may use today's separate cutoff even before today's close.
+    price_cutoff=(discovery or {}).get('snapshot',{}).get('meta',{}).get('price_date') or analysis['meta']['price_date']
+    detail_scope=dict(analysis,meta=dict(analysis['meta'],price_date=price_cutoff))
+    company_details = {} if (live or {}).get('lazy_company_views') else build_details(detail_scope, financial_tables, market_cache)
     if discovery:
         for row in discovery['snapshot']['companies']:
             row['collection_health']=(financials or {}).get(row['code'],{}).get('collection_health',{})
@@ -187,7 +191,8 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
             scope=dict(meta={**analysis['meta'],'price_date':financial_cutoff},companies=extra)
             extra_tables={r['code']:build_table(r,scope,financials[r['code']],max_columns=48) for r in extra}
             financial_tables.update(extra_tables)
-            company_details.update(build_details(scope,extra_tables,market_cache))
+            chart_scope=dict(scope,meta=dict(scope['meta'],price_date=price_cutoff))
+            company_details.update(build_details(chart_scope,extra_tables,market_cache))
             for r in extra:company_details[r['code']]['common_financial']=r.get('common_financial')
     market_insights=enrich_market(discovery,market_cache)
     # Every analysis view uses the same date-checked metrics; keep original payload intact.

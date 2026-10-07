@@ -139,22 +139,34 @@ def propose(context, *, created_on, kind='monthly', reason='', previous=None):
         input_digest=digest(dict(as_of=as_of,targets=picks)))
 
 def performance(record,cache):
-    histories=(cache or {}).get('history',{}).get('histories',{});cutoff=(cache or {}).get('history',{}).get('calendar',{}).get('valid_through')
-    benchmarks=(cache or {}).get('history',{}).get('benchmarks',{})
-    dates=[p['date'] for p in benchmarks.get('KOSPI',{}).get('prices',[]) if p['date']>record['created_on'] and p['date']<=str(cutoff)]
-    if not dates:return dict(status='pending',reason='작성 후 첫 완료 거래일 종가부터 모델 성과 측정',as_of=cutoff)
-    entry=min(dates);total=0;parts=[]
-    for target in record['targets']:
-        ps={p['date']:p['close'] for p in histories.get(target['code'],{}).get('prices',[]) if p.get('final') is True}
-        if not all(num(ps.get(d)) and ps[d]>0 for d in (entry,cutoff)):return dict(status='missing',reason='진입일 또는 평가일 종가 미확보; 누락 종목을 0수익으로 대체하지 않음',as_of=cutoff)
-        value=(ps[cutoff]/ps[entry]-1)*100;total+=value*target['weight_pct']/100
-        parts.append(dict(code=target['code'],name=target['name'],return_pct=value,contribution_pct=value*target['weight_pct']/100))
-    benchmark_returns={}
-    for market,record_bm in benchmarks.items():
-        bps={p['date']:p['close'] for p in record_bm.get('prices',[])}
-        if all(num(bps.get(d)) and bps[d]>0 for d in (entry,cutoff)):benchmark_returns[market]=(bps[cutoff]/bps[entry]-1)*100
-    return dict(status='ready',entry_date=entry,as_of=cutoff,return_pct=total,parts=parts,benchmark_returns=benchmark_returns,
-        definition='각 추천 버전 고정 비중의 가상 가격 성과. 작성 후 첫 거래일 종가 진입, 현금수익0·배당·수수료·세금 제외. 실제 보유 수익·버전 간 누적 실현성과 아님')
+    from .portfolio_risk import day,numeric,verified_price_inputs
+    history=(cache or {}).get('history',{});cutoff=history.get('calendar',{}).get('valid_through')
+    try:
+        targets=record['targets'];weights=[t['weight_pct'] for t in targets];cash=record['cash_pct']
+        if not day(record['created_on']) or len({t['code'] for t in targets})!=len(targets) or not all(numeric(w) and 0<w<=100 for w in weights) or not numeric(cash) or not 0<=cash<=100 or abs(sum(weights)+cash-100)>1e-6:
+            raise ValueError('추천 작성일·종목·비중 확인 필요')
+        calendar,series,_=verified_price_inputs(targets,cache,cutoff)
+        dates=[d for d in calendar['sessions'] if record['created_on']<d<=cutoff]
+        if not dates:return dict(status='pending',reason='작성 후 첫 완료 거래일 종가부터 모델 성과 측정',as_of=cutoff)
+        entry=dates[0];total=0;parts=[]
+        for target,rows in zip(targets,series):
+            rows=[p for p in rows if p['date']>=entry]
+            if [p['date'] for p in rows]!=dates:
+                return dict(status='missing',reason=target['code']+' 진입일·평가일 또는 중간 거래일 종가 미확보; 누락 종목을 0수익으로 대체하지 않음',as_of=cutoff)
+            value=(rows[-1]['close']/rows[0]['close']-1)*100;contribution=value*target['weight_pct']/100
+            if not numeric(value) or not numeric(contribution):raise ValueError('가격 수익률 계산 범위 확인 필요')
+            total+=contribution;parts.append(dict(code=target['code'],name=target['name'],return_pct=value,contribution_pct=contribution))
+        if not numeric(total):raise ValueError('가격 수익률 계산 범위 확인 필요')
+        benchmark_returns={}
+        for market in ('KOSPI','KOSDAQ'):
+            bps={p['date']:p['close'] for p in history['benchmarks'][market]['prices']}
+            value=(bps[cutoff]/bps[entry]-1)*100
+            if not numeric(value):raise ValueError('가격지수 수익률 계산 범위 확인 필요')
+            benchmark_returns[market]=value
+        return dict(status='ready',entry_date=entry,as_of=cutoff,return_pct=total,parts=parts,benchmark_returns=benchmark_returns,
+            definition='각 추천 버전 고정 비중의 가상 가격 성과. 작성 후 첫 거래일 종가 진입, 현금수익0·배당·수수료·세금 제외. 실제 보유 수익·버전 간 누적 실현성과 아님')
+    except (ValueError,TypeError,KeyError,OverflowError) as exc:
+        return dict(status='pending',reason=str(exc),as_of=cutoff)
 
 def current_risk_views(record, previous, cache, cutoff, today):
     """Re-evaluate saved compositions without changing their original qualification."""

@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 import tempfile
 import threading
+import subprocess
+import sys
 import unittest
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
@@ -11,6 +13,7 @@ from zoneinfo import ZoneInfo
 from investment.fixture import make_fixture
 from investment.market_refresh import collect_daily, collect_quotes, DailyMarketRefresh
 from investment.market_history import completed_cutoff
+from investment.company_financials import acquire_lock
 
 
 class DailyRefreshTests(unittest.TestCase):
@@ -93,7 +96,50 @@ class DailyRefreshTests(unittest.TestCase):
                 if service.poll()['status']!='running':break
                 done.wait(.01)
             self.assertEqual(service.poll()['status'],'complete')
-        self.assertFalse((self.folder/'work/market-expansion/daily-refresh.lock').exists())
+        marker=self.folder/'work/market-expansion/daily-refresh.lock'
+        self.assertTrue(marker.exists())
+        with acquire_lock(marker):pass
+
+    def test_unowned_marker_survives_and_allows_restart_retry(self):
+        folder=self.folder/'work/market-expansion';folder.mkdir(parents=True)
+        marker=folder/'daily-refresh.lock';marker.write_text('2000-01-01T00:00:00+09:00',encoding='utf-8')
+        calls=[]
+        def collect(*args):calls.append(1);return dict(status='complete',failed=0)
+        with patch('investment.market_refresh.load_local',return_value=dict(data_dir=self.folder,profile='work')):
+            for _ in range(2):
+                service=DailyMarketRefresh('.',collector=collect);service._run();self.assertEqual(service.poll()['status'],'complete')
+        self.assertEqual(len(calls),2);self.assertEqual(marker.read_text(encoding='utf-8'),'2000-01-01T00:00:00+09:00')
+
+    def test_cross_process_owner_blocks_then_exit_releases_same_marker(self):
+        folder=self.folder/'work/market-expansion';folder.mkdir(parents=True)
+        marker=folder/'daily-refresh.lock';calls=[]
+        def collect(*args):calls.append(1);return dict(status='complete',failed=0)
+        script="from pathlib import Path; import sys; from investment.company_financials import acquire_lock; lease=acquire_lock(Path(sys.argv[1])); print('locked',flush=True); sys.stdin.readline(); lease.close()"
+        for forced in (False,True):
+            with self.subTest(forced=forced):
+                owner=subprocess.Popen([sys.executable,'-B','-c',script,str(marker)],cwd=Path(__file__).resolve().parents[1],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+                try:
+                    self.assertEqual(owner.stdout.readline().strip(),'locked')
+                    previous=len(calls)
+                    with patch('investment.market_refresh.load_local',return_value=dict(data_dir=self.folder,profile='work')):
+                        blocked=DailyMarketRefresh('.',collector=collect);blocked._run()
+                        self.assertEqual(blocked.poll()['status'],'failed');self.assertEqual(len(calls),previous);self.assertTrue(marker.exists())
+                        if forced:owner.terminate();owner.communicate(timeout=5)
+                        else:owner.communicate(input='release\n',timeout=5)
+                        retry=DailyMarketRefresh('.',collector=collect);retry._run()
+                        self.assertEqual(retry.poll()['status'],'complete');self.assertEqual(len(calls),previous+1)
+                    self.assertTrue(marker.exists())
+                finally:
+                    if owner.poll() is None:owner.kill();owner.communicate(timeout=5)
+
+    def test_collection_error_preserves_cache_and_releases_lease(self):
+        folder=self.folder/'work/market-expansion';folder.mkdir(parents=True)
+        cache=folder/'histories.json';cache.write_bytes(self.before)
+        def fail(*args):raise OSError('synthetic collection failure')
+        with patch('investment.market_refresh.load_local',return_value=dict(data_dir=self.folder,profile='work')):
+            service=DailyMarketRefresh('.',collector=fail);service._run()
+            self.assertEqual(service.poll()['status'],'failed');self.assertEqual(cache.read_bytes(),self.before)
+            with acquire_lock(folder/'daily-refresh.lock'):pass
     def test_auto_refresh_reuses_today_success_after_restart(self):
         folder=self.folder/'work/market-expansion';folder.mkdir(parents=True)
         day=datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat()

@@ -3,7 +3,7 @@ import copy,json,math,unittest
 from datetime import date,timedelta
 from unittest.mock import patch
 from investment.portfolio_risk import portfolio_risk,time_series
-from investment.recommendations import RecommendationBook,propose
+from investment.recommendations import RecommendationBook,propose,performance
 from tests.test_dashboard_upgrade import recommendation_context
 
 
@@ -25,6 +25,43 @@ def risk_fixture():
     cache={'history':dict(benchmarks=indexes,histories=histories,calendar={'valid_through':days[-1]})}
     targets=[dict(code=code,name='가상 '+code,market='KOSPI',industry='가상 산업',weight_pct=40) for code in ('900000','900001')]
     return targets,cache,days[-1]
+
+
+class PerformancePriceContractTests(unittest.TestCase):
+    def setUp(self):
+        self.targets,self.cache,self.cutoff=risk_fixture()
+        self.record=dict(created_on='2025-01-01',targets=self.targets,cash_pct=20)
+
+    def test_fixed_initial_weights_use_verified_first_following_session(self):
+        before=copy.deepcopy(self.cache);r=performance(self.record,self.cache)
+        self.assertEqual(r['status'],'ready');self.assertEqual(r['entry_date'],'2025-01-02')
+        expected=sum((self.cache['history']['histories'][t['code']]['prices'][-1]['close']/self.cache['history']['histories'][t['code']]['prices'][1]['close']-1)*t['weight_pct'] for t in self.targets)
+        self.assertAlmostEqual(r['return_pct'],expected);self.assertEqual(r['benchmark_returns'],dict(KOSPI=0,KOSDAQ=0));self.assertEqual(self.cache,before)
+
+    def test_unverified_price_identity_venue_basis_and_calendar_are_pending(self):
+        for field,value in [('symbol','999999'),('kind','index'),('venue','NXT'),('adjustment_basis','unverified'),('final',False),('close',float('nan')),('close',0)]:
+            with self.subTest(field=field,value=value):
+                cache=copy.deepcopy(self.cache);series=cache['history']['histories']['900000']
+                (series if field in ('symbol','kind') else series['prices'][-1])[field]=value
+                result=performance(self.record,cache);self.assertEqual(result['status'],'pending');self.assertNotIn('return_pct',result)
+        for market in ('KOSPI','KOSDAQ'):
+            cache=copy.deepcopy(self.cache);cache['history']['benchmarks'][market]['prices'][-1]['final']=False
+            self.assertEqual(performance(self.record,cache)['status'],'pending')
+        cache=copy.deepcopy(self.cache);cache['history']['histories']['900001']['prices']=[dict(p,adjustment_basis='split_adjusted') for p in cache['history']['histories']['900001']['prices']]
+        self.assertEqual(performance(self.record,cache)['status'],'pending')
+
+    def test_missing_intermediate_entry_or_last_session_never_becomes_zero(self):
+        for index in (1,-10,-1):
+            cache=copy.deepcopy(self.cache);del cache['history']['histories']['900000']['prices'][index]
+            result=performance(self.record,cache);self.assertEqual(result['status'],'missing');self.assertNotIn('return_pct',result)
+        cache=copy.deepcopy(self.cache);cache['history']['histories']['900000']['prices'].append(copy.deepcopy(cache['history']['histories']['900000']['prices'][-1]))
+        self.assertEqual(performance(self.record,cache)['status'],'pending')
+
+    def test_no_minimum_risk_window_or_future_price_leakage(self):
+        self.record['created_on']=self.cache['history']['histories']['900000']['prices'][-3]['date']
+        before=performance(self.record,self.cache);self.assertEqual(before['status'],'ready')
+        for series in self.cache['history']['histories'].values():series['prices'].append(dict(series['prices'][-1],date='2030-01-01',close=1e9,final=False))
+        self.assertEqual(performance(self.record,self.cache),before)
 
 
 class PortfolioRiskTests(unittest.TestCase):

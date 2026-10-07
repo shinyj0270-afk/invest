@@ -50,22 +50,29 @@ const CompanyDetailEngine=(()=>{
   });}
   function relative(bars,benchmark){const bm=new Map((benchmark||[]).map(b=>[b.date,b.close])),first=bars.find(p=>num(bm.get(p.date))&&bm.get(p.date)>0);return bars.map(p=>{const value=ratio(p.close,bm.get(p.date));return {date:p.date,rs:first&&num(value)?ratio(value,ratio(first.close,bm.get(first.date)),100):null};});}
   function eventList(items,kind){return (items||[]).filter(e=>kind==='all'||e.kind===kind).sort((a,b)=>b.published_on.localeCompare(a.published_on));}
+  function estimatedShares(row,priceDate,currency='KRW'){
+    const quote=row.latest_quote||{},sharesDate=typeof quote.retrieved_at==='string'?quote.retrieved_at.slice(0,10):null,observed=day(sharesDate),completed=day(priceDate),age=observed&&completed?(observed-completed)/86400000:null;
+    // Same 0..3 calendar-day quote/close contract as financial_metrics.common_metrics.
+    const valid=currency==='KRW'&&num(quote.market_cap_eok)&&quote.market_cap_eok>0&&num(quote.price)&&quote.price>0&&age!==null&&age>=0&&age<=3;
+    return {shares:valid?ratio(quote.market_cap_eok*1e8,quote.price):null,shares_date:sharesDate,quote_price:quote.price,market_cap_eok:quote.market_cap_eok};
+  }
   function valuation(row,model,basis='CFS'){
-    const ttm=periods(model,basis,'ttm'),qs=periods(model,basis,'quarter'),last=ttm.at(-1),v=last?.values||{},price=model?.chart?.bars.at(-1)?.close;
-    const shares=ratio(row.metrics?.market_cap_eok*1e8,price),equity=x=>basis==='OFS'?x.equity:x.parent_equity,
+    const ttm=periods(model,basis,'ttm'),qs=periods(model,basis,'quarter'),last=ttm.at(-1),common=model?.common_financial||row.common_financial,bars=model?.chart?.bars||[],cutoff=model?.chart?.as_of||bars.at(-1)?.date,price=bars.at(-1)?.close;
+    const estimate=estimatedShares(row,cutoff,common?.basis===basis?common.currency||'KRW':last?.currency||'KRW'),shares=num(price)&&price>0&&bars.at(-1)?.date===cutoff?estimate.shares:null,equity=x=>basis==='OFS'?x.equity:x.parent_equity,
       profit=x=>basis==='OFS'?x.net_income:x.parent_net;
-    const eps=ratio(profit(v)*1e8,shares),bps=ratio(equity(v)*1e8,shares),cps=ratio(v.ocf*1e8,shares);
-    const current={per:ratio(price,eps),pbr:ratio(price,bps),pcr:ratio(price,cps),eps,bps,cps,price,shares,date:model?.chart?.as_of,period:last?.period_end};
-    const common=model?.common_financial||row.common_financial;
-    if(common?.basis===basis){const compatible=!common.currency||common.currency==='KRW';Object.assign(current,{per:compatible?common.metrics.per:null,pbr:compatible?common.metrics.pbr:null,eps:compatible?ratio(price,common.metrics.per):null,bps:compatible?ratio(price,common.metrics.pbr):null,period:common.period});}
-    const history=(model?.chart?.bars||[]).map(p=>{
+    const history=bars.map(p=>{
       const eligible=key=>ttm.filter(c=>c.period_end<=p.date&&publication(c,key)&&publication(c,key)<=p.date&&num(c.values[key])).at(-1);
       const pk=basis==='OFS'?'net_income':'parent_net',bk=basis==='OFS'?'equity':'parent_equity',pc=eligible(pk),bc=eligible(bk),cc=eligible('ocf');
       const book=ratio(bc?.values[bk]*1e8,shares),earn=ratio(pc?.values[pk]*1e8,shares),cash=ratio(cc?.values.ocf*1e8,shares);
       const available=[pc&&publication(pc,pk),bc&&publication(bc,bk),cc&&publication(cc,'ocf')].filter(Boolean);
       return {date:p.date,close:p.close,period:pc?.period_end||bc?.period_end||cc?.period_end,available_at:available.sort().at(-1),per_period:pc?.period_end,pbr_period:bc?.period_end,pcr_period:cc?.period_end,per:ratio(p.close,earn),pbr:ratio(p.close,book),pcr:ratio(p.close,cash),eps:earn,bps:book,cps:cash};
     });
-    const detail=ttm.map(c=>{const close=(model?.chart?.bars||[]).filter(p=>p.date<=c.period_end).at(-1)?.close,cv=c.values,cutoff=model?.chart?.as_of||model?.chart?.bars.at(-1)?.date,known=key=>publication(c,key)&&day(cutoff)&&publication(c,key)<=cutoff,earn=known(basis==='OFS'?'net_income':'parent_net')?ratio(profit(cv)*1e8,shares):null,book=known(basis==='OFS'?'equity':'parent_equity')?ratio(equity(cv)*1e8,shares):null;return {...c,values:{...cv,eps:earn,bps:book,close,per:ratio(close,earn),pbr:ratio(close,book)},provisional:true};});
+    // Current observation uses the latest verified table; historical reproduction
+    // separately requires every dependency's publication date on each chart day.
+    const values=last?.values||{},eps=ratio(profit(values)*1e8,shares),bps=ratio(equity(values)*1e8,shares),cps=ratio(values.ocf*1e8,shares);
+    const current={per:ratio(price,eps),pbr:ratio(price,bps),pcr:ratio(price,cps),eps,bps,cps,price,shares,date:cutoff,period:last?.period_end,available_at:last?.available_at,shares_date:estimate.shares_date,reviewed_values:[]};
+    if(common?.basis===basis){const compatible=!common.currency||common.currency==='KRW';for(const key of ['per','pbr']){const d=common.metric_details?.[key],reviewed=d?.status==='reviewed',sameDate=!d?.price_date||d.price_date===cutoff;if(compatible&&sameDate&&(num(shares)||reviewed)){current[key]=common.metrics?.[key]??null;if(reviewed&&num(current[key]))current.reviewed_values.push(key);}}}
+    const detail=ttm.map(c=>{const close=bars.filter(p=>p.date<=c.period_end).at(-1)?.close,cv=c.values,known=key=>publication(c,key)&&day(cutoff)&&publication(c,key)<=cutoff,earn=known(basis==='OFS'?'net_income':'parent_net')?ratio(profit(cv)*1e8,shares):null,book=known(basis==='OFS'?'equity':'parent_equity')?ratio(equity(cv)*1e8,shares):null,cash=known('ocf')?ratio(cv.ocf*1e8,shares):null;return {...c,values:{...cv,eps:earn,bps:book,cps:cash,close,per:ratio(close,earn),pbr:ratio(close,book),pcr:ratio(close,cash)},provisional:true};});
     return {current,history,detail,ttm,quarters:qs};
   }
   function quantile(values,p){const sorted=values.filter(num).sort((a,b)=>a-b);if(!sorted.length)return null;const pos=(sorted.length-1)*p,i=Math.floor(pos);return sorted[i]+(sorted[Math.min(i+1,sorted.length-1)]-sorted[i])*(pos-i);}
@@ -98,6 +105,6 @@ const CompanyDetailEngine=(()=>{
       ['borrowings','총차입금',v.total_borrowings,'억원',latest?.cell_notes?.total_borrowings||latest?.period_end]
     ];
   }
-  return {num,ratio,consecutive,priorYear,periods,aggregate,indicators,relative,eventList,valuation,quantile,distribution,rim,decomposition,summary};
+  return {num,ratio,consecutive,priorYear,periods,aggregate,indicators,relative,eventList,estimatedShares,valuation,quantile,distribution,rim,decomposition,summary};
 })();
 if(typeof module!=='undefined')module.exports=CompanyDetailEngine;
