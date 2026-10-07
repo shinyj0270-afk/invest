@@ -18,7 +18,7 @@ Pending:
 - 한화머시너리앤서비스홀딩스·글로벌테크놀로지·빅웨이브로보틱스·스카이랩스·와이즈플래닛컴퍼니·네오사피엔스: 현재 범위 정기공시 조회 빈 결과. 실제 비정기/증권신고서 본체·첨부·발행조건확정과 해당 기업 재무 범위 확인 필요.
 - 아남전자 USD: 원통화/환율/시총 대조 계약 설계 대기. 채비 과거4개 기간 등 기존기업 일부 기간·계정 미확보 유지.
 - 가격084180 공통일 관측, 가격 시장/세션/권리변동·공식 보통주식수, 추천 성과 누적은 이번 범위 밖으로 유지.
-- 마감 공유 코드/문서 commit/push verification pending. home 수신/실행 미확인.
+- home의 이번 구현 commit 수신/실행 미확인. orca 검토 사본에는 같은 세션 변경이 기존 branch의 미커밋 변경으로 보존되어 있다.
 
 Next task: 통합 대시보드 리뷰 P2 세 건 수정
 Recommended next agent: Codex
@@ -37,8 +37,8 @@ Escalation condition:
 - 결산월 변경·단축 회계기간·다중 통화 도입은 High 설계/검토 후 구현. 원표 근거가 없는 환율·기간·귀속은 추정하지 않는다.
 
 Branch: main (기존 회사 실자료 작업본); shinyj0270-afk/invest (orca 구현·검토 사본)
-Commit: 6d1a6439bae561040776a59361e431d003835abd (이번 작업 시작 기준 SHA; 새 구현 commit 없음)
-Remote status: origin/main = 시작 SHA(START fetch 확인). CLOSE commit/push verification pending; 원격 성공 선기록 없음.
+Commit: df8e266e2ccb7ffb40a75ae8aaf55719f8de7fc6 (이미 생성·전송한 재무 구현/리뷰 인계 commit; 시작 기준6d1a6439bae561040776a59361e431d003835abd)
+Remote status: refs/heads/main의 df8e266e2ccb7ffb40a75ae8aaf55719f8de7fc6 pushed (verified), 2026-10-07 KST CLOSE에서 HEAD = origin/main = 실제 remote main 확인. 이 증거만 기록하는 후속 문서 commit 자체의 전송은 최종 보고와 다음 START의 실제 Git 조회로 검증한다.
 
 Notes:
 - 이번 단위검사78개 통과. 공유258개 경고0, 격리 portable15명령/실자료 없는 화면 검사 통과.
