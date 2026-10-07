@@ -27,8 +27,8 @@ Recommended model: Sol High 중심, 필요한 핵심 구간 Astra High 검토 (�
 Recommended reasoning: High
 Escalation condition: 동시 쓰기·예상 밖 변경·divergence·실행 중 잠금·PC 경로 결합·자료 식별/공개일/통화/회계기간 근거 부족 시 해당 작업을 보존하고 중단.
 Branch: main
-Commit: 21130f411581694bfbf4640f88ff3c69356c31ce (이번 home 수신·실행 및 CLOSE 시작 기준)
-Remote status: origin/main; CLOSE 시작 SHA 21130f411581694bfbf4640f88ff3c69356c31ce. 앞선 commit은 Git 작성자 미설정으로 실패했으며, 사용자 요청에 따라 회사 전송 최근8개 commit의 동일 작성자 bob <shinyj0270-afk@users.noreply.github.com>를 확인하여 저장소 로컬 설정에 적용. 마감 문서 commit/push 재개, verification pending. 실제 전송 결과는 최종 보고와 다음 START의 Git 조회로 확인.
+Commit: 038506e2c9188c779c93cf3fa6a2779ee575808a (home 최초 수집·실행 확인 마감 문서 commit; 원격 전송 검증됨)
+Remote status: origin/main; pushed (verified). 2026-10-07 23:20 KST에 HEAD = origin/main = 실제 remote main = 038506e2c9188c779c93cf3fa6a2779ee575808a 확인. Git 작성자 미설정은 사용자 요청에 따라 회사 전송 최근8개 commit의 동일 작성자 bob <shinyj0270-afk@users.noreply.github.com>를 저장소 로컬 설정에 적용하여 해소. 이 증거만 갱신하는 후속 기록 commit 자체의 전송은 최종 보고 및 다음 START의 실제 Git 조회로 검증한다.
 
 Notes:
 - 로컬 검증 근거 validation/current/home-close-20261007/verification.json. 공개 원문/시장 캐시/자동 재무 저장/DB/개인입력/인증/PC설정은 전송하지 않음. 이번 공유 변경은 PROJECT_STATE.md/CURRENT_HANDOFF.md만.
