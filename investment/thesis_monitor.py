@@ -155,6 +155,9 @@ def validate_thesis(entry):
     kind = entry.get('type')
     if kind not in TYPES:
         raise ValueError('종목 유형 확인 필요')
+    status = entry.get('status', 'draft')
+    if status not in ('draft', 'confirmed') or (status == 'confirmed' and not entry.get('confirmed_on')):
+        raise ValueError('초안·확정 상태와 확정일 확인 필요')
     scenarios, conditions = entry.get('scenarios'), entry.get('invalidation')
     if not isinstance(scenarios, list) or len(scenarios) != 3:
         raise ValueError('실패 시나리오 3개 필요')
@@ -227,7 +230,7 @@ def evaluate(entry, table, technical, trend=None, market_regime=None):
     action = ('재검토 권고' if any(r['status'] == TRIGGERED for r in counted)
               else '자료 부족' if counted and all(r['status'] == INSUFFICIENT for r in counted) else '유지 점검')
     return dict(action=action, type=kind, type_label=TYPES[kind], conditions=results, scenarios=scenarios, observation=o,
-                status=entry.get('status', 'draft'), drafted_by=entry.get('drafted_by'),
+                status=entry.get('status', 'draft'), confirmed_on=entry.get('confirmed_on'), drafted_by=entry.get('drafted_by'),
                 note='저장된 재무·완료 종가로 조건만 점검합니다. 판단을 자동으로 바꾸지 않습니다. 수동 조건은 직접 확인하세요. 시장 환경은 참고용입니다.')
 
 

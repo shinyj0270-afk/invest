@@ -107,10 +107,12 @@
           ]
         }
       ],
-      "status": "draft",
+      "status": "confirmed",
       "drafted_by": "Claude 초안 2026-10-08 · 투자대가 가이드라인 채택안 기준 · 기존 검토 사실·반대 근거·출처 유지 · 사용자 확인 대기",
       "type": "cyclical",
-      "type_note": "Lynch 6유형 분류는 Claude 제안(확인 대기). 유형별 기준값은 config/guideline_thresholds.json."
+      "type_note": "Lynch 6유형 분류는 사용자 확인(2026-10-08). 유형별 기준값은 config/guideline_thresholds.json.",
+      "confirmed_on": "2026-10-08",
+      "confirmed_note": "사용자 확인 2026-10-08. 기준값은 활용하며 조정 예정(config/guideline_thresholds.json)."
     },
     "005930": {
       "name": "삼성전자",
@@ -216,10 +218,12 @@
           ]
         }
       ],
-      "status": "draft",
+      "status": "confirmed",
       "drafted_by": "Claude 초안 2026-10-08 · 투자대가 가이드라인 채택안 기준 · 기존 검토 사실·반대 근거·출처 유지 · 사용자 확인 대기",
       "type": "cyclical",
-      "type_note": "Lynch 6유형 분류는 Claude 제안(확인 대기). 유형별 기준값은 config/guideline_thresholds.json."
+      "type_note": "Lynch 6유형 분류는 사용자 확인(2026-10-08). 유형별 기준값은 config/guideline_thresholds.json.",
+      "confirmed_on": "2026-10-08",
+      "confirmed_note": "사용자 확인 2026-10-08. 기준값은 활용하며 조정 예정(config/guideline_thresholds.json)."
     },
     "020120": {
       "name": "키다리스튜디오",
@@ -323,10 +327,12 @@
           ]
         }
       ],
-      "status": "draft",
+      "status": "confirmed",
       "drafted_by": "Claude 초안 2026-10-08 · 투자대가 가이드라인 채택안 기준 · 기존 검토 사실·반대 근거·출처 유지 · 사용자 확인 대기",
       "type": "fast",
-      "type_note": "Lynch 6유형 분류는 Claude 제안(확인 대기). 유형별 기준값은 config/guideline_thresholds.json."
+      "type_note": "Lynch 6유형 분류는 사용자 확인(2026-10-08). 유형별 기준값은 config/guideline_thresholds.json.",
+      "confirmed_on": "2026-10-08",
+      "confirmed_note": "사용자 확인 2026-10-08. 기준값은 활용하며 조정 예정(config/guideline_thresholds.json)."
     },
     "443060": {
       "name": "HD현대마린솔루션",
@@ -429,10 +435,12 @@
           ]
         }
       ],
-      "status": "draft",
+      "status": "confirmed",
       "drafted_by": "Claude 초안 2026-10-08 · 투자대가 가이드라인 채택안 기준 · 기존 검토 사실·반대 근거·출처 유지 · 사용자 확인 대기",
       "type": "stalwart",
-      "type_note": "Lynch 6유형 분류는 Claude 제안(확인 대기). 유형별 기준값은 config/guideline_thresholds.json."
+      "type_note": "Lynch 6유형 분류는 사용자 확인(2026-10-08). 유형별 기준값은 config/guideline_thresholds.json.",
+      "confirmed_on": "2026-10-08",
+      "confirmed_note": "사용자 확인 2026-10-08. 기준값은 활용하며 조정 예정(config/guideline_thresholds.json)."
     },
     "228850": {
       "name": "레이언스",
@@ -538,10 +546,12 @@
           ]
         }
       ],
-      "status": "draft",
+      "status": "confirmed",
       "drafted_by": "Claude 초안 2026-10-08 · 투자대가 가이드라인 채택안 기준 · 기존 검토 사실·반대 근거·출처 유지 · 사용자 확인 대기",
       "type": "cyclical",
-      "type_note": "Lynch 6유형 분류는 Claude 제안(확인 대기). 유형별 기준값은 config/guideline_thresholds.json."
+      "type_note": "Lynch 6유형 분류는 사용자 확인(2026-10-08). 유형별 기준값은 config/guideline_thresholds.json.",
+      "confirmed_on": "2026-10-08",
+      "confirmed_note": "사용자 확인 2026-10-08. 기준값은 활용하며 조정 예정(config/guideline_thresholds.json)."
     }
   }
 }

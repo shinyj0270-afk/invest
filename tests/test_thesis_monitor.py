@@ -38,7 +38,7 @@ def trend(fail=(), unknown=(), phase='추세·횡보 관찰', rs=82.0, blocked=F
     return dict(ready=True, rs=rs, analysis=dict(checks=checks, phase=phase, blocked=blocked, volume_multiple=1.2, contraction=False))
 
 
-def entry(kind='fast', conditions=None, scenarios=None):
+def entry(kind='fast', conditions=None, scenarios=None):  # draft entries need no confirmation date
     conditions = conditions or [
         dict(id='ma', kind='auto', metric='trend_template_failed'),
         dict(id='rev', kind='auto', metric='revenue_yoy_pct'),
@@ -233,6 +233,8 @@ class ValidationTests(unittest.TestCase):
     def test_rejects_bad_structures(self):
         e = entry()
         bad = [
+            dict(e, status='confirmed'),
+            dict(e, status='maybe'),
             dict(e, type='unknown'),
             {k: v for k, v in e.items() if k != 'type'},
             dict(e, type='slow'),
@@ -263,7 +265,8 @@ class ProjectFileTests(unittest.TestCase):
             for key in ('fact', 'thesis', 'counter', 'keep', 'sources', 'type'):
                 self.assertIn(key, e, code)
             validate_thesis(e)
-            self.assertEqual(e['status'], 'draft', 'AI drafts stay unconfirmed until the user reviews them')
+            self.assertEqual(e['status'], 'confirmed', 'user confirmed the drafts on 2026-10-08')
+            self.assertEqual(e['confirmed_on'], '2026-10-08')
             used = {c['metric'] for c in e['invalidation'] if c['kind'] == 'auto'}
             self.assertTrue(used <= set(METRICS), code)
             self.assertTrue(any(c['kind'] == 'manual' for c in e['invalidation']), 'business-specific conditions stay manual')

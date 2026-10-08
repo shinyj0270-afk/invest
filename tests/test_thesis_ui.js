@@ -13,6 +13,8 @@ const v={status:'draft',drafted_by:'Claude 초안',scenarios:[{},{},{}],invalida
 const html=U.thesisBlock(v,'000001');
 assert.ok(html.includes('&lt;수요&gt;')&&!html.includes('<수요>'),'escaped');
 assert.ok(html.includes('재검토 권고')&&html.includes('초안 · 확인 대기'));
+const confirmed=U.thesisBlock({...v,status:'confirmed',confirmed_on:'2026-10-08'},'000001');
+assert.ok(confirmed.includes('확정 2026-10-08')&&!confirmed.includes('초안 · 확인 대기'),'confirmed label replaces the draft label');
 assert.ok(html.includes('유형 고성장'),'stock type label');
 assert.ok(html.includes('G7')&&html.includes('G3')&&html.includes('G9'),'guideline numbers shown');
 assert.ok(html.includes('충족')&&html.includes('미충족')&&html.includes('수동 확인')&&html.includes('자료 부족'));
