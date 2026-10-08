@@ -51,6 +51,12 @@ def threshold(metric, kind):
     return None
 
 
+def guard(metric):
+    """(guard metric, operator, value): the check only applies while the guard holds, else it is clear."""
+    when = (THRESHOLDS.get(metric) or {}).get('when')
+    return (when['metric'], when['op'], when['value']) if when else None
+
+
 def _year_ago(end):
     d = date.fromisoformat(end)
     return date(d.year - 1, d.month, monthrange(d.year - 1, d.month)[1]).isoformat()
@@ -72,9 +78,14 @@ def _value(c, key):
     return ((c or {}).get('statement_values') or {}).get(key)
 
 
-def _yoy(cols, c, key):
+def _yoy(cols, c, key, turnaround=False):
     now, then = _value(c, key), _value(_prior(cols, c), key)
-    return (now / then - 1) * 100 if num(now) and num(then) and then > 0 else None
+    if not (num(now) and num(then)):
+        return None
+    if then > 0:
+        return (now / then - 1) * 100
+    # Loss a year ago, profit now: growth starts from 0 (user rule). A continuing loss has no growth rate.
+    return 0.0 if turnaround and now > 0 else None
 
 
 def _margin(c, key='operating_profit'):
@@ -85,10 +96,10 @@ def _margin(c, key='operating_profit'):
 def _financial(cols, m):
     latest = cols[-1]
     m['revenue_yoy_pct'] = _yoy(cols, latest, 'revenue')
-    m['op_profit_yoy_pct'] = _yoy(cols, latest, 'operating_profit')
-    m['net_income_yoy_pct'] = _yoy(cols, latest, 'net_income')
+    m['op_profit_yoy_pct'] = _yoy(cols, latest, 'operating_profit', True)
+    m['net_income_yoy_pct'] = _yoy(cols, latest, 'net_income', True)
     earlier = [c for c in cols if c['period_end'] < latest['period_end']]
-    before = _yoy(cols, earlier[-1], 'operating_profit') if earlier else None
+    before = _yoy(cols, earlier[-1], 'operating_profit', True) if earlier else None
     m['op_profit_accel_pp'] = m['op_profit_yoy_pct'] - before if num(m['op_profit_yoy_pct']) and num(before) else None
     now, then = _margin(latest), _margin(_prior(cols, latest))
     m['operating_margin_change_pp'] = now - then if num(now) and num(then) else None
@@ -132,7 +143,10 @@ def observe(table, technical, trend=None, market_regime=None):
     _annual(annual, m)
     _trend(trend, market_regime, m)
     analysis = (trend or {}).get('analysis') or {}
-    return dict(basis=basis, period=quarters[-1]['period_end'] if quarters else None, price_date=(technical or {}).get('as_of'), metrics=m,
+    latest = quarters[-1] if quarters else None
+    prior_op = _value(_prior(quarters, latest), 'operating_profit') if latest else None
+    turnaround = bool(latest and num(prior_op) and prior_op <= 0 and num(_value(latest, 'operating_profit')) and _value(latest, 'operating_profit') > 0)
+    return dict(basis=basis, period=latest['period_end'] if latest else None, price_date=(technical or {}).get('as_of'), metrics=m, turnaround=turnaround,
                 trend_phase=analysis.get('phase'), volume_multiple=analysis.get('volume_multiple'), contraction=analysis.get('contraction'))
 
 
@@ -180,10 +194,20 @@ def _condition(c, kind, o):
     op, limit = threshold(c['metric'], kind)
     value = o['metrics'].get(c['metric'])
     status = INSUFFICIENT if value is None else TRIGGERED if OPS[op](value, limit) else CLEAR
+    note = ''
+    g = guard(c['metric'])
+    if g and value is not None:
+        gv = o['metrics'].get(g[0])
+        if gv is None:
+            status = INSUFFICIENT
+        elif not OPS[g[1]](gv, g[2]):
+            status, note = CLEAR, ' · 현재 증가율이 높아 둔화를 경고하지 않음'
+    if o.get('turnaround') and c['metric'] in ('op_profit_yoy_pct', 'net_income_yoy_pct', 'op_profit_accel_pp'):
+        note += ' · 전년 동기 적자→흑자 턴어라운드: 성장률 0에서 시작으로 계산'
     price_based = METRICS[c['metric']][1] in (1, 2, 3, 4, 6)
     basis = f"종가 {o['price_date']}" if price_based else f"재무 {o['period']} {o['basis']}"
     return dict(id=c['id'], label=METRICS[c['metric']][0], text=_text(spec, limit), guideline=METRICS[c['metric']][1],
-                role=spec.get('role', 'invalidation'), status=status, observed=value, basis=basis if value is not None else '자료 부족')
+                role=spec.get('role', 'invalidation'), status=status, observed=value, basis=(basis + note) if value is not None else '자료 부족')
 
 
 def evaluate(entry, table, technical, trend=None, market_regime=None):

@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from investment.thesis_monitor import (ADOPTED, METRICS, REFERENCE_ONLY, THRESHOLDS, TYPES, TRIGGERED, CLEAR, INSUFFICIENT,
-                                       evaluate, observe, threshold, validate_thesis)
+                                       evaluate, guard, observe, threshold, validate_thesis)
 
 ROOT = Path(__file__).resolve().parents[1]
 ENDS = ['2025-03-31', '2025-06-30', '2025-09-30', '2025-12-31', '2026-03-31', '2026-06-30']
@@ -74,11 +74,20 @@ class ObservationTests(unittest.TestCase):
         self.assertAlmostEqual(m['gross_margin_change_pp'], -5.0)
         self.assertAlmostEqual(m['operating_margin_drop_from_peak_pp'], -4.0)
 
-    def test_growth_needs_positive_base_and_year_ago_quarter(self):
-        loss = table(op=(-10, -5, 12, 13, 18, 22))
-        m = observe(loss, TECH)['metrics']
-        self.assertIsNone(m['op_profit_yoy_pct'], 'year-ago operating loss gives no growth rate')
-        self.assertIsNone(m['op_profit_accel_pp'])
+    def test_turnaround_from_loss_starts_growth_at_zero(self):
+        turnaround = table(op=(-10, -5, 12, 13, 18, 22), net=(-8, -4, 10, 11, 15, 18))
+        o = observe(turnaround, TECH)
+        self.assertEqual(o['metrics']['op_profit_yoy_pct'], 0.0, 'loss a year ago, profit now: growth starts from 0')
+        self.assertEqual(o['metrics']['net_income_yoy_pct'], 0.0)
+        self.assertEqual(o['metrics']['op_profit_accel_pp'], 0.0, 'previous quarter was also a turnaround at 0')
+        self.assertTrue(o['turnaround'])
+        self.assertFalse(observe(table(), TECH)['turnaround'])
+
+    def test_loss_to_loss_and_missing_base_have_no_growth_rate(self):
+        both_loss = table(op=(-10, -5, 12, 13, -18, -22))
+        self.assertIsNone(observe(both_loss, TECH)['metrics']['op_profit_yoy_pct'], 'a continuing loss is not growth')
+        self.assertEqual(observe(table(op=(10, 11, 12, 13, -2, -3)), TECH)['metrics']['op_profit_yoy_pct'], (-3 / 11 - 1) * 100,
+                         'profit turning into loss is a real decline, not a turnaround')
         short = table()
         short['groups'][0]['columns'] = short['groups'][0]['columns'][-2:]
         m = observe(short, TECH)['metrics']
@@ -121,7 +130,9 @@ class ThresholdTests(unittest.TestCase):
         self.assertEqual(threshold('op_profit_yoy_pct', 'stalwart'), ('<', 10))
         self.assertEqual(threshold('op_profit_yoy_pct', 'cyclical'), ('<', 0))
         self.assertEqual(threshold('revenue_yoy_pct', 'fast'), ('<', 20))
-        self.assertEqual(threshold('op_profit_accel_pp', 'fast'), ('<', 0))
+        self.assertEqual(threshold('op_profit_accel_pp', 'fast'), ('<', -20))
+        self.assertEqual(guard('op_profit_accel_pp'), ('op_profit_yoy_pct', '<', 50))
+        self.assertIsNone(guard('op_profit_yoy_pct'))
         self.assertIsNone(threshold('op_profit_accel_pp', 'cyclical'), 'acceleration is a growth-stock rule only')
         self.assertEqual(threshold('market_uptrend', 'cyclical'), ('==', False))
         self.assertIsNone(threshold('revenue_yoy_pct', 'slow'), 'types without defined criteria have no thresholds yet')
@@ -132,6 +143,8 @@ class ThresholdTests(unittest.TestCase):
             self.assertIn(spec['op'], ('<', '<=', '>', '>=', '=='), key)
             self.assertIn(METRICS[key][1], ADOPTED, key)
             self.assertTrue(set(spec['values']) - {'*'} <= set(TYPES), key)
+            if 'when' in spec:
+                self.assertIn(spec['when']['metric'], METRICS, key)
         self.assertEqual(sorted(ADOPTED), [1, 2, 3, 4, 6, 7, 8, 9, 10, 11])
 
 
@@ -182,6 +195,30 @@ class EvaluationTests(unittest.TestCase):
         self.assertEqual((mkt['status'], mkt['role']), (TRIGGERED, 'context'))
         self.assertEqual(r['action'], '유지 점검')
 
+    def test_acceleration_needs_a_real_slowdown_while_growth_is_not_high(self):
+        e = entry('fast', conditions=[dict(id='acc', kind='auto', metric='op_profit_accel_pp'), dict(id='op', kind='auto', metric='op_profit_yoy_pct')],
+                  scenarios=[dict(title='a', description='d', conditions=['acc']), dict(title='b', description='d', conditions=['op']), dict(title='c', description='d', conditions=['acc', 'op'])])
+
+        def run(prev_q, latest_q):
+            return evaluate(e, table(op=(10, 11, 12, 13, prev_q, latest_q)), TECH)
+        slowing = next(c for c in run(18, 15.4)['conditions'] if c['id'] == 'acc')
+        self.assertEqual(slowing['status'], TRIGGERED, 'growth fell from 80% to 40%: -40%p while below 50%')
+        high = next(c for c in run(30, 24.2)['conditions'] if c['id'] == 'acc')
+        self.assertEqual(high['status'], CLEAR, 'still +120% growth: base effect, not a warning')
+        self.assertIn('높아', high['basis'])
+        small = next(c for c in run(14, 14.3)['conditions'] if c['id'] == 'acc')
+        self.assertEqual(small['status'], CLEAR, 'small slowdown within the 20%p tolerance')
+        loss = next(c for c in evaluate(e, table(op=(-10, -5, 12, 13, -18, -22)), TECH)['conditions'] if c['id'] == 'acc')
+        self.assertEqual(loss['status'], INSUFFICIENT, 'a continuing loss has no growth rate to compare')
+
+    def test_turnaround_is_noted_on_the_condition_basis(self):
+        r = evaluate(entry('cyclical'), table(op=(-10, -5, 12, 13, 18, 22)), TECH, trend(), '상승 정렬')
+        op = next(c for c in r['conditions'] if c['id'] == 'op')
+        self.assertEqual((op['status'], op['observed']), (CLEAR, 0.0), 'cyclical floor is 0%: a turnaround at 0 is not a decline')
+        self.assertIn('턴어라운드', op['basis'])
+        fast = next(c for c in evaluate(entry('fast'), table(op=(-10, -5, 12, 13, 18, 22)), TECH, trend(), '상승 정렬')['conditions'] if c['id'] == 'op')
+        self.assertEqual(fast['status'], TRIGGERED, 'growth stock needs 25%')
+
     def test_missing_data_is_insufficient_not_clear(self):
         r = evaluate(entry('fast'), None, {}, None, None)
         self.assertTrue(all(c['status'] in (INSUFFICIENT, 'manual') for c in r['conditions']))
@@ -211,6 +248,13 @@ class ValidationTests(unittest.TestCase):
 
 
 class ProjectFileTests(unittest.TestCase):
+    def test_user_decisions_on_types_and_skipped_annual_check(self):
+        data = json.loads((ROOT / 'config/business_theses.json').read_text(encoding='utf-8'))['companies']
+        self.assertEqual({c: e['type'] for c, e in data.items()},
+                         {'000660': 'cyclical', '005930': 'cyclical', '020120': 'fast', '443060': 'stalwart', '228850': 'cyclical'})
+        for code, e in data.items():
+            self.assertNotIn('annual_op_profit_cagr_3y_pct', {c.get('metric') for c in e['invalidation']}, 'guideline 9 waits for annual history')
+
     def test_project_theses_are_valid_typed_drafts(self):
         data = json.loads((ROOT / 'config/business_theses.json').read_text(encoding='utf-8'))
         self.assertEqual(data['schema'], 2)

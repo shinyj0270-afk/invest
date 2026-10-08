@@ -29,7 +29,7 @@
     "market_uptrend": {"op": "==", "role": "context", "text": "소속 시장 지수가 상승 정렬이 아님", "values": {"*": false}},
     "breakout_failed": {"op": "==", "text": "돌파 후 되밀림 발생", "values": {"*": true}},
     "op_profit_yoy_pct": {"op": "<", "text": "분기 영업이익 전년 동기 대비 {value}% 미만 증가", "values": {"fast": 25, "stalwart": 10, "cyclical": 0}},
-    "op_profit_accel_pp": {"op": "<", "text": "영업이익 증가율이 직전 분기보다 둔화 ({value}%p 미만)", "values": {"fast": 0}},
+    "op_profit_accel_pp": {"op": "<", "text": "영업이익 증가율이 직전 분기보다 {value}%p 미만으로 둔화하고 현재 증가율이 50% 미만", "when": {"metric": "op_profit_yoy_pct", "op": "<", "value": 50}, "values": {"fast": -20}},
     "annual_op_profit_cagr_3y_pct": {"op": "<", "text": "연간 영업이익 3년 연평균 {value}% 미만", "values": {"fast": 25, "stalwart": 10}},
     "revenue_yoy_pct": {"op": "<", "text": "분기 매출 전년 동기 대비 {value}% 미만 증가", "values": {"fast": 20, "stalwart": 5, "cyclical": 0}},
     "operating_margin_change_pp": {"op": "<=", "text": "영업이익률 전년 동기 대비 {value}%p 이하 변화", "values": {"fast": -3, "stalwart": -3, "cyclical": -5}},

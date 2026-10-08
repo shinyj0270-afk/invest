@@ -286,11 +286,6 @@
           "metric": "op_profit_accel_pp"
         },
         {
-          "id": "ann",
-          "kind": "auto",
-          "metric": "annual_op_profit_cagr_3y_pct"
-        },
-        {
           "id": "platform_users",
           "kind": "manual",
           "label": "봄툰·델리툰 이용자·결제 감소 또는 주요 작품 흥행 부진 확인"
@@ -304,8 +299,7 @@
             "platform_users",
             "rev",
             "op",
-            "acc",
-            "ann"
+            "acc"
           ]
         },
         {
@@ -394,16 +388,6 @@
           "metric": "gross_margin_change_pp"
         },
         {
-          "id": "acc",
-          "kind": "auto",
-          "metric": "op_profit_accel_pp"
-        },
-        {
-          "id": "ann",
-          "kind": "auto",
-          "metric": "annual_op_profit_cagr_3y_pct"
-        },
-        {
           "id": "retrofit_delay",
           "kind": "manual",
           "label": "친환경 개조 프로젝트 일정 지연·수익성 하향 확인"
@@ -431,13 +415,12 @@
           "conditions": [
             "client_capex",
             "rev",
-            "acc",
-            "ann"
+            "op"
           ]
         },
         {
           "title": "성장 기대 대비 주가 부담",
-          "description": "높은 성장 기대가 주가에 먼저 반영돼 실적이 기대에 못 미치면 추세와 상대강도가 꺾인다.",
+          "description": "꾸준한 성장 기대가 주가에 먼저 반영돼 실적이 기대에 못 미치면 추세와 상대강도가 꺾인다.",
           "conditions": [
             "ma",
             "rng",
@@ -448,7 +431,7 @@
       ],
       "status": "draft",
       "drafted_by": "Claude 초안 2026-10-08 · 투자대가 가이드라인 채택안 기준 · 기존 검토 사실·반대 근거·출처 유지 · 사용자 확인 대기",
-      "type": "fast",
+      "type": "stalwart",
       "type_note": "Lynch 6유형 분류는 Claude 제안(확인 대기). 유형별 기준값은 config/guideline_thresholds.json."
     },
     "228850": {
