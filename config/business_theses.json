@@ -17,80 +17,100 @@
       ],
       "invalidation": [
         {
-          "id": "rev_down",
-          "label": "매출 전년 동기 대비 2분기 연속 감소",
+          "id": "ma",
           "kind": "auto",
-          "metric": "revenue_yoy_negative_streak",
-          "op": ">=",
-          "value": 2
+          "metric": "trend_template_failed"
         },
         {
-          "id": "margin_drop",
-          "label": "영업이익률 전년 동기 대비 10%p 이상 하락",
+          "id": "rng",
           "kind": "auto",
-          "metric": "operating_margin_change_pp",
-          "op": "<=",
-          "value": -10
+          "metric": "range_failed"
         },
         {
-          "id": "cash_weak",
-          "label": "TTM 영업현금흐름이 순이익의 70% 미만",
+          "id": "rs",
           "kind": "auto",
-          "metric": "ocf_to_profit_ttm",
-          "op": "<",
-          "value": 0.7
+          "metric": "rs_score"
         },
         {
-          "id": "debt_up",
-          "label": "부채비율 100% 초과",
+          "id": "mkt",
           "kind": "auto",
-          "metric": "debt_ratio_pct",
-          "op": ">",
-          "value": 100
+          "metric": "market_uptrend"
+        },
+        {
+          "id": "brk",
+          "kind": "auto",
+          "metric": "breakout_failed"
+        },
+        {
+          "id": "op",
+          "kind": "auto",
+          "metric": "op_profit_yoy_pct"
+        },
+        {
+          "id": "rev",
+          "kind": "auto",
+          "metric": "revenue_yoy_pct"
+        },
+        {
+          "id": "opm",
+          "kind": "auto",
+          "metric": "operating_margin_change_pp"
+        },
+        {
+          "id": "gpm",
+          "kind": "auto",
+          "metric": "gross_margin_change_pp"
+        },
+        {
+          "id": "peak",
+          "kind": "auto",
+          "metric": "operating_margin_drop_from_peak_pp"
         },
         {
           "id": "hbm_share",
-          "label": "주요 고객의 HBM 공급 비중 축소·차세대 제품 인증 지연 확인",
-          "kind": "manual"
+          "kind": "manual",
+          "label": "주요 고객의 HBM 공급 비중 축소·차세대 제품 인증 지연 확인"
         },
         {
-          "id": "below_ma200",
-          "label": "완료 종가가 200일선 아래",
-          "kind": "auto",
-          "metric": "below_ma200",
-          "op": "==",
-          "value": true
+          "id": "capex",
+          "kind": "manual",
+          "label": "설비투자 급증으로 감가상각·원가 부담이 커지는 공시 확인"
         }
       ],
       "scenarios": [
         {
-          "title": "메모리 가격·수요 사이클 하강",
-          "description": "AI 외 수요 둔화나 메모리 가격 하락으로 고부가 제품 확대가 매출·이익 감소를 막지 못한다.",
+          "title": "메모리 가격·수요 사이클 정점 통과",
+          "description": "AI 외 수요 둔화나 메모리 가격 하락으로 매출과 이익이 꺾이고, 지금의 높은 이익률이 정점이었음이 드러난다.",
           "conditions": [
-            "rev_down",
-            "margin_drop"
+            "rev",
+            "op",
+            "peak",
+            "opm"
           ]
         },
         {
-          "title": "증설 비용의 현금 부담",
-          "description": "생산능력 확대 투자와 비용이 늘어 이익이 현금흐름으로 이어지지 않고 재무 부담이 커진다.",
+          "title": "증설 투자 부담으로 수익성 훼손",
+          "description": "생산능력 확대 비용과 감가상각이 늘어 매출총이익률과 영업이익률이 낮아진다.",
           "conditions": [
-            "cash_weak",
-            "debt_up"
+            "capex",
+            "gpm",
+            "opm"
           ]
         },
         {
           "title": "HBM 경쟁·고객 인증 차질",
-          "description": "경쟁사 공급 확대나 차세대 HBM 인증 지연으로 고부가 제품 점유가 줄고 시장이 이를 먼저 반영한다.",
+          "description": "경쟁사 공급 확대나 차세대 HBM 인증 지연으로 고부가 제품 점유가 줄고 시장이 이를 가격·상대강도에 먼저 반영한다.",
           "conditions": [
             "hbm_share",
-            "below_ma200"
+            "ma",
+            "rs"
           ]
         }
       ],
       "status": "draft",
-      "drafted_by": "Claude 초안 2026-10-08 · 기존 검토 사실·반대 근거·출처 기반 · 사용자 확인 대기",
-      "thresholds_note": "조건 기준값은 초안입니다. 종목 특성에 맞게 확인·조정하세요."
+      "drafted_by": "Claude 초안 2026-10-08 · 투자대가 가이드라인 채택안 기준 · 기존 검토 사실·반대 근거·출처 유지 · 사용자 확인 대기",
+      "type": "cyclical",
+      "type_note": "Lynch 6유형 분류는 Claude 제안(확인 대기). 유형별 기준값은 config/guideline_thresholds.json."
     },
     "005930": {
       "name": "삼성전자",
@@ -107,77 +127,99 @@
       ],
       "invalidation": [
         {
-          "id": "rev_down",
-          "label": "매출 전년 동기 대비 2분기 연속 감소",
+          "id": "ma",
           "kind": "auto",
-          "metric": "revenue_yoy_negative_streak",
-          "op": ">=",
-          "value": 2
+          "metric": "trend_template_failed"
         },
         {
-          "id": "margin_drop",
-          "label": "영업이익률 전년 동기 대비 5%p 이상 하락",
+          "id": "rng",
           "kind": "auto",
-          "metric": "operating_margin_change_pp",
-          "op": "<=",
-          "value": -5
+          "metric": "range_failed"
         },
         {
-          "id": "cash_weak",
-          "label": "TTM 영업현금흐름이 순이익의 80% 미만",
+          "id": "rs",
           "kind": "auto",
-          "metric": "ocf_to_profit_ttm",
-          "op": "<",
-          "value": 0.8
+          "metric": "rs_score"
+        },
+        {
+          "id": "mkt",
+          "kind": "auto",
+          "metric": "market_uptrend"
+        },
+        {
+          "id": "brk",
+          "kind": "auto",
+          "metric": "breakout_failed"
+        },
+        {
+          "id": "op",
+          "kind": "auto",
+          "metric": "op_profit_yoy_pct"
+        },
+        {
+          "id": "rev",
+          "kind": "auto",
+          "metric": "revenue_yoy_pct"
+        },
+        {
+          "id": "opm",
+          "kind": "auto",
+          "metric": "operating_margin_change_pp"
+        },
+        {
+          "id": "gpm",
+          "kind": "auto",
+          "metric": "gross_margin_change_pp"
+        },
+        {
+          "id": "peak",
+          "kind": "auto",
+          "metric": "operating_margin_drop_from_peak_pp"
         },
         {
           "id": "hbm_qual",
-          "label": "HBM4 주요 고객 인증·상업 공급 지연 확인",
-          "kind": "manual"
+          "kind": "manual",
+          "label": "HBM4 주요 고객 인증·상업 공급 지연 확인"
         },
         {
           "id": "foundry_loss",
-          "label": "파운드리·시스템LSI 손실 확대 공시 확인",
-          "kind": "manual"
-        },
-        {
-          "id": "rs_weak",
-          "label": "1개월 RS 40 미만",
-          "kind": "auto",
-          "metric": "rs_1m",
-          "op": "<",
-          "value": 40
+          "kind": "manual",
+          "label": "파운드리·시스템LSI 손실 확대 공시 확인"
         }
       ],
       "scenarios": [
         {
           "title": "차세대 HBM 고객 인증·공급 지연",
-          "description": "제품 공개와 달리 고객 인증·공급 속도가 늦어 AI 메모리 매출 확대가 지연된다.",
+          "description": "제품 공개와 달리 고객 인증·공급 속도가 늦어 AI 메모리 매출 확대가 지연되고 시장이 이를 먼저 반영한다.",
           "conditions": [
             "hbm_qual",
-            "rs_weak"
+            "rs",
+            "ma"
           ]
         },
         {
           "title": "메모리 업황 둔화",
-          "description": "범용 메모리 가격 하락이 고부가 제품 효과를 상쇄해 매출과 이익률이 함께 낮아진다.",
+          "description": "범용 메모리 가격 하락이 고부가 제품 효과를 상쇄해 매출과 이익이 함께 꺾인다.",
           "conditions": [
-            "rev_down",
-            "margin_drop"
+            "rev",
+            "op",
+            "peak"
           ]
         },
         {
           "title": "비메모리 손실의 전사 이익 훼손",
-          "description": "파운드리·시스템 반도체 손실이 커져 반도체 이익과 현금흐름 개선을 가린다.",
+          "description": "파운드리·시스템 반도체 손실이 커져 반도체 이익 개선을 가리고 이익률이 낮아진다.",
           "conditions": [
             "foundry_loss",
-            "cash_weak"
+            "opm",
+            "gpm"
           ]
         }
       ],
       "status": "draft",
-      "drafted_by": "Claude 초안 2026-10-08 · 기존 검토 사실·반대 근거·출처 기반 · 사용자 확인 대기",
-      "thresholds_note": "조건 기준값은 초안입니다. 종목 특성에 맞게 확인·조정하세요."
+      "drafted_by": "Claude 초안 2026-10-08 · 투자대가 가이드라인 채택안 기준 · 기존 검토 사실·반대 근거·출처 유지 · 사용자 확인 대기",
+      "type": "cyclical",
+      "type_note": "Lynch 6유형 분류는 Claude 제안(확인 대기). 유형별 기준값은 config/guideline_thresholds.json."
     },
     "020120": {
       "name": "키다리스튜디오",
@@ -194,72 +236,103 @@
       ],
       "invalidation": [
         {
-          "id": "rev_down",
-          "label": "매출 전년 동기 대비 2분기 연속 감소",
+          "id": "ma",
           "kind": "auto",
-          "metric": "revenue_yoy_negative_streak",
-          "op": ">=",
-          "value": 2
+          "metric": "trend_template_failed"
         },
         {
-          "id": "margin_drop",
-          "label": "영업이익률 전년 동기 대비 3%p 이상 하락",
+          "id": "rng",
           "kind": "auto",
-          "metric": "operating_margin_change_pp",
-          "op": "<=",
-          "value": -3
+          "metric": "range_failed"
         },
         {
-          "id": "cash_weak",
-          "label": "TTM 영업현금흐름이 순이익의 50% 미만",
+          "id": "rs",
           "kind": "auto",
-          "metric": "ocf_to_profit_ttm",
-          "op": "<",
-          "value": 0.5
+          "metric": "rs_score"
+        },
+        {
+          "id": "mkt",
+          "kind": "auto",
+          "metric": "market_uptrend"
+        },
+        {
+          "id": "brk",
+          "kind": "auto",
+          "metric": "breakout_failed"
+        },
+        {
+          "id": "op",
+          "kind": "auto",
+          "metric": "op_profit_yoy_pct"
+        },
+        {
+          "id": "rev",
+          "kind": "auto",
+          "metric": "revenue_yoy_pct"
+        },
+        {
+          "id": "opm",
+          "kind": "auto",
+          "metric": "operating_margin_change_pp"
+        },
+        {
+          "id": "gpm",
+          "kind": "auto",
+          "metric": "gross_margin_change_pp"
+        },
+        {
+          "id": "acc",
+          "kind": "auto",
+          "metric": "op_profit_accel_pp"
+        },
+        {
+          "id": "ann",
+          "kind": "auto",
+          "metric": "annual_op_profit_cagr_3y_pct"
         },
         {
           "id": "platform_users",
-          "label": "봄툰·델리툰 이용자·결제 감소 또는 주요 작품 흥행 부진 확인",
-          "kind": "manual"
-        },
-        {
-          "id": "below_ma200",
-          "label": "완료 종가가 200일선 아래",
-          "kind": "auto",
-          "metric": "below_ma200",
-          "op": "==",
-          "value": true
+          "kind": "manual",
+          "label": "봄툰·델리툰 이용자·결제 감소 또는 주요 작품 흥행 부진 확인"
         }
       ],
       "scenarios": [
         {
           "title": "흥행 편중과 작품 부진",
-          "description": "소수 흥행작 의존이 커서 신작 부진 시 매출 성장이 멈춘다.",
+          "description": "소수 흥행작 의존이 커서 신작 부진 시 매출과 이익 성장이 멈춘다.",
           "conditions": [
-            "rev_down",
-            "platform_users"
+            "platform_users",
+            "rev",
+            "op",
+            "acc",
+            "ann"
           ]
         },
         {
           "title": "비용 증가로 이익 전환 실패",
-          "description": "제작비·마케팅비·해외 운영비가 매출보다 빨리 늘어 이익률과 현금흐름이 약해진다.",
+          "description": "제작비·마케팅비·해외 운영비가 매출보다 빨리 늘어 이익률이 낮아진다.",
           "conditions": [
-            "margin_drop",
-            "cash_weak"
+            "opm",
+            "gpm",
+            "op"
           ]
         },
         {
-          "title": "플랫폼 경쟁 심화",
-          "description": "대형 플랫폼과의 경쟁으로 이용자와 결제가 줄고 시장이 이를 먼저 반영한다.",
+          "title": "플랫폼 경쟁 심화와 기대 선반영 해소",
+          "description": "대형 플랫폼과의 경쟁으로 이용자와 결제가 줄고, 높은 기대가 먼저 반영된 주가 추세가 꺾인다.",
           "conditions": [
             "platform_users",
-            "below_ma200"
+            "ma",
+            "rng",
+            "rs",
+            "brk"
           ]
         }
       ],
       "status": "draft",
-      "drafted_by": "Claude 초안 2026-10-08 · 기존 검토 사실·반대 근거·출처 기반 · 사용자 확인 대기",
-      "thresholds_note": "조건 기준값은 초안입니다. 종목 특성에 맞게 확인·조정하세요."
+      "drafted_by": "Claude 초안 2026-10-08 · 투자대가 가이드라인 채택안 기준 · 기존 검토 사실·반대 근거·출처 유지 · 사용자 확인 대기",
+      "type": "fast",
+      "type_note": "Lynch 6유형 분류는 Claude 제안(확인 대기). 유형별 기준값은 config/guideline_thresholds.json."
     },
     "443060": {
       "name": "HD현대마린솔루션",
@@ -276,46 +349,69 @@
       ],
       "invalidation": [
         {
-          "id": "rev_down",
-          "label": "매출 전년 동기 대비 2분기 연속 감소",
+          "id": "ma",
           "kind": "auto",
-          "metric": "revenue_yoy_negative_streak",
-          "op": ">=",
-          "value": 2
+          "metric": "trend_template_failed"
         },
         {
-          "id": "margin_drop",
-          "label": "영업이익률 전년 동기 대비 3%p 이상 하락",
+          "id": "rng",
           "kind": "auto",
-          "metric": "operating_margin_change_pp",
-          "op": "<=",
-          "value": -3
+          "metric": "range_failed"
+        },
+        {
+          "id": "rs",
+          "kind": "auto",
+          "metric": "rs_score"
+        },
+        {
+          "id": "mkt",
+          "kind": "auto",
+          "metric": "market_uptrend"
+        },
+        {
+          "id": "brk",
+          "kind": "auto",
+          "metric": "breakout_failed"
+        },
+        {
+          "id": "op",
+          "kind": "auto",
+          "metric": "op_profit_yoy_pct"
+        },
+        {
+          "id": "rev",
+          "kind": "auto",
+          "metric": "revenue_yoy_pct"
+        },
+        {
+          "id": "opm",
+          "kind": "auto",
+          "metric": "operating_margin_change_pp"
+        },
+        {
+          "id": "gpm",
+          "kind": "auto",
+          "metric": "gross_margin_change_pp"
+        },
+        {
+          "id": "acc",
+          "kind": "auto",
+          "metric": "op_profit_accel_pp"
+        },
+        {
+          "id": "ann",
+          "kind": "auto",
+          "metric": "annual_op_profit_cagr_3y_pct"
         },
         {
           "id": "retrofit_delay",
-          "label": "친환경 개조 프로젝트 일정 지연·수익성 하향 확인",
-          "kind": "manual"
+          "kind": "manual",
+          "label": "친환경 개조 프로젝트 일정 지연·수익성 하향 확인"
         },
         {
           "id": "client_capex",
-          "label": "해운 고객의 선박 투자·개조 발주 지연 확인",
-          "kind": "manual"
-        },
-        {
-          "id": "below_ma200",
-          "label": "완료 종가가 200일선 아래",
-          "kind": "auto",
-          "metric": "below_ma200",
-          "op": "==",
-          "value": true
-        },
-        {
-          "id": "rs_weak",
-          "label": "1개월 RS 40 미만",
-          "kind": "auto",
-          "metric": "rs_1m",
-          "op": "<",
-          "value": 40
+          "kind": "manual",
+          "label": "해운 고객의 선박 투자·개조 발주 지연 확인"
         }
       ],
       "scenarios": [
@@ -324,7 +420,9 @@
           "description": "개조 프로젝트가 늦어지거나 원가가 늘어 성장 사업의 이익 기여가 줄어든다.",
           "conditions": [
             "retrofit_delay",
-            "margin_drop"
+            "opm",
+            "gpm",
+            "op"
           ]
         },
         {
@@ -332,21 +430,26 @@
           "description": "운임·규제 일정 변화로 고객이 개조·서비스 투자를 미뤄 애프터마켓 매출 성장이 둔화된다.",
           "conditions": [
             "client_capex",
-            "rev_down"
+            "rev",
+            "acc",
+            "ann"
           ]
         },
         {
           "title": "성장 기대 대비 주가 부담",
-          "description": "높은 성장 기대가 주가에 먼저 반영돼 실적이 기대에 못 미치면 추세가 꺾인다.",
+          "description": "높은 성장 기대가 주가에 먼저 반영돼 실적이 기대에 못 미치면 추세와 상대강도가 꺾인다.",
           "conditions": [
-            "below_ma200",
-            "rs_weak"
+            "ma",
+            "rng",
+            "rs",
+            "brk"
           ]
         }
       ],
       "status": "draft",
-      "drafted_by": "Claude 초안 2026-10-08 · 기존 검토 사실·반대 근거·출처 기반 · 사용자 확인 대기",
-      "thresholds_note": "조건 기준값은 초안입니다. 종목 특성에 맞게 확인·조정하세요."
+      "drafted_by": "Claude 초안 2026-10-08 · 투자대가 가이드라인 채택안 기준 · 기존 검토 사실·반대 근거·출처 유지 · 사용자 확인 대기",
+      "type": "fast",
+      "type_note": "Lynch 6유형 분류는 Claude 제안(확인 대기). 유형별 기준값은 config/guideline_thresholds.json."
     },
     "228850": {
       "name": "레이언스",
@@ -363,38 +466,64 @@
       ],
       "invalidation": [
         {
-          "id": "rev_down",
-          "label": "매출 전년 동기 대비 2분기 연속 감소",
+          "id": "ma",
           "kind": "auto",
-          "metric": "revenue_yoy_negative_streak",
-          "op": ">=",
-          "value": 2
+          "metric": "trend_template_failed"
         },
         {
-          "id": "margin_drop",
-          "label": "영업이익률 전년 동기 대비 3%p 이상 하락",
+          "id": "rng",
           "kind": "auto",
-          "metric": "operating_margin_change_pp",
-          "op": "<=",
-          "value": -3
+          "metric": "range_failed"
         },
         {
-          "id": "cash_weak",
-          "label": "TTM 영업현금흐름이 순이익의 50% 미만",
+          "id": "rs",
           "kind": "auto",
-          "metric": "ocf_to_profit_ttm",
-          "op": "<",
-          "value": 0.5
+          "metric": "rs_score"
         },
         {
-          "id": "sub_loss",
-          "label": "해외 자회사 손실 확대 공시 확인",
-          "kind": "manual"
+          "id": "mkt",
+          "kind": "auto",
+          "metric": "market_uptrend"
+        },
+        {
+          "id": "brk",
+          "kind": "auto",
+          "metric": "breakout_failed"
+        },
+        {
+          "id": "op",
+          "kind": "auto",
+          "metric": "op_profit_yoy_pct"
+        },
+        {
+          "id": "rev",
+          "kind": "auto",
+          "metric": "revenue_yoy_pct"
+        },
+        {
+          "id": "opm",
+          "kind": "auto",
+          "metric": "operating_margin_change_pp"
+        },
+        {
+          "id": "gpm",
+          "kind": "auto",
+          "metric": "gross_margin_change_pp"
+        },
+        {
+          "id": "peak",
+          "kind": "auto",
+          "metric": "operating_margin_drop_from_peak_pp"
         },
         {
           "id": "orders",
-          "label": "주요 고객 의료장비 발주 감소 확인",
-          "kind": "manual"
+          "kind": "manual",
+          "label": "주요 고객 의료장비 발주 감소 확인"
+        },
+        {
+          "id": "sub_loss",
+          "kind": "manual",
+          "label": "해외 자회사 손실 확대 공시 확인"
         }
       ],
       "scenarios": [
@@ -403,28 +532,33 @@
           "description": "병원·치과 장비 투자가 줄어 디텍터 발주와 매출이 감소한다.",
           "conditions": [
             "orders",
-            "rev_down"
+            "rev",
+            "op"
           ]
         },
         {
           "title": "가격 경쟁으로 마진 하락",
-          "description": "제품별 가격 경쟁이 심해져 매출이 늘어도 영업이익률이 낮아진다.",
+          "description": "제품별 가격 경쟁이 심해져 매출이 늘어도 영업이익률과 매출총이익률이 낮아진다.",
           "conditions": [
-            "margin_drop"
+            "opm",
+            "gpm",
+            "peak"
           ]
         },
         {
-          "title": "해외 자회사 손실·현금 부진",
-          "description": "해외 자회사 손실과 운전자본 부담으로 이익이 현금흐름과 ROE 개선으로 이어지지 않는다.",
+          "title": "해외 자회사 손실 확대",
+          "description": "해외 자회사 손실이 커져 영업이익 개선이 이어지지 않는다.",
           "conditions": [
             "sub_loss",
-            "cash_weak"
+            "op",
+            "opm"
           ]
         }
       ],
       "status": "draft",
-      "drafted_by": "Claude 초안 2026-10-08 · 기존 검토 사실·반대 근거·출처 기반 · 사용자 확인 대기",
-      "thresholds_note": "조건 기준값은 초안입니다. 종목 특성에 맞게 확인·조정하세요."
+      "drafted_by": "Claude 초안 2026-10-08 · 투자대가 가이드라인 채택안 기준 · 기존 검토 사실·반대 근거·출처 유지 · 사용자 확인 대기",
+      "type": "cyclical",
+      "type_note": "Lynch 6유형 분류는 Claude 제안(확인 대기). 유형별 기준값은 config/guideline_thresholds.json."
     }
   }
 }

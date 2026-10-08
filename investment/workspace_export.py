@@ -172,7 +172,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     price_cutoff=(discovery or {}).get('snapshot',{}).get('meta',{}).get('price_date') or analysis['meta']['price_date']
     detail_scope=dict(analysis,meta=dict(analysis['meta'],price_date=price_cutoff))
     company_details = {} if (live or {}).get('lazy_company_views') else build_details(detail_scope, financial_tables, market_cache)
-    theses=load_theses();thesis_monitor={}
+    theses=load_theses();thesis_tables={}
     if discovery:
         for row in discovery['snapshot']['companies']:
             row['collection_health']=(financials or {}).get(row['code'],{}).get('collection_health',{})
@@ -183,7 +183,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
             if table:
                 row['financial_completeness']=table.get('financial_completeness')
                 common=common_metrics(row,table,discovery['research']['rows'][row['code']]['technical'])
-                if row['code'] in theses:thesis_monitor[row['code']]=evaluate_thesis(theses[row['code']],table,discovery['research']['rows'][row['code']]['technical'])
+                if row['code'] in theses:thesis_tables[row['code']]=table
                 apply_common(row,discovery['research']['rows'][row['code']],common)
                 if row['code'] in company_details:company_details[row['code']]['common_financial']=row.get('common_financial')
                 if row.get('common_financial'):
@@ -233,6 +233,9 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
             trend_data['changes']=observe_trend(trend_data,trend_checkpoint_directory)
         except (OSError,ValueError,TypeError) as exc:
             trend_data['changes']=dict(status='pending',reason='추세 관측 저장 대기: '+str(exc),events=[])
+    # Thesis checks need the trend diagnostics and market regime, so they run after the trend board exists.
+    trend_rows={r['code']:r for r in trend_data.get('rows',[])};regimes={m['market']:m.get('regime') for m in trend_data.get('markets',[])}
+    thesis_monitor={code:evaluate_thesis(theses[code],table,((discovery or {}).get('research',{}).get('rows',{}).get(code,{}).get('technical')),trend_rows.get(code),regimes.get(trend_rows.get(code,{}).get('market'))) for code,table in thesis_tables.items()}
     payload=dict(snapshot=snapshot, analysis_snapshot=analysis,
         research=research, discovery=discovery, financial_tables=financial_tables, company_details=company_details,market_insights=market_insights,thesis_monitor=thesis_monitor,
         trend_following=trend_data, market_contract=dict(same_day_after='%02d:%02d'%DAILY_PUBLICATION_TIME,timezone='Asia/Seoul'),

@@ -45,7 +45,7 @@ const now={day:'2026-10-08',time:'08:30'};
   common:{period:'2026-09-30',basis:'CFS',metrics:{revenue_growth_pct:-4,operating_margin_pct:6.5}},
   health:{decision:'material_revision',decision_on:'2026-10-08',material_changes:2},
   verification:{status:'review',label:'재검토 필요 · 자료 부족'},
-  thesis:{action:'재검토 권고',conditions:[{label:'매출 2분기 연속 감소',status:'triggered'},{label:'고객 이탈',status:'manual'}]}});
+  thesis:{action:'재검토 권고',conditions:[{label:'매출 2분기 연속 감소',text:'분기 매출 전년 동기 대비 20% 미만 증가',status:'triggered',role:'invalidation'},{label:'시장',text:'시장 약세',status:'triggered',role:'context'},{label:'고객 이탈',status:'manual'}]}});
  const b=B.brief(cur,prior,now);
  assert.ok(b.changes.includes('종가 -6.0% (2026-10-07 → 2026-10-08)'));
  assert.ok(b.changes.includes('1개월 RS 80 → 70'));
@@ -54,7 +54,8 @@ const now={day:'2026-10-08',time:'08:30'};
  assert.ok(b.impact.includes('새 재무 2026-09-30 반영 · 매출 증가율 -4% · 영업이익률 6.5%'));
  assert.ok(b.impact.includes('중요 정정 2개 계정 반영 (2026-10-08)'));
  assert.deepEqual([b.judgment.kind,b.judgment.before,b.judgment.after],['changed','보유 검토','재검토']);
- assert.ok(b.risks.includes('붕괴 조건 충족: 매출 2분기 연속 감소'));
+ assert.ok(b.risks.includes('붕괴 조건 충족: 분기 매출 전년 동기 대비 20% 미만 증가'));
+ assert.ok(!b.risks.some(r=>r.includes('시장 약세')),'market context is not a holding risk');
  assert.ok(b.risks.includes('분석 검증 재검토 필요 · 자료 부족'));
  assert.ok(b.risks.includes('200일선 아래'));
  assert.equal(b.quiet,false);

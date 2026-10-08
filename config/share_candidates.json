@@ -312,6 +312,7 @@
     "tests/test_verification_ui.js": "tests/test_verification_ui.js",
     "tools/export_review_report.py": "tools/export_review_report.py",
     "investment/thesis_monitor.py": "investment/thesis_monitor.py",
+    "config/guideline_thresholds.json": "config/guideline_thresholds.json",
     "tests/test_thesis_monitor.py": "tests/test_thesis_monitor.py",
     "tests/test_thesis_ui.js": "tests/test_thesis_ui.js",
     "src/holdings_brief_ui.js": "src/holdings_brief_ui.js",

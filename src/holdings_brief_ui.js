@@ -27,7 +27,7 @@ const HoldingsBrief=(()=>{
   return out;
  }
  function risks(it,cur){
-  const out=(it.thesis?.conditions||[]).filter(c=>c.status==='triggered').map(c=>'붕괴 조건 충족: '+c.label);
+  const out=(it.thesis?.conditions||[]).filter(c=>c.status==='triggered'&&c.role!=='context').map(c=>'붕괴 조건 충족: '+(c.text||c.label));
   if(it.verification?.status==='review')out.push('분석 검증 '+it.verification.label);
   if(cur.below200===true)out.push('200일선 아래');
   return out;

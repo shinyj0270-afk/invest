@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "reviewed_on": "2026-10-08",
+  "note": "투자대가 가이드라인 중 사용자가 채택한 1·2·3·4·6·7·8·9·10·11번의 유형별 기준값입니다. 사용자 지정값(O'Neil 분기 이익 +25%, Minervini 매출 +20%, 52주 저점 +30%)은 고성장형에 그대로 두고 나머지 유형은 Claude 제안값(확인 대기)입니다. 값이 없는 유형은 해당 기준을 적용하지 않습니다.",
+  "adopted": {
+    "1": "Minervini 트렌드 템플릿: 종가·50·150·200일선 배열과 200일선 상승",
+    "2": "Minervini 52주 범위: 저점 +30% 이상, 고점 -25% 이내",
+    "3": "Minervini·O'Neil 상대강도: 리더 종목",
+    "4": "O'Neil 시장 방향: 상승일 때 신규 편입",
+    "6": "Minervini·O'Neil 돌파: 거래량 동반 돌파와 되밀림",
+    "7": "O'Neil C: 최근 분기 이익의 전년 동기 대비 성장",
+    "8": "Minervini·O'Neil: 이익 성장의 가속",
+    "9": "O'Neil A: 연간 이익 3년 성장",
+    "10": "Minervini: 매출 성장 동반",
+    "11": "Buffett·Fisher·Piotroski: 이익률의 수준과 일관성, 매출총이익률 개선"
+  },
+  "types": {
+    "slow": "저성장",
+    "stalwart": "우량",
+    "fast": "고성장",
+    "cyclical": "경기순환",
+    "turnaround": "회생",
+    "asset": "자산주"
+  },
+  "thresholds": {
+    "trend_template_failed": {"op": ">=", "text": "트렌드 템플릿 이동평균 조건 {value}개 이상 실패", "values": {"fast": 1, "stalwart": 2, "cyclical": 2}},
+    "range_failed": {"op": ">=", "text": "52주 저점 +30%·고점 -25% 조건 {value}개 이상 실패", "values": {"fast": 1, "stalwart": 2, "cyclical": 2}},
+    "rs_score": {"op": "<", "text": "자체 RS {value}점 미만", "values": {"fast": 70, "stalwart": 50, "cyclical": 50}},
+    "market_uptrend": {"op": "==", "role": "context", "text": "소속 시장 지수가 상승 정렬이 아님", "values": {"*": false}},
+    "breakout_failed": {"op": "==", "text": "돌파 후 되밀림 발생", "values": {"*": true}},
+    "op_profit_yoy_pct": {"op": "<", "text": "분기 영업이익 전년 동기 대비 {value}% 미만 증가", "values": {"fast": 25, "stalwart": 10, "cyclical": 0}},
+    "op_profit_accel_pp": {"op": "<", "text": "영업이익 증가율이 직전 분기보다 둔화 ({value}%p 미만)", "values": {"fast": 0}},
+    "annual_op_profit_cagr_3y_pct": {"op": "<", "text": "연간 영업이익 3년 연평균 {value}% 미만", "values": {"fast": 25, "stalwart": 10}},
+    "revenue_yoy_pct": {"op": "<", "text": "분기 매출 전년 동기 대비 {value}% 미만 증가", "values": {"fast": 20, "stalwart": 5, "cyclical": 0}},
+    "operating_margin_change_pp": {"op": "<=", "text": "영업이익률 전년 동기 대비 {value}%p 이하 변화", "values": {"fast": -3, "stalwart": -3, "cyclical": -5}},
+    "gross_margin_change_pp": {"op": "<=", "text": "매출총이익률 전년 동기 대비 {value}%p 이하 변화", "values": {"fast": -2, "stalwart": -2, "cyclical": -3}},
+    "operating_margin_drop_from_peak_pp": {"op": "<=", "text": "영업이익률이 저장 분기 최고치보다 {value}%p 이하", "values": {"cyclical": -5}}
+  }
+}
