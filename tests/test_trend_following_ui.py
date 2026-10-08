@@ -44,6 +44,8 @@ with sync_playwright() as p:
     expect(page.locator('#trendFollowing')).to_be_visible()
     expect(page.locator('#navigation > [data-page=finder]')).to_have_attribute('aria-current','page')
     expect(page.locator('#tfFilters [name=capMin]')).to_have_value('1500')
+    expect(page.locator('#trendFollowing')).to_contain_text('기본 시가총액은 1,500억원 이상')
+    assert '1,000억원' not in page.locator('#trendFollowing').inner_text()
     expect(page.locator('#tfFilters [name=rsMin]')).to_have_value('70')
     expect(page.locator('.tf-stock .tf-chart')).to_have_count(6)
     expect(page.locator('#tfDetailChart .tc-price-svg')).to_be_visible()

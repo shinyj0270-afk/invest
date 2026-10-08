@@ -3,6 +3,8 @@ const assert=require('assert');
 const market=require('../src/market_explanation_ui.js');
 const changes=require('../src/trend_changes_ui.js');
 const tf=require('../src/trend_following_ui.js');
+const capText=changes.renderChanges({as_of:'2026-10-06',default_cap_eok:1500,changes:{status:'no_prior'}});
+assert(capText.includes('시총 1,500억원 이상')&&!capText.includes('1,000억원'),'default cap follows the data, not a fixed phrase');
 const noPrior=changes.renderChanges({as_of:'2026-10-06',changes:{status:'no_prior'}});
 assert(noPrior.includes('이전 체크포인트 없음'));assert(noPrior.includes('비교 대기'));assert(noPrior.includes('전일 사실을 추정하지'));
 const html=changes.renderChanges({as_of:'2026-10-06',changes:{status:'ready',prior_as_of:'2026-09-29',new_qualified:[{code:'A',name:'<script>',rs:70}],breakouts:[{code:'B',name:'b',volume_confirmed:false,newly_observed:true}]}});
