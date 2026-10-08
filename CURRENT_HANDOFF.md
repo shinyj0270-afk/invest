@@ -1,10 +1,46 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-08 07:59 KST
-Handoff version: 2026-10-08-company-dashboard-review
-Last agent: Codex orchestration; Astra High review; Sol High implementation
-Last PC: work (company Primary)
-Last task: 통합 투자 대시보드 재점검·P2 네 건 수정·운영 서버 복구 후 INVESTMENT CLOSE
+Updated: 2026-10-08 KST (INVESTMENT CLOSE, 사용량 절약 마감)
+Handoff version: 2026-10-08-judgment-briefing-close
+Last agent: Claude (Opus/Sonnet session) with user approval at each step
+Last PC: work (company Primary, 바탕 작업본 invest2 및 회사 main 동시 확인)
+Last task: 통합 대시보드 소프트 UI 11-A 적용, 발굴 범위 1,500억, 검증 엔진, 투자 논리 v2.1 확정, 아침 브리핑 반영 후 마감
+
+Completed (2026-10-08 누적, 모두 origin/main 반영 · 회사 main 수신 · 8767 서버 재시작 · 실화면 확인):
+- 소프트 UI 11-A 전면 적용 (0523eaf). 상단 메뉴, 홈 1/3 배치, 섹터 맵, 추천 도넛, 자료 확보 막대.
+- 발굴 범위를 시총 1,500억원 초과 고정(MIN_DISCOVERY_CAP_EOK 한곳), 실자료 탐색 범위 1,004개 (463e0ca). 추세 체크포인트 규칙 v2, 이전 기록은 비교 제외로 분리.
+- 공통 검증 엔진과 Claude 독립 검토 보고서 (ca5745b). tools/export_review_report.py가 validation/current/review-reports/ 아래 JSON·MD 작성.
+- 투자 논리 v2 → v2.1 (158ea5a, b190630, 2f6dc46). Lynch 유형 6종, 투자대가 가이드라인 채택 11개(1·2·3·4·6·7·8·9·10·11·20), 유형별 기준값 config/guideline_thresholds.json.
+- 사용자 결정 반영: HD현대마린솔루션 우량, 레이언스 경기순환, G8 완충(20%p 둔화 + 현재 증가율 50% 미만), 턴어라운드 성장률 0에서 시작, G9 제외(다음 주 수집).
+- 5종목 투자 논리 확정 (bc27b20). status=confirmed, confirmed_on 2026-10-08.
+- 추세 화면 안내 문구를 데이터 기준값에 연결 (85a655d). 1,000억 고정 문구 제거.
+- 아침 브리핑 (4429a33): 보유종목별 변화·영향·판단 변경·위험·기준시각. 비교 기준은 브라우저 localStorage.
+- 실자료 검증: 검증 보고서 생성, 투자 논리 평가 5종목 모두 지표 산출. 격리 portable 25개 명령 PASS (최종 85a655d 기준).
+
+Not done in this CLOSE:
+- 섹터 맵 타일을 수익률 순으로 정렬하는 시도는 사용자 요청으로 되돌렸다. 현재 표시 순서는 RS 상위 8개의 RS 순서다. 작업 트리에는 미커밋 변경 없음.
+- 원격 전송은 이미 85a655d로 완료. 이번 CLOSE에서 새 커밋은 만들지 않았다.
+
+Pending:
+- G9(연간 이익 3년 +25%): 다음 주경 연간 이력 수집 후 조건 추가. 현재 저장 연간 재무는 종목당 1열뿐.
+- 보유종목 입력이 0개라 아침 브리핑은 입력 후 표시됨.
+- 추세 체크포인트 첫 비교는 2026-10-08 이후 종가부터.
+- home PC 수신·실행 미확인. 집 PC에서 INVESTMENT START 시 85a655d 수신 필요.
+- 유형별 기준값(우량·경기순환 제안값)은 활용하며 조정 예정.
+
+Next task: 다음 주 G9 연간 이력 수집 방법 확정 및 home PC 수신 확인
+Recommended next agent: Codex(구현·테스트), Claude(검증 설계·독립 검토)
+Recommended model: 권장 설정은 제안이며 실제 모델 전환은 확인하지 않음
+Escalation condition: DART 연간 원문 수집 범위·방식이 기존 재무 계약과 충돌하면 중단하고 보고.
+
+Branch: main
+Commit: 85a655df9910f55201a2e59ea29fcc69457a4eff (원격 main과 동일, git rev-parse HEAD로 확인)
+Remote status: origin/main 85a655d 확인. 2026-10-08 close 시점 로컬과 동일.
+
+Notes:
+- 민감자료: 보유내역·DB·인증·개인설정은 공유 저장소에 넣지 않았다. config/local.json은 임시로 만들고 실행 후 삭제했다.
+- 로컬 증거: validation/current/ui-concepts-20261008/, validation/current/review-reports/2026-10-08/ (Git 제외).
+- 이전 상세 기록은 아래 Completed 이하 섹션과 Git 이력에 남아 있다.
 
 Completed:
 - 회사 main fe36baa4ae36b31c23152c8b1cbf495f46b27ff4 clean에서 시작, START fetch/ff-only 수신 및 GLOBAL_WORKFLOW v1.1 실제 확인.
