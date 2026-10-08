@@ -20,7 +20,14 @@ with sync_playwright() as p:
     assert page.locator('#moreNavigation').get_attribute('open') is None
     assert page.locator('#navigation>.nav-item').count()==6
     assert page.locator('#sourceDetails').get_attribute('open') is None
-    expect(page.locator('#marketSummary')).to_contain_text('KOSPI')
+    expect(page.locator('#homeMarketCharts')).to_contain_text('KOSPI')
+    expect(page.locator('#homeVerdict')).to_contain_text('오늘의 결론')
+    expect(page.locator('#homeKpis')).to_contain_text('탐색 범위')
+    page.locator('#moreNavigation summary').click()
+    expect(page.locator('#moreNavigation .more-menu')).to_be_visible()
+    page.locator('#moreNavigation .nav-item').first.click()
+    assert page.locator('#moreNavigation').get_attribute('open') is None
+    page.locator('[data-page=home]').click()
     expect(page.locator('#homeWatch')).to_contain_text('별표')
     page.locator('#homeQuery').fill('900002');page.locator('#homeSearch button').click()
     expect(page.locator('#discoveryTable tbody tr')).to_have_count(1)

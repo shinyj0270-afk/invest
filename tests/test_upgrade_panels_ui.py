@@ -51,14 +51,19 @@ with sync_playwright() as p:
         else:route.fulfill(content_type='application/json',body='{"status":"idle"}')
     page.route('http://127.0.0.1:8767/**',routes)
     page.goto('http://127.0.0.1:8767/')
-    home_text=page.locator('#home .market-explanation').inner_text()
-    assert page.locator('#home .me-card').count()==2
+    # Home shows compact market cards; their criteria detail carries the same stored explanation as the trend page.
+    assert page.locator('#home .home-market').count()==2
+    assert page.locator('#home .home-market-detail').count()==2
+    home_reasons=[t.strip() for t in page.locator('#home .home-market-detail p:first-of-type').all_text_contents()]
+    assert home_reasons==['가상 신호 설명','가상 신호 설명'],home_reasons
+    expect(page.locator('#homeVerdict')).to_contain_text('오늘의 결론')
     expect(page.locator('#upgradeOverview')).to_contain_text('최근 자료 저장')
     expect(page.locator('#upgradeOverview')).to_contain_text('필수 계정')
     assert page.locator('#upgradeOverview').get_by_text('방어 검토',exact=True).count()==0
     page.locator('[data-page=finder]').click();page.locator('[data-context-page=trend-following]').click()
     expect(page.locator('#trendFollowing .market-explanation')).to_have_text(page.locator('#trendFollowing .market-explanation').text_content())
-    assert page.locator('#trendFollowing .market-explanation').inner_text()==home_text
+    assert page.locator('#trendFollowing .me-card').count()==2
+    assert all(r in page.locator('#trendFollowing .market-explanation').inner_text() for r in home_reasons)
     expect(page.locator('#trendFollowing .tf-changes')).to_contain_text('관측 후보 변화')
     page.locator('[data-page=recommendations]').click()
     expect(page.locator('#recommendationView')).to_contain_text('최대 5종목 · 종목당 40% · 현금 최소 5%')
@@ -97,4 +102,4 @@ with sync_playwright() as p:
     assert loads.count('900001')==1,loads
     assert not errors,errors
     browser.close()
-print('PASS same market cards home/trend, trend changes, current/written risk+alternatives5/40/5, native-only USD FY2027Q1 brief/detail, stale reference labels, lazy metadata updates, mobile390/320, JS errors0')
+print('PASS compact home market cards share trend explanation, trend changes, current/written risk+alternatives5/40/5, native-only USD FY2027Q1 brief/detail, stale reference labels, lazy metadata updates, mobile390/320, JS errors0')

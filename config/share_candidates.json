@@ -301,7 +301,10 @@
     "docs/MARKET_TREND_CHANGES.md": "docs/MARKET_TREND_CHANGES.md",
     "docs/RISK_REVIEW_AND_FISCAL_CONTRACT.md": "docs/RISK_REVIEW_AND_FISCAL_CONTRACT.md",
     "docs/DASHBOARD_TEN_UPGRADES.md": "docs/DASHBOARD_TEN_UPGRADES.md",
-    "src/aurora_glass.css": "src/aurora_glass.css",
-    "docs/AURORA_GLASS_DESIGN.md": "docs/AURORA_GLASS_DESIGN.md"
+    "docs/AURORA_GLASS_DESIGN.md": "docs/AURORA_GLASS_DESIGN.md",
+    "src/soft_ui.css": "src/soft_ui.css",
+    "src/home_dashboard_ui.js": "src/home_dashboard_ui.js",
+    "tests/test_home_dashboard.js": "tests/test_home_dashboard.js",
+    "docs/SOFT_UI_DESIGN.md": "docs/SOFT_UI_DESIGN.md"
   }
 }

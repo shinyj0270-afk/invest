@@ -79,8 +79,8 @@ def export_holdings_frame(snapshot, *, live=None, market_cache=None, analysis_sn
         values['INVESTMENT_HOLDINGS_MARKET'] = dict(enabled=True,endpoint='/holding-market',token=live['token'])
     legacy = legacy.replace('<script>', '<script>Object.assign(window,' + script_json(values) + ');</script><script>', 1)
     # The parent owns navigation; retain internal tab buttons for existing detail flows.
-    legacy = legacy.replace('<body>', '<body class="aurora-legacy">', 1)
-    legacy = legacy.replace('</head>', '<style>' + (src / 'aurora_glass.css').read_text(encoding='utf-8') + '</style></head>')
+    legacy = legacy.replace('<body>', '<body class="soft-legacy">', 1)
+    legacy = legacy.replace('</head>', '<style>' + (src / 'soft_ui.css').read_text(encoding='utf-8') + '</style></head>')
     legacy = legacy.replace('</head>', '<style>header{display:none}main{max-width:none;padding:0}body{background:transparent}.notice,#scopeBar,.foot,#clearData{display:none}</style></head>')
     return legacy
 
@@ -204,7 +204,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     legacy = None if (live or {}).get('lazy_holdings_frame') else export_holdings_frame(snapshot,live=live,market_cache=market_cache,analysis_snapshot=analysis)
     html = (src / 'workspace.html').read_text(encoding='utf-8')
     # Insert payload last so data containing template marker text stays literal.
-    for marker, name in [('/*DASHBOARD_STABILITY*/', 'dashboard_stability.js'), ('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*AURORA_GLASS_CSS*/','aurora_glass.css'), ('/*WORKSPACE_JS*/', 'workspace.js'),
+    for marker, name in [('/*DASHBOARD_STABILITY*/', 'dashboard_stability.js'), ('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*SOFT_UI_CSS*/','soft_ui.css'), ('/*HOME_DASHBOARD_UI*/', 'home_dashboard_ui.js'), ('/*WORKSPACE_JS*/', 'workspace.js'),
                          ('/*DASHBOARD_JOURNEY*/', 'dashboard_journey.js'),
                          ('/*MARKET_EXPLANATION_CSS*/', 'market_explanation.css'), ('/*MARKET_EXPLANATION_UI*/', 'market_explanation_ui.js'),
                          ('/*TREND_CHANGES_UI*/', 'trend_changes_ui.js'), ('/*RISK_REVIEW_UI*/', 'risk_review_ui.js'),

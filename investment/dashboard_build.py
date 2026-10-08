@@ -41,8 +41,8 @@ def loading_page():
     return '''<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>통합 투자 대시보드 · 자료 준비</title></head>
-<body style="margin:0;background:#f1eff6;background-image:radial-gradient(ellipse at 85% 10%,#cce9e5,transparent 65%),radial-gradient(ellipse at 20% 80%,#e4daf3,transparent 65%);color:#29344e;font:16px sans-serif">
-<main style="max-width:680px;margin:12vh auto;padding:30px;background:#ffffff85;border:1px solid #fff;border-radius:24px;box-shadow:0 15px 35px #867b9b18">
+<body style="margin:0;background:#e9ecf1;color:#2a2f3a;font:16px sans-serif">
+<main style="max-width:680px;margin:12vh auto;padding:30px;background:#e9ecf1;border-radius:26px;box-shadow:9px 9px 20px #c8ced8,-9px -9px 20px #ffffff">
 <h1>통합 투자 대시보드</h1><p id="loadingStatus" role="status" aria-live="polite">저장된 자료를 준비하고 있습니다.</p>
 <p>기업과 주가 자료가 많으면 잠시 걸릴 수 있습니다. 준비가 끝나면 화면이 열립니다.</p>
 <button id="loadingRetry" hidden onclick="location.reload()">다시 열기</button>
