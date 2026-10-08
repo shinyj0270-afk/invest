@@ -16,7 +16,7 @@ commands = [
     [sys.executable, 'batch.py', 'weekly'],
 ]
 if (ROOT/'tests/test_engine.js').exists():
-    commands += [['node', 'tests/test_engine.js'], ['node', 'tests/test_portfolio.js'], ['node','tests/test_holdings_sync.js'], ['node', 'tests/test_discovery.js'], ['node', 'tests/test_advanced_visuals.js'], ['node', 'tests/test_ebitda_inputs.js'], ['node', 'tests/test_company_detail.js'], ['node', 'tests/test_company_valuation.js'], ['node', 'tests/test_trend_following.js'], ['node', 'tests/test_home_dashboard.js'], ['node', 'tests/test_verification_ui.js'], ['node', 'tests/test_thesis_ui.js']]
+    commands += [['node', 'tests/test_engine.js'], ['node', 'tests/test_portfolio.js'], ['node','tests/test_holdings_sync.js'], ['node', 'tests/test_discovery.js'], ['node', 'tests/test_advanced_visuals.js'], ['node', 'tests/test_ebitda_inputs.js'], ['node', 'tests/test_company_detail.js'], ['node', 'tests/test_company_valuation.js'], ['node', 'tests/test_trend_following.js'], ['node', 'tests/test_home_dashboard.js'], ['node', 'tests/test_verification_ui.js'], ['node', 'tests/test_thesis_ui.js'], ['node', 'tests/test_holdings_brief.js']]
 commands += [[sys.executable, '-m', 'unittest', *['tests.test_dashboard_payload', 'tests.test_dashboard_stability', 'tests.test_fiscal_native_financial', 'tests.test_market_trend_changes', 'tests.test_risk_review', 'tests.test_upgrade_integration', 'tests.test_verification', 'tests.test_thesis_monitor']]]
 commands += [['node', name] for name in ['tests/check_financial_review_ui.js', 'tests/test_company_fiscal.js', 'tests/test_dashboard_stability.js', 'tests/test_market_trend_changes.js']]
 for command in commands:

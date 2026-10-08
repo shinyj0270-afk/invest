@@ -47,6 +47,9 @@ with sync_playwright() as p:
     page.locator('[data-page=home]').click()
     expect(page.locator('#homeHoldings')).to_contain_text('가상 테스트')
     assert page.locator('#homeHoldings .home-company').count()>0
+    expect(page.locator('#homeHoldings .brief-item').first).to_contain_text('첫 관측')
+    expect(page.locator('#homeHoldings .brief-basis').first).to_contain_text('확인')
+    assert page.locator('#homeHoldings .brief-item').count()==page.locator('#homeHoldings .home-company').count()
     page.locator('#homeSectors button').first.click()
     expect(page.locator('#discoveryFilters [name=industry]')).not_to_have_value('')
     page.locator('[data-page=home]').click()

@@ -63,6 +63,19 @@ function renderHomeSectors(){
  $('homeCandidates').querySelectorAll('[data-home-code]').forEach(el=>el.onclick=()=>{code=el.dataset.homeCode;go('brief');});
  $('homeCandidates').querySelectorAll('[data-sector-search]').forEach(el=>el.onclick=()=>{researchUI.search('',el.dataset.sectorSearch,el.dataset.sectorMarket);go('finder');});
 }
+function holdingBriefs(input,held){
+ let review=null;try{review=PortfolioEngine.reviewHoldings(input,$('detailFrame').contentWindow?.INVESTMENT_GET_POLICY?.()||{});}catch{}
+ const judged=new Map((review?.rows||[]).map(r=>[r.code,r])),key='investment-holdings-brief-v1-'+meta.data_mode;
+ const time=new Date().toLocaleTimeString('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false});
+ let store={codes:{}};try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(saved?.codes&&typeof saved.codes==='object')store=saved;}catch{}
+ const briefs=held.map(h=>{const row=researchRows.find(r=>r.code===h.code)||{},j=judged.get(h.code);
+  const item={code:h.code,name:h.name||row.name||h.code,opinion:j?.opinion,label:j?.label||'판단 대기',reasons:j?.reasons||[],technical:researchData?.rows?.[h.code]?.technical,
+   common:row.common_financial,health:row.collection_health,verification:row.verification,thesis:WORKSPACE_DATA.thesis_monitor?.[h.code]};
+  const {prior,next}=HoldingsBrief.rollover(store.codes[h.code],HoldingsBrief.snapshot(item));store.codes[h.code]=next;
+  return HoldingsBrief.brief(item,prior,{time});});
+ try{localStorage.setItem(key,JSON.stringify(store));}catch{}
+ return briefs;
+}
 function renderHome(){
  const trend=WORKSPACE_DATA.trend_following||{},insights=WORKSPACE_DATA.market_insights;
  $('homeVerdict').innerHTML=HomeDashboardUI.verdictPanel(HomeDashboardUI.verdict(trend.market_explanation,insights));
@@ -73,7 +86,7 @@ function renderHome(){
  $('homeWatch').innerHTML=homeList(researchRows.filter(r=>researchUI.isWatched(r.code)),'기업 찾기에서 별표를 눌러 관심 기업을 추가하세요.');
  const input=$('detailFrame').contentWindow?.INVESTMENT_GET_HOLDINGS?.();
  const held=(input?.holdings||[]).map(h=>({...input.research?.find(r=>r.code===h.code),...h,...allRows.find(r=>r.code===h.code)}));
- $('homeHoldings').innerHTML=homeList(held,frameReady?'직접 입력한 보유종목이 없습니다.':'보유 입력을 불러오는 중…')+(input?.holdings?.length?`<p class="psub">${input.mode==='fixture'?'가상 테스트 · 실제 보유 아님':'현재 보유 입력'} · 평가는 보유 검토에서 확인하세요.</p>`:'');
+ $('homeHoldings').innerHTML=(held.length?HoldingsBrief.render(holdingBriefs(input,held)):homeList(held,frameReady?'직접 입력한 보유종목이 없습니다.':'보유 입력을 불러오는 중…'))+(input?.holdings?.length?`<p class="psub">${input.mode==='fixture'?'가상 테스트 · 실제 보유 아님':'현재 보유 입력'} · 중요 변화만 표시 · 비교 기준은 이 브라우저에 보관한 직전 완료 종가일 · 평가는 보유 검토에서 확인하세요.</p>`:'');
  const bindJourney={rows:researchRows,go:c=>{code=c;go('brief');},search:(industry,market)=>{researchUI.search('',industry,market);go('finder');}};
  DashboardJourney.bind($('upgradeOverview'),bindJourney);
  $('homeMarketCharts').querySelectorAll('[data-go]').forEach(el=>el.onclick=()=>go(el.dataset.go));
