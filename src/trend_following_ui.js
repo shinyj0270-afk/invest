@@ -2,7 +2,7 @@
 const TrendFollowingUI=(()=>{
  const num=v=>typeof v==='number'&&Number.isFinite(v),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const fmt=(v,d=1)=>num(v)?v.toLocaleString('ko-KR',{maximumFractionDigits:d}):'—';
- const defaults={market:'',industry:'',query:'',capMin:1000,rsMin:70,setup:'all',sort:'rs',page:0,code:''};
+ const defaults={market:'',industry:'',query:'',capMin:1500,rsMin:70,setup:'all',sort:'rs',page:0,code:''};
  function select(rows,state){
   const query=state.query.trim().toLocaleLowerCase();
   return rows.filter(r=>r.discovery_allowed!==false&&r.ready&&num(r.cap_eok)&&r.cap_eok>=state.capMin&&num(r.rs)&&r.rs>=state.rsMin
@@ -27,11 +27,11 @@ const TrendFollowingUI=(()=>{
   return `<svg class="tf-chart" viewBox="0 0 550 ${market?202:256}" role="img" aria-label="${esc(label)}"><title>${esc(label)} · ${esc(ps[0].date)} ~ ${esc(ps.at(-1).date)} · ${market?'지수 pt':'가격 원 · 거래량 주'}</title>${keys.map(([,name,color],i)=>`<text x="${51+i*100}" y="15" fill="${color}">${name}</text>`).join('')}${[lo,(lo+hi)/2,hi].map(v=>`<line x1="51" x2="511" y1="${y(v)}" y2="${y(v)}" stroke="#e6ebf1"/><text x="45" y="${y(v)+4}" text-anchor="end">${fmt(v,market?1:0)}</text>`).join('')}${keys.map(([key,,color])=>`<path d="${path(key)}" fill="none" stroke="${color}" stroke-width="${key==='close'?2.2:1.4}"/>`).join('')}${num(pivot)?`<line x1="51" x2="511" y1="${y(pivot)}" y2="${y(pivot)}" stroke="#cf5265" stroke-dasharray="5 4"><title>직전 20일 최고종가 ${fmt(pivot,0)}원</title></line>`:''}<text x="51" y="190">${esc(ps[0].date)}</text><text x="511" y="190" text-anchor="end">${esc(ps.at(-1).date)}</text>${market?'':`<text x="51" y="207">거래량 (주) · ${vm?fmt(vm,0)+' 최대':'미확보/0'}</text><path d="${volume}" fill="none" stroke="#a9bed8" stroke-width="2"/><text x="51" y="250">가격(원) · 개별 가격 축 · ${num(pivot)?'점선: 20일 최고종가':''}</text>`}</svg>`;
  }
  function create({element,data={},insights,research,getCompany=()=>null,loadCompany,isActive=()=>true,go}){
-  const rows=data.rows||[],storage='investment-trend-following-v1-'+(data.mode||'unknown');
-  let state={...defaults},chart=null,queue=[],running=0,wanted=new Set();const attempted=new Set(),failed=new Set(),chartStates={};
+  const rows=data.rows||[],storage='investment-trend-following-v2-'+(data.mode||'unknown'),capDefault=num(data.default_cap_eok)?data.default_cap_eok:defaults.capMin;
+  let state={...defaults,capMin:capDefault},chart=null,queue=[],running=0,wanted=new Set();const attempted=new Set(),failed=new Set(),chartStates={};
   const changeUI=typeof TrendChangesUI!=='undefined'?TrendChangesUI.create({data,go,refresh:()=>render()}):null;
   try{const saved=JSON.parse(sessionStorage.getItem(storage)||'null');if(saved)for(const k of Object.keys(defaults))if(typeof saved[k]===typeof defaults[k])state[k]=saved[k];}catch{}
-  function clean(){state.capMin=num(state.capMin)&&state.capMin>=0?state.capMin:1000;state.rsMin=num(state.rsMin)&&state.rsMin>=0&&state.rsMin<=99.99?state.rsMin:70;state.page=Number.isInteger(state.page)&&state.page>=0?state.page:0;if(!['rs','rs1m'].includes(state.sort))state.sort='rs';if(!['all','template','near','breakout','contraction'].includes(state.setup))state.setup='all';}
+  function clean(){state.capMin=num(state.capMin)&&state.capMin>=0?state.capMin:capDefault;state.rsMin=num(state.rsMin)&&state.rsMin>=0&&state.rsMin<=99.99?state.rsMin:70;state.page=Number.isInteger(state.page)&&state.page>=0?state.page:0;if(!['rs','rs1m'].includes(state.sort))state.sort='rs';if(!['all','template','near','breakout','contraction'].includes(state.setup))state.setup='all';}
   function save(){try{sessionStorage.setItem(storage,JSON.stringify(state));}catch{}}
   function series(r){const live=research?.rows?.[r.code]?.technical;return live?.as_of===data.as_of&&live?.series?.length?live.series:data.previews?.[r.code]||[];}
   function pump(){while(running<2&&queue.length){const code=queue.shift();if(!wanted.has(code)||!isActive()){attempted.delete(code);continue;}running++;

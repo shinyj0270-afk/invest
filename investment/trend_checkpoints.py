@@ -8,9 +8,10 @@ from hashlib import sha256
 import json
 from pathlib import Path
 from .portfolio_risk import day, numeric
+from .market_discovery import MIN_DISCOVERY_CAP_EOK
 
 SCHEMA = 1
-RULE = 'observed-default-cap1000-rs70-v1'
+RULE = f'observed-default-cap{MIN_DISCOVERY_CAP_EOK}-rs70-v2'
 NOTE = '작성 당시 관측 체크포인트 비교 · 백테스트·전일 재구성 아님. RS는 당시 저장 유효기업 모집단 산식이며 필터 변경으로 과거 순위를 재계산하지 않습니다.'
 
 
@@ -34,7 +35,7 @@ def summarize(data):
         ready = r.get('ready') is True and t.get('as_of') == data['as_of'] and numeric(t.get('close')) and t['close'] > 0
         cap = r.get('cap_eok') if numeric(r.get('cap_eok')) else None
         rs = r.get('rs') if numeric(r.get('rs')) else None
-        qualifies = bool(ready and r.get('discovery_allowed') is not False and cap is not None and cap >= 1000 and rs is not None and rs >= 70)
+        qualifies = bool(ready and r.get('discovery_allowed') is not False and cap is not None and cap >= MIN_DISCOVERY_CAP_EOK and rs is not None and rs >= 70)
         ma50 = (t.get('sma') or {}).get('50')
         gap = a.get('pivot_gap_pct')
         rows.append(dict(identity=identity, ready=bool(ready), reason=r.get('reason', ''),
@@ -78,8 +79,8 @@ def compare_observations(current, prior=None):
         if prior and r['qualified'] and (p is None or not p['qualified']):
             changes['new_qualified'].append(_public(r, reason='관찰 대상에 새로 포함' if p is None else '기본 조건 새 충족'))
         if prior and p and p['qualified'] and not r['qualified']:
-            failed = r['ready'] and r.get('discovery_allowed', True) and ((numeric(r['cap_eok']) and r['cap_eok'] < 1000) or (numeric(r['rs']) and r['rs'] < 70))
-            changes['dropouts' if failed else 'pending'].append(_public(r, reason='시총1,000억원·RS70 기본 조건 이탈' if failed else r.get('reason') or '현재 가격·RS·시총·대상 확인 대기; 조건 이탈 확정 아님'))
+            failed = r['ready'] and r.get('discovery_allowed', True) and ((numeric(r['cap_eok']) and r['cap_eok'] < MIN_DISCOVERY_CAP_EOK) or (numeric(r['rs']) and r['rs'] < 70))
+            changes['dropouts' if failed else 'pending'].append(_public(r, reason=f'시총{MIN_DISCOVERY_CAP_EOK:,}억원·RS70 기본 조건 이탈' if failed else r.get('reason') or '현재 가격·RS·시총·대상 확인 대기; 조건 이탈 확정 아님'))
         for field, label in (('near', 'near'), ('breakout', 'breakouts'), ('ma_fail', 'ma_fail')):
             if r[field] and (r['qualified'] or key in old and old[key]['qualified']):
                 changes[label].append(_public(r, newly_observed=None if not prior else p is None or not p[field], volume_confirmed=r['volume_confirmed']))
@@ -103,11 +104,15 @@ def observe_trend(data, directory, observed_at=None):
         raise ValueError('체크포인트 자료 모드 확인 필요')
     directory = Path(directory) / mode
     directory.mkdir(parents=True, exist_ok=True)
-    records = []; unreadable = 0
+    records = []; unreadable = 0; prior_rule = 0
     for path in sorted(directory.glob('*.json')):
         try:
             record = json.loads(path.read_text(encoding='utf-8'))
             body = {k: v for k, v in record.items() if k not in ('digest', 'revision', 'observed_at', 'previous_digest')}
+            if record.get('schema') == SCHEMA and record.get('rule') != RULE:
+                # A changed default rule is not corruption; it just cannot serve as a comparable prior.
+                prior_rule += 1
+                continue
             if record['schema'] != SCHEMA or record['rule'] != RULE or record['mode'] != mode or not day(record['as_of']) or record['digest'] != sha256(_encoded(body)).hexdigest():
                 raise ValueError('기록 무결성 불일치')
             if not isinstance(record['revision'], int) or record['revision'] < 1 or not isinstance(record['rows'], list):
@@ -140,4 +145,5 @@ def observe_trend(data, directory, observed_at=None):
     result = compare_observations(current, prior)
     result['observed_at'] = current['observed_at']
     result['unreadable_records'] = unreadable
+    result['prior_rule_records'] = prior_rule
     return result

@@ -57,7 +57,7 @@ def enrich_market(discovery, cache):
             value=sum(r['metrics']['market_cap_eok']*facts[r['code']]['technical']['short_rs'][key]['return_pct'] for r in ms)/weight if weight else None
             shorts[key]=dict(return_pct=value,score=percentile(value,pools.get((market,key),[])) if len(ms)>=5 else None,count=len(ms),cap_eok=weight)
         sectors.append(dict(market=market,industry=industry,count=len(members),short_rs=shorts))
-    return dict(markets=markets,sectors=sectors,definition='21/63/126 완료 거래일 수익률의 같은 거래소 저장 유효 기업 내 백분위. 업종은 시총850억원 초과 유효기업의 현재 시총 가중 수익률을 같은 분포에 대조; 5개 미만 업종 순위 대기. 투자 가능한 업종지수·총수익률 아님')
+    return dict(markets=markets,sectors=sectors,definition='21/63/126 완료 거래일 수익률의 같은 거래소 저장 유효 기업 내 백분위. 업종은 시총1,500억원 초과 유효기업의 현재 시총 가중 수익률을 같은 분포에 대조; 5개 미만 업종 순위 대기. 투자 가능한 업종지수·총수익률 아님')
 
 def reconcile_prices(row, record, references=()):
     ps={p['date']:p for p in (record or {}).get('prices',[])};checks=[]

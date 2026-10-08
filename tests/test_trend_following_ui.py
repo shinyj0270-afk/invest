@@ -43,7 +43,7 @@ with sync_playwright() as p:
     page.locator('[data-context-page="trend-following"]').click()
     expect(page.locator('#trendFollowing')).to_be_visible()
     expect(page.locator('#navigation > [data-page=finder]')).to_have_attribute('aria-current','page')
-    expect(page.locator('#tfFilters [name=capMin]')).to_have_value('1000')
+    expect(page.locator('#tfFilters [name=capMin]')).to_have_value('1500')
     expect(page.locator('#tfFilters [name=rsMin]')).to_have_value('70')
     expect(page.locator('.tf-stock .tf-chart')).to_have_count(6)
     expect(page.locator('#tfDetailChart .tc-price-svg')).to_be_visible()

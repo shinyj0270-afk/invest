@@ -14,7 +14,8 @@ from .workspace_research import METRICS, RS_LABEL
 from .trend_diagnostics import diagnose, update_rank
 from threading import RLock
 
-MIN_DISCOVERY_CAP_EOK=850
+# Discovery scope (user decision 2026-10-08): about 1,000 companies, fixed cap rule for stable daily membership.
+MIN_DISCOVERY_CAP_EOK=1500
 
 
 def discovery_cap(row,quote=None):
@@ -243,7 +244,7 @@ def build_discovery(analysis, research, cache, *, include_series=True):
         price_trend_pass=sum(f['technical']['price_trend_status']=='pass' for f in facts.values()))
     coverage['discovery_candidates']=sum(r['discovery_allowed'] for r in rows)
     coverage['cap_excluded']=len(rows)-coverage['discovery_candidates']
-    note = (f"네이버 공개 목록 {coverage['total']:,}개 중 시가총액 850억원 초과 탐색 대상 {coverage['discovery_candidates']:,}개 · 조회 {bundle.get('retrieved_on')} · "
+    note = (f"네이버 공개 목록 {coverage['total']:,}개 중 시가총액 {MIN_DISCOVERY_CAP_EOK:,}억원 초과 탐색 대상 {coverage['discovery_candidates']:,}개 · 조회 {bundle.get('retrieved_on')} · "
             f"일봉 {calendar.get('valid_through', '미확보')} · 동일 시장 순위 유효 {score_count:,}개. "
             '재무 기간·연결/별도 미명시 수치는 발굴 참고용이며, 기존 인포맥스 수치가 있으면 우선합니다.')
     return dict(snapshot=dict(meta=dict(discovery=True, discovery_note=note, data_mode=analysis['meta']['data_mode'],

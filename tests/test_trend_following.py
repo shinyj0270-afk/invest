@@ -24,7 +24,7 @@ class TrendFollowingTests(unittest.TestCase):
     def test_default_thousand_and_complete_chart_metadata(self):
         s=trend_fixture();research=build_research(s);before=copy.deepcopy((s,research))
         data=build_trend_following(s,research)
-        self.assertEqual(data['default_cap_eok'],1000)
+        self.assertEqual(data['default_cap_eok'],1500)
         self.assertEqual(data['default_rs'],70)
         self.assertEqual(len(data['markets']),2)
         self.assertEqual(data['markets'][0]['status'],'ready')
@@ -36,8 +36,8 @@ class TrendFollowingTests(unittest.TestCase):
     def test_thousand_boundary_and_previews_bounded_to_twenty_one(self):
         s=trend_fixture(32);research=build_research(s)
         for r in research['rows'].values():r['technical']['price_strength']['score']=80
-        s['companies'][0]['metrics']['market_cap_eok']=999.99
-        s['companies'][1]['metrics']['market_cap_eok']=1000
+        s['companies'][0]['metrics']['market_cap_eok']=1499.99
+        s['companies'][1]['metrics']['market_cap_eok']=1500
         s['companies'][2]['metrics']['market_cap_eok']=None
         data=build_trend_following(s,research)
         self.assertEqual(len(data['previews']),21)

@@ -14,7 +14,7 @@ from tests.test_trend_following import trend_fixture
 def board(as_of='2026-10-06'):
     def row(code, rs, gap=-1, close=100, ma=90):
         return dict(code=code, name='가상 '+code, market='KOSPI', ready=True,
-            cap_eok=1000, rs=rs, discovery_allowed=True, phase='돌파선 3% 이내',
+            cap_eok=1500, rs=rs, discovery_allowed=True, phase='돌파선 3% 이내',
             analysis=dict(pivot_gap_pct=gap), technical=dict(as_of=as_of, close=close,
                 sma={'50':ma},price_strength={'eligible_count':7}))
     return dict(as_of=as_of, mode='fixture', source_note='synthetic validated source', rows=[row('A',69),row('B',80),row('C',90)])
@@ -125,6 +125,16 @@ class MarketTrendChangeTests(unittest.TestCase):
             self.assertEqual(result['status'],'no_prior');self.assertEqual(result['unreadable_records'],1)
             data=board('2026-10-07');data['mode']='user_input'
             self.assertEqual(observe_trend(data,tmp)['status'],'no_prior')
+
+    def test_prior_rule_records_are_reported_separately_not_as_corrupt(self):
+        with TemporaryDirectory() as tmp:
+            observe_trend(board(),tmp)
+            path=next(Path(tmp).rglob('*.json'));r=json.loads(path.read_text(encoding='utf-8'));r['rule']='observed-default-cap1000-rs70-v1'
+            path.write_text(json.dumps(r),encoding='utf-8')
+            result=observe_trend(board('2026-10-07'),tmp)
+            self.assertEqual(result['status'],'no_prior')
+            self.assertEqual(result['unreadable_records'],0)
+            self.assertEqual(result['prior_rule_records'],1)
 
     def test_invalid_identity_and_cutoff_rejected(self):
         data=board();data['rows'][0]['market']='wrong'

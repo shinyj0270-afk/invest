@@ -67,7 +67,7 @@ class CompanyFinancialTests(unittest.TestCase):
     def test_monitor_scans_gap_and_only_refreshes_changed_saved_companies(self):
         with tempfile.TemporaryDirectory() as directory:
             dest=Path(directory)
-            rows=[dict(code='028260',name='삼성물산',eligibility='candidate',metrics={'market_cap_eok':1000}),dict(code='298040',name='효성중공업',eligibility='candidate',metrics={'market_cap_eok':1000})]
+            rows=[dict(code='028260',name='삼성물산',eligibility='candidate',metrics={'market_cap_eok':2000}),dict(code='298040',name='효성중공업',eligibility='candidate',metrics={'market_cap_eok':2000})]
             for row in rows:(dest/(row['code']+'.json')).write_text('{}')
             (dest/'monitor-status.json').write_text(json.dumps({'checked_on':'2026-10-01'}))
             filings=Mock(return_value=[dict(name='삼성물산',title='[기재정정]반기보고서 (2026.06)')])

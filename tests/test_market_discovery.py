@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 from datetime import date, timedelta
 
-from investment.market_discovery import build_discovery, technical,discovery_candidate,load_market_cache,MarketCacheReader
+from investment.market_discovery import build_discovery, technical,discovery_candidate,load_market_cache,MarketCacheReader,MIN_DISCOVERY_CAP_EOK
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -66,12 +66,13 @@ class MarketDiscoveryTests(unittest.TestCase):
 
     def test_market_cap_boundary_and_fresh_identity(self):
         row=dict(name='기업',market='KOSPI',eligibility='candidate',metrics={})
-        for cap,expected in [(849.9,False),(850,False),(850.01,True),(None,False)]:
+        self.assertEqual(MIN_DISCOVERY_CAP_EOK,1500)
+        for cap,expected in [(1499.9,False),(1500,False),(1500.01,True),(None,False)]:
             row['metrics']['market_cap_eok']=cap
             self.assertEqual(discovery_candidate(row),expected)
-        row['metrics']['market_cap_eok']=1000
-        self.assertFalse(discovery_candidate(row,dict(name='기업',market='KOSPI',market_cap_eok=850)))
-        self.assertTrue(discovery_candidate(row,dict(name='다른 기업',market='KOSPI',market_cap_eok=850)))
+        row['metrics']['market_cap_eok']=2000
+        self.assertFalse(discovery_candidate(row,dict(name='기업',market='KOSPI',market_cap_eok=1500)))
+        self.assertTrue(discovery_candidate(row,dict(name='다른 기업',market='KOSPI',market_cap_eok=1500)))
 
     def test_source_sessions_compute_price_trend_without_claiming_liquidity(self):
         days = [(date(2025, 1, 1)+timedelta(days=i)).isoformat() for i in range(253)]
@@ -94,12 +95,14 @@ class MarketDiscoveryTests(unittest.TestCase):
             security_type='ordinary_candidate', analysis_profile='nonfinancial_candidate', eligibility='candidate',
             classification_note='후보', source='Npay 증권 공개 시장 목록', observed_on='2026-09-30',
             metric_basis='기간 미명시', derived_metrics={}, metrics=dict(roe_pct=12, operating_margin_pct=8,
-                revenue_growth_pct=4, debt_ratio_pct=30, per=9, pbr=1.1, market_cap_eok=1000), trading_status={})
+                revenue_growth_pct=4, debt_ratio_pct=30, per=9, pbr=1.1, market_cap_eok=2000), trading_status={})
         excluded = dict(candidate, code='654321', name='금융기업', eligibility='excluded')
         cache = dict(universe=dict(schema_version='naver-universe-0.1', companies=[candidate, excluded],
             pagination_complete=True, errors=[], retrieved_on='2026-09-30'), history={})
         result = build_discovery(base, research, cache)
         self.assertEqual([r['code'] for r in result['snapshot']['companies']], ['123456'])
+        self.assertTrue(result['snapshot']['companies'][0]['discovery_allowed'])
+        self.assertIn('1,500억원 초과', result['snapshot']['meta']['discovery_note'])
         row = result['snapshot']['companies'][0]
         self.assertFalse(row['legacy_available'])
         self.assertEqual(row['metric_details']['per']['source'], candidate['source'])
@@ -107,11 +110,11 @@ class MarketDiscoveryTests(unittest.TestCase):
         self.assertEqual(result['coverage']['total'], 2)
         self.assertEqual(result['coverage']['candidates'], 1)
         self.assertEqual(result['coverage']['both_valuation'], 1)
-        candidate['metrics']['market_cap_eok']=850
+        candidate['metrics']['market_cap_eok']=1500
         limited=build_discovery(base,research,cache)
         self.assertFalse(limited['snapshot']['companies'][0]['discovery_allowed'])
         self.assertEqual(limited['coverage']['discovery_candidates'],0)
-        candidate['metrics']['market_cap_eok']=1000
+        candidate['metrics']['market_cap_eok']=2000
         cache['quotes']={'quotes':{'123456':dict(code='123456',name='후보기업',market='KOSPI',price=999,
             retrieved_at='2026-10-02T10:00:00+09:00',final=False)}}
         refreshed=build_discovery(base,research,cache)

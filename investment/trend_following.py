@@ -5,6 +5,7 @@ from .market_history import benchmark_calendar, ADJUSTMENT_NOTE
 from .trend_diagnostics import diagnose
 from .market_explanation import build_market_explanation
 from .trend_checkpoints import summarize, compare_observations
+from .market_discovery import MIN_DISCOVERY_CAP_EOK
 
 
 def chart_series(bars, count=253):
@@ -73,11 +74,11 @@ def build_trend_following(snapshot,research,cache=None):
         except (ValueError,KeyError,TypeError) as exc:
             item['reason']=str(exc);item['technical'].update(close=None,trend_analysis=None)
         rows.append(item)
-    ranked=sorted((r for r in rows if r['discovery_allowed'] is not False and r['ready'] and numeric(r['rs']) and r['rs']>=70 and numeric(r['cap_eok']) and r['cap_eok']>=1000),key=lambda r:(-r['rs'],r['code']))
+    ranked=sorted((r for r in rows if r['discovery_allowed'] is not False and r['ready'] and numeric(r['rs']) and r['rs']>=70 and numeric(r['cap_eok']) and r['cap_eok']>=MIN_DISCOVERY_CAP_EOK),key=lambda r:(-r['rs'],r['code']))
     # Bound initial payload. Other cards reuse lazy company views, no new data API.
     for row in ranked[:21]:previews[row['code']]=chart_series(raw_by_code[row['code']])
     data=dict(as_of=cutoff,mode=snapshot['meta']['data_mode'],markets=markets,rows=rows,previews=previews,
-        default_cap_eok=1000,default_rs=70,preview_limit=21,
+        default_cap_eok=MIN_DISCOVERY_CAP_EOK,default_rs=70,preview_limit=21,
         source_note=ADJUSTMENT_NOTE if history else '저장 수정주가 · 완료 종가·거래소·지수 날짜 대조',
         market_definition='자체 지수 참고: 종가>50일선>200일선 및 200일선>21거래일 전이면 상승 정렬, 반대면 하락 정렬. 스탁이지 신호등·FTD 판정 아님')
     data['market_explanation']=build_market_explanation(cutoff,markets,rows,raw_by_code,market_bars,data['source_note'])
