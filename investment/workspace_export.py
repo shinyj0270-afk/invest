@@ -15,6 +15,7 @@ from .financial_metrics import common_metrics,apply_common
 from .market_insights import enrich_market
 from .trend_following import build_trend_following
 from .verification import verify_company, compact as compact_verification
+from .thesis_monitor import load_theses, evaluate as evaluate_thesis
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -171,6 +172,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     price_cutoff=(discovery or {}).get('snapshot',{}).get('meta',{}).get('price_date') or analysis['meta']['price_date']
     detail_scope=dict(analysis,meta=dict(analysis['meta'],price_date=price_cutoff))
     company_details = {} if (live or {}).get('lazy_company_views') else build_details(detail_scope, financial_tables, market_cache)
+    theses=load_theses();thesis_monitor={}
     if discovery:
         for row in discovery['snapshot']['companies']:
             row['collection_health']=(financials or {}).get(row['code'],{}).get('collection_health',{})
@@ -181,6 +183,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
             if table:
                 row['financial_completeness']=table.get('financial_completeness')
                 common=common_metrics(row,table,discovery['research']['rows'][row['code']]['technical'])
+                if row['code'] in theses:thesis_monitor[row['code']]=evaluate_thesis(theses[row['code']],table,discovery['research']['rows'][row['code']]['technical'])
                 apply_common(row,discovery['research']['rows'][row['code']],common)
                 if row['code'] in company_details:company_details[row['code']]['common_financial']=row.get('common_financial')
                 if row.get('common_financial'):
@@ -231,7 +234,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
         except (OSError,ValueError,TypeError) as exc:
             trend_data['changes']=dict(status='pending',reason='추세 관측 저장 대기: '+str(exc),events=[])
     payload=dict(snapshot=snapshot, analysis_snapshot=analysis,
-        research=research, discovery=discovery, financial_tables=financial_tables, company_details=company_details,market_insights=market_insights,
+        research=research, discovery=discovery, financial_tables=financial_tables, company_details=company_details,market_insights=market_insights,thesis_monitor=thesis_monitor,
         trend_following=trend_data, market_contract=dict(same_day_after='%02d:%02d'%DAILY_PUBLICATION_TIME,timezone='Asia/Seoul'),
         market_summary=market_summary(analysis, market_cache, discovery['snapshot']['meta']['price_date'] if discovery else analysis['meta']['price_date']),
         references=sanitize_references(references or {}, snapshot), detail_html=legacy)
