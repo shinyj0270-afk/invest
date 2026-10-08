@@ -1,0 +1,10 @@
+'use strict';
+const assert=require('assert');
+const V=require('../src/verification_ui.js');
+assert.ok(V.badge(null).includes('검증 대기'));
+assert.ok(V.badge({status:'review',label:'재검토 필요 · 계산 오류'}).includes('verify-badge bad'));
+const html=V.panel({status:'conditional',label:'조건부 통과',as_of:'2026-10-08',issues:[['basis','연결·별도 구분','<별도>','conditional']]});
+assert.ok(html.includes('&lt;별도&gt;')&&!html.includes('<별도>'),'details are escaped');
+assert.ok(html.includes(' open'),'non-passing verdicts open by default');
+assert.ok(!V.panel({status:'pass',label:'통과',as_of:'2026-10-08',issues:[]}).includes(' open'));
+console.log('PASS verification UI badge/panel tones, escaping and default disclosure');

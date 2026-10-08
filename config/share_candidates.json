@@ -305,6 +305,11 @@
     "src/soft_ui.css": "src/soft_ui.css",
     "src/home_dashboard_ui.js": "src/home_dashboard_ui.js",
     "tests/test_home_dashboard.js": "tests/test_home_dashboard.js",
-    "docs/SOFT_UI_DESIGN.md": "docs/SOFT_UI_DESIGN.md"
+    "docs/SOFT_UI_DESIGN.md": "docs/SOFT_UI_DESIGN.md",
+    "investment/verification.py": "investment/verification.py",
+    "src/verification_ui.js": "src/verification_ui.js",
+    "tests/test_verification.py": "tests/test_verification.py",
+    "tests/test_verification_ui.js": "tests/test_verification_ui.js",
+    "tools/export_review_report.py": "tools/export_review_report.py"
   }
 }

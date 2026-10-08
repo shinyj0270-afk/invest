@@ -158,6 +158,8 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                     merged['metric_details']={k:dict(source='인포맥스 우선 저장자료',period=f.get('period'),basis=f.get('basis'),status='reviewed',price_date=snapshot['meta']['price_date']) for k in f['metrics']}
                 temp={'fundamental':{}}
                 apply_common(merged,temp,common);model['common_financial']=merged.get('common_financial')
+                from .verification import verify_company, compact as compact_verification
+                model['verification']=compact_verification(verify_company(dict(merged,financial_completeness=model.get('financial_completeness')),detail,cutoff))
                 original=next((r for r in snapshot['companies'] if r['code']==code),row)
                 model['price_audit']=reconcile_prices(original,record)
                 self.send_body(200,json.dumps(dict(code=code,name=row['name'],market=row['market'],table=table,model=model,series=detail['series'],trend_analysis=detail.get('trend_analysis')),ensure_ascii=False,separators=(',',':')),'application/json');return

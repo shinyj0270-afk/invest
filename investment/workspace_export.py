@@ -14,6 +14,7 @@ from .market_history import benchmark_calendar, DAILY_PUBLICATION_TIME
 from .financial_metrics import common_metrics,apply_common
 from .market_insights import enrich_market
 from .trend_following import build_trend_following
+from .verification import verify_company, compact as compact_verification
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -194,6 +195,13 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
             chart_scope=dict(scope,meta=dict(scope['meta'],price_date=price_cutoff))
             company_details.update(build_details(chart_scope,extra_tables,market_cache))
             for r in extra:company_details[r['code']]['common_financial']=r.get('common_financial')
+    if discovery:
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        verified_on=datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat()
+        for row in discovery['snapshot']['companies']:
+            technical=discovery['research']['rows'].get(row['code'],{}).get('technical')
+            row['verification']=compact_verification(verify_company(row,technical,verified_on))
     market_insights=enrich_market(discovery,market_cache)
     # Every analysis view uses the same date-checked metrics; keep original payload intact.
     for row in analysis['companies']:
@@ -204,7 +212,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     legacy = None if (live or {}).get('lazy_holdings_frame') else export_holdings_frame(snapshot,live=live,market_cache=market_cache,analysis_snapshot=analysis)
     html = (src / 'workspace.html').read_text(encoding='utf-8')
     # Insert payload last so data containing template marker text stays literal.
-    for marker, name in [('/*DASHBOARD_STABILITY*/', 'dashboard_stability.js'), ('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*SOFT_UI_CSS*/','soft_ui.css'), ('/*HOME_DASHBOARD_UI*/', 'home_dashboard_ui.js'), ('/*WORKSPACE_JS*/', 'workspace.js'),
+    for marker, name in [('/*DASHBOARD_STABILITY*/', 'dashboard_stability.js'), ('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*SOFT_UI_CSS*/','soft_ui.css'), ('/*HOME_DASHBOARD_UI*/', 'home_dashboard_ui.js'), ('/*VERIFICATION_UI*/', 'verification_ui.js'), ('/*WORKSPACE_JS*/', 'workspace.js'),
                          ('/*DASHBOARD_JOURNEY*/', 'dashboard_journey.js'),
                          ('/*MARKET_EXPLANATION_CSS*/', 'market_explanation.css'), ('/*MARKET_EXPLANATION_UI*/', 'market_explanation_ui.js'),
                          ('/*TREND_CHANGES_UI*/', 'trend_changes_ui.js'), ('/*RISK_REVIEW_UI*/', 'risk_review_ui.js'),

@@ -144,6 +144,7 @@ window.INVESTMENT_LOAD_COMPANY_VIEW=async(c,force=false)=>{
   if(!row||data.code!==c||data.name!==row.name||data.market!==row.market)throw Error('기업 식별 확인 필요');
   WORKSPACE_DATA.financial_tables[c]=data.table;WORKSPACE_DATA.company_details[c]=data.model;
   const common=data.model?.common_financial,rr=researchRows.find(r=>r.code===c);
+  if(rr&&data.model?.verification)rr.verification=data.model.verification;
   if(rr&&data.model?.collection_health){rr.collection_health=data.model.collection_health;researchUI.updateHealth(c,data.model.collection_health);}
   if(common&&rr){researchUI.updateCommon(c,common);rr.common_financial=common;Object.assign(rr.metrics,common.metrics);Object.assign(rr.metric_details||(rr.metric_details={}),common.metric_details);const raw=researchSnap.companies.find(r=>r.code===c);if(raw){raw.common_financial=common;Object.assign(raw.metrics,common.metrics);Object.assign(raw.metric_details||(raw.metric_details={}),common.metric_details);}const f=researchData.rows[c].fundamental;Object.assign(f.metrics,common.metrics);Object.assign(f.metric_details||(f.metric_details={}),common.metric_details);f.period=common.period;f.basis=common.basis;}
   if(researchData.rows?.[c]?.technical)Object.assign(researchData.rows[c].technical,{series:data.series,series_pending:false,trend_analysis:data.trend_analysis});
