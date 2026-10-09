@@ -28,8 +28,8 @@ Recommended model: 최신 회사 인계 미지정; 실제 실행 모델 전환 �
 Recommended reasoning: High 권장 (자료 계약/실패 원인 검토; 실제 설정 전환 아님)
 Escalation condition: divergence/동시쓰기·수집/예상밖변경/옛·새잠금 동시실행/원문·기간·통화·공개일 근거 부족, DART 연간 수집 방식과 기존 계약 충돌 시 보존 후 해당 작업 중단.
 Branch: main (home 기존 바탕화면 작업본)
-Commit: d0c2b629dd60150a8c5b814d6df221dc26791f72 (이번 수신·실행 및 CLOSE 시작 기준 SHA)
-Remote status: origin/main; 이번 CLOSE 전 fetch에서 HEAD와 위 SHA 일치·차이0/0 확인. 마감 문서 commit/push verification pending. 실제 전송 결과는 최종 보고 및 다음 START Git 조회로 확인.
+Commit: 9caa4ba4d3d8027a0260a295737f69c0f30cf13e (이번 home 최신 수신·서버 시작 마감 기록 commit; 원격 전송 검증됨)
+Remote status: origin/main; pushed (verified). 2026-10-09 09:37 KST에 HEAD = origin/main = 실제 remote main = 9caa4ba4d3d8027a0260a295737f69c0f30cf13e 확인. 이 전송 증거만 갱신하는 후속 기록 commit 자체의 전송은 최종 보고 및 다음 START의 실제 Git 조회로 검증한다.
 
 Notes:
 - 공유 변경은 PROJECT_STATE.md/CURRENT_HANDOFF.md 두 문서만. 원자료·시장/재무 캐시·보유·DB·인증·PC설정·로그·검증증거는 home에 보존하며 코드 전송 제외.
