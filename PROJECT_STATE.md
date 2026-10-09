@@ -1,3 +1,12 @@
+# home Secondary 최신 수신·서버 실행 및 마감 · 2026-10-09 09:36 KST
+
+- 기존 home main fe36baa4ae36b31c23152c8b1cbf495f46b27ff4 clean에서 시작. fetch 확인 후 최신12개 commit을 ff-only 수신, HEAD/origin/main d0c2b629dd60150a8c5b814d6df221dc26791f72 일치. 별도 Orca 작업본과 PC별 설정·.venv·자료를 보존.
+- 사용자 ERR_CONNECTION_REFUSED 보고 후 기존 .venv tools/open_dashboard.py --no-browser로 home 서버 시작. health version2/build-source 일치/restart_required=false 및 대시보드 HTTP200을 직접 확인(LIVE_VERIFIED). 소프트 UI·시총1,500억·검증엔진·투자논리v2.1·브리핑 코드 수신 완료; 이번 실제 브라우저 렌더와 새 데이터 수집 완료는 별도 미확인.
+- 이번 CLOSE pc_check.py --phase finish, git diff --check, 원격 fetch 차이0/0, health/HTTP 대조 PASS. 코드/설정 수정 및 의존성 설치 없음. portable/단위/합성 UI 검사는 이번 재실행하지 않았고 회사의 과거 검증과 구분. 근거 validation/current/home-close-20261009/server-check.json.
+- home 재무 자동 수집 최종 상태·G9 연간 이력·유형별 기준값 조정·기존 비12월/USD/기간/환율/공식 달력 후속 유지. 가격·재무·보유입력·DB·인증·PC설정은 전송하지 않음. 앱은 유지하며 CLOSE와 서버 종료는 별개. 전송과 다음 실행 지점은 CURRENT_HANDOFF.md 참조.
+
+---
+
 # 회사 운영 서버 재시작 확인 · 2026-10-08
 
 - 사용자 재시작 중 ERR_CONNECTION_REFUSED 보고. 8767 리스너 및 기존 서버/별도 수집 프로세스 부재를 조회한 뒤 기존 회사 .venv tools/open_dashboard.py --no-browser로 서버 시작했다. 이전 실행의 강제 종료·실제 잠금 파일 삭제는 하지 않았다.
