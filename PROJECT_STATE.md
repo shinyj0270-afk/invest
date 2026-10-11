@@ -1,3 +1,21 @@
+# Research Library MVP CLOSE 검증 · 2026-10-11
+
+- 사용자 명시 CLOSE로 승인 Research Library branch shinyj0270-afk/research-library, 시작 b327a8739328345af167ca49503ad008f3831fc6의 공유 변경9파일을 검토·마감. 기존 main/다른 Orca 작업본 clean·진행Git작업 없음, 이번 fetch에서 실제 원격 main이 시작 기준과 일치하여 fast-forward 통합 가능. main 병합/운영자료 수정은 미실행, branch 전송과 회사 다음 작업은 CURRENT_HANDOFF.md 참조.
+- 이번 실제 재실행: 관련 unittest56개(신규27개 포함) PASS, 공유322개 경고0·격리portable·실자료없는AppTest PASS, diff 및 Git 제외대상 확인. pc-finish.ps1은 worktree .venv 부재로 차단됐으며 같은 PC 기존 .venv의 pc_check.py finish로 unknown/예상변경9/진행작업0/추적private0 확인. PC설정·환경 설치 없음.
+- 기존 Claude 최종 정적 APPROVED를 실제 재조회하고 이번 재검토/독립 테스트로 복사하지 않음. 비차단P3와 실제 채널/권한·대가 콘텐츠·ETF 분석 공급자·실자료 품질검증을 미완료로 유지. 원자료·유료자료·인증·DB·PC설정·보유·검토JSON/로그는 공유 대상에서 제외. 이번 운영 UI/실데이터/서버 검사는 미실행.
+
+---
+
+# Research Library 1차 MVP · 2026-10-11
+
+- 사용자 요청으로 clean Research Library worktree branch shinyj0270-afk/research-library, 기준 b327a8739328345af167ca49503ad008f3831fc6에서 설계·구현. 실제 원격 main 같은 SHA 조회 후 기존 main 작업본/PC설정/DB/원자료 보존. 현재 worktree profile unknown·upstream/.venv 부재는 임의 설정하지 않음. 자동 수신/병합/commit/push 미실행.
+- 신규 로컬 연구 DB/CLI: home 전용 Telegram 핵심2/선택 보조 채널·권한검사·수동 링크·기간/누락/중복 기록, 투자대가8인 출처/자체원칙/조건/반례 카드, 섹터/주제 가설 생성·revision·지지/반박/context 근거·폐기상태·독립 초안/명시 검토결과. 원문/API/실시간/알림/주문 없음. 설계·사용법 docs/RESEARCH_LIBRARY.md.
+- 기존 Store.connect/local_config/workspace_research/trend_following/thesis_monitor 재사용. 기존 일반주 분석 연결, ETF 식별/가설 연결은 지원하고 ETF 분석 공급자는 PENDING. 실제 대가 콘텐츠·채널명/권한·실자료 연구 결론은 미확인. Telegram·paid/private 의존 결과의 회사/일반Git 공유는 차단하며 입력/DB/출력은 .local에 보존한다.
+- 이번 직접 실행: 같은 PC 기존 프로젝트 .venv를 테스트 런타임으로만 사용, 신규27개 포함 관련 unittest56개 PASS. 최종 코드 공유322개 경고0·격리portable 및 실자료 없는AppTest PASS. 운영 UI를 변경하지 않아 합성 브라우저/실제 UI/실데이터 신규 검사는 미실행. 테스트가 home 실자료 성공을 뜻하지 않는다.
+- Claude Code 실제 독립 정적 검토(기본 제공 모델 claude-opus-5-5): 초기 CHANGES_REQUIRED 후 Telegram source 권한 우회·과거 반박 소실 및 날짜/출처/승인파일/공유표시/폐기상태 보완. 재검토에서 가설생성 seed 출처 보존·근거 기록일 지적을 추가 반영하고 최종 좁은 정적 확인 APPROVED(합성 MVP 코드 범위). 검토는 실제 연구자료나 독립 테스트 실행이 아니다. 검토JSON/검증로그는 validation/current의 공유 제외 근거. 기존 프로젝트 미해결 후속은 유지한다.
+
+---
+
 # home Secondary 최신 수신·서버 실행 및 마감 · 2026-10-09 09:36 KST
 
 - 기존 home main fe36baa4ae36b31c23152c8b1cbf495f46b27ff4 clean에서 시작. fetch 확인 후 최신12개 commit을 ff-only 수신, HEAD/origin/main d0c2b629dd60150a8c5b814d6df221dc26791f72 일치. 별도 Orca 작업본과 PC별 설정·.venv·자료를 보존.

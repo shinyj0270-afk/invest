@@ -1,6 +1,11 @@
 {
   "purpose": "Single-source, explicit Git handoff list for the existing INVESTMENT workspace",
   "files": {
+    "investment/research_library.py": "investment/research_library.py",
+    "investment/telegram_research.py": "investment/telegram_research.py",
+    "tools/research_library.py": "tools/research_library.py",
+    "tests/test_research_library.py": "tests/test_research_library.py",
+    "docs/RESEARCH_LIBRARY.md": "docs/RESEARCH_LIBRARY.md",
     "tools/portfolio_check.js": "tools/portfolio_check.js",
     "tools/verify_portfolio_data.py": "tools/verify_portfolio_data.py",
     "tests/test_portfolio_data.py": "tests/test_portfolio_data.py",
