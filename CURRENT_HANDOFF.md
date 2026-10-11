@@ -28,8 +28,8 @@ Recommended model: 미지정; 현재 사용자 지정 및 실제 제공 모델 �
 Recommended reasoning: High 권장(데이터 계약/실패 원인 검토); 단순 상태 조회는 필요한 수준만 사용
 Escalation condition: divergence/동시 쓰기·수집/예상 밖 변경/옛·새 잠금 동시 실행/원문·기간·통화·공개일 근거 부족 또는 DART 연간 수집 방식과 계약 충돌 시 보존 후 해당 작업 중단.
 Branch: main (기존 home 작업본)
-Commit: 69cf8b46f85c019f7a3819ad5a3f52969972320e (이번 세션 시작 기준; START에서 원격 일치 확인)
-Remote status: 이번 인계 변경은 commit/push verification pending. 시작 기준 origin/main 차이 0/0; 실제 전송 결과는 마감 최종 보고와 다음 START Git 조회로 확인.
+Commit: d5050a8ce83da494d835bc194903b415116dac59 (이번 START 점검 마감 인계 commit; 원격 전송 검증됨)
+Remote status: origin/main; pushed (verified). 2026-10-11 KST 이번 CLOSE에서 HEAD = origin/main = 실제 remote main = d5050a8ce83da494d835bc194903b415116dac59 확인. 이 전송 증거만 갱신하는 후속 기록 commit 자체의 전송은 최종 보고 및 다음 START 실제 Git 조회로 검증한다.
 
 Notes:
 - 이번 CLOSE PC 점검과 문서 내용/diff 검사를 수행. 단위/portable/합성 UI/실제 브라우저/서버 health/데이터 기준일 검사는 미실행.
