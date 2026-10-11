@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-11 19:44 KST
+Updated: 2026-10-11 19:47 KST
 Handoff version: 2026-10-11-research-library-close
 Last agent: Codex
 Last PC: unknown (현재 Orca worktree에 config/local.json 없음; 기존 home 기록과 구분)
@@ -12,9 +12,10 @@ Completed:
 - 이번 CLOSE 같은 PC 기존 .venv로 관련 unittest56개 재실행 PASS. 공유322개 경고0·격리portable/실자료없는AppTest 재실행 PASS(LIVE_VERIFIED, 합성/격리 범위). 기본 pc-finish.ps1은 이 worktree의 .venv 부재로 차단; 같은 PC 기존 .venv로 pc_check.py --phase finish 실행하여 unknown/예상변경9개/진행작업0/추적private0 확인. 설정·환경을 새로 만들거나 추측하지 않음.
 - 기존 Claude Code 2차 CHANGES_REQUIRED의 출처 보존·근거 기록일까지 반영한 최종 정적 APPROVED 결과를 이번에 실제 재조회. 코드 변경/새 Claude 호출 없음; 합성 MVP 코드의 정적 검토이며 Claude 독립 테스트 재실행과 실제 연구 결과 검증은 PENDING.
 - 이번 fetch 성공: main/추적 origin/main/실제 remote main b327a8739328345af167ca49503ad008f3831fc6. 기존 main 및 다른 Orca invest worktree clean·진행Git작업 없음. main이 시작 기준에 있어 fast-forward 통합 가능; 현재 요청은 병합 가능성 확인이므로 main 수정/병합/전송은 실행하지 않음. 한 시점의 Git 관측이며 쓰기 잠금 보장은 아님.
+- 구현 commit 98228664b06069bd1593527fbb76cca393bc4717를 승인 feature ref로 일반 push하고 HEAD/추적 feature/실제 원격 feature의 SHA 일치 직접 확인. main은 b327a8739328345af167ca49503ad008f3831fc6 불변. 별도 기록 commit의 전송은 최종 보고와 다음 START에서 실제 확인한다.
 
 Pending:
-- 이번 승인 branch commit/push 검증 pending; main 통합·회사/상대 PC 수신·실행 미완료. 정적 검토의 비차단P3: URL 정확 문자열 중복 기준, 제거한 seed의 현재 출처목록 미표시(공유차단 이력은 유지), seed ID 형식검사 보강. 소스 비독립성 구조·철회자료 보존/폐기·URL 상세규칙도 실제 입력 전 방법론 후속으로 보존.
+- 승인 feature branch 구현 전송 검증 완료; main 통합·회사/상대 PC 수신·실행 미완료. 정적 검토의 비차단P3: URL 정확 문자열 중복 기준, 제거한 seed의 현재 출처목록 미표시(공유차단 이력은 유지), seed ID 형식검사 보강. 소스 비독립성 구조·철회자료 보존/폐기·URL 상세규칙도 실제 입력 전 방법론 후속으로 보존.
 - 핵심 Telegram 채널2개와 플랫폼/채널 권한 근거 미제공. 실제 입력 비활성/미실행. 대가 원문 기반 실제 연구카드, ETF 분석 공급자, 실제 연구 결과 품질 검증 미완료.
 - home 최신 실제 화면, 자동 가격/재무 수집 최종 상태와 저장 기준일 미확인. 이전 10/07 수집과 10/09 서버 응답은 과거 기록이며 이번 검증으로 재사용하지 않음.
 - G9 연간 이익 3년+25% 이력 수집 방법 및 범위 확정, 유형별 제안 기준값 조정. 연간 재무 1열이라는 과거 근거는 재확인 필요.
@@ -31,8 +32,8 @@ Recommended model: 미지정; 현재 사용자 지정 및 실제 제공 모델 �
 Recommended reasoning: High 권장(데이터 계약/실패 원인 검토); 단순 상태 조회는 필요한 수준만 사용
 Escalation condition: 동시 쓰기/divergence/예상 밖 변경/권한 미확인·철회/원문·출처 독립성·공개일 근거 부족/개인정보·저작권 또는 ETF 계약 충돌 시 보존하고 해당 처리 중단·독립 검토.
 Branch: shinyj0270-afk/research-library (사용자 승인 MVP worktree)
-Commit: b327a8739328345af167ca49503ad008f3831fc6 (시작 기준 SHA; 이번 CLOSE 구현 commit 생성 pending)
-Remote status: verification pending; 대상 refs/heads/shinyj0270-afk/research-library. 이번 fetch에서 실제 remote main b327a8739328345af167ca49503ad008f3831fc6, feature remote branch 부재 확인. 새 구현 commit 생성 후 원격 재확인→일반 push→HEAD/추적ref/실제ref 대조 순서. main은 전송하지 않음.
+Commit: 98228664b06069bd1593527fbb76cca393bc4717 (MVP 구현/마감검증 commit; 원격 전송 검증됨)
+Remote status: pushed (verified); 대상 refs/heads/shinyj0270-afk/research-library. 2026-10-11 19:47 KST HEAD = origin/shinyj0270-afk/research-library = 실제 feature ref = 98228664b06069bd1593527fbb76cca393bc4717 확인. 실제 main b327a8739328345af167ca49503ad008f3831fc6 보존. 이 증거를 갱신하는 기록 commit 자체의 전송은 최종 보고 및 다음 START 실제 Git 조회로 검증한다.
 
 Notes:
 - 이번 CLOSE 관련56개/격리portable/AppTest·diff·원격/제외대상 검사 실행. unit 근거 validation/current/research-library-close/unit-regression.txt, portable 근거 share-candidate-review.json 및 share-test 로그. 기존 Claude 검토JSON은 validation/current/research-library/에 로컬 보존; 전체 검토/세션/원시 출력은 전송하지 않는다. 운영 health/실제 수집/실브라우저/합성UI는 이번 미실행.
