@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-12 08:21 KST
+Updated: 2026-10-12 08:22 KST
 Handoff version: 2026-10-12-company-research-library-integration
 Last agent: Codex
 Last PC: work (company Primary)
@@ -33,11 +33,11 @@ Recommended model: 미지정; 현재 제공 모델 유지, 자동 전환 없음
 Recommended reasoning: 데이터 계약 High 권장, 단순 상태 조회는 필요한 수준
 Escalation condition: divergence·동시 쓰기/수집·예상 밖 파일/보호자료 변경·권한/출처·통화/기간/공개일 불명확 시 보존 후 해당 작업 중단.
 Branch: main (회사 기준 작업본); source shinyj0270-afk/research-library
-Commit: 10810977938174db18c5684a4ddbcb3812a9d8d4 — Integrate Research Library into dashboard with read-only access (회사 통합 구현 commit; 전송 검증됨)
-Remote status: main pushed (verified). 2026-10-12 08:01 KST HEAD = origin/main = 실제 remote main = 10810977938174db18c5684a4ddbcb3812a9d8d4 확인. 실제 feature f829ece1a152db0bb2765c59243596f3676bce58 불변이며 main 조상 포함 검증. 이 전송 증거만 갱신하는 후속 기록 commit 자체의 전송은 최종 보고 및 다음 START 실제 Git 조회로 검증한다.
+Commit: d62ef4393f6e6eadfc3d9eb0f3a93f291019f3d5 — Record operating server restart and next session handoff (재시작 후속 마감 문서 commit; 전송 검증됨)
+Remote status: main pushed (verified). 2026-10-12 08:22 KST HEAD = origin/main = 실제 remote main = d62ef4393f6e6eadfc3d9eb0f3a93f291019f3d5 확인. Research Library 통합1081097 및 feature f829ece 포함은 앞선 통합 CLOSE에서 검증했다. 이 전송 증거만 갱신하는 후속 기록 commit 자체의 전송은 최종 보고 및 다음 START 실제 Git 조회로 검증한다. home 수신·실행 미확인.
 
 Notes:
-- 이번 CLOSE는 재시작 후속 문서2개만 변경. pc_check finish·diff/내용 검토·공유326개 audit 경고0·현재8767 health build/source 일치/restart_required=false 확인. 소스 변경 없어 단위/portable/UI 재실행하지 않음; 위 실행 결과는 같은 세션의 통합·재시작 시점 증거. commit/push pending. 시작 main d7b4f5590af92a57d4c485855191766812f05370 보존. 로컬 운영 검증 operating-restart-check.json.
+- 이번 CLOSE는 재시작 후속 문서2개만 변경. pc_check finish·diff/내용 검토·공유326개 audit 경고0·현재8767 health build/source 일치/restart_required=false 확인. 소스 변경 없어 단위/portable/UI 재실행하지 않음; 위 실행 결과는 같은 세션의 통합·재시작 시점 증거. commit/push 검증 완료. 시작 main d7b4f5590af92a57d4c485855191766812f05370 보존. 로컬 운영 검증 operating-restart-check.json.
 - 로컬 증거 Orca validation/current/research-library-company/{stage/validation/current,live-check.json,applied-hashes.json,private-check-result.json}는 공유 제외. 원자료/보유/DB/설정/인증·원시 검토 출력 전송 없음.
 - 회사 config·data·private_data·.local·DB 포함68360개 보호 파일의 사전/사후 SHA256 일치, 추가/삭제/변경0 확인. 기존 서버/개인 입력은 보존.
 - force push/reset/clean/stash·전역환경 수정·Wiki·전체 세션 수집·주문/자동매매/잔고 조회 없음. home 과거 검증을 회사 새 실행으로 표시하지 않음.
