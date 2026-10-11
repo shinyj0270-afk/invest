@@ -322,6 +322,10 @@
     "tests/test_thesis_ui.js": "tests/test_thesis_ui.js",
     "src/holdings_brief_ui.js": "src/holdings_brief_ui.js",
     "tests/test_holdings_brief.js": "tests/test_holdings_brief.js",
-    "docs/JUDGMENT_BRIEFING.md": "docs/JUDGMENT_BRIEFING.md"
+    "docs/JUDGMENT_BRIEFING.md": "docs/JUDGMENT_BRIEFING.md",
+    "investment/research_library_view.py": "investment/research_library_view.py",
+    "src/research_library_ui.js": "src/research_library_ui.js",
+    "tests/test_research_library_view.py": "tests/test_research_library_view.py",
+    "tests/test_research_library_ui.py": "tests/test_research_library_ui.py"
   }
 }

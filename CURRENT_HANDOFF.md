@@ -1,42 +1,41 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-11 19:47 KST
-Handoff version: 2026-10-11-research-library-close
+Updated: 2026-10-12 07:58 KST
+Handoff version: 2026-10-12-company-research-library-integration
 Last agent: Codex
-Last PC: unknown (현재 Orca worktree에 config/local.json 없음; 기존 home 기록과 구분)
-Last task: Research Library 1차 MVP INVESTMENT CLOSE · 검증 및 승인 feature branch commit/push
+Last PC: work (company Primary)
+Last task: Research Library 1차 MVP 회사 main 통합·대시보드 연결·INVESTMENT CLOSE
 
 Completed:
-- 지정 지침/CLAUDE/독립 스킬과 원격 GLOBAL_WORKFLOW v1.2를 실제 조회. clean Research Library branch 기준 b327a8739328345af167ca49503ad008f3831fc6 및 실제 원격 main 일치 조회. 예상 밖 branch/upstream/.venv 부재로 자동 수신 보류 후 사용자가 해당 branch의 MVP 구현을 명시 승인.
-- 로컬 CLI/연구DB·Telegram 권한/수동링크·대가8인 카드·섹터 가설/근거/revision/폐기상태·글쓰기 초안·허용결과 검토를 구현. 신규 모듈/CLI/테스트/설계문서와 공유manifest/portable 검사 연결만 변경. 기존 분석 재사용, main 작업본·원자료·운영설정·서버 보존.
-- 이번 CLOSE 같은 PC 기존 .venv로 관련 unittest56개 재실행 PASS. 공유322개 경고0·격리portable/실자료없는AppTest 재실행 PASS(LIVE_VERIFIED, 합성/격리 범위). 기본 pc-finish.ps1은 이 worktree의 .venv 부재로 차단; 같은 PC 기존 .venv로 pc_check.py --phase finish 실행하여 unknown/예상변경9개/진행작업0/추적private0 확인. 설정·환경을 새로 만들거나 추측하지 않음.
-- 기존 Claude Code 2차 CHANGES_REQUIRED의 출처 보존·근거 기록일까지 반영한 최종 정적 APPROVED 결과를 이번에 실제 재조회. 코드 변경/새 Claude 호출 없음; 합성 MVP 코드의 정적 검토이며 Claude 독립 테스트 재실행과 실제 연구 결과 검증은 PENDING.
-- 이번 fetch 성공: main/추적 origin/main/실제 remote main b327a8739328345af167ca49503ad008f3831fc6. 기존 main 및 다른 Orca invest worktree clean·진행Git작업 없음. main이 시작 기준에 있어 fast-forward 통합 가능; 현재 요청은 병합 가능성 확인이므로 main 수정/병합/전송은 실행하지 않음. 한 시점의 Git 관측이며 쓰기 잠금 보장은 아님.
-- 구현 commit 98228664b06069bd1593527fbb76cca393bc4717를 승인 feature ref로 일반 push하고 HEAD/추적 feature/실제 원격 feature의 SHA 일치 직접 확인. main은 b327a8739328345af167ca49503ad008f3831fc6 불변. 별도 기록 commit의 전송은 최종 보고와 다음 START에서 실제 확인한다.
+- START 회사 main b327a8739328345af167ca49503ad008f3831fc6 clean/profile work/진행Git0 확인. 원격 main/feature fetch 후 실제 feature SHA f829ece1a152db0bb2765c59243596f3676bce58 일치 확인. 기준 문서와 GLOBAL_WORKFLOW v1.2 실제 읽음. 기존 Orca 미완료 변경 보존.
+- feature 변경9개 검토 및 최신 원격/회사 main 재확인 후 f829ece를 fast-forward 통합. feature 이력 보존. 신규 연구 모듈은 기존 설정/보유/인포맥스/DB를 수정하지 않음.
+- 대시보드 더보기/모바일 분석 화면 Research Library 열람 연결 추가. Host/토큰 인증, PC별 연구DB mode=ro·연결 닫기, DB 부재 시 생성 없이 empty, work Telegram 거부. 입력은 CLI이며 기존 종목 판단 자동 변경 없음.
+- 읽기 전용 실행 옵션 추가: 수집·보유동기화·연구DB 생성·추천 작성·체크포인트 저장 없음, POST 거부. 일반 운영 기능 유지.
+- 회사 새 실행 unittest33개 PASS(연구27+추가6). 전체 격리 검증 공유326개 경고0·portable26명령·실자료 없는 AppTest·합성UI10여정 PASS. 추가 인증/POST 차단 검사는 전체 검사 후 별도 실행. UI여정 증가의 기존 검사 기대 수와 숨김 select 검사 동작 보완. 소스·문서·공유 audit·diff 확인.
+- 실제 회사 저장자료 읽기 전용8768: health build/source 일치/restart_required=false, dashboard HTTP200, 더보기 메뉴·8인 슬롯·empty·390/320px·JS오류0. 회사 연구DB 생성 없음. 합성 카드/가설 검사와 실제 empty 구분.
+- 기존 Claude APPROVED/56개 PASS는 사용자 보고 및 feature 인계의 SOURCE_RECORDED. P3 seed ID 검사·과거 revision seed 출처 표시 보완. 새 회사 UI/서버 코드의 Claude 재검토 미실행. 원시 검토JSON은 회사 접근 불가이며 지정 commit 인계의 P3 요약 대조.
 
 Pending:
-- 승인 feature branch 구현 전송 검증 완료; main 통합·회사/상대 PC 수신·실행 미완료. 정적 검토의 비차단P3: URL 정확 문자열 중복 기준, 제거한 seed의 현재 출처목록 미표시(공유차단 이력은 유지), seed ID 형식검사 보강. 소스 비독립성 구조·철회자료 보존/폐기·URL 상세규칙도 실제 입력 전 방법론 후속으로 보존.
-- 핵심 Telegram 채널2개와 플랫폼/채널 권한 근거 미제공. 실제 입력 비활성/미실행. 대가 원문 기반 실제 연구카드, ETF 분석 공급자, 실제 연구 결과 품질 검증 미완료.
-- home 최신 실제 화면, 자동 가격/재무 수집 최종 상태와 저장 기준일 미확인. 이전 10/07 수집과 10/09 서버 응답은 과거 기록이며 이번 검증으로 재사용하지 않음.
-- G9 연간 이익 3년+25% 이력 수집 방법 및 범위 확정, 유형별 제안 기준값 조정. 연간 재무 1열이라는 과거 근거는 재확인 필요.
-- 브리핑의 실제 보유 입력/브라우저 비교 기준 및 체크포인트 비교 미확인. 회사 보유 기록으로 home 상태를 추정하지 않음.
-- 비12월/USD 7기업 인접기간·TTM/ROE·검증환율, 일부 계정/기간·가격084180, 개인 위험한도·ETF/기관/촉매/FTD/베이스패턴·전체 권리변동/공식 달력 후속 유지.
+- CLOSE 추가 코드/문서 commit 및 실제 GitHub main 전송 검증 pending.
+- 기존8767 restart_required=true. 현재8768은 읽기 전용 확인용으로 보유동기화/수집/추천 쓰기 없음. 일반 운영 전환은 입력 보관·collector 상태 확인 후 기존 절차로 재시작 필요. 기존 서버 종료/자동 수집/동기화 실행 없음.
+- P3 URL 정확 문자열 중복 유지. 원문 식별자를 보존하는 URL 동치 정책·쿼리/포트/호스트 검증은 후속. 실제 대가카드/산업가설/첫 결과 품질·Telegram 채널/권한·ETF 공급자 미완료.
+- home 새 버전 수신·실행 미확인. G9 연간 이력·유형별 기준값·브리핑 실제 보유 비교, 비12월/USD/TTM/환율/계정·기간/가격084180/개인 위험한도·공식 달력 후속 유지.
 
-Next task: 회사 work Primary에서 승인 feature branch 수신·격리 검증 및 main 통합 준비
+Next task: 회사 첫 독립 공개출처 연구카드/산업가설 범위와 일반 운영 전환 확인
 Next action:
-- 회사 기존 work 작업본에서 INVESTMENT START로 실제 profile/clean/main/HEAD/원격/다른 쓰기 작업 확인. main 상태문서와 함께 origin/shinyj0270-afk/research-library의 이 인계·docs/RESEARCH_LIBRARY.md·diff를 읽는다. branch fetch와 필요 시 승인된 별도 review worktree에서 코드만 검토하며 PC설정/DB/원자료를 복사하지 않는다.
-- 회사의 기존 .venv로 feature branch 격리 사본의 관련56개와 validate_share_candidates.py를 검증하고, 기존 국내주/ETF 연결 범위와 work 프로필 Telegram 거부를 합성 입력으로 확인. 실제 Telegram 자료·유료자료는 회사로 이동하지 않는다. 완료 기준은 수신 SHA/검증/운영자료 보존 및 깨끗한 main과의 차이를 별도 기록하는 것.
-- main 통합은 회사 Primary의 한 쓰기 세션에서 명시된 통합 범위와 최신 원격을 재확인한 뒤 처리. divergence/동시변경이면 보존·중단. 현재 마감에서 main 병합을 선완료로 기록하지 않는다. home의 실제 채널/권한·첫 연구카드 작성은 별도 후속이며 공유가능 독립분석만 사람 검토 후 회사로 전달.
-Recommended next agent: 회사 work Codex 수신/통합검증; Claude Code 비차단P3·실제 독립 연구결과의 좁은 품질검토
-Recommended model: 미지정; 현재 사용자 지정 및 실제 제공 모델 유지, 자동 전환 없음
-Recommended reasoning: High 권장(데이터 계약/실패 원인 검토); 단순 상태 조회는 필요한 수준만 사용
-Escalation condition: 동시 쓰기/divergence/예상 밖 변경/권한 미확인·철회/원문·출처 독립성·공개일 근거 부족/개인정보·저작권 또는 ETF 계약 충돌 시 보존하고 해당 처리 중단·독립 검토.
-Branch: shinyj0270-afk/research-library (사용자 승인 MVP worktree)
-Commit: 98228664b06069bd1593527fbb76cca393bc4717 (MVP 구현/마감검증 commit; 원격 전송 검증됨)
-Remote status: pushed (verified); 대상 refs/heads/shinyj0270-afk/research-library. 2026-10-11 19:47 KST HEAD = origin/shinyj0270-afk/research-library = 실제 feature ref = 98228664b06069bd1593527fbb76cca393bc4717 확인. 실제 main b327a8739328345af167ca49503ad008f3831fc6 보존. 이 증거를 갱신하는 기록 commit 자체의 전송은 최종 보고 및 다음 START 실제 Git 조회로 검증한다.
+- 회사 START 후 docs/RESEARCH_LIBRARY.md와 이 인계 확인. 입력 보관·기존 서버/collector 상태 먼저 확인. 열람 주소 http://127.0.0.1:8768/dashboard → 더보기 → Research Library.
+- 기존8767 일반 전환은 collector 진행/소유 확인 후 기존 실행 절차 적용. 중복 실행/잠금 삭제 금지. 신규 수집/보유동기화는 이번 무변경 검증과 구분.
+- 직접 입력 별도 승인 후 독립 공개출처부터 CLI source/master/thesis/evidence 작성. home DB/Telegram/유료자료 이동 금지. 출처·반례·revision 보존과 실제 카드/가설-화면 대조가 완료 기준.
+- URL 동치 정의/원문 ID 보존부터 결정하고 경계검사 후 적용. 독립 검토는 회사 UI/서버 diff의 구체 쟁점에 한정.
+Recommended next agent: company Codex; 구체 새 코드/방법론 쟁점만 Claude 검토
+Recommended model: 미지정; 현재 제공 모델 유지, 자동 전환 없음
+Recommended reasoning: 데이터 계약 High 권장, 단순 상태 조회는 필요한 수준
+Escalation condition: divergence·동시 쓰기/수집·예상 밖 파일/보호자료 변경·권한/출처·통화/기간/공개일 불명확 시 보존 후 해당 작업 중단.
+Branch: main (회사 기준 작업본); source shinyj0270-afk/research-library
+Commit: f829ece1a152db0bb2765c59243596f3676bce58 (수신·main fast-forward 통합한 feature; 회사 추가 변경 미커밋)
+Remote status: feature 실제 SHA 일치 확인; remote main b327a8739328345af167ca49503ad008f3831fc6. 회사 main 전송 pending.
 
 Notes:
-- 이번 CLOSE 관련56개/격리portable/AppTest·diff·원격/제외대상 검사 실행. unit 근거 validation/current/research-library-close/unit-regression.txt, portable 근거 share-candidate-review.json 및 share-test 로그. 기존 Claude 검토JSON은 validation/current/research-library/에 로컬 보존; 전체 검토/세션/원시 출력은 전송하지 않는다. 운영 health/실제 수집/실브라우저/합성UI는 이번 미실행.
-- 기존 PC설정·인증·DB·원자료·보유·캐시·로그 및 별도 Orca 작업본 보존. PC별 경로·control.local·공통 저장소의 로컬 전용 인계는 공유하지 않음.
-- 이 파일은 INVESTMENT의 기존 SYNC_CONTRACT가 정한 공유 인계 문서이며 공통 저장소의 PC 전용 CURRENT_HANDOFF와 구분한다. 공통 규칙 사본이나 별도 인계 시스템을 만들지 않음.
-- 회사 PC 및 기존 home main의 이번 MVP 수신·실행은 미확인. 서버 시작/종료, 예약·모델 설정 변경, 주문·자동매매·잔고 조회, 중앙 Wiki 수정·전체 세션 수집·/wiki-sync 없음.
+- 로컬 증거 Orca validation/current/research-library-company/{stage/validation/current,live-check.json,applied-hashes.json,private-check-result.json}는 공유 제외. 원자료/보유/DB/설정/인증·원시 검토 출력 전송 없음.
+- 회사 config·data·private_data·.local·DB 포함68360개 보호 파일의 사전/사후 SHA256 일치, 추가/삭제/변경0 확인. 기존 서버/개인 입력은 보존.
+- force push/reset/clean/stash·전역환경 수정·Wiki·전체 세션 수집·주문/자동매매/잔고 조회 없음. home 과거 검증을 회사 새 실행으로 표시하지 않음.

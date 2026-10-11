@@ -1,5 +1,17 @@
 # Research Library MVP
 
+## 회사 통합 · 2026-10-12
+
+지정 원격 feature `shinyj0270-afk/research-library`의 `f829ece1a152db0bb2765c59243596f3676bce58`를 회사 main에 통합하는 작업이다. 기존 1차 MVP는 CLI/API이며 아래 열람 연결을 추가했다. 아래의 메뉴 미변경 설명은 최초 MVP 시점의 범위다.
+
+- 통합 대시보드의 더보기/모바일 분석 화면에서 **Research Library**를 선택한다. 대가8인 슬롯, 회사 로컬 연구카드·산업 가설의 현재 revision/기준일/반증조건/종목 연결을 열람한다. 데이터가 없으면 빈 상태이며 연구 DB를 생성하지 않는다. 입력은 기존 CLI를 사용한다.
+- `/research-library`는 동일 loopback Host와 대시보드 토큰을 확인한다. PC별 연구DB를 SQLite `mode=ro`로만 읽고 연결을 닫는다. work DB에서 Telegram 자료가 발견되면 표시를 거부한다. 정적 HTML에는 연구 자료를 넣지 않으며 home DB를 회사로 복사하지 않는다.
+- 운영자료 쓰기 없는 확인은 `python tools/serve_dashboard.py --read-only --port 8768`로 수행한다. 이 모드는 수집·보유동기화·연구DB 생성·추천 작성·체크포인트 저장을 실행하지 않고 POST를 거부한다. 기존 일반 운영 실행 동작은 유지한다.
+- Claude 기록의 P3 중 seed ID의 비어 있거나 문자열이 아닌 입력 검사와 제거된 seed의 이전 revision 출처 표시를 보완했다. URL 정확 문자열 중복 기준은 유지한다. URL 호스트/기본포트/쿼리 순서의 동치 판단과 원문 식별자 보존 정책은 별도 설계·경계검증 후 적용한다. 서로 다른 URL을 독립 근거로 인증하지 않는다.
+- 기존 feature 검토 APPROVED/56개 통과는 사용자 보고 및 feature 인계에 기록된 근거다. 회사에서는 새 실행 결과만 별도로 기록하고 회사 추가 UI/서버 변경을 과거 Claude 승인의 범위로 확대하지 않는다. 원시 Claude 검토 JSON은 회사에서 접근하지 못했으며 P3 요약은 지정 commit의 인계 문서로 확인했다.
+
+이번 통합의 실제 실행·검증·GitHub 전송 상태는 CURRENT_HANDOFF.md를 따른다.
+
 장기 투자 관점·산업 가설을 축적하는 독립 로컬 연구 계층이다. 단기 뉴스·실시간 수집·알림·주문·자동매매는 포함하지 않는다. 기존 START/CLOSE 및 SYNC_CONTRACT를 유지한다. 현재 Research Library worktree에서 구현하며 main 병합/push는 별도 작업이다.
 
 ## 기존 기능과 재사용

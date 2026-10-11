@@ -1,3 +1,13 @@
+# Research Library 회사 통합 · 2026-10-12
+
+- 회사 work/Primary main b327a8739328345af167ca49503ad008f3831fc6 clean에서 시작. 원격 feature shinyj0270-afk/research-library 실제 SHA f829ece1a152db0bb2765c59243596f3676bce58 검증 및 변경9개 대조 후 main fast-forward 통합. 기존 다른 작업본과 Orca 미완료 변경 보존.
+- 대시보드 Research Library 열람 메뉴·인증된 읽기 전용 API 추가. PC별 DB mode=ro, 부재 시 생성하지 않음, 회사 Telegram 유래 자료 거부. 원래 CLI 입력·독립 연구/종목 판단 경계 유지. P3 seed ID/역사 seed 출처 표시 보완, URL 동치 정책 후속. docs/RESEARCH_LIBRARY.md 참조.
+- 이번 회사 새 검증: 관련 unittest33개, 공유326개 경고0, 격리portable26명령·실자료 없는 AppTest·합성UI10여정 PASS. 인증/POST 거부 추가 검사는 전체 검사 이후 별도 통과. 과거 feature의56개/Claude 승인과 구분하고 회사 추가 변경의 새 Claude 검토는 미실행.
+- 실제 회사 저장자료로 읽기 전용8768 dashboard HTTP200·health build/source 일치·8인 슬롯/빈 연구/더보기 메뉴/390·320px/JS오류0 확인. 기존 config·data·private_data·.local·DB 포함68360개 파일 사전/사후 SHA256 불변. 연구DB 생성·운영 collector/보유동기화·잠금 삭제 없음. 로컬 증거 Orca validation/current/research-library-company/는 공유 제외.
+- 기존8767은 이전 실행이며 재시작 필요. 자료 쓰기 없는 확인용8768과 일반 운영 수집/동기화를 구분한다. 실제 연구 콘텐츠·권한·ETF 공급자·URL 동치 및 기존 재무/가격/브리핑 후속은 미해결. 다음 action/전송 결과는 CURRENT_HANDOFF.md.
+
+---
+
 # Research Library MVP CLOSE 검증 · 2026-10-11
 
 - 사용자 명시 CLOSE로 승인 Research Library branch shinyj0270-afk/research-library, 시작 b327a8739328345af167ca49503ad008f3831fc6의 공유 변경9파일을 검토·마감. 기존 main/다른 Orca 작업본 clean·진행Git작업 없음, 이번 fetch에서 실제 원격 main이 시작 기준과 일치하여 fast-forward 통합 가능. main 병합/운영자료 수정은 미실행, branch 전송과 회사 다음 작업은 CURRENT_HANDOFF.md 참조.

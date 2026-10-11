@@ -66,7 +66,7 @@ def saved_data(root, *, force=False):
         data_as_of=snapshot['meta']['price_date'] if snapshot else None,stale=True,error=None))
 
 
-def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=None, daily=None, latest=None, financial=None, financial_monitor=None):
+def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=None, daily=None, latest=None, financial=None, financial_monitor=None, read_only=False):
     token = token or secrets.token_urlsafe(32)
     loaded_build_id = source_fingerprint(root)
 
@@ -108,8 +108,15 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                 live=dict(token=token,holdings_sync=holdings is not None,holdings_market=quotes is not None)
                 cache=load_market_cache(root,result['snapshot'])
                 self.send_body(200,export_holdings_frame(result['snapshot'],live=live,market_cache=cache),'text/html');return
+            if self.path=='/research-library':
+                if not self.authorized():self.send_body(403,'{}','application/json');return
+                from .research_library_view import view
+                try:self.send_body(200,json.dumps(view(root),ensure_ascii=False),'application/json')
+                except (ValueError,OSError,sqlite3.Error,KeyError,TypeError):self.send_body(503,'{}','application/json')
+                return
             if self.path=='/recommendations':
                 if not self.authorized():self.send_body(403,'{"error":"요청 거부"}','application/json');return
+                if read_only:self.send_body(200,'{"records":[],"status":"read_only"}','application/json');return
                 from .recommendations import RecommendationBook
                 try:
                     snapshot=refresh(root)['snapshot'];cache=load_market_cache(root,snapshot) or {}
@@ -239,7 +246,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                 events=load_cached_events(root, result['snapshot']),
                 references=load_cached_references(root, result['snapshot']),
                 market_cache=cache, financials=finances,
-                    trend_checkpoint_directory=Path(root)/'.local'/'trend-checkpoints'), 'text/html')
+                    trend_checkpoint_directory=Path(root)/'.local'/'trend-checkpoints' if daily else None), 'text/html')
 
         def empty_refresh_request(self):
             if not self.authorized(mutation=True):
@@ -259,6 +266,8 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
             return False
 
         def do_POST(self):
+            if read_only:
+                self.send_body(403,'{"error":"읽기 전용 실행"}','application/json');return
             if source_fingerprint(root)!=loaded_build_id:
                 self.send_body(503,'{"error":"코드 버전이 달라 서버 다시 실행 필요 · 기존 입력 유지"}','application/json');return
             if self.path=='/recommendations':
@@ -330,7 +339,11 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
     return DashboardHandler
 
 
-def serve(root, *, port=8767, saved_only=False):
+def serve(root, *, port=8767, saved_only=False, read_only=False):
+    if read_only:
+        with ThreadingHTTPServer(('127.0.0.1', port), handler_for(root,refresh=lambda folder,force=False:saved_data(folder),read_only=True)) as server:
+            server.serve_forever()
+        return
     holdings=load_service(root)
     quotes=HoldingMarket(root,lambda:saved_data(root)['snapshot'])
     daily=DailyMarketRefresh(root,collector=lambda folder, progress:collect_daily(folder,progress,skip_unchanged=True))

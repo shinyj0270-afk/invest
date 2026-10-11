@@ -175,6 +175,7 @@ class Library:
         instruments(value['instruments'])
         if not isinstance(value['seed_source_ids'], list) or len(value['seed_source_ids']) > 30: raise ValueError('Seed sources list required')
         for sid in value['seed_source_ids']:
+            text(sid, 100)
             src = self.get('source', sid)
             if src['accessed_on'] > value['as_of']: raise ValueError('Future source cannot seed a past thesis')
         old = self.history('thesis', key)
@@ -245,11 +246,17 @@ class Library:
                 parts.append(f"r{e['thesis_revision']}: {e['observation']} — {e['reasoning']} (관측 {e['observed_on']}; 기록일 {e['recorded_at']}; {'소급 입력; ' if record_day(e['recorded_at']) > e['observed_on'] else ''}{', '.join(e['source_ids'])})")
                 source_ids.update(e['source_ids'])
         for mid in current['master_ids']: source_ids.update(self.get('master', mid)['source_ids'])
+        historical_sources = all_sources - source_ids
         parts.append('출처')
         for sid in sorted(source_ids):
             src = self.get('source', sid)
             if src['origin'] == 'telegram': self._home()
             parts.append(f"{sid}: {src['title']} ({src['published_on'] or '발행일 미확인'}, {src['locator']}): {src['url']}")
+        if historical_sources:
+            parts.append('이전 revision 출처 · 현재 가설의 근거로 자동 승격하지 않음')
+            for sid in sorted(historical_sources):
+                src = self.get('source', sid)
+                parts.append(f"{sid}: {src['title']} ({src['published_on'] or '발행일 미확인'}, {src['locator']}): {src['url']}")
         return '\n\n'.join(parts)
 
     def propose(self, value):
