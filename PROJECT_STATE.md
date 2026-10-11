@@ -1,3 +1,11 @@
+# 회사 운영 서버 재시작 · 2026-10-12 08:13 KST
+
+- 통합 CLOSE main d7b4f5590af92a57d4c485855191766812f05370 이후 사용자 재시작 요청으로 확인된 기존8767 서버만 종료하고 회사 기존 .venv tools/open_dashboard.py --no-browser 실행. 변경 전 수집 상태 complete·별도 collector 프로세스 부재 확인, 실제 잠금 삭제 없음.
+- 일반 운영8767 health build/source 일치·restart_required=false, 실제 dashboard HTTP200 및 Research Library 메뉴/8인 슬롯/빈 연구/390·320px/JS오류0 확인. 읽기 전용8768 보존. 새 실행의 자동 수집·동기화 최종 완료는 별도 미확인. 과거 보호파일 불변 검사와 재시작 이후 자동 갱신은 구분한다.
+- 코드/설정 직접 변경 없음, 이번 상태/인계 문서만 로컬 추가 기록하고 commit/push 미실행. 근거 Orca validation/current/research-library-company/operating-restart-check.json. 최신 action은 CURRENT_HANDOFF.md.
+
+---
+
 # Research Library 회사 통합 · 2026-10-12
 
 - 회사 work/Primary main b327a8739328345af167ca49503ad008f3831fc6 clean에서 시작. 원격 feature shinyj0270-afk/research-library 실제 SHA f829ece1a152db0bb2765c59243596f3676bce58 검증 및 변경9개 대조 후 main fast-forward 통합. 기존 다른 작업본과 Orca 미완료 변경 보존.

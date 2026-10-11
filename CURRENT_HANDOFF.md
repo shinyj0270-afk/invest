@@ -1,12 +1,13 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-12 08:01 KST
+Updated: 2026-10-12 08:21 KST
 Handoff version: 2026-10-12-company-research-library-integration
 Last agent: Codex
 Last PC: work (company Primary)
-Last task: Research Library 1차 MVP 회사 main 통합·대시보드 연결·INVESTMENT CLOSE
+Last task: 운영 서버 재시작 후속 문서 INVESTMENT CLOSE · 새 세션 인계
 
 Completed:
+- 통합 CLOSE 이후 사용자 운영 서버 재시작 요청 실행. 기존8767의 경로/부모-자식 PID 및 수집 상태 complete 확인 후 해당 서버만 종료, 회사 .venv tools/open_dashboard.py --no-browser로 일반 운영 재시작. 새 health build/source 일치·restart_required=false, dashboard HTTP200·Research Library 더보기/8인 슬롯/empty·390/320px·JS오류0 PASS. 별도8768 읽기 전용 실행은 보존. 새 자동 수집 최종 완료는 별도 미확인.
 - START 회사 main b327a8739328345af167ca49503ad008f3831fc6 clean/profile work/진행Git0 확인. 원격 main/feature fetch 후 실제 feature SHA f829ece1a152db0bb2765c59243596f3676bce58 일치 확인. 기준 문서와 GLOBAL_WORKFLOW v1.2 실제 읽음. 기존 Orca 미완료 변경 보존.
 - feature 변경9개 검토 및 최신 원격/회사 main 재확인 후 f829ece를 fast-forward 통합. feature 이력 보존. 신규 연구 모듈은 기존 설정/보유/인포맥스/DB를 수정하지 않음.
 - 대시보드 더보기/모바일 분석 화면 Research Library 열람 연결 추가. Host/토큰 인증, PC별 연구DB mode=ro·연결 닫기, DB 부재 시 생성 없이 empty, work Telegram 거부. 입력은 CLI이며 기존 종목 판단 자동 변경 없음.
@@ -17,14 +18,14 @@ Completed:
 
 Pending:
 - 회사 통합 commit 10810977938174db18c5684a4ddbcb3812a9d8d4 전송 검증 완료. home의 이번 버전 수신·실행은 별도 미확인.
-- 기존8767 restart_required=true. 현재8768은 읽기 전용 확인용으로 보유동기화/수집/추천 쓰기 없음. 일반 운영 전환은 입력 보관·collector 상태 확인 후 기존 절차로 재시작 필요. 기존 서버 종료/자동 수집/동기화 실행 없음.
+- 일반8767 운영 전환 및 새 코드 화면 확인 완료. 새 실행의 자동 가격/재무 수집·보유동기화 최종 결과는 별도 미확인. 8768은 읽기 전용 확인용으로 유지. 위 통합 시점의 보호파일 불변 증거를 재시작 후 자동 갱신 자료 불변으로 확대하지 않음.
 - P3 URL 정확 문자열 중복 유지. 원문 식별자를 보존하는 URL 동치 정책·쿼리/포트/호스트 검증은 후속. 실제 대가카드/산업가설/첫 결과 품질·Telegram 채널/권한·ETF 공급자 미완료.
 - home 새 버전 수신·실행 미확인. G9 연간 이력·유형별 기준값·브리핑 실제 보유 비교, 비12월/USD/TTM/환율/계정·기간/가격084180/개인 위험한도·공식 달력 후속 유지.
 
-Next task: 회사 첫 독립 공개출처 연구카드/산업가설 범위와 일반 운영 전환 확인
+Next task: 회사 자동 가격/재무 수집 완료와 저장 기준일 확인
 Next action:
-- 회사 START 후 docs/RESEARCH_LIBRARY.md와 이 인계 확인. 입력 보관·기존 서버/collector 상태 먼저 확인. 열람 주소 http://127.0.0.1:8768/dashboard → 더보기 → Research Library.
-- 기존8767 일반 전환은 collector 진행/소유 확인 후 기존 실행 절차 적용. 중복 실행/잠금 삭제 금지. 신규 수집/보유동기화는 이번 무변경 검증과 구분.
+- 새 세션에서 회사 Primary INVESTMENT START 후 docs/RESEARCH_LIBRARY.md와 이 인계 확인. 일반 운영 주소 http://127.0.0.1:8767/ → 더보기 → Research Library. 8768은 별도 읽기 전용 확인용.
+- 일반8767은 재시작 완료했으므로 중복 시작하지 않음. 새 수집 완료/저장 기준일과 실제 입력 상태를 대조. collector 중복 실행/잠금 삭제 금지.
 - 직접 입력 별도 승인 후 독립 공개출처부터 CLI source/master/thesis/evidence 작성. home DB/Telegram/유료자료 이동 금지. 출처·반례·revision 보존과 실제 카드/가설-화면 대조가 완료 기준.
 - URL 동치 정의/원문 ID 보존부터 결정하고 경계검사 후 적용. 독립 검토는 회사 UI/서버 diff의 구체 쟁점에 한정.
 Recommended next agent: company Codex; 구체 새 코드/방법론 쟁점만 Claude 검토
@@ -36,6 +37,7 @@ Commit: 10810977938174db18c5684a4ddbcb3812a9d8d4 — Integrate Research Library 
 Remote status: main pushed (verified). 2026-10-12 08:01 KST HEAD = origin/main = 실제 remote main = 10810977938174db18c5684a4ddbcb3812a9d8d4 확인. 실제 feature f829ece1a152db0bb2765c59243596f3676bce58 불변이며 main 조상 포함 검증. 이 전송 증거만 갱신하는 후속 기록 commit 자체의 전송은 최종 보고 및 다음 START 실제 Git 조회로 검증한다.
 
 Notes:
+- 이번 CLOSE는 재시작 후속 문서2개만 변경. pc_check finish·diff/내용 검토·공유326개 audit 경고0·현재8767 health build/source 일치/restart_required=false 확인. 소스 변경 없어 단위/portable/UI 재실행하지 않음; 위 실행 결과는 같은 세션의 통합·재시작 시점 증거. commit/push pending. 시작 main d7b4f5590af92a57d4c485855191766812f05370 보존. 로컬 운영 검증 operating-restart-check.json.
 - 로컬 증거 Orca validation/current/research-library-company/{stage/validation/current,live-check.json,applied-hashes.json,private-check-result.json}는 공유 제외. 원자료/보유/DB/설정/인증·원시 검토 출력 전송 없음.
 - 회사 config·data·private_data·.local·DB 포함68360개 보호 파일의 사전/사후 SHA256 일치, 추가/삭제/변경0 확인. 기존 서버/개인 입력은 보존.
 - force push/reset/clean/stash·전역환경 수정·Wiki·전체 세션 수집·주문/자동매매/잔고 조회 없음. home 과거 검증을 회사 새 실행으로 표시하지 않음.
