@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-12 07:58 KST
+Updated: 2026-10-12 08:01 KST
 Handoff version: 2026-10-12-company-research-library-integration
 Last agent: Codex
 Last PC: work (company Primary)
@@ -16,7 +16,7 @@ Completed:
 - 기존 Claude APPROVED/56개 PASS는 사용자 보고 및 feature 인계의 SOURCE_RECORDED. P3 seed ID 검사·과거 revision seed 출처 표시 보완. 새 회사 UI/서버 코드의 Claude 재검토 미실행. 원시 검토JSON은 회사 접근 불가이며 지정 commit 인계의 P3 요약 대조.
 
 Pending:
-- CLOSE 추가 코드/문서 commit 및 실제 GitHub main 전송 검증 pending.
+- 회사 통합 commit 10810977938174db18c5684a4ddbcb3812a9d8d4 전송 검증 완료. home의 이번 버전 수신·실행은 별도 미확인.
 - 기존8767 restart_required=true. 현재8768은 읽기 전용 확인용으로 보유동기화/수집/추천 쓰기 없음. 일반 운영 전환은 입력 보관·collector 상태 확인 후 기존 절차로 재시작 필요. 기존 서버 종료/자동 수집/동기화 실행 없음.
 - P3 URL 정확 문자열 중복 유지. 원문 식별자를 보존하는 URL 동치 정책·쿼리/포트/호스트 검증은 후속. 실제 대가카드/산업가설/첫 결과 품질·Telegram 채널/권한·ETF 공급자 미완료.
 - home 새 버전 수신·실행 미확인. G9 연간 이력·유형별 기준값·브리핑 실제 보유 비교, 비12월/USD/TTM/환율/계정·기간/가격084180/개인 위험한도·공식 달력 후속 유지.
@@ -32,8 +32,8 @@ Recommended model: 미지정; 현재 제공 모델 유지, 자동 전환 없음
 Recommended reasoning: 데이터 계약 High 권장, 단순 상태 조회는 필요한 수준
 Escalation condition: divergence·동시 쓰기/수집·예상 밖 파일/보호자료 변경·권한/출처·통화/기간/공개일 불명확 시 보존 후 해당 작업 중단.
 Branch: main (회사 기준 작업본); source shinyj0270-afk/research-library
-Commit: f829ece1a152db0bb2765c59243596f3676bce58 (수신·main fast-forward 통합한 feature; 회사 추가 변경 미커밋)
-Remote status: feature 실제 SHA 일치 확인; remote main b327a8739328345af167ca49503ad008f3831fc6. 회사 main 전송 pending.
+Commit: 10810977938174db18c5684a4ddbcb3812a9d8d4 — Integrate Research Library into dashboard with read-only access (회사 통합 구현 commit; 전송 검증됨)
+Remote status: main pushed (verified). 2026-10-12 08:01 KST HEAD = origin/main = 실제 remote main = 10810977938174db18c5684a4ddbcb3812a9d8d4 확인. 실제 feature f829ece1a152db0bb2765c59243596f3676bce58 불변이며 main 조상 포함 검증. 이 전송 증거만 갱신하는 후속 기록 commit 자체의 전송은 최종 보고 및 다음 START 실제 Git 조회로 검증한다.
 
 Notes:
 - 로컬 증거 Orca validation/current/research-library-company/{stage/validation/current,live-check.json,applied-hashes.json,private-check-result.json}는 공유 제외. 원자료/보유/DB/설정/인증·원시 검토 출력 전송 없음.
