@@ -37,7 +37,7 @@ for(const quote of [{}, {...splitQuote.latest_quote,retrieved_at:'2026-10-02T09:
 console.log('PASS valuation quote contract: one estimated share count, publication dates, reviewed priority without inverse EPS, invalid/stale quote withholding');
 // Render the actual value tab with a stale global snapshot date and a fresh detail date.
 const vm=require('node:vm'),fs=require('node:fs');
-const ui=vm.runInNewContext(fs.readFileSync(require.resolve('../src/company_detail_ui.js'),'utf8')+'\nCompanyDetailUI;', {CompanyDetailEngine:E,DiscoveryEngine:require('../src/discovery_engine'),sessionStorage:{setItem(){}}});
+const ui=vm.runInNewContext(fs.readFileSync(require.resolve('../src/icons.js'),'utf8')+'\n'+fs.readFileSync(require.resolve('../src/company_detail_ui.js'),'utf8')+'\nCompanyDetailUI;', {CompanyDetailEngine:E,DiscoveryEngine:require('../src/discovery_engine'),sessionStorage:{setItem(){}}});
 const displayRow={...splitQuote,code:'900000',name:'합성 기업',market:'KOSPI'},displayModel={...quotedModel,notes:[]};
 const element={innerHTML:'',querySelector:id=>['#sdCompany','#sdWatch'].includes(id)?{}:null,querySelectorAll:()=>[]};
 ui.create({element,rows:[displayRow],models:{'900000':displayModel},research:{rows:{}},meta:{financial_basis:'CFS',price_date:'2026-09-23'},getCode:()=>displayRow.code,setCode(){},shared:{isWatched:()=>false,tables:{}},initial:{tab:'value'}}).render();

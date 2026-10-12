@@ -3,6 +3,7 @@
  --sd:#c8ced8;--sl:#ffffff;--coral:#e0506a;--coral-soft:#f4a3b0;--teal:#2a9fae;--teal-soft:#8fd0d8;--link:#b3344f;--btn:linear-gradient(180deg,#ffd0d7,#ff9aaa);--on-btn:#4a0f1b;--up:#b8283c;--down:#1f5fbf;--warn:#8a5a12;
  --raised:9px 9px 20px var(--sd),-9px -9px 20px var(--sl);--raised-sm:4px 4px 9px var(--sd),-4px -4px 9px var(--sl);--inset:inset 3px 3px 7px var(--sd),inset -3px -3px 7px var(--sl)}
 body{background:var(--plane);color:var(--ink)}
+.dashboard-icon{display:inline-block;width:18px;height:18px;vertical-align:middle;flex-shrink:0;pointer-events:none}
 button,input,select,textarea{border:0;border-radius:12px;background:var(--plane);color:var(--ink)}
 button{box-shadow:var(--raised-sm);transition:box-shadow .16s,color .16s}
 button:hover{background:var(--plane);color:var(--link);box-shadow:var(--inset)}

@@ -48,6 +48,7 @@ assert.ok(discoveryCsv.includes('NAVER 공개 참고')&&discoveryCsv.includes('�
 const vm=require('node:vm'),fs=require('node:fs'),context={DiscoveryEngine:E};
 vm.runInNewContext(fs.readFileSync(require.resolve('../src/financial_table_ui.js'),'utf8'),context);
 vm.runInNewContext(fs.readFileSync(require.resolve('../src/company_detail_engine.js'),'utf8'),context);
+vm.runInNewContext(fs.readFileSync(require.resolve('../src/icons.js'),'utf8'),context);
 vm.runInNewContext(fs.readFileSync(require.resolve('../src/company_detail_ui.js'),'utf8'),context);
 vm.runInNewContext(fs.readFileSync(require.resolve('../src/dashboard_journey.js'),'utf8'),context);
 vm.runInNewContext(fs.readFileSync(require.resolve('../src/research_ui.js'),'utf8')+'\nglobalThis.UI=ResearchUI;',context);
