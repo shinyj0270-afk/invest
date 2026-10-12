@@ -1,3 +1,12 @@
+# Iconify 아이콘 운영 적용 및 CLOSE · 2026-10-12 11:14 KST
+
+- 관심종목 별표/요약 설정을 Iconify Tabler SVG로 교체. 오프라인 SVG와 MIT 고지 포함, 선택상태·접근성·클릭 동작 유지. Orca shinyj0270-afk/invest3 및 회사 work/main 시작4d52b14에서 구현2effd8568b66c0ea7dcde22035fe60f8f285548b fast-forward 운영 통합·전송 검증 완료.
+- 정식 START 완료 없이 시작한 점을 기록하고 CLOSE에서 PC/Git/문서/원격 재점검. 이번 홈/상세 브라우저·아이콘/390·320px PASS. Node 테스트의 새 모듈 로딩 보완 후 최종 공유327개 경고0·격리portable26명령·실자료없는AppTest·합성UI10여정 PASS.
+- 진행 중 가격 수집 잠금을 확인해 완료 대기 후 적용. 완료2455개/실패2·기준일2026-10-08 및 잠금 해제 확인, 잠금 삭제 없음. 확인한 기존8767만 재시작·별도8768 보존. 실제 운영 health build/source 일치·restart_required=false, 별표/설정 SVG·설정 클릭·390/320px·JS오류0 PASS.
+- 개인 입력/인증/DB/설정 직접 변경·전송 없음. 새 실행 자동 수집·동기화 최종 결과, 가격 실패2·재무 monitor 실패6 및 기존 데이터/Research Library/home 후속은 미해결. 다음 action과 후속 기록 전송은 CURRENT_HANDOFF.md 및 실제 Git 조회 참조. 근거 Orca validation/current/iconify-live-check.json 등은 공유 제외.
+
+---
+
 # 회사 운영 서버 재시작 · 2026-10-12 08:13 KST
 
 - 통합 CLOSE main d7b4f5590af92a57d4c485855191766812f05370 이후 사용자 재시작 요청으로 확인된 기존8767 서버만 종료하고 회사 기존 .venv tools/open_dashboard.py --no-browser 실행. 변경 전 수집 상태 complete·별도 collector 프로세스 부재 확인, 실제 잠금 삭제 없음.
