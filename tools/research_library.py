@@ -10,6 +10,7 @@ sys.path.insert(0, str(ROOT))
 from investment.local_config import load_local, require_profile
 from investment.research_library import Library, MASTERS
 from investment.core import digest
+from investment.research_catalog import annotate, search, source_unique
 from investment.telegram_research import channels, batch
 
 
@@ -25,11 +26,18 @@ def main():
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, 'reconfigure'): stream.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('masters', 'source', 'master', 'thesis', 'evidence', 'propose', 'channels', 'telegram', 'history', 'draft', 'approved-result'))
+    parser.add_argument('action', choices=('masters', 'source', 'master', 'thesis', 'evidence', 'propose', 'channels', 'telegram', 'history', 'draft', 'approved-result', 'annotate', 'search'))
     parser.add_argument('--id')
     parser.add_argument('--kind', choices=('source', 'master', 'thesis', 'evidence', 'channel', 'coverage', 'telegram'))
     parser.add_argument('--input')
     parser.add_argument('--output')
+    parser.add_argument('--query', default='')
+    parser.add_argument('--person')
+    parser.add_argument('--topic')
+    parser.add_argument('--sector')
+    parser.add_argument('--company')
+    parser.add_argument('--stage')
+    parser.add_argument('--event-id')
     parser.add_argument('--draft', help='Previously inspected local draft; required for approved-result')
     parser.add_argument('--expected-revision', type=int, default=0)
     args = parser.parse_args()
@@ -40,14 +48,20 @@ def main():
     # Gate Telegram before opening any supplied input file or creating a DB.
     if (args.action in ('channels', 'telegram') or args.kind in ('channel', 'coverage', 'telegram')) and profile != 'home':
         raise ValueError('Telegram processing requires configured home PC')
-    if args.action not in ('channels', 'propose') and not args.id: raise ValueError('--id required')
-    if args.action in ('source', 'master', 'thesis', 'evidence', 'propose', 'channels', 'telegram', 'approved-result') and not args.input:
+    if args.action not in ('channels', 'propose', 'search') and not args.id: raise ValueError('--id required')
+    if args.action in ('source', 'master', 'thesis', 'evidence', 'propose', 'channels', 'telegram', 'approved-result', 'annotate') and not args.input:
         raise ValueError('--input required')
     output = local_path(args.output) if args.output else None
     if output and output.exists(): raise ValueError('Output exists; choose a new filename')
     value = json.loads(local_path(args.input).read_text(encoding='utf-8-sig')) if args.input else None
     lib = Library(local_path('.local/research-library'), profile)
-    if args.action in ('source', 'master', 'thesis', 'evidence'):
+    if args.action == 'search':
+        result = search(lib, args.query, person=args.person, topic=args.topic, sector=args.sector, company=args.company, stage=args.stage, event_id=args.event_id)
+    elif args.action == 'annotate':
+        result = dict(revision=annotate(lib, args.kind, args.id, value, args.expected_revision))
+    elif args.action == 'source' and args.expected_revision == 0:
+        result = source_unique(lib, args.id, value)
+    elif args.action in ('source', 'master', 'thesis', 'evidence'):
         result = dict(revision=getattr(lib, args.action)(args.id, value, args.expected_revision))
     elif args.action == 'channels': result = dict(revision=channels(lib, value, args.expected_revision))
     elif args.action == 'telegram': result = batch(lib, args.id, value)

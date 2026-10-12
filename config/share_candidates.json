@@ -332,6 +332,8 @@
     "scripts/open-mobile-dashboard.cmd": "scripts/open-mobile-dashboard.cmd",
     "scripts/open-mobile-internet.cmd": "scripts/open-mobile-internet.cmd",
     "docs/MOBILE_ACCESS.md": "docs/MOBILE_ACCESS.md",
-    "tests/test_mobile_dashboard.py": "tests/test_mobile_dashboard.py"
+    "tests/test_mobile_dashboard.py": "tests/test_mobile_dashboard.py",
+    "investment/research_catalog.py": "investment/research_catalog.py",
+    "tests/test_research_catalog.py": "tests/test_research_catalog.py"
   }
 }

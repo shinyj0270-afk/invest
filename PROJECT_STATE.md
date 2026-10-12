@@ -1,3 +1,14 @@
+# home Research Library 실자료 검증·운영 기준 · 2026-10-12 19:01 KST
+
+- home Secondary 기존 main 시작 b327a8739328345af167ca49503ad008f3831fc6 clean. fetch behind15/ahead0 후 b7d049eebfc856d7b31d639e234dc94089e41bb4까지 ff-only 수신, PC profile home/진행 Git 작업0/추적 private0 확인. work Primary 원칙 및 기존 다른 작업본/인증/데이터/환경 보존.
+- 기존 Research Library records/revision 위에 catalog 메타데이터·인물/topic/sector/기업/event 검색·원문과 해석 단계·정정·논리 삭제/복원·삭제 의존성 열람 차단 추가. CLI source 정확 URL 재입력 중복 처리 및 핵심 채널2~3 지원. 기존 INVESTMENT/Infomax/포트폴리오 계산은 미변경. 기존 주간 노트 원본 해시 불변.
+- 실제 독립 출처 문서4건(기존 연구노트1회+공식 출처3)·대가 자체 해석 카드3건 연결. 인물3인 각2결과/topic4결과·출처 재입력 duplicate·정정/논리 삭제/복원/원본 보존·출처/날짜 추적 확인. 발행일 미확인2건은 null 유지. 카드/revision을 실제 문서 수에 중복 가산하지 않음.
+- Telegram 정확 URL·채널/플랫폼 권한 검토 근거 미제공으로 실제3채널 각각0건. 이름만 비활성 registry 등록, 인증/세션/쿠키 조작·원문 수집 없음. 10~20건·섹터4종/국내 기업 실제검색·Telegram+대가 혼합검색·사람 curated 검토 미완료. raw reference3/derived4/curated0. 종합 MVP PARTIAL, Agents 도입 보류.
+- 이번 관련 회귀43개 PASS(최종 삭제 이력의 권한 재확인 포함). 격리 공유334개 경고0·portable26명령·실자료없는AppTest·합성UI10여정 PASS; 최종 권한 보완43개는 그 이후 별도 실행이며 과거 회사 검사 재사용 아님. 그 이후 최종 코드/문서로 격리portable26명령·실자료없는AppTest 마감 재검사 PASS. 문서검사·전송은 CURRENT_HANDOFF/최종 보고에서 구분한다.
+- 운영 규칙과 Collector/Research/Synthesis 입력·출력·자동화/사람승인 경계는 docs/RESEARCH_LIBRARY.md. Agents/claude-mem 구현 없음. 연구DB/실제 입력·보고서는 .local에만 보존하며 공유 제외. 기존 분석/Infomax/포트폴리오 로직·보유·로컬 설정·원자료 수동 수정 없음. 전송·다음 행동은 CURRENT_HANDOFF.md 참조.
+
+---
+
 # 휴대폰 설정창 후속 CLOSE · 2026-10-12 13:34 KST
 
 - 시작 db1ec621e66b9323da3f3bd3b47927f95ca0e0cd에서 별표 비밀번호 설정창·입력 검증·실행 안내·검사4파일을 마감. 회사/Orca 내용과 staged tree 일치 확인 후 main fast-forward, 구현 3d6a2e830f9b6347dea3152f82302f5a624b0786 전송 및 HEAD=origin/main=실제 remote main 확인.

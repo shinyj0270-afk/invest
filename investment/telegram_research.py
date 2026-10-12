@@ -8,8 +8,8 @@ TERMS = 'https://telegram.org/tos/content-licensing'
 def channels(library, value, expected_revision=0):
     library._home()
     fields(value, ('core', 'auxiliary'))
-    if not isinstance(value['core'], list) or len(value['core']) != 2 or not isinstance(value['auxiliary'], list):
-        raise ValueError('Exactly two core channel slots required')
+    if not isinstance(value['core'], list) or len(value['core']) not in (2, 3) or not isinstance(value['auxiliary'], list):
+        raise ValueError('Two or three core channel slots required')
     seen = set()
     for channel in value['core'] + value['auxiliary']:
         fields(channel, ('id', 'name', 'enabled', 'permission'))

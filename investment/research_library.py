@@ -118,6 +118,10 @@ class Library:
             raise ValueError('Referenced record not found: '+kind)
         value = rows[-1]['value']
         if kind == 'source' and value.get('origin') == 'telegram': self._telegram_allowed(value['channel_id'])
+        if kind in ('source', 'master', 'thesis', 'evidence'):
+            metadata = self.history('catalog', digest([kind, key]))
+            if metadata and metadata[-1]['value']['stage'] == 'deleted':
+                raise ValueError('Record logically deleted; history retained for explicit recovery')
         return value
 
     def _home(self):

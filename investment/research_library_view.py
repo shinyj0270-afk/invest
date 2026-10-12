@@ -22,7 +22,19 @@ def view(root):
         if profile == 'work' and (kind in ('telegram', 'coverage', 'channel') or kind == 'source' and value.get('origin') == 'telegram'):
             raise ValueError('Home Telegram research cannot be displayed on work')
         latest[kind, key] = dict(id=key, revision=revision, recorded_at=created, value=value)
+    hidden = {(v['value']['kind'], v['value']['record_id']) for (kind, _), v in latest.items() if kind == 'catalog' and v['value']['stage'] in ('deleted', 'excluded')}
+    # Deleted/excluded provenance also hides dependent cards and theses in this projection.
+    changed = True
+    while changed:
+        changed = False
+        for (kind, key), row in latest.items():
+            if kind not in ('master', 'thesis'): continue
+            value = row['value']
+            dependencies = [('source', sid) for sid in value.get('source_ids', value.get('seed_source_ids', []))]
+            dependencies += [('master', mid) for mid in value.get('master_ids', [])]
+            if (kind, key) not in hidden and any(dep in hidden for dep in dependencies):
+                hidden.add((kind, key)); changed = True
     for kind, target in (('source', 'sources'), ('master', 'cards'), ('thesis', 'theses')):
-        result[target] = [v for (k, _), v in latest.items() if k == kind]
+        result[target] = [v for (k, _), v in latest.items() if k == kind and (k, v['id']) not in hidden]
     result['status'] = 'ready'
     return result
