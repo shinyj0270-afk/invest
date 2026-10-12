@@ -1,3 +1,11 @@
+# home Telegram 접근 조사·수집 대기 · 2026-10-12 19:23 KST
+
+- home Secondary main 6f9830d3d04258d03703ba62545816c77561ad3b clean에서 조사. Telegram Web 연결 브라우저/탭 없음, 새 탭도 Browser is not available. Telegram Desktop 실행은 확인했지만 Computer Use native pipe unavailable 재확인으로 화면 읽기 실패. 실행 프로세스 존재를 로그인/지정 채널 접근 성공으로 보고하지 않는다.
+- 공식 개별 채팅 HTML/JSON export 기능은 공식 문서로 확인(SOURCE_RECORDED); export 실행·원문/첨부 다운로드 없음. 이번 승도리/트릴리온/스탁이지 각각 읽기0·Library 입력0, 중복/날짜/링크/공통 event 실자료 검증 미실행. 기존 독립 연구 적재·검사 결과는 과거 이력으로 보존.
+- 인증/OTP/쿠키/세션키 추출 및 설정·DB·보유·분석/Infomax/포트폴리오 로직 변경 없음. 이번 CLOSE PC 점검·fetch 차이0/0·문서 diff/공유 제외 점검만 수행; 단위/portable/UI 재실행 없음. 다음 연결·수집 재개는 CURRENT_HANDOFF.md 참조. MVP PARTIAL·Agents 보류 유지.
+
+---
+
 # home Research Library 실자료 검증·운영 기준 · 2026-10-12 19:01 KST
 
 - home Secondary 기존 main 시작 b327a8739328345af167ca49503ad008f3831fc6 clean. fetch behind15/ahead0 후 b7d049eebfc856d7b31d639e234dc94089e41bb4까지 ff-only 수신, PC profile home/진행 Git 작업0/추적 private0 확인. work Primary 원칙 및 기존 다른 작업본/인증/데이터/환경 보존.
