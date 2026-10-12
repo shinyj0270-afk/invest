@@ -28,8 +28,8 @@ Recommended model: 사용자 지정/현재 제공 모델 유지; 자동 전환 �
 Recommended reasoning: 계약·권한·삭제 경계 검토 High 권장; 단순 등록/조회는 필요한 수준
 Escalation condition: 미커밋/원격 divergence·다른쓰기·권한 미확인·Telegram 로그인/세션 조작·원문/AI 해석 혼합·삭제 참조 충돌·기존 계산 변경 필요 시 보존 후 중단.
 Branch: main (기존 home 작업본)
-Commit: b7d049eebfc856d7b31d639e234dc94089e41bb4 (수신 후 구현 기준)
-Remote status: 공유 변경 commit/push verification pending. 구현 기준 origin/main 차이0/0 확인. 실제 전송은 최종 보고/다음 START로 확인.
+Commit: d2d2fd73fcd6975719f901ad7a9a776cc9a946ad (Research Library 구현·운영기준·실자료 검증 마감 commit; 전송 검증됨)
+Remote status: origin/main pushed (verified). 2026-10-12 KST 이번 CLOSE에서 HEAD=origin/main=실제 remote main=d2d2fd73fcd6975719f901ad7a9a776cc9a946ad 확인. 이 전송 증거만 갱신하는 후속 기록 commit 자체 전송은 최종 보고와 다음 START의 실제 Git 조회로 검증한다.
 
 Notes:
 - 공유는 코드/합성검사/운영문서/공유목록/PROJECT_STATE와 이 INVESTMENT 인계만. 개인입력·보유·인증·세션/쿠키·DB/sidecar·PC별 경로/설정·control.local·.local 실제 자료/로그 제외.
