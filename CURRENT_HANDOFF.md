@@ -17,13 +17,15 @@ Completed:
 - 이번 변경은 이 인계 문서만. 코드·전체 프로젝트 상태에 새 변화가 없어 PROJECT_STATE.md 유지. 문서 내용·공유목록·ignore·diff 검사 수행. 설치 요약은 이전 대화만으로 성공을 선언하지 않고 이번 확인 범위를 기록.
 
 Pending:
+- 이번 CLOSE 로컬 문서 commit은 완료했으나 GitHub 인증 실패로 원격 전송 미완료. 인증 복구·원격 재확인·전송 검증 대기.
 - Research Library MVP PARTIAL, Agents 도입 보류. Telegram export 완료/실자료 입력·검증을 이번에 수행하지 않음.
 - 지정3채널의 정확 URL/메시지 링크 및 platform_basis/channel_basis/reviewer/terms_checked_on 확인. 지난 세션의 화면 연결 실패는 당시 관측이며 이번 재검사 없음.
 - 실제10~20건/채널별 약5건, 다중 실제 출처 event 연결, Telegram+대가 혼합검색, 섹터4종/기업 실제검색, 사람이 읽고 curated 승인하는 검증 미완료.
 - URL 의미동치/시각 포함 published_at/의미 중복/영구 물리삭제 미지원 유지. 기존 회사 인계의 home 휴대폰·재무 monitor/신규코드·가격2건·G9/브리핑/기간·환율·공식달력 후속은 해결 범위 밖으로 보존.
 
-Next task: home에서 Telegram Export 완료 후 Research Library 소량 실자료 검증 재개
+Next task: home GitHub 인증 복구 후 마감 commit 전송; 이어서 Telegram Export·Research Library 실자료 검증
 Next action:
+- 사용자가 home에서 GitHub 재로그인을 완료한다. 인증값을 채팅/문서에 넣지 않는다. 기존 로컬 commit과 원격 main을 fetch 후 다시 비교하고 원격 별도 전진/divergence면 통합하지 않고 보존한다. 원격이 기존 기준이며 로컬 ahead만 있으면 일반 push 후 HEAD=origin/main=실제 remote SHA를 검증하고 인계의 전송 근거를 갱신한다.
 - home INVESTMENT START로 Git/PC 상태를 확인하고 docs/RESEARCH_LIBRARY.md 및 .local/research-validation-20261012/actual-report.json·cli-report.json을 읽는다. 기존 작업본/DB/로컬 설정 보존.
 - 사용자가 정상 로그인된 Telegram Desktop에서 지정 채널의 필요한 범위만 export하고, 원본은 Git 공유 범위 밖에 로컬 보관한다. export 원본/세션/쿠키/인증/OTP를 저장소 commit이나 회사·외부 모델 입력으로 전달하지 않는다.
 - 채널/플랫폼 근거를 사람이 확인한 후 기존 registry 계약으로 활성화하고 채널별 약5건, 총약15건의 reference를 입력한다. 출처 channel_id/message_id/published_on/reference와 별도 derived 해석을 구분한다. 전체 원문 복제·대량 수집을 하지 않는다.
@@ -34,8 +36,8 @@ Recommended model: 현재 사용자 지정/제공 모델 유지; 자동 전환 �
 Recommended reasoning: 계약·권한·삭제 경계는 High 권장
 Escalation condition: 원격 전진/divergence·진행 Git 작업·다른 쓰기 세션·불명확한 변경·권한 미확인·로그인/세션 조작·원문/해석 혼합·삭제 참조 충돌이면 보존 후 해당 작업 중단.
 Branch: main (기존 home 작업본)
-Commit: 2e8b10c4de94fae7dff95b21b4a634f8bde374b9 (이번 CLOSE 시작 기준 SHA; 이 문서 commit은 아직 생성 전)
-Remote status: origin/main 및 실제 remote main의 시작 기준 SHA 일치 확인. 이번 인계 변경은 not pushed / verification pending. commit 후 fetch·차이 확인·일반 push·실제 SHA 검증 예정; 성공을 선기록하지 않음.
+Commit: 757d7a413a7e98720ebc74423c058ec1903c2059 (이번 설치 확인·인계 문서 commit; local commit 완료 / remote handoff 미완료)
+Remote status: not pushed / remote handoff 미완료. push 직전 fetch 성공 및 ahead1/behind0, 실제 remote main=2e8b10c4de94fae7dff95b21b4a634f8bde374b9 확인. push는 Git 인증 도우미의 MSYS 실행 권한 오류로 실패했고 직접 호출도 실패. gh auth status는 기존 토큰 invalid 보고. 이 실패 기록의 후속 commit 자체 SHA/전송 상태는 최종 보고와 다음 START 실제 Git 조회로 확인한다.
 
 Notes:
 - 공유 대상은 이 INVESTMENT 인계만. Telegram export/원문/세션/쿠키·인증·보유/투자노트·DB/sidecar·PC 설정/절대 경로·로그·검증 원본·설치 자산 제외. local/실자료 파일은 그대로 보존.
