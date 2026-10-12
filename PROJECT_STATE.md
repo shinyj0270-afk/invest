@@ -1,3 +1,21 @@
+# 휴대폰 접속 기능 CLOSE · 2026-10-12 13:11 KST
+
+- 사용자 INVESTMENT CLOSE로 시작370e3a76eb1c3b26bb0a6b2c8c4861c7e93201cb의 휴대폰 기능7파일을 검토·마감. 운영/Orca 파일 및 staged tree 일치 대조 후 main fast-forward, 구현95bdc8894e4c9bb23ed4cbf4b4effec1d83b553a 전송 및 HEAD=origin/main=실제 remote main 확인.
+- 이번 CLOSE 새 실행: 관련 unittest12개 PASS, 공유332개 경고0·격리portable26명령·실자료없는AppTest·합성UI10여정 PASS. 앞선 합성 자료의 실제 임시 외부401/200 연결 검사는 재실행하지 않고 구현 단계 증거로 구분.
+- 회사 companion 적용 완료·기존8767 current build 유지, 운영 비밀번호/주소 활성화는 사용자 첫 실행 대기. home 수신·실휴대폰·방화벽/인증서 신뢰 및 기존 수집/데이터 계약 후속은 미완료. 개인 입력/DB/PC설정·인증서/설정·cloudflared 실행파일·검증로그는 전송 제외.
+- 후속 CLOSE 인계 기록 commit의 전송 검증과 다음 실행은 CURRENT_HANDOFF.md 및 최종 실제 Git 조회를 따른다. 예약/방화벽/수집중단/재시작/Wiki/주문 없음.
+
+---
+
+# 휴대폰 회사 LTE/5G·집 Wi-Fi 접속 준비 · 2026-10-12 13:05 KST
+
+- 사용자 두 경우 모두 지원 요청/NordVPN 제외 확정. 기존8767 유지, 별도 HTTPS 로그인 게이트웨이로 같은 자료/API 연결. 회사는 임시 외부 HTTPS 주소 자동 연결·고정 주소 설정 지원, 집은 물리 NIC 내부 주소/TLS. docs/MOBILE_ACCESS.md 및 scripts/open-mobile-*.cmd 참조.
+- 이번 실제 unittest12개·공유332개 경고0·격리portable26명령·실자료 없는 AppTest·합성UI10여정 PASS. 합성 응답의 실제 임시 외부 연결에서 익명401/인증200 확인 후 종료. 실제 휴대폰/집 네트워크 성공으로 확대하지 않음.
+- 회사 main 시작370e3a7 clean에서 companion7파일 및 로컬 공식 cloudflared2026.10.0 적용, 기존 health build/source 일치·restart_required=false 유지. 재시작·기존 수집 중단 없음. PBKDF2·Host/Origin·POST 거부·속도/스레드 제한 적용, 인증/도구는 .local 공유 제외.
+- 비밀번호는 사용자가 첫 실행에서 PC에 직접 설정하며 운영 외부 주소는 아직 미발급. 임시 주소는 변경·가동 보장 없음. 집 수신·설정·실휴대폰 확인과 기존 데이터 후속은 미완료. 새 기능은 로컬 미커밋·미전송이며 이번 요청에는 CLOSE가 없음. 다음 실행/전송은 CURRENT_HANDOFF.md 참조.
+
+---
+
 # Iconify 아이콘 운영 적용 및 CLOSE · 2026-10-12 11:14 KST
 
 - 관심종목 별표/요약 설정을 Iconify Tabler SVG로 교체. 오프라인 SVG와 MIT 고지 포함, 선택상태·접근성·클릭 동작 유지. Orca shinyj0270-afk/invest3 및 회사 work/main 시작4d52b14에서 구현2effd8568b66c0ea7dcde22035fe60f8f285548b fast-forward 운영 통합·전송 검증 완료.
