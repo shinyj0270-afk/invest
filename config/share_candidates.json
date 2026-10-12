@@ -327,6 +327,11 @@
     "src/research_library_ui.js": "src/research_library_ui.js",
     "tests/test_research_library_view.py": "tests/test_research_library_view.py",
     "tests/test_research_library_ui.py": "tests/test_research_library_ui.py",
-    "src/icons.js": "src/icons.js"
+    "src/icons.js": "src/icons.js",
+    "scripts/mobile_dashboard.py": "scripts/mobile_dashboard.py",
+    "scripts/open-mobile-dashboard.cmd": "scripts/open-mobile-dashboard.cmd",
+    "scripts/open-mobile-internet.cmd": "scripts/open-mobile-internet.cmd",
+    "docs/MOBILE_ACCESS.md": "docs/MOBILE_ACCESS.md",
+    "tests/test_mobile_dashboard.py": "tests/test_mobile_dashboard.py"
   }
 }
