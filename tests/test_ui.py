@@ -4,6 +4,9 @@ import os
 import shutil
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from tools.browser_runtime import chromium_options
 ROOT = Path(__file__).resolve().parents[1]
 meta = dict(price_date='2025-12-30', flow_start='2025-12-01', flow_end='2025-12-30',
             financial_period='FY2025', financial_basis='CFS', venue='KRX', universe_label='TEST ONLY')
@@ -17,7 +20,7 @@ def check(name, ok):
     if not ok: raise AssertionError(name)
     results.append('PASS '+name)
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path=os.environ.get('CHROMIUM_PATH') or shutil.which('chromium') or shutil.which('chromium-browser'),args=['--no-sandbox'])
+    browser=p.chromium.launch(headless=True,args=['--no-sandbox'],**chromium_options())
     page=browser.new_page(viewport={'width':1440,'height':1000})
     page.set_default_timeout(5000)
     errors=[]

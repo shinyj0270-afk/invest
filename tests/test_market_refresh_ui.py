@@ -68,7 +68,7 @@ with tempfile.TemporaryDirectory() as temp:
             assert latest.calls==1
             latest.fail=True
             page.locator('#refreshData').click()
-            expect(page.locator('#priceRefreshStatus')).to_contain_text('갱신 실패',timeout=15000)
+            expect(page.locator('#priceRefreshStatus')).to_contain_text('조회 실패',timeout=15000)
             expect(page.locator('#focusMetrics')).to_contain_text('72 %')
             page.set_viewport_size({'width':390,'height':844})
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'), 'mobile overflow'

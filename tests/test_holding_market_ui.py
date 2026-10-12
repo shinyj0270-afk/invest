@@ -22,7 +22,9 @@ def check(name,condition):assert condition,name;checks.append(name)
 with tempfile.TemporaryDirectory() as tmp,sync_playwright() as p:
  backend=MemoryBackend();backend.write(initial,None);service=HoldingsService(ROOT,backend,Path(tmp)/'cache.json')
  browser=p.chromium.launch(headless=True,executable_path=os.environ.get('CHROMIUM_PATH','C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'))
- context=browser.new_context(viewport={'width':1600,'height':1100});errors=[];external=[];newprice={'value':120};quotes=[]
+ context=browser.new_context(viewport={'width':1600,'height':1100})
+ # The fixture's completed prices are dated 2026-09-30; pin the screen date so the 4-day price-age rule stays fixed.
+ context.clock.set_fixed_time('2026-10-01T10:00:00+09:00');errors=[];external=[];newprice={'value':120};quotes=[]
  base='http://127.0.0.1:18768'
  def route(r):
   if r.request.url.startswith(base+'/holding-market?code='):

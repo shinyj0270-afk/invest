@@ -5,6 +5,9 @@ from pathlib import Path
 import shutil
 import subprocess
 from playwright.sync_api import sync_playwright
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from tools.browser_runtime import chromium_options
 ROOT = Path(__file__).resolve().parents[1]
 fixture=json.loads(subprocess.check_output(['node','-e',"console.log(JSON.stringify(require('./src/portfolio_engine.js').fixture()))"],cwd=ROOT,text=True,encoding='utf-8'))
 results=[]
@@ -12,7 +15,7 @@ def check(name,condition):
     if not condition: raise AssertionError(name)
     results.append('PASS '+name)
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path=os.environ.get('CHROMIUM_PATH') or shutil.which('chromium') or shutil.which('chromium-browser'),args=['--no-sandbox'])
+    browser=p.chromium.launch(headless=True,args=['--no-sandbox'],**chromium_options())
     page=browser.new_page(viewport={'width':1500,'height':1100})
     page.set_default_timeout(5000)
     errors=[];requests=[]

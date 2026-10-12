@@ -45,7 +45,7 @@ with sync_playwright() as p:
     expect(page.locator('[data-research-go=company]')).to_be_disabled()
     for target in ['holdings','portfolio']:
         open_tools(page);page.locator('[data-page='+target+']').click();expect(page.locator('#legacy')).to_be_visible()
-        expect(page.locator('#legacyTitle')).to_contain_text('보유' if target=='holdings' else '포트폴리오')
+        expect(page.locator('#legacyTitle')).to_contain_text('보유' if target=='holdings' else '구성 · 시나리오')
     open_tools(page);page.locator('[data-page=advanced]').click()
     second=page.locator('[data-av-code]').nth(1);name=second.inner_text().split(' · ')[0]
     page.locator('#avFilters [name=query]').fill(name);page.locator('#avFilters button').first.click()
