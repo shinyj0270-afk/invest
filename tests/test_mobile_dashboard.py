@@ -1,6 +1,7 @@
 """Synthetic HTTPS/mobile access boundaries; no real credentials or data."""
 import base64
 import json
+import io
 from pathlib import Path
 import shutil
 import ssl
@@ -13,7 +14,7 @@ from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-from scripts.mobile_dashboard import Access, TLSServer, LimitedServer, handler_for, lan_address, password_record, configure, detect_address
+from scripts.mobile_dashboard import Access, TLSServer, LimitedServer, handler_for, lan_address, password_record, password_pair_error, configure, detect_address
 from investment.fixture import make_fixture
 from investment.live_dashboard import handler_for as dashboard_handler
 
@@ -144,6 +145,73 @@ class MobileTests(unittest.TestCase):
         self.assertEqual(Access(data['origin'],data['password']).authenticate(self.auth),200)
         context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.load_cert_chain(str(folder/'cert.pem'),str(folder/'key.pem'))
+
+    def test_short_password_retries_without_creating_incomplete_config(self):
+        folder=Path(self.folder.name)/'short-retry'
+        output=io.StringIO()
+        with patch('scripts.mobile_dashboard.getpass.getpass',side_effect=['short',PASSWORD,PASSWORD]) as prompt, patch('sys.stdout',output):
+            configure(folder,None,8771,'https://synthetic.trycloudflare.com')
+        self.assertEqual(prompt.call_count,3)
+        self.assertNotIn(PASSWORD,output.getvalue())
+        self.assertNotIn('short',output.getvalue())
+        data=json.loads((folder/'config.json').read_text())
+        self.assertEqual(Access(data['origin'],data['password']).authenticate(self.auth),200)
+
+    def test_confirmation_mismatch_retries_without_exposing_password(self):
+        folder=Path(self.folder.name)/'confirmation-retry'
+        output=io.StringIO()
+        with patch('scripts.mobile_dashboard.getpass.getpass',side_effect=[PASSWORD,'synthetic-other-password',PASSWORD,PASSWORD]) as prompt, patch('sys.stdout',output):
+            configure(folder,None,8771,'https://synthetic.trycloudflare.com')
+        self.assertEqual(prompt.call_count,4)
+        self.assertNotIn(PASSWORD,output.getvalue())
+        self.assertNotIn('synthetic-other-password',output.getvalue())
+        data=json.loads((folder/'config.json').read_text())
+        self.assertEqual(Access(data['origin'],data['password']).authenticate(self.auth),200)
+
+    def test_gui_password_pair_validation(self):
+        self.assertTrue(password_pair_error('short','short'))
+        self.assertTrue(password_pair_error(PASSWORD,'different'))
+        self.assertFalse(password_pair_error(PASSWORD,PASSWORD))
+
+    def test_gui_configuration_does_not_use_console_or_store_plaintext(self):
+        folder=Path(self.folder.name)/'gui-config'
+        with patch('scripts.mobile_dashboard.request_password_window',return_value=PASSWORD), patch('scripts.mobile_dashboard.getpass.getpass') as console:
+            configure(folder,None,8771,'https://synthetic.trycloudflare.com',internet=True,password_window=True)
+        console.assert_not_called()
+        data=json.loads((folder/'config.json').read_text())
+        self.assertEqual(data['mode'],'internet')
+        self.assertNotIn(PASSWORD,(folder/'config.json').read_text())
+        self.assertEqual(Access(data['origin'],data['password']).authenticate(self.auth),200)
+
+    def test_gui_cancel_preserves_unconfigured_state(self):
+        folder=Path(self.folder.name)/'gui-cancel'
+        with patch('scripts.mobile_dashboard.request_password_window',side_effect=KeyboardInterrupt), self.assertRaises(KeyboardInterrupt):
+            configure(folder,None,8771,'https://synthetic.trycloudflare.com',password_window=True)
+        self.assertFalse((folder/'config.json').exists())
+
+    def test_actual_gui_entries_mask_input_and_confirm_button_fits(self):
+        import tkinter as tk
+        from tkinter import ttk
+        from scripts.mobile_dashboard import request_password_window
+        root=tk.Tk();root.withdraw()
+        checks=[]
+        def widgets(widget):
+            result=[widget]
+            for child in widget.winfo_children():result.extend(widgets(child))
+            return result
+        def enter():
+            controls=widgets(root)
+            entries=[x for x in controls if isinstance(x,ttk.Entry)]
+            checks.append(len(entries)==2 and all(str(x.cget('show'))=='*' for x in entries))
+            height=int(root.geometry().split('+')[0].split('x')[1])
+            checks.append(height>=root.winfo_reqheight())
+            for entry in entries:entry.insert(0,PASSWORD)
+            button=next(x for x in controls if isinstance(x,ttk.Button) and x.cget('text')=='설정하고 접속 시작')
+            button.invoke()
+        root.after(200,enter)
+        with patch('tkinter.Tk',return_value=root):
+            self.assertEqual(request_password_window(),PASSWORD)
+        self.assertEqual(checks,[True,True])
 
     def test_external_https_configuration_and_exact_host(self):
         folder=Path(self.folder.name)/'external'

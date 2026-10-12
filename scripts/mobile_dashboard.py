@@ -71,6 +71,56 @@ def password_record(password):
     return dict(salt=salt.hex(), digest=hashlib.pbkdf2_hmac('sha256', password.encode(), salt, ITERATIONS).hex())
 
 
+def password_pair_error(password, confirmation):
+    if not 12 <= len(password) <= 256:
+        return '비밀번호는 12~256자로 입력하세요.'
+    if password != confirmation:
+        return '두 비밀번호가 일치하지 않습니다.'
+    return ''
+
+
+def request_password_window():
+    """Masked local UI; the password never enters command arguments or logs."""
+    import tkinter as tk
+    from tkinter import ttk
+    window=tk.Tk()
+    window.title('INVESTMENT · 휴대폰 접속 비밀번호 설정')
+    window.geometry('490x380')
+    window.resizable(False,False)
+    panel=ttk.Frame(window,padding=24);panel.pack(fill='both',expand=True)
+    ttk.Label(panel,text='휴대폰 접속 비밀번호',font=('Malgun Gothic',15,'bold')).pack(anchor='w')
+    ttk.Label(panel,text='12~256자로 입력하세요. 입력한 글자는 별표로 표시됩니다.').pack(anchor='w',pady=(8,16))
+    ttk.Label(panel,text='비밀번호').pack(anchor='w')
+    password=ttk.Entry(panel,show='*',width=48);password.pack(fill='x',pady=(3,8))
+    ttk.Label(panel,text='비밀번호 확인').pack(anchor='w')
+    confirmation=ttk.Entry(panel,show='*',width=48);confirmation.pack(fill='x',pady=(3,8))
+    message=tk.StringVar()
+    ttk.Label(panel,textvariable=message,foreground='#b3344f').pack(anchor='w')
+    result=[]
+    def confirm(event=None):
+        value=password.get()
+        error=password_pair_error(value,confirmation.get())
+        if error:
+            message.set(error)
+            (password if not 12<=len(value)<=256 else confirmation).focus_set()
+            return
+        result.append(value)
+        password.delete(0,'end');confirmation.delete(0,'end')
+        window.destroy()
+    actions=ttk.Frame(panel);actions.pack(fill='x',pady=(10,0))
+    ttk.Button(actions,text='취소',command=window.destroy).pack(side='right')
+    ttk.Button(actions,text='설정하고 접속 시작',command=confirm).pack(side='right',padx=8)
+    window.update_idletasks()
+    window.geometry(f'{max(490,window.winfo_reqwidth())}x{max(380,window.winfo_reqheight())}')
+    window.bind('<Return>',confirm)
+    window.bind('<Escape>',lambda event:window.destroy())
+    window.after(100,lambda:(window.lift(),password.focus_force()))
+    window.mainloop()
+    if not result:
+        raise KeyboardInterrupt()
+    return result.pop()
+
+
 class Access:
     def __init__(self, origin, record):
         parsed = urlsplit(origin)
@@ -244,7 +294,7 @@ class TLSServer(LimitedServer):
             raise
 
 
-def configure(folder, address, port, public_origin=None, internet=False):
+def configure(folder, address, port, public_origin=None, internet=False, password_window=False):
     folder.mkdir(parents=True, exist_ok=True)
     config = folder / 'config.json'
     if config.exists():
@@ -256,10 +306,19 @@ def configure(folder, address, port, public_origin=None, internet=False):
         openssl = 'C:/Program Files/Git/usr/bin/openssl.exe'
     if not openssl and not public_origin:
         raise ValueError('HTTPS 인증서 생성에 OpenSSL이 필요합니다. Git for Windows 설치를 확인하세요.')
-    password = getpass.getpass('휴대폰 접속 비밀번호 (12자 이상): ')
-    if password != getpass.getpass('비밀번호 확인: '):
-        raise ValueError('비밀번호가 일치하지 않습니다.')
-    record = password_record(password)
+    if password_window:
+        record=password_record(request_password_window())
+    else:
+        while True:
+            password = getpass.getpass('휴대폰 접속 비밀번호 (12자 이상): ')
+            if not 12 <= len(password) <= 256:
+                print('비밀번호는 12~256자로 입력하세요. 다시 입력합니다.')
+                continue
+            if password != getpass.getpass('비밀번호 확인: '):
+                print('두 비밀번호가 일치하지 않습니다. 다시 입력합니다.')
+                continue
+            record = password_record(password)
+            break
     if not public_origin:
         cert, key = folder / 'cert.pem', folder / 'key.pem'
         if cert.exists() or key.exists():
@@ -339,6 +398,7 @@ def main():
     parser.add_argument('--backend-port', type=int, default=8767)
     parser.add_argument('--public-origin', help='외부 HTTPS 연결의 정확한 주소; 이 모드는 127.0.0.1에서만 수신')
     parser.add_argument('--internet', action='store_true', help='회사 PC 외부 접속 · 임시 HTTPS 주소 자동 연결')
+    parser.add_argument('--password-window', action='store_true', help='첫 비밀번호를 별표 입력창에서 설정')
     args = parser.parse_args()
     args.port=args.port or (8771 if args.internet or args.public_origin else 8770)
     if not all(1 <= port <= 65535 for port in (args.port, args.backend_port)):
@@ -353,7 +413,7 @@ def main():
         if args.public_origin and args.address:
             parser.error('--public-origin과 --address를 함께 지정하지 마세요.')
         address = None if args.public_origin or args.internet else lan_address(args.address) if args.address else detect_address()
-        configure(folder, address, args.port, args.public_origin or ('https://pending.trycloudflare.com' if args.internet else None),args.internet)
+        configure(folder, address, args.port, args.public_origin or ('https://pending.trycloudflare.com' if args.internet else None),args.internet,args.password_window)
     data = json.loads(config.read_text(encoding='utf-8'))
     access = Access(data['origin'], data['password'])
     parsed = urlsplit(access.origin)

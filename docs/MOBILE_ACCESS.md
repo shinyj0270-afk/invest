@@ -6,7 +6,7 @@
 
 1. 평소처럼 `scripts/open-investment.cmd`로 PC 대시보드를 실행한다.
 2. `scripts/open-mobile-internet.cmd`를 더블클릭한다.
-3. 첫 실행에 접속 비밀번호(12자 이상)를 두 번 입력한다. 화면·로그에는 표시하지 않고 PBKDF2 해시만 보존한다.
+3. 첫 실행의 비밀번호 설정 창에서 두 칸에 같은 비밀번호(12자 이상)를 입력하고 **설정하고 접속 시작**을 누른다. 입력은 별표로 표시하며 PBKDF2 해시만 보존한다. 길이·확인이 맞지 않으면 창에서 안내한다.
 4. 표시된 `https://…trycloudflare.com` 주소를 휴대폰에서 연다. 사용자 이름은 `investment`, 비밀번호는 직접 설정한 값이다.
 
 공식 cloudflared Windows 2026.10.0을 PC별 `.local`에 다운로드하고 고정 SHA256을 확인한다. 전역 설치·방화벽 인바운드 개방·예약 등록은 하지 않는다. 게이트웨이는 127.0.0.1:8771에서만 수신하며 외부 TLS는 Cloudflare가 처리한다. PC에서 Cloudflare로 나가는 연결이 가능해야 한다. 모든 페이지/API에 로그인이 필요하므로 주소만 알아서는 자료를 볼 수 없다.
@@ -18,7 +18,7 @@ PC와 실행 창을 켜 두어야 한다. Ctrl+C로 종료하면 이 실행이 �
 ## 집 PC: 같은 Wi-Fi 접속
 
 1. PC 대시보드를 실행하고 `scripts/open-mobile-dashboard.cmd`를 더블클릭한다.
-2. 첫 실행에 접속 비밀번호를 설정한다. Git for Windows의 OpenSSL로 이 PC 주소에 대한 HTTPS 인증서를 생성한다.
+2. 첫 실행의 별표 입력창에서 접속 비밀번호를 설정한다. Git for Windows의 OpenSSL로 이 PC 주소에 대한 HTTPS 인증서를 생성한다.
 3. 표시된 `https://PC내부IP:8770`을 같은 Wi-Fi 휴대폰에서 연다. 사용자 이름은 `investment`다. 홈 화면에 추가하면 편리하다.
 
 자동 주소 탐지는 Windows 물리 네트워크 카드를 사용하며 VPN 카드를 제외한다. 사설 주소가 없거나 여러 주소가 있으면 임의 선택하지 않는다. 첫 실행에 실제 내부 주소를 지정할 수 있다.
