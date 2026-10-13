@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 env = dict(os.environ, PYTHONIOENCODING='utf-8')
 commands = [
+    [sys.executable, '-m', 'unittest', 'tests.test_telegram_export'],
     [sys.executable, '-m', 'unittest', 'tests.test_data_recovery', 'tests.test_dashboard_delivery'],
     [sys.executable, '-m', 'unittest', 'tests.test_research_library', 'tests.test_research_library_view', 'tests.test_research_catalog'],
     [sys.executable, '-m', 'unittest', 'tests.test_portability'],

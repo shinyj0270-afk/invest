@@ -1,6 +1,10 @@
 {
   "purpose": "Single-source, explicit Git handoff list for the existing INVESTMENT workspace",
   "files": {
+    "investment/telegram_export.py": "investment/telegram_export.py",
+    "tools/telegram_export.py": "tools/telegram_export.py",
+    "tests/test_telegram_export.py": "tests/test_telegram_export.py",
+    "docs/TELEGRAM_COLLECTION.md": "docs/TELEGRAM_COLLECTION.md",
     "investment/research_library.py": "investment/research_library.py",
     "investment/telegram_research.py": "investment/telegram_research.py",
     "tools/research_library.py": "tools/research_library.py",

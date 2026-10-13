@@ -1,5 +1,13 @@
 # Research Library MVP
 
+## home JSON 메타데이터 준비 · 2026-10-13
+
+사용자가 직접 내보낸 단일 채널 JSON에서 참조만 준비하는 오프라인 도구를 추가했다.
+절차는 [Telegram 자료 입력](TELEGRAM_COLLECTION.md)을 따른다. 기존 Telegram registry,
+권한 검사, batch 및 운영 DB는 그대로 사용하며 이 준비 도구는 DB에 쓰지 않는다.
+아래 최초 MVP의 export importer 미구현 설명과 구분한다. 원문/첨부의 연구 DB import,
+Telegram 네트워크/API 수집, 실시간 감시, AI 일괄 입력은 구현하지 않았다.
+
 ## 회사 통합 · 2026-10-12
 
 지정 원격 feature `shinyj0270-afk/research-library`의 `f829ece1a152db0bb2765c59243596f3676bce58`를 회사 main에 통합하는 작업이다. 기존 1차 MVP는 CLI/API이며 아래 열람 연결을 추가했다. 아래의 메뉴 미변경 설명은 최초 MVP 시점의 범위다.

@@ -1,3 +1,10 @@
+# Telegram 오프라인 입력 준비 · 2026-10-13 (별도 브랜치, 미배포)
+
+- CLOSE 사용자 화면 확인: 세 채널 모두 Telegram 보안 대기. 같은 기기에서 10월14일 20:17 이후 재요청 필요. 실제 내보내기/DB 등록 미완료. 마감 해시 대조 결과 검증 후 차이는 상태/인계 문서뿐이며 코드 테스트를 재실행한 것으로 표시하지 않음.
+
+- `shinyj0270-afk/telegram-intake`에 Desktop JSON → 참조 메타데이터 준비 기능 추가. 기존 Telegram batch와 home 제한 재사용, 원문·첨부·작성자 제외, 기간·중복·수정 대조. 권한 승인이나 운영 DB 입력은 자동 실행하지 않음.
+- Claude 정적 검토의 두 개선점 반영 후 최종 실행: 관련 테스트40, 격리 portable28명령, 실자료 없는 AppTest PASS; 공유 후보348개 경고0. 실제 세 채널 내보내기 표본 검증은 미수신으로 대기. 다음 실행과 작업본/전송 상태는 CURRENT_HANDOFF.md 참조.
+
 # home main 이력 보존 통합 · 2026-10-13 17:44 KST
 
 - home Secondary main 5ccae8152ee814f0151dd8f388e10f4b39d34dea clean과 회사 원격08d894d6a73da11dcf9fe57d4fd71da53855dd82의 ahead2/behind4를 실제 확인. START에서 자동 수신 중단 후 사용자 진행 승인으로 일반 merge, 로컬 설치/인증실패 인계2커밋과 회사 주간Library/대시보드4커밋 이력 보존.
