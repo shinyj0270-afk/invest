@@ -30,6 +30,6 @@ Recommended model: 현재 설정 유지
 Recommended reasoning: 일반 후속 Medium, 출처·날짜 충돌 High 권장
 Escalation condition: 다른 쓰기 세션/원격 전진/충돌/채널 식별 불일치 시 보존 후 해당 작업 보류
 Branch: shinyj0270-afk/telegram-intake
-Commit: 시작 기준 7ee591841e2717404c04d7568c9d8e5f5bb52d94; 이번 CLOSE commit 생성 전
-Remote status: 대상 refs/heads/shinyj0270-afk/telegram-intake, not pushed. CLOSE 시작 실제 remote main=7ee591841e2717404c04d7568c9d8e5f5bb52d94, feature ref 없음. commit 후 재확인/전송 결과는 최종 보고 및 다음 START에서 검증.
+Commit: 구현 commit b9078ceb6aeb2f99a1dabf5ab7318302916633dd (시작 기준 main 7ee591841e2717404c04d7568c9d8e5f5bb52d94)
+Remote status: 구현 commit은 refs/heads/shinyj0270-afk/telegram-intake에 pushed (verified). HEAD/upstream/실제 remote feature SHA 일치 확인. 실제 main은 7ee591841e2717404c04d7568c9d8e5f5bb52d94로 유지, 병합 미실행. main이 구현 commit의 조상으로 fast-forward 가능한 상태였으나 다음 통합 시 재확인 필요. 이 전송 증거 기록 commit 자체는 최종 보고와 다음 START에서 실제 SHA 확인.
 Notes: main·다른 작업본 수정 없음. 공통 규칙과 INVESTMENT 예외 유지. 중앙 Wiki/전체 세션 동기화 미실행. .local 및 validation 로컬 보존.
