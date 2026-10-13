@@ -7,6 +7,7 @@ Last PC: home (Secondary); work Primary 원칙 유지
 Last task: 사용자 승인으로 home 미전송 인계2커밋과 회사 main4커밋 일반 merge 통합
 
 Completed:
+- 통합 merge commit bc069071cfe78ead104727ea5b6cf1023e884194의 양쪽 기준 ancestor 보존·일반 push 성공·HEAD=origin/main=실제 remote main 일치를 이번에 직접 확인. 이전 인증 실패와 구분하며 인증 설정/키 변경 없음.
 - home 시작 main 5ccae8152ee814f0151dd8f388e10f4b39d34dea clean, 원격08d894d6a73da11dcf9fe57d4fd71da53855dd82와 ahead2/behind4. START 자동 수신 중단 보고 후 사용자 진행 승인으로 일반 merge 수행. 로컬757d7a4/5ccae81 및 회사4커밋 이력 보존, rebase/reset/force/stash 없음.
 - 충돌은 이 인계 문서 한 개. 회사 최신 코드/테스트는 그대로 수신하고 최신 회사 후속과 home 설치/전송 실패 기록을 보존해 정리. home 설정/DB/보유/원자료/인증/다른 작업본 유지.
 - home 설치 검증의 이전 SOURCE_RECORDED: Agent-Reach1.5.0 doctor5/16, Claude2.1.296 doctor, mattpocock/HyperFrames/media-use 확인. 이전 Git 인증 도우미 오류 및 gh invalid 보고는 당시 기록이며 이번 쓰기 인증 복구 성공으로 미리 선언하지 않음. 전체 근거는 로컬 보존 커밋757d7a4/5ccae81.
@@ -22,9 +23,9 @@ Pending:
 - 주간 Library 원본/manifest/inbox 공급 및 다음 월요일 등록 점검 유지(docs/WEEKLY_RESEARCH_IMPORT.md). 기존 예약은 이전 세션의 ACTIVE 기록이며 이번에 재등록/재검증하지 않음.
 - home Telegram3채널 정확 URL/권한/화면 접근·표본15건·사람 curate·섹터/기업 실자료·가설실증 미완료 유지. 회사 휴대폰/G9/브리핑/환율/달력 후속 유지.
 
-Next task: home 통합 코드 검증·동기화 완료 후 앱 실화면/Telegram 접근 재개
+Next task: home 최신 앱 실화면 및 Telegram 접근 확인
 Next action:
-- 이번 home 격리 portable/합성UI 검사와 코드가 origin/main과 같은지 확인 후 merge commit. 원격 재확인하고 별도 전진 없을 때 일반 push·실제 원격 SHA·clean 확인. 인증 실패 시 commit 보존, 사용자 직접 재로그인 대기.
+- 다음 home START에서 clean/원격일치 확인 후 기존 서버 health와 build/source를 조회. 실행 중 수집/잠금 확인 후 필요한 경우에만 기존 실행기로 앱을 재시작하고 최신 메뉴·Library를 실제 화면에서 확인. 이번 합성검사를 실제 운영 앱/데이터 검증으로 대신하지 않음.
 - 회사 START에서 상태/인계와 docs/SOFT_UI_DESIGN.md를 읽고 데이터 복구 화면의 현재 대상 가격3·재무6 최신 사유/권장 시각을 확인. 공급 원자료와 날짜·보고서 조건을 대조한 뒤 필요한 대상만 재시도하고 성공/잔여 실패를 기록. 데이터 검증을 완화하지 말 것.
 - home 실제 앱/휴대폰은 별도 실행 검증. docs/SOFT_UI_DESIGN.md 및 docs/WEEKLY_RESEARCH_IMPORT.md를 확인하며 원본/manifest/inbox·예약·인증을 회사에서 복사하지 않음. Telegram은 정상 로그인한 화면의 접근 확인 후 약15건만 기존 규칙에 따라 검증.
 Recommended next agent: home Codex(통합·검증), 사용자(직접 인증/실휴대폰); 회사 데이터 후속은 work Codex
@@ -32,6 +33,6 @@ Recommended model: 현재 사용자 설정 유지
 Recommended reasoning: 일반 후속 Medium, 출처/날짜 충돌 조사 High 권장
 Escalation condition: 다른 쓰기 세션·미확인 변경·divergence·출처/식별/날짜 충돌 시 보존 후 해당 작업 보류
 Branch: main (home 통합 작업본)
-Commit: 시작 home 5ccae8152ee814f0151dd8f388e10f4b39d34dea / 수신 회사08d894d6a73da11dcf9fe57d4fd71da53855dd82; merge commit 생성 대기
-Remote status: home merge commit/push verification pending. 회사 구현3e39480 및 기록08d894d는 실제 origin/main에서 확인한 원격 기준. 이번 home 전송은 완료 전이며 최종 보고/다음 START에서 확인.
+Commit: bc069071cfe78ead104727ea5b6cf1023e884194 (검증·전송된 home 이력 보존 통합 merge commit)
+Remote status: origin/main pushed (verified). 이번 통합에서 HEAD=origin/main=실제 remote main=bc069071cfe78ead104727ea5b6cf1023e884194 확인. 이 전송 증거를 기록하는 후속 문서 commit 자체 전송은 최종 보고 및 다음 START의 실제 Git 조회로 검증한다.
 Notes: 검증 원본은 Orca validation/current/dashboard-upgrade 및 dashboard-audit 아래 로컬 보존. 인증/PC설정/DB/보유/원자료/로그 제외. 중앙Wiki 및 전체세션 공유 미실행. 이전 인계 이력은 Git에 보존.
