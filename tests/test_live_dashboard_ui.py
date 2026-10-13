@@ -59,7 +59,7 @@ try:
         frame.locator('#pCost').fill('10000')
         frame.locator('#pSaveHolding').click()
         expect(frame.locator('#pHoldBody')).to_contain_text('가상 연구기업 1')
-        open_tools(page);page.locator('[data-page=scatter]').click()
+        open_tools(page);page.locator('[data-page=overview]').click();page.locator('[data-context-page=scatter]').click()
         with page.expect_navigation(wait_until='load', timeout=30000):
             page.locator('#refreshData').click()
         expect(page.locator('#sourceNotice')).to_contain_text('갱신 cached')
@@ -72,7 +72,7 @@ try:
         with page.expect_navigation(wait_until='load', timeout=30000):
             page.locator('#refreshData').click()
         expect(page.locator('#sourceNotice')).to_contain_text('갱신 cached')
-        open_tools(page);page.locator('[data-page=scatter]').click()
+        open_tools(page);page.locator('[data-page=overview]').click();page.locator('[data-context-page=scatter]').click()
         expect(page.locator('#focusCompany')).to_contain_text('새 저장자료 기업')
         expect(page.locator('#sourceNotice')).to_contain_text('종목 식별이 바뀌어')
         assert page.evaluate("sessionStorage.getItem('investment-live-refresh-handoff')") is None

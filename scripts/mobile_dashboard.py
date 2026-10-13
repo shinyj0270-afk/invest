@@ -206,7 +206,7 @@ def handler_for(access, backend_port):
             if route not in ('/', '/dashboard', '/health', '/holdings-frame', '/holdings',
                              '/company-view', '/company-financials', '/financial-monitor',
                              '/market-refresh', '/quote-refresh', '/holding-market',
-                             '/research-library', '/recommendations'):
+                             '/research-library', '/recommendations', '/dashboard-section', '/data-recovery'):
                 self.reply(404, '찾을 수 없습니다.'); return
             if route == '/holding-market' and 'refresh' in urlsplit(self.path).query:
                 self.reply(403, '휴대폰에서는 저장된 자료를 조회합니다.'); return
@@ -226,7 +226,7 @@ def handler_for(access, backend_port):
                               'padding:6px 12px;border-radius:16px;background:#293542;color:white;'
                               'font:12px sans-serif;pointer-events:none}'
                               '#refreshData,#pQuoteRefresh,#pSyncNow,#pEntry,#pImport,#pEntryPanel,'
-                              '#pManagement,#pSyncConflict,[data-rec-month],[data-rec-exception]'
+                              '#pManagement,#pSyncConflict,[data-rec-month],[data-rec-exception],[data-recovery-code]'
                               '{display:none!important}</style>'
                               '<div class="mobile-readonly" role="status">휴대폰 보기 · 읽기 전용</div>')
                     # Insert after doctype so document remains in standards mode.

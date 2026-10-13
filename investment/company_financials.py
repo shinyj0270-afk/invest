@@ -12,6 +12,7 @@ from .market_discovery import read_market_cache as load_market_cache,discovery_c
 from .market_refresh import write_json
 from .dart_statements import Tables, load_bundle, PARSER_VERSION
 from .financial_update_policy import decide_update
+from .collection_failure import failure_detail
 _COLLECTION_LOCK=Lock()
 
 
@@ -63,10 +64,12 @@ def collect_company(root,row,cutoff,progress=lambda _:None, *, force=False, extr
         now=lambda:datetime.now(ZoneInfo('Asia/Seoul')).isoformat(timespec='seconds')
         try:
             decision=_collect_company(root,row,cutoff,progress,force=force,extra_targets=extra_targets)
-            write_json(stamp,dict(status='partial' if decision.get('failed_reports') else 'ready',checked_at=now()))
+            details=failure_detail(ValueError('DART 재무자료 일부 조회·검증 대기'),financial=True) if decision.get('failed_reports') else {}
+            if details:details['reason']='일부 보고서 조회·검증 대기 · 검증된 기존 자료 유지'
+            write_json(stamp,dict(details,status='partial' if decision.get('failed_reports') else 'ready',checked_at=now()))
             return decision
-        except Exception:
-            write_json(stamp,dict(status='failed',checked_at=now()))
+        except Exception as error:
+            write_json(stamp,dict(status='failed',**failure_detail(error,financial=True)))
             raise
         finally:lease.close()
 
@@ -90,7 +93,7 @@ def _collect_company(root,row,cutoff,progress=lambda _:None, *, force=False, ext
             try:
                 record=collect(session,row['code'],'CFS',y,q,cache,'public',identity=identity,market=row['market'],force=force,display_name=row['name'])
                 if record['available_at']<=cutoff:records.append(record)
-            except (ValueError,KeyError,AttributeError,OSError):errors.append(dict(year=y,quarter=q))
+            except (ValueError,KeyError,AttributeError,OSError) as error:errors.append(dict(year=y,quarter=q,**failure_detail(error,financial=True)))
             progress(dict(completed=len(records)+len(errors),total=len(targets)))
             if not cached:time.sleep(.2)
         cfs_errors=list(errors)
@@ -101,7 +104,7 @@ def _collect_company(root,row,cutoff,progress=lambda _:None, *, force=False, ext
                 try:
                     record=collect(session,row['code'],'OFS',y,q,cache,'public',identity=identity,market=row['market'],force=force,display_name=row['name'])
                     if record['available_at']<=cutoff:records.append(record)
-                except (ValueError,KeyError,AttributeError,OSError):errors.append(dict(year=y,quarter=q,basis='OFS'))
+                except (ValueError,KeyError,AttributeError,OSError) as error:errors.append(dict(year=y,quarter=q,basis='OFS',**failure_detail(error,financial=True)))
                 progress(dict(completed=len(records)+len(errors),total=len(targets)))
                 if not cached:time.sleep(.2)
     bundle=dict(schema='dart-public-statements-1',unit='KRW',companies={row['code']:dict(reports=records)},errors=errors,
@@ -217,7 +220,7 @@ class CompanyFinancials:
     def running(self):
         with self.lock:return any(j.get('status')=='running' for j in self.jobs.values())
 
-    def start(self,code):
+    def start(self,code,*,retry=False):
         if not re.fullmatch(r'[0-9A-Z]{6}',code):raise ValueError('종목코드 오류')
         cache=load_market_cache(self.root,{'meta':{'data_mode':'user_input'}})
         quotes=(cache or {}).get('quotes',{}).get('quotes',{})
@@ -228,11 +231,11 @@ class CompanyFinancials:
         with self.lock:
             prior=self.jobs.get(code,{})
             if prior.get('status')=='running':return dict(prior)
-            if prior.get('status')=='complete' and prior.get('checked_on')==now.date().isoformat():return dict(prior)
+            if not retry and prior.get('status')=='complete' and prior.get('checked_on')==now.date().isoformat():return dict(prior)
             stored=folder(self.root)/(code+'.json')
             derived=folder(self.root)/'native-derived'/(code+'.json')
-            if stored.is_file() or derived.is_file():return dict(status='cached',code=code,cache_revision=str((stored if stored.is_file() else derived).stat().st_mtime_ns))
-            if prior.get('status')=='failed' and time.monotonic()-prior.get('attempt',0)<3600:return dict(prior)
+            if not retry and (stored.is_file() or derived.is_file()):return dict(status='cached',code=code,cache_revision=str((stored if stored.is_file() else derived).stat().st_mtime_ns))
+            if prior.get('status')=='failed' and time.monotonic()-prior.get('attempt',0)<(60 if retry else 3600):return dict(prior)
             if any(j.get('status')=='running' for j in self.jobs.values()):return dict(status='busy',code=code,message='다른 기업의 재무자료 조회 중')
             self.jobs[code]=dict(status='running',code=code,completed=0,total=0,attempt=time.monotonic())
             Thread(target=self.run,args=(row,cutoff),daemon=True).start()
@@ -245,8 +248,8 @@ class CompanyFinancials:
         try:
             decision=self.collector(self.root,row,datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat(),update)
             update(dict(status='complete',failed_reports=decision.get('failed_reports',0),checked_on=datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat(),message='검증된 DART 연결 재무자료 저장 완료'))
-        except Exception:
-            update(dict(status='failed',message='공개 재무자료 조회·검증 대기 · 기존 자료 유지'))
+        except Exception as error:
+            update(dict(status='failed',message='공개 재무자료 조회·검증 대기 · 기존 자료 유지',**failure_detail(error,financial=True)))
 
 
 def fetch_filings(day, *, session=None):
@@ -361,7 +364,7 @@ class FinancialMonitor:
             # Missing data is bootstrapped once; existing data only for changed filings.
             todo=[r for r in rows if r['code'] in changed or not (dest/(r['code']+'.json')).is_file() or (dest/(r['code']+'.incomplete.json')).is_file()]
             todo.sort(key=lambda row:row['code'] not in changed)
-            self.update(total=len(todo),completed=0,updated=0,deferred=0,failed=0,partial=0)
+            self.update(total=len(todo),completed=0,updated=0,deferred=0,failed=0,partial=0,failures=[])
             for index,row in enumerate(todo):
                 # On-demand viewing has priority over the background pass.
                 while self.service.running():time.sleep(1)
@@ -370,7 +373,11 @@ class FinancialMonitor:
                                             extra_targets=changed.get(row['code'],()))
                     if decision.get('failed_reports'):self.update(partial=self.poll()['partial']+1)
                     field='updated' if decision['action']=='update' else 'deferred'
-                except Exception:field='failed'
+                except Exception as error:
+                    field='failed'
+                    failures=list(self.poll().get('failures',[]))
+                    failures.append(dict(code=row['code'],**failure_detail(error,financial=True)))
+                    self.update(failures=failures)
                 self.update(**{field:self.poll().get(field,0)+1},completed=index+1)
                 if field=='updated':
                     revision=uuid4().hex

@@ -338,6 +338,12 @@
     "investment/weekly_research.py": "investment/weekly_research.py",
     "tools/import_weekly_research.py": "tools/import_weekly_research.py",
     "tests/test_weekly_research.py": "tests/test_weekly_research.py",
-    "docs/WEEKLY_RESEARCH_IMPORT.md": "docs/WEEKLY_RESEARCH_IMPORT.md"
+    "docs/WEEKLY_RESEARCH_IMPORT.md": "docs/WEEKLY_RESEARCH_IMPORT.md",
+    "investment/collection_failure.py": "investment/collection_failure.py",
+    "investment/data_recovery.py": "investment/data_recovery.py",
+    "src/data_recovery_ui.js": "src/data_recovery_ui.js",
+    "tests/test_data_recovery.py": "tests/test_data_recovery.py",
+    "tests/test_data_recovery_ui.py": "tests/test_data_recovery_ui.py",
+    "tests/test_dashboard_delivery.py": "tests/test_dashboard_delivery.py"
   }
 }

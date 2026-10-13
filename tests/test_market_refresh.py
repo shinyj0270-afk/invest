@@ -56,6 +56,43 @@ class DailyRefreshTests(unittest.TestCase):
             return self.fetch(s,**kw)
         with self.assertRaises(ValueError):collect_daily(self.folder,lambda _:None,fetch=fetch,now=self.now,pace=0)
         self.assertEqual(self.path.read_bytes(),self.before)
+        diagnostics=json.loads((self.folder/'daily-failures.json').read_text(encoding='utf-8'))
+        self.assertEqual(diagnostics['errors'][0]['stage'],'network')
+        self.assertNotIn('private-path',json.dumps(diagnostics))
+
+    def test_unchanged_day_retries_only_failed_and_preserves_others(self):
+        self.old['errors']=[dict(code='005930',reason='old failure')]
+        self.path.write_text(json.dumps(self.old),encoding='utf-8')
+        def same_day(symbol,**kw):
+            self.calls.append(symbol)
+            r=copy.deepcopy((self.old['benchmarks'] if kw['kind']=='index' else self.old['histories'])[symbol])
+            r['prices']=[p for p in r['prices'] if p['date']>=kw['start']]
+            return r
+        result=collect_daily(self.folder,lambda _:None,fetch=same_day,now=self.now,pace=0,skip_unchanged=True)
+        self.assertEqual(set(self.calls),{'KOSPI','KOSDAQ','005930'})
+        self.assertEqual(result['failed'],0)
+        saved=json.loads(self.path.read_text(encoding='utf-8'))
+        self.assertEqual(saved['histories']['000660'],self.old['histories']['000660'])
+
+    def test_targeted_retry_refuses_new_calendar_without_mixing_dates(self):
+        with self.assertRaisesRegex(ValueError,'target_changed_full_refresh_required'):
+            collect_daily(self.folder,lambda _:None,fetch=self.fetch,now=self.now,pace=0,codes=['005930'])
+        self.assertEqual(self.path.read_bytes(),self.before)
+        self.assertTrue(all(s in ('KOSPI','KOSDAQ') for s,_ in self.calls))
+
+    def test_successive_failed_targets_retain_diagnostics_without_changing_bundle(self):
+        self.old['errors']=[dict(code=c,reason='old') for c in self.old['histories']]
+        self.path.write_text(json.dumps(self.old),encoding='utf-8');before=self.path.read_bytes()
+        def failing(symbol,**kw):
+            if kw['kind']=='item':raise ValueError('identity_mismatch')
+            result=copy.deepcopy(self.old['benchmarks'][symbol])
+            result['prices']=[p for p in result['prices'] if p['date']>=kw['start']]
+            return result
+        for code in ('005930','000660'):
+            with self.assertRaises(ValueError):collect_daily(self.folder,lambda _:None,fetch=failing,now=self.now,pace=0,codes=[code])
+        saved=json.loads((self.folder/'daily-failures.json').read_text(encoding='utf-8'))
+        self.assertEqual({e['stage'] for e in saved['errors']},{'identity'})
+        self.assertEqual(self.path.read_bytes(),before)
     def test_partial_failure_keeps_failed_company_old_observations(self):
         def fetch(s,**kw):
             if s=='005930':raise OSError('private-path-must-not-leak')

@@ -63,7 +63,7 @@ with tempfile.TemporaryDirectory() as temp:
             expect(frame.locator('#pQty')).to_have_value('7')
             expect(frame.locator('#pCost')).to_have_value('12345')
             assert page.locator('body').get_attribute('data-current-page')=='holdings'
-            open_tools(page);page.locator('[data-page=scatter]').click()
+            open_tools(page);page.locator('[data-page=overview]').click();page.locator('[data-context-page=scatter]').click()
             expect(page.locator('#focusMetrics')).to_contain_text('72 %')
             assert latest.calls==1
             latest.fail=True

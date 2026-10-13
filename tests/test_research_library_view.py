@@ -38,6 +38,83 @@ class ViewTests(unittest.TestCase):
         lib._put('source','restricted',dict(origin='telegram'))
         with self.assertRaises(ValueError):view(self.root)
 
+    def test_revision_provenance_and_catalog_history(self):
+        from investment.research_catalog import annotate
+        from tests.test_research_catalog import metadata
+        lib=Library(self.root/'.local'/'research-library','work')
+        lib.source('s1',source());lib.master('m1',card());lib.thesis('t1',thesis())
+        lib.thesis('t1',dict(thesis(),claim='Revised claim',change_reason='New evidence'),1)
+        annotate(lib,'thesis','t1',metadata())
+        annotate(lib,'thesis','t1',dict(metadata(),reason='Classification corrected'),1)
+        row=view(self.root)['theses'][0]
+        self.assertEqual(len(row['history']),2)
+        self.assertEqual(len(row['catalog_history']),2)
+        self.assertEqual(row['provenance'][0]['id'],'s1')
+        self.assertEqual(row['metadata']['reason'],'Classification corrected')
+
+    def test_historical_deleted_provenance_cannot_leak_via_revision(self):
+        from investment.research_catalog import annotate
+        from tests.test_research_catalog import metadata
+        lib=Library(self.root/'.local'/'research-library','work')
+        lib.source('s1',source());lib.master('m1',card());lib.thesis('t1',thesis())
+        lib.thesis('t1',dict(thesis(),master_ids=[],claim='New independent claim'),1)
+        annotate(lib,'source','s1',metadata('deleted'))
+        result=view(self.root)
+        self.assertEqual(result['sources'],[])
+        self.assertEqual(result['cards'],[])
+        self.assertEqual(result['theses'],[])
+
+    def test_home_revoked_channel_hides_historical_derivations(self):
+        from investment.telegram_research import channels
+        from tests.test_research_library import registry
+        config=self.root/'config'/'local.json'
+        value=json.loads(config.read_text());value['profile']='home';config.write_text(json.dumps(value))
+        lib=Library(self.root/'.local'/'research-library','home')
+        channels(lib,registry());lib.source('s1',source(origin='telegram'))
+        lib.master('m1',card());lib.thesis('t1',thesis())
+        revoked=registry();revoked['core'][0]['enabled']=False
+        channels(lib,revoked,1)
+        result=view(self.root)
+        self.assertEqual(result['sources']+result['cards']+result['theses'],[])
+
+    def test_refutation_is_visible_with_source_and_target_revision(self):
+        from tests.test_research_library import evidence
+        lib=Library(self.root/'.local'/'research-library','work')
+        lib.source('s1',source());lib.master('m1',card());lib.thesis('t1',thesis())
+        lib.source('s2',dict(source(),title='Refutation source',url='https://example.invalid/refute'))
+        lib.evidence('e1',dict(evidence('refute'),source_ids=['s2']))
+        lib.thesis('t1',dict(thesis(),status='invalidated',as_of='2026-01-04',change_reason='Refuted'),1)
+        row=view(self.root)['theses'][0]
+        self.assertEqual(row['value']['status'],'invalidated')
+        self.assertEqual(row['evidence'][0]['value']['stance'],'refute')
+        self.assertEqual(row['evidence'][0]['value']['thesis_revision'],1)
+        self.assertEqual({r['id'] for r in row['provenance']},{'s1','s2'})
+
+    def test_evidence_or_its_source_exclusion_hides_dependent_thesis(self):
+        from tests.test_research_library import evidence
+        from investment.research_catalog import annotate
+        from tests.test_research_catalog import metadata
+        lib=Library(self.root/'.local'/'research-library','work')
+        lib.source('s1',source());lib.master('m1',card());lib.thesis('t1',thesis())
+        lib.source('s2',dict(source(),url='https://example.invalid/evidence'))
+        lib.evidence('e1',dict(evidence(),source_ids=['s2']))
+        annotate(lib,'evidence','e1',metadata('excluded'))
+        self.assertEqual(view(self.root)['theses'],[])
+        annotate(lib,'evidence','e1',metadata(),1)
+        self.assertEqual(len(view(self.root)['theses']),1)
+        annotate(lib,'source','s2',metadata('deleted'))
+        result=view(self.root)
+        self.assertEqual(result['theses'],[])
+        self.assertEqual(len(result['cards']),1)  # Independent seed provenance remains visible.
+
+    def test_historical_master_sources_remain_in_provenance(self):
+        lib=Library(self.root/'.local'/'research-library','work')
+        lib.source('s1',source());lib.master('m1',card());lib.thesis('t1',thesis())
+        lib.source('s2',dict(source(),url='https://example.invalid/new-source'))
+        # Imported historical DB: normal writer keeps cards immutable.
+        lib._put('master','m1',dict(card(),source_ids=['s2']),1)
+        self.assertEqual({r['id'] for r in view(self.root)['theses'][0]['provenance']},{'s1','s2'})
+
     def test_seed_id_format_and_historical_source_display(self):
         lib=Library(self.root/'.local'/'research-library','work')
         lib.source('s1',source());lib.master('m1',card())

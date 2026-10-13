@@ -83,6 +83,17 @@ class MobileTests(unittest.TestCase):
             self.assertNotIn(b'synthetic-token',response.body)
         self.assertEqual(self.calls,[])
 
+    def test_lazy_section_preserves_version_query_and_token_without_mutations(self):
+        headers={'Authorization':self.auth,'X-Dashboard-Token':'synthetic-token'}
+        html=self.request('/dashboard',headers=headers).read().decode()
+        live=json.JSONDecoder().raw_decode(html.split('const INVESTMENT_LIVE=',1)[1])[0]
+        path='/dashboard-section?section=trend-following&version='+live['section_version']
+        payload=json.load(self.request(path,headers=headers))
+        self.assertIn('rows',payload['trend_following'])
+        self.rejected(403,path,headers={'Authorization':self.auth})
+        self.rejected(404,'/restart',headers=headers)
+        self.rejected(403,'/data-recovery',headers=headers,data=b'{"kind":"price","code":"900000"}')
+
     def test_wrong_malformed_and_oversized_credentials(self):
         for value in ('Basic invalid!', 'Bearer synthetic', 'Basic '+base64.b64encode(b'wrong:wrong').decode(), 'x'*3000):
             self.rejected(401,headers={'Authorization':value})
@@ -101,6 +112,7 @@ class MobileTests(unittest.TestCase):
             html=response.read().decode()
             self.assertIn('synthetic-token',html)
             self.assertIn('mobile-readonly',html)
+            self.assertIn('[data-rec-exception],[data-recovery-code]{display:none!important}',html)
             self.assertEqual(response.headers['Cache-Control'],'no-store')
         self.rejected(403,'/company-view?code=900000',{'Authorization':self.auth})
         code=make_fixture()['companies'][0]['code']

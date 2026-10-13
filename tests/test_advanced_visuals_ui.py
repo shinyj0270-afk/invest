@@ -50,13 +50,13 @@ with sync_playwright() as p:
     page.locator('#avReset').click();expect(page.locator('#avCount')).to_contain_text(f'결과 {population} /')
     elapsed=float(page.locator('#advanced').get_attribute('data-render-ms'));assert elapsed<2000,elapsed
     nodes=page.locator('#advanced *').count();assert nodes<1600,nodes
-    page.locator('[data-av-node]').first.click();expect(page.locator('#avNode')).to_contain_text('unavailable')
+    assert page.locator('[data-av-node],.av-holding').count()==0
+    expect(page.locator('#advanced')).to_contain_text('공분산과 검증된 위험모형')
     # Verify the live payload stays separate from the reviewed holdings/detail contract.
     if actual:
         expect(page.locator('.av-strip')).to_contain_text('실제 저장자료')
         assert page.evaluate('WORKSPACE_DATA.analysis_snapshot.companies.length') == len(payload['analysis_snapshot']['companies'])
         assert page.evaluate('WORKSPACE_DATA.discovery.coverage.rs_ready') == payload['discovery']['coverage']['rs_ready']
-        expect(page.locator('#avHoldings')).to_contain_text('브라우저 보유 입력')
         page.evaluate('window.scrollTo(0,0)')
         page.screenshot(path=str(ROOT/'validation/advanced-actual-desktop.png'))
         page.set_viewport_size({'width':390,'height':844})
@@ -80,18 +80,11 @@ with sync_playwright() as p:
     }''')
     assert expected['status']=='MODEL_PROPOSAL',expected['status']
     assert 0<len(expected['items'])<=5
-    open_tools(page);page.locator('[data-page=advanced]').click();expect(page.locator('#avHoldings')).to_contain_text('가상 테스트')
-    assert page.locator('.av-holding').count()==len(expected['rows'])
-    expect(page.locator('#avHoldings')).to_contain_text(expected['status'])
-    for i,row in enumerate(expected['rows']):
-        card=page.locator('.av-holding').nth(i)
-        expect(card).to_contain_text(row['name']+' · '+row['label'])
-        expect(card).to_contain_text('비중 '+row['weight']+'%')
-        expect(card).to_contain_text('손익 '+row['pnl']+'원')
-    for item in expected['items']:
-        expect(page.locator('#avHoldings')).to_contain_text((item.get('name') or item['code'])+' · '+item['displayWeight']+'%')
-    expect(page.locator('#avHoldings')).to_contain_text('현금 '+expected['cash']+'%')
-    expect(page.locator('#avHoldings')).to_contain_text('리스크 기여도 unknown')
+    open_tools(page);page.locator('[data-page=advanced]').click()
+    assert page.locator('.av-holding').count()==0
+    page.locator('#avPortfolio').click();expect(page.locator('body')).to_have_attribute('data-current-page','portfolio')
+    open_tools(page);page.locator('[data-page=advanced]').click()
+    page.locator('#avBrief').click();expect(page.locator('body')).to_have_attribute('data-current-page','brief')
     page.set_viewport_size({'width':390,'height':844});assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
     page.screenshot(path=str(ROOT/'validation/advanced-mobile.png'))
     assert not errors,errors
