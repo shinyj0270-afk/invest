@@ -37,3 +37,13 @@ Notes:
 - 공유는 코드/합성검사/운영문서/공유목록/PROJECT_STATE와 이 INVESTMENT 인계만. 개인입력·보유·인증·세션/쿠키·DB/sidecar·PC별 경로/설정·control.local·.local 실제 자료/로그 제외.
 - 이 파일은 기존 INVESTMENT 공유 계약의 인계이며 공통 저장소의 PC 전용 CURRENT_HANDOFF와 구분한다. 실제 노트/카드/DB의 Git 전송 없음.
 - 이번 실제 운영 서버/휴대폰/시장 자동수집 검증 및 재시작 없음. UI 검사는 격리 합성 범위. 회사PC 수신·실자료실행·추가 독립 코드 리뷰 미확인. 주문/자동매매/잔고조회·예약·Wiki·전체 백업 없음.
+
+
+## 2026-10-13 work 주간 연구 등록 사후 검증
+
+- 회사 실제 DB의 2026-10-12 source11/master5/thesis2/evidence2 총20건이 보존된 구조화 원본과 일치. 모두 revision1, 무결성 ok. 첨부 Markdown/ZIP 바이트 동일·원본 SHA 재확인.
+- 주간 importer 구현: 원본 해시/월요일/ZIP 확인, 정확 URL 재사용, ID 충돌 보존, 전체 트랜잭션 rollback, 동시 재처리 직렬화, 기존 인물·전략·섹터/topic·명시 가설 참조 연결. 기존20건 재처리 삽입0/재사용20, weekly 영수증1/연결29. 영수증은 연구카드 수와 분리.
+- 신규11개 포함 Library/catalog/read-only 회귀54개 PASS. 공유 후보 보안·portable·home 빈 실제모드 검사 PASS(격리 환경); 실제 집PC 검증으로 취급하지 않음.
+- 원본·ZIP·manifest·DB·backup은 Git 제외. 매주 월요일09:00 KST Codex 이 채팅의 점검 예약은 회사 inbox를 대상으로 신규/오류/필수조치 때만 알림. 원본 작성·첨부 수신과 구조화 등록은 별도이며 DB PC간 자동공유 없음.
+- 집PC 최신 로컬 상태/DB/미커밋·수신·실행 미확인. 기존 미커밋4개는 과거 모바일 후속커밋 이력이 있으나 당시 원본4개 바이트 비교는 이번 수행 불가. 기존 Telegram 권한/원문/curate·실증 미완료는 그대로 유지.
+- 실행 계약은 docs/WEEKLY_RESEARCH_IMPORT.md. 자동 연결은 탐색용이며 사람 검토나 실증 성공을 의미하지 않음.
