@@ -12,6 +12,7 @@ from zoneinfo import ZoneInfo
 from .local_config import load_local
 from .market_history import fetch_history, benchmark_calendar, completed_cutoff
 from .naver_universe import fetch_listing
+from .collection_failure import failure_detail
 
 
 def write_json(path, value):
@@ -57,18 +58,27 @@ def collect_quotes(folder, progress, *, fetch=fetch_listing):
                 updated_companies=len(quotes), failed=missing, message='최신 제공 가격 조회 완료')
 
 
-def collect_daily(folder, progress, *, fetch=fetch_history, now=None, pace=.15, skip_unchanged=False):
+def collect_daily(folder, progress, *, fetch=fetch_history, now=None, pace=.15, skip_unchanged=False, codes=None):
     folder = Path(folder)
     now = now or datetime.now(ZoneInfo('Asia/Seoul'))
     end = completed_cutoff(now,True).isoformat()
     universe = json.loads((folder/'universe.json').read_text(encoding='utf-8'))
     old = json.loads((folder/'histories.json').read_text(encoding='utf-8'))
+    history_stat=(folder/'histories.json').stat()
+    history_version=[history_stat.st_mtime_ns,history_stat.st_size]
+    try:
+        diagnostics=json.loads((folder/'daily-failures.json').read_text(encoding='utf-8'))
+        if diagnostics.get('history_version')==history_version:old['errors']=diagnostics['errors']
+    except (OSError,ValueError,KeyError):pass
     if universe.get('schema_version') != 'naver-universe-0.1' or not universe.get('pagination_complete'):
         raise ValueError('시장 목록 확인 필요')
     rows = [r for r in universe['companies'] if r.get('eligibility') == 'candidate']
+    requested = codes
     codes = [r['code'] for r in rows]
     if not codes or len(codes) > 10000 or len(set(codes)) != len(codes):
         raise ValueError('invalid_universe')
+    if requested is not None and (not requested or len(set(requested)) != len(requested) or not set(requested) <= set(codes)):
+        raise ValueError('invalid_retry_codes')
     old_calendar = benchmark_calendar(old['benchmarks'])
     if old_calendar['valid_through'] > end:
         raise ValueError('future_cache')
@@ -106,12 +116,22 @@ def collect_daily(folder, progress, *, fetch=fetch_history, now=None, pace=.15, 
     target = calendar['valid_through']
     if target < old_calendar['valid_through']:
         raise ValueError('calendar_regression')
-    progress(dict(total=len(rows), completed=0, failed=0, target_date=target))
-    if skip_unchanged and target == old_calendar['valid_through'] and not old.get('errors'):
+    same_day = target == old_calendar['valid_through']
+    if requested is not None:
+        if not same_day:raise ValueError('target_changed_full_refresh_required')
+        codes = list(requested)
+    elif skip_unchanged and same_day and old.get('errors'):
+        codes = [c for c in codes if c in {e['code'] for e in old['errors']}]
+    progress(dict(total=len(codes), completed=0, failed=0, target_date=target))
+    if requested is None and skip_unchanged and same_day and not old.get('errors'):
         return dict(status='complete', target_date=target, updated_companies=0, failed=0,
                     message='새 완료 거래일 없음')
     result = dict(schema_version='market-history-bundle-0.1', start=old['start'], end=end,
                   benchmarks=benchmarks, calendar=calendar, histories={}, errors=[])
+    targeted = len(codes) < len(rows) or requested is not None
+    if targeted:
+        result['histories'] = dict(old.get('histories', {}))
+        result['errors'] = [e for e in old.get('errors', []) if e['code'] not in codes]
     successes = 0
     with ThreadPoolExecutor(max_workers=2) as pool:
         futures = {pool.submit(get, c, 'item', old.get('histories', {}).get(c)): c for c in codes}
@@ -124,13 +144,14 @@ def collect_daily(folder, progress, *, fetch=fetch_history, now=None, pace=.15, 
                     raise ValueError('incomplete_sessions')
                 result['histories'][code] = record
                 successes += 1
-            except Exception:
-                result['errors'].append(dict(code=code, reason='완료 일봉 조회 또는 검증 실패'))
+            except Exception as error:
+                result['errors'].append(dict(code=code, **failure_detail(error)))
                 if code in old.get('histories', {}):
                     result['histories'][code] = deepcopy(old['histories'][code])
-            progress(dict(total=len(rows), completed=count, failed=len(result['errors']), target_date=target))
+            progress(dict(total=len(codes), completed=count, failed=len(result['errors']), target_date=target))
     # Failed companies keep their old observations; the display withholds mixed-date RS.
     if not successes:
+        write_json(folder/'daily-failures.json', dict(errors=result['errors'],history_version=history_version))
         raise ValueError('existing_history_failed')
     temp = folder/('histories.'+uuid4().hex+'.tmp')
     try:
@@ -138,6 +159,8 @@ def collect_daily(folder, progress, *, fetch=fetch_history, now=None, pace=.15, 
         temp.replace(folder/'histories.json')
     finally:
         temp.unlink(missing_ok=True)
+    history_stat=(folder/'histories.json').stat()
+    write_json(folder/'daily-failures.json', dict(errors=result['errors'],history_version=[history_stat.st_mtime_ns,history_stat.st_size]))
     return dict(status='complete', target_date=target, updated_companies=successes,
                 failed=len(result['errors']), message='일별 가격 저장 완료')
 
@@ -154,13 +177,13 @@ class DailyMarketRefresh:
         with self.lock:
             return deepcopy(self.state)
 
-    def start(self):
+    def start(self, codes=None):
         with self.lock:
             if self.state['status'] == 'running':
                 return deepcopy(self.state)
             self.state = dict(status='running', completed=0, total=0, failed=0)
             self.last_attempt = time.monotonic()
-            Thread(target=self._run, daemon=True).start()
+            Thread(target=self._run, args=(codes,), daemon=True).start()
             return deepcopy(self.state)
 
     def ensure_due(self):
@@ -188,7 +211,7 @@ class DailyMarketRefresh:
         with self.lock:
             self.state.update(values)
 
-    def _run(self):
+    def _run(self, codes=None):
         from .company_financials import acquire_lock
         lease = None
         try:
@@ -201,14 +224,16 @@ class DailyMarketRefresh:
                 self._progress(dict(status='failed', message='다른 가격 갱신이 진행 중입니다. 기존 자료를 유지합니다.'))
                 return
             checked_on=datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat()
-            result = self.collector(folder, self._progress)
+            result = self.collector(folder, self._progress, **({'codes':codes} if codes is not None else {}))
             if self.kind=='daily':
                 result['checked_on']=checked_on
                 result['requested_end']=completed_cutoff(datetime.now(ZoneInfo('Asia/Seoul')),True).isoformat()
                 write_json(folder/'daily-refresh-status.json',result)
             self._progress(result)
-        except Exception:
-            self._progress(dict(status='failed', message='가격 조회·검증 실패 · 기존 자료 유지. 연결 상태와 시장 캐시를 확인하고 다시 시도하세요.'))
+        except Exception as error:
+            detail=failure_detail(error)
+            if str(error)=='target_changed_full_refresh_required':detail.update(stage='calendar',reason='새 거래일이 확인되어 전체 가격 갱신이 필요합니다.')
+            self._progress(dict(status='failed', message=detail['reason']+' · 기존 자료 유지', **detail))
         finally:
             if lease is not None:
                 # Keep the marker inode. The OS releases ownership on close/crash.

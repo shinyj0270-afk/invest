@@ -1,46 +1,37 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-13 06:35 KST
-Handoff version: 2026-10-13-home-installation-close
+Updated: 2026-10-13 17:44 KST
+Handoff version: 2026-10-13-home-main-integration
 Last agent: Codex
-Last PC: home (Secondary; work는 Primary)
-Last task: 설치 체크리스트 근거 확인 및 INVESTMENT CLOSE
+Last PC: home (Secondary); work Primary 원칙 유지
+Last task: 사용자 승인으로 home 미전송 인계2커밋과 회사 main4커밋 일반 merge 통합
 
 Completed:
-- 기존 home main 시작 HEAD=origin/main=실제 remote main=2e8b10c4de94fae7dff95b21b4a634f8bde374b9. 초기 clean, fetch 성공 및 ahead0/behind0 확인. 오프라인 finish 점검 profile home, 진행 Git 작업0, tracked_private_paths0.
-- 이번 직접 확인: Agent-Reach 1.5.0 버전 및 doctor 실행, 5/16 채널 사용 가능. 웹/YouTube/RSS 등 사용 가능 표시는 doctor 범위이며 지정 자료 실제 수집 성공을 뜻하지 않음. GitHub 인증은 doctor에서 실시간 검증하지 않음. 현재 프로세스 PATH에는 없어 사용자 PATH의 설치 파일로 실행; Python real-location 경고가 있으나 버전/doctor 출력 완료. Telegram 수집 수단으로 사용하지 않음.
-- 이번 직접 확인: Claude Code 2.1.296 버전 및 doctor의 No installation issues found. npm-global/native 중복 설치 안내는 남아 있으며 이번 변경 없음.
-- 이번 직접 확인: Claude installed_plugins 및 enabledPlugins에서 mattpocock-skills@claude-plugins-official과 hyperframes@hyperframes 설치·활성화 확인. claude-mem 설치 등록 없음, 미도입 유지. Codex mattpocock-skills 1.3.1 캐시와 현재 제공 스킬 확인.
-- 이번 직접 확인: 공용 HyperFrames 9종(hyperframes/animation/audio/cli/core/creative/keyframes/registry/studio) 및 media-use의 SKILL.md 존재. Node v24.15.0, FFmpeg 버전 명령 실행 성공. 설치 파일/설정·인증은 공유하지 않음.
-- 과거 실제 검사 근거 검토(SOURCE_RECORDED, 이번 재실행 아님): 2026-10-12 share-candidate-review의 334파일/issue0/portable와 실자료 없는 AppTest exit0, 관련 로그 PASS 확인. 관련 회귀43개 및 합성UI10여정 PASS는 PROJECT_STATE의 과거 기록이며 이번 단위/portable/UI 재실행 없음.
-- 과거 actual-report/cli-report 확인: 독립 출처 문서4건·카드3건, Telegram 3채널 각각0건, 출처 재입력 duplicate·논리삭제/복원 확인, 인물 각2결과/topic4결과, sector/company/curated0. CLI provenance 보존 및 기존 노트 원본 불변 확인은 당시 결과이며 이번 DB 검증 아님.
-- 이번 변경은 이 인계 문서만. 코드·전체 프로젝트 상태에 새 변화가 없어 PROJECT_STATE.md 유지. 문서 내용·공유목록·ignore·diff 검사 수행. 설치 요약은 이전 대화만으로 성공을 선언하지 않고 이번 확인 범위를 기록.
+- home 시작 main 5ccae8152ee814f0151dd8f388e10f4b39d34dea clean, 원격08d894d6a73da11dcf9fe57d4fd71da53855dd82와 ahead2/behind4. START 자동 수신 중단 보고 후 사용자 진행 승인으로 일반 merge 수행. 로컬757d7a4/5ccae81 및 회사4커밋 이력 보존, rebase/reset/force/stash 없음.
+- 충돌은 이 인계 문서 한 개. 회사 최신 코드/테스트는 그대로 수신하고 최신 회사 후속과 home 설치/전송 실패 기록을 보존해 정리. home 설정/DB/보유/원자료/인증/다른 작업본 유지.
+- home 설치 검증의 이전 SOURCE_RECORDED: Agent-Reach1.5.0 doctor5/16, Claude2.1.296 doctor, mattpocock/HyperFrames/media-use 확인. 이전 Git 인증 도우미 오류 및 gh invalid 보고는 당시 기록이며 이번 쓰기 인증 복구 성공으로 미리 선언하지 않음. 전체 근거는 로컬 보존 커밋757d7a4/5ccae81.
+- 이번 home 새 실행: 공유344개 경고0·격리portable27명령·실자료없는AppTest·합성UI11여정 PASS. 코드/테스트는 origin/main과 동일, 통합 상태/인계 문서만 별도. 아래 회사 구현/검사/운영 수치는 원격08d894d의 SOURCE_RECORDED이며 이번 home 실행 결과가 아님.
+- 더보기15→4 통합, 원래22화면 유지. 지연 조회/입력 버전 캐시, 실패 사유/대상 재시도, 화면별 기준일, 안전 재시작, Research Library 검색/출처/이력/근거, 고급 시각화 통합, 오프라인 Iconify11개 운영 반영. 상세는 PROJECT_STATE.md와 docs/SOFT_UI_DESIGN.md.
+- 회사 main 시작60a2d0a의 주간 Research Library 기능/이력 보존. 운영8767 build/source 일치·재시작 불필요 확인, 서비스 유지. 실제22화면×3폭=66전환 오류/가로넘침0. gzip 전송 약33% 감소, 안정된 자료 후속 응답10.4→2.2초 관측(최초 계산 남음).
+- 같은 세션에서 격리 공유344개 경고0, portable27명령/실자료없는AppTest/합성UI11여정 PASS, 주간11개·모바일19개 및 읽기전용 후속3개 PASS. CLOSE에서는 검증 보고서와 운영344개 해시 대조: 코드 동일, stability 테스트는 줄바꿈만 차이, 이후 변경은 검토한 상태/디자인 문서뿐. 전체 테스트 중복 재실행 없음. 공유 감사344개 경고0·PC finish·diff 검사 수행.
+- 실제 실패 대상10건 재시도 중 재무1건 정상화. 현재 대상 가격3건은 완료 거래일/배열 검증 실패, 재무6건은 검증 가능한 보고서 미확보. 범위 밖 과거 실패3건은 별도 표시. 값 보충/검증 완화 없음.
 
 Pending:
-- 이번 CLOSE 로컬 문서 commit은 완료했으나 GitHub 인증 실패로 원격 전송 미완료. 인증 복구·원격 재확인·전송 검증 대기.
-- Research Library MVP PARTIAL, Agents 도입 보류. Telegram export 완료/실자료 입력·검증을 이번에 수행하지 않음.
-- 지정3채널의 정확 URL/메시지 링크 및 platform_basis/channel_basis/reviewer/terms_checked_on 확인. 지난 세션의 화면 연결 실패는 당시 관측이며 이번 재검사 없음.
-- 실제10~20건/채널별 약5건, 다중 실제 출처 event 연결, Telegram+대가 혼합검색, 섹터4종/기업 실제검색, 사람이 읽고 curated 승인하는 검증 미완료.
-- URL 의미동치/시각 포함 published_at/의미 중복/영구 물리삭제 미지원 유지. 기존 회사 인계의 home 휴대폰·재무 monitor/신규코드·가격2건·G9/브리핑/기간·환율·공식달력 후속은 해결 범위 밖으로 보존.
+- 현재 대상 가격3·재무6 실패 원인에 맞춘 공급 자료 후속 확인, 일부 재무 보고서 누락. 최초 HTML 계산 비용 남음. 실제 휴대폰/사용자 브라우저 확인은 별도.
+- home 코드는 이번 merge 작업본에 통합하고 격리검증 PASS; 실제 앱/휴대폰은 아직 대기. Orca invest-grade는 이전2e8b10c에서 만든 동일 구현 미커밋 변경을 보존하며 자동stash/reset/덮어쓰기하지 않음. 다음 작업은 회사 main을 기준으로 시작하고 중복 변경을 재적용하지 말 것. 별도 가격 worktree도 보존.
+- 주간 Library 원본/manifest/inbox 공급 및 다음 월요일 등록 점검 유지(docs/WEEKLY_RESEARCH_IMPORT.md). 기존 예약은 이전 세션의 ACTIVE 기록이며 이번에 재등록/재검증하지 않음.
+- home Telegram3채널 정확 URL/권한/화면 접근·표본15건·사람 curate·섹터/기업 실자료·가설실증 미완료 유지. 회사 휴대폰/G9/브리핑/환율/달력 후속 유지.
 
-Next task: home GitHub 인증 복구 후 마감 commit 전송; 이어서 Telegram Export·Research Library 실자료 검증
+Next task: home 통합 코드 검증·동기화 완료 후 앱 실화면/Telegram 접근 재개
 Next action:
-- 사용자가 home에서 GitHub 재로그인을 완료한다. 인증값을 채팅/문서에 넣지 않는다. 기존 로컬 commit과 원격 main을 fetch 후 다시 비교하고 원격 별도 전진/divergence면 통합하지 않고 보존한다. 원격이 기존 기준이며 로컬 ahead만 있으면 일반 push 후 HEAD=origin/main=실제 remote SHA를 검증하고 인계의 전송 근거를 갱신한다.
-- home INVESTMENT START로 Git/PC 상태를 확인하고 docs/RESEARCH_LIBRARY.md 및 .local/research-validation-20261012/actual-report.json·cli-report.json을 읽는다. 기존 작업본/DB/로컬 설정 보존.
-- 사용자가 정상 로그인된 Telegram Desktop에서 지정 채널의 필요한 범위만 export하고, 원본은 Git 공유 범위 밖에 로컬 보관한다. export 원본/세션/쿠키/인증/OTP를 저장소 commit이나 회사·외부 모델 입력으로 전달하지 않는다.
-- 채널/플랫폼 근거를 사람이 확인한 후 기존 registry 계약으로 활성화하고 채널별 약5건, 총약15건의 reference를 입력한다. 출처 channel_id/message_id/published_on/reference와 별도 derived 해석을 구분한다. 전체 원문 복제·대량 수집을 하지 않는다.
-- 동일 batch 재입력 inserted0·중복 처리, 날짜/링크 추적, 동일 이슈 event/topic 연결, 섹터4종·기업·인물·혼합 검색, 정정/논리삭제/복원 및 원본 보존을 실제 표본으로 확인한다. 사람이 직접 검토한 항목만 curated로 기록한다.
-- 완료 판정 A~Q를 실제 표본과 대조하여 로컬 보고서에 실행/미실행을 구분한다. 실제 조건이 충족되기 전 MVP를 PASS로 올리거나 Agents를 도입하지 않는다.
-Recommended next agent: home Codex(기존 CLI/검증), 사용자(export·채널/권한·실제 curate 검토)
-Recommended model: 현재 사용자 지정/제공 모델 유지; 자동 전환 없음
-Recommended reasoning: 계약·권한·삭제 경계는 High 권장
-Escalation condition: 원격 전진/divergence·진행 Git 작업·다른 쓰기 세션·불명확한 변경·권한 미확인·로그인/세션 조작·원문/해석 혼합·삭제 참조 충돌이면 보존 후 해당 작업 중단.
-Branch: main (기존 home 작업본)
-Commit: 757d7a413a7e98720ebc74423c058ec1903c2059 (이번 설치 확인·인계 문서 commit; local commit 완료 / remote handoff 미완료)
-Remote status: not pushed / remote handoff 미완료. push 직전 fetch 성공 및 ahead1/behind0, 실제 remote main=2e8b10c4de94fae7dff95b21b4a634f8bde374b9 확인. push는 Git 인증 도우미의 MSYS 실행 권한 오류로 실패했고 직접 호출도 실패. gh auth status는 기존 토큰 invalid 보고. 이 실패 기록의 후속 commit 자체 SHA/전송 상태는 최종 보고와 다음 START 실제 Git 조회로 확인한다.
-
-Notes:
-- 공유 대상은 이 INVESTMENT 인계만. Telegram export/원문/세션/쿠키·인증·보유/투자노트·DB/sidecar·PC 설정/절대 경로·로그·검증 원본·설치 자산 제외. local/실자료 파일은 그대로 보존.
-- 이번 새 검증은 finish PC 점검·설치 버전/doctor/스킬·플러그인 존재/활성화 확인·문서 diff/공유 제외 확인·Git 원격 확인 범위. 실제 앱/모바일/Telegram 접근/시장 수집·단위/portable/UI는 재실행하지 않음.
-- GLOBAL_WORKFLOW 로컬 v1.2 내용을 읽었으나 해당 작업본 Git 접근 제한으로 원격 최신성 미확인. 기존 INVESTMENT 규칙 우선. 새 장기 결정 없음으로 /wiki-sync 미실행.
-- 원격 전송과 회사 PC 수신·실행은 별개이며 회사 수신·실행 미확인. 강제 push/reset --hard/자동 stash/충돌 덮어쓰기·예약·주문/자동매매/잔고조회 없음.
+- 이번 home 격리 portable/합성UI 검사와 코드가 origin/main과 같은지 확인 후 merge commit. 원격 재확인하고 별도 전진 없을 때 일반 push·실제 원격 SHA·clean 확인. 인증 실패 시 commit 보존, 사용자 직접 재로그인 대기.
+- 회사 START에서 상태/인계와 docs/SOFT_UI_DESIGN.md를 읽고 데이터 복구 화면의 현재 대상 가격3·재무6 최신 사유/권장 시각을 확인. 공급 원자료와 날짜·보고서 조건을 대조한 뒤 필요한 대상만 재시도하고 성공/잔여 실패를 기록. 데이터 검증을 완화하지 말 것.
+- home 실제 앱/휴대폰은 별도 실행 검증. docs/SOFT_UI_DESIGN.md 및 docs/WEEKLY_RESEARCH_IMPORT.md를 확인하며 원본/manifest/inbox·예약·인증을 회사에서 복사하지 않음. Telegram은 정상 로그인한 화면의 접근 확인 후 약15건만 기존 규칙에 따라 검증.
+Recommended next agent: home Codex(통합·검증), 사용자(직접 인증/실휴대폰); 회사 데이터 후속은 work Codex
+Recommended model: 현재 사용자 설정 유지
+Recommended reasoning: 일반 후속 Medium, 출처/날짜 충돌 조사 High 권장
+Escalation condition: 다른 쓰기 세션·미확인 변경·divergence·출처/식별/날짜 충돌 시 보존 후 해당 작업 보류
+Branch: main (home 통합 작업본)
+Commit: 시작 home 5ccae8152ee814f0151dd8f388e10f4b39d34dea / 수신 회사08d894d6a73da11dcf9fe57d4fd71da53855dd82; merge commit 생성 대기
+Remote status: home merge commit/push verification pending. 회사 구현3e39480 및 기록08d894d는 실제 origin/main에서 확인한 원격 기준. 이번 home 전송은 완료 전이며 최종 보고/다음 START에서 확인.
+Notes: 검증 원본은 Orca validation/current/dashboard-upgrade 및 dashboard-audit 아래 로컬 보존. 인증/PC설정/DB/보유/원자료/로그 제외. 중앙Wiki 및 전체세션 공유 미실행. 이전 인계 이력은 Git에 보존.

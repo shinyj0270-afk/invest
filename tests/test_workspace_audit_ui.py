@@ -44,7 +44,7 @@ with sync_playwright() as p:
     expect(page.locator('#researchCompany')).to_have_value(code)
     expect(page.locator('[data-research-go=company]')).to_be_disabled()
     for target in ['holdings','portfolio']:
-        open_tools(page);page.locator('[data-page='+target+']').click();expect(page.locator('#legacy')).to_be_visible()
+        page.locator('#pageSelect').select_option(target,force=True);expect(page.locator('#legacy')).to_be_visible()
         expect(page.locator('#legacyTitle')).to_contain_text('보유' if target=='holdings' else '구성 · 시나리오')
     open_tools(page);page.locator('[data-page=advanced]').click()
     second=page.locator('[data-av-code]').nth(1);name=second.inner_text().split(' · ')[0]
@@ -52,7 +52,7 @@ with sync_playwright() as p:
     expect(page.locator('#avCompany')).to_contain_text(name)
     page.reload();expect(page.locator('#avCompany')).to_contain_text(name)
     page.locator('#avFilters [name=query]').fill('no-such-company');page.locator('#avFilters button').first.click()
-    expect(page.locator('#avCompany')).to_contain_text('선택 기업 없음')
+    expect(page.locator('#avCompany')).to_contain_text('검색 조건에 맞는 기업이 없습니다.')
     expect(page.locator('[data-av-code]')).to_have_count(0)
     page.locator('#avReset').click();expect(page.locator('[data-av-code]').first).to_be_visible()
     # Removed/renamed identities are excluded on restore, rather than silently remapped.

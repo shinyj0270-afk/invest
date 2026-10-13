@@ -27,7 +27,11 @@ def main():
             if s.connect_ex(('127.0.0.1',args.port))==0:
                 existing=server_identity(args.port);expected=build_identity(ROOT)
                 if existing and existing.get('app')==expected['app'] and existing.get('root_id')==expected['root_id']:
-                    raise RuntimeError('이 작업본의 이전 INVESTMENT 서버가 실행 중입니다. 보유 입력·작성 중인 내용을 보관하고 기존 서버를 종료한 뒤 scripts/open-investment.cmd를 다시 실행하세요. 새 코드가 실행되기 전에는 기존 서버를 재사용하지 않습니다.')
+                    if not args.no_browser:
+                        webbrowser.open(f'http://127.0.0.1:{args.port}/restart')
+                        print('이 작업본의 서버 업데이트 화면을 열었습니다. 모든 탭의 입력을 보관한 뒤 안전하게 다시 실행하세요. 수집 중에는 다시 실행을 보류합니다.')
+                        return
+                    raise RuntimeError(f'이 작업본의 이전 서버가 실행 중입니다. http://127.0.0.1:{args.port}/restart 에서 입력 보관을 확인하고 다시 실행하세요. 기존 서버는 종료하지 않았습니다.')
                 raise RuntimeError('이 포트를 기존 프로그램이 사용 중입니다. 이전 서버를 종료하거나 다른 포트를 지정하세요.')
         log=ROOT/'.local/holdings-sync/server.log';log.parent.mkdir(parents=True,exist_ok=True)
         with log.open('ab') as f:

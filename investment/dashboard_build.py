@@ -26,14 +26,25 @@ def build_identity(root, build_id=None):
                 build_id=build_id or source_fingerprint(root))
 
 
-def restart_page():
-    return ('<!doctype html><html lang="ko"><meta charset="utf-8">'
-            '<title>INVESTMENT · 서버 다시 실행</title><main style="font:16px sans-serif;'
+def restart_page(token=None):
+    import json
+    action=''
+    if token:
+        action='''<p><label><input id="draftsSaved" type="checkbox">모든 열린 탭의 작성 내용을 보관했습니다.</label></p>
+<button id="safeRestart">안전하게 서버 다시 실행</button><p id="restartStatus" role="status"></p>
+<script>document.getElementById('safeRestart').onclick=async()=>{
+const status=document.getElementById('restartStatus');
+if(!document.getElementById('draftsSaved').checked){status.textContent='열린 탭의 입력을 먼저 보관하고 확인해 주세요.';return;}
+try{const response=await fetch('/restart',{method:'POST',headers:{'Content-Type':'application/json','X-Dashboard-Token':TOKEN},body:JSON.stringify({drafts_saved:true})});const data=await response.json();status.textContent=data.message||data.error;if(response.ok){document.getElementById('safeRestart').disabled=true;status.textContent+=' 잠시 후 화면 확인 버튼을 눌러 주세요.';}}catch{status.textContent='서버 연결을 확인하고 open-investment.cmd를 실행하세요.';}};</script>'''.replace('TOKEN',json.dumps(token))
+    return ('<!doctype html><html lang="ko"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<title>INVESTMENT · 서버 다시 실행</title></head><body><main style="font:16px sans-serif;'
             'max-width:680px;margin:12vh auto;padding:24px"><h1>새 코드가 저장되었습니다</h1>'
             '<p>기존 서버와 화면의 버전이 달라 자료 연결을 잠시 멈췄습니다.</p>'
-            '<p>실행 중인 INVESTMENT 서버를 종료한 뒤 scripts/open-investment.cmd를 '
-            '다시 실행하세요. 보유 입력과 작성 중인 내용을 먼저 보관하세요.</p>'
-            '<button onclick="location.reload()">서버 다시 실행 후 화면 확인</button></main></html>')
+            '<p>모든 열린 탭의 보유 입력과 작성 중인 내용을 먼저 보관하세요. '
+            '수집·동기화가 끝나면 아래에서 안전하게 다시 실행할 수 있습니다. '
+            '연결이 끊겼다면 scripts/open-investment.cmd를 다시 실행하세요.</p>'
+            +action+'<button onclick="location.href=\'/\'">서버 다시 실행 후 화면 확인</button></main></body></html>')
 
 
 def loading_page():

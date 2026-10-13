@@ -30,7 +30,7 @@ with sync_playwright() as p:
         for k in ['revenue','op','net','borrowings']:
             expect(page.locator(f'[data-brief-metric={k}] b')).to_have_text('—')
         page.locator('#researchCompany').select_option('005930')
-    open_tools(page);page.locator('[data-page=company]').click();page.locator('#sd-tab-financial').click()
+    open_tools(page);page.locator('[data-page=brief]').click();page.locator('[data-context-page=company]').click();page.locator('#sd-tab-financial').click()
     page.locator('[data-sd-field=cadence][data-value=annual]').first.click()
     page.locator('#financialPeriodSelect').select_option('CFS-annual')
     expect(page.locator('#sd-statement .sd-table')).to_be_visible()
@@ -54,7 +54,7 @@ with sync_playwright() as p:
     expect(page.locator('#ebitdaPreview')).to_have_text('550')
     page.locator('#ebitdaForm button[type=submit]').click()
     expect(page.locator('[data-sd-account=ebitda] td').last).to_contain_text('550')
-    page.reload();open_tools(page);page.locator('[data-page=company]').click();page.locator('#sd-tab-financial').click()
+    page.reload();open_tools(page);page.locator('[data-page=brief]').click();page.locator('[data-context-page=company]').click();page.locator('#sd-tab-financial').click()
     if actual:page.locator('#sdCompany').select_option('005930')
     page.locator('#financialPeriodSelect').select_option('CFS-annual')
     page.locator('#ebitdaEditor').evaluate("e=>e.open=true")

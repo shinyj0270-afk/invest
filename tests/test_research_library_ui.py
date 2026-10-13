@@ -10,6 +10,10 @@ from investment.workspace_export import export_workspace
 
 html=export_workspace(make_fixture(),live={'token':'fixture'})
 data=dict(status='ready',profile='work',cards=[],theses=[dict(id='t',revision=1,value=dict(title='<img src=x onerror=alert(1)>',claim='Synthetic claim',as_of='2026-01-03',status='active',invalidation=['Demand falls'],instruments=[]))])
+data['sources']=[dict(id='source',revision=1,kind='source',stage='raw',value=dict(title='Original source',url='javascript:alert(1)',origin='independent',access='public'))]
+data['masters']=[dict(id='minervini',name='Minervini')]
+data['theses'][0]['evidence']=[dict(id='e1',revision=1,recorded_at='2026-01-05',value=dict(thesis_revision=1,stance='refute',observed_on='2026-01-04',observation='Demand actually fell',reasoning='Refutation evidence'),provenance=[dict(id='s2',value=dict(title='Official demand series',url='https://example.invalid/demand'))])]
+data['theses'][0].update(metadata=dict(persons=['minervini'],topic='Capacity',sector='Semiconductors',instruments=[dict(code='005930')]),stage='derived',history=[dict(revision=1,recorded_at='2026-01-03',value=dict(claim='Old claim',change_reason='Initial')),dict(revision=2,recorded_at='2026-01-04',value=dict(claim='New claim',change_reason='New evidence'))],catalog_history=[dict(revision=1,recorded_at='2026-01-04',value=dict(stage='derived',reason='Classified',source_note='Official filing'))])
 with sync_playwright() as p:
     browser=p.chromium.launch(headless=True,**chromium_options())
     page=browser.new_page(viewport={'width':1440,'height':1000});errors=[]
@@ -26,9 +30,29 @@ with sync_playwright() as p:
     expect(page.locator('#libraryStatus')).to_contain_text('ready')
     assert page.locator('#researchLibrary img').count()==0
     expect(page.locator('#researchLibrary')).to_contain_text('<img src=x')
+    assert page.locator('#researchLibrary a[href^="javascript:"]').count()==0
+    page.locator('#libraryFilters [name=person]').select_option('minervini')
+    page.locator('#libraryFilters [name=topic]').select_option('Capacity')
+    page.locator('#libraryFilters [name=sector]').select_option('Semiconductors')
+    page.locator('#libraryFilters [name=company]').fill('005930')
+    page.locator('#libraryFilters [name=stage]').select_option('derived')
+    page.locator('#libraryFilters button').first.click()
+    assert page.locator('.library-record').count()==1
+    page.locator('.library-record summary').click()
+    expect(page.locator('.library-record')).to_contain_text('New evidence')
+    expect(page.locator('.library-record')).to_contain_text('Official filing')
+    expect(page.locator('.library-record')).to_contain_text('반박 근거')
+    expect(page.locator('.library-record')).to_contain_text('Demand actually fell')
+    expect(page.locator('.library-record')).to_contain_text('Official demand series')
+    page.locator('#libraryFilters [name=query]').fill('no matching text')
+    page.locator('#libraryFilters button').first.click()
+    assert page.locator('.library-record').count()==0
+    page.locator('#libraryReset').click()
+    assert page.locator('.library-record').count()==2
     for width in (390,320):
         page.set_viewport_size({'width':width,'height':844})
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+        assert page.locator('#researchLibrary button,#researchLibrary input,#researchLibrary select').evaluate_all('(els)=>els.every(el=>el.getBoundingClientRect().height>=44)')
     data['theses']=[];data['status']='empty'
     page.locator('#libraryReload').click()
     expect(page.locator('#researchLibrary')).to_contain_text('저장된 산업 가설이 없습니다')

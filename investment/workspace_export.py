@@ -154,7 +154,7 @@ def share_live_text(payload):
     payload['wire_text']=texts
 
 
-def export_workspace(snapshot, *, live=None, events=None, references=None, market_cache=None, financials=None, trend_following_data=None, trend_checkpoint_directory=None):
+def export_workspace(snapshot, *, live=None, events=None, references=None, market_cache=None, financials=None, trend_following_data=None, trend_checkpoint_directory=None, section_sink=None):
     """Embed only the supplied snapshot; never read local credentials or holdings."""
     validate_snapshot(snapshot)
     analysis = enrich_valuation(snapshot)
@@ -215,7 +215,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     legacy = None if (live or {}).get('lazy_holdings_frame') else export_holdings_frame(snapshot,live=live,market_cache=market_cache,analysis_snapshot=analysis)
     html = (src / 'workspace.html').read_text(encoding='utf-8')
     # Insert payload last so data containing template marker text stays literal.
-    for marker, name in [('/*DASHBOARD_ICONS*/', 'icons.js'), ('/*DASHBOARD_STABILITY*/', 'dashboard_stability.js'), ('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*SOFT_UI_CSS*/','soft_ui.css'), ('/*HOME_DASHBOARD_UI*/', 'home_dashboard_ui.js'), ('/*VERIFICATION_UI*/', 'verification_ui.js'), ('/*HOLDINGS_BRIEF_UI*/', 'holdings_brief_ui.js'), ('/*RESEARCH_LIBRARY_UI*/', 'research_library_ui.js'), ('/*WORKSPACE_JS*/', 'workspace.js'),
+    for marker, name in [('/*DASHBOARD_ICONS*/', 'icons.js'), ('/*DASHBOARD_STABILITY*/', 'dashboard_stability.js'), ('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*SOFT_UI_CSS*/','soft_ui.css'), ('/*HOME_DASHBOARD_UI*/', 'home_dashboard_ui.js'), ('/*VERIFICATION_UI*/', 'verification_ui.js'), ('/*HOLDINGS_BRIEF_UI*/', 'holdings_brief_ui.js'), ('/*RESEARCH_LIBRARY_UI*/', 'research_library_ui.js'), ('/*DATA_RECOVERY_UI*/', 'data_recovery_ui.js'), ('/*WORKSPACE_JS*/', 'workspace.js'),
                          ('/*DASHBOARD_JOURNEY*/', 'dashboard_journey.js'),
                          ('/*MARKET_EXPLANATION_CSS*/', 'market_explanation.css'), ('/*MARKET_EXPLANATION_UI*/', 'market_explanation_ui.js'),
                          ('/*TREND_CHANGES_UI*/', 'trend_changes_ui.js'), ('/*RISK_REVIEW_UI*/', 'risk_review_ui.js'),
@@ -246,5 +246,9 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
         # and caller-supplied trend models.
         payload=deepcopy(payload)
         payload['financial_tables']={}
+        if section_sink is not None:
+            section_sink('trend-following',payload['trend_following'])
+            payload['trend_following']={key:value for key,value in payload['trend_following'].items() if key not in ('rows','previews')}
+            payload['trend_following']['rows']=[]
         compact_live_payload(payload)
     return html.replace('/*PAYLOAD*/', script_json(payload))

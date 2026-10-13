@@ -54,9 +54,16 @@ with sync_playwright() as p:
     if page.locator('#moreNavigation').get_attribute('open') is None:
         page.locator('#moreNavigation summary').click()
     page.locator('[data-page=advanced]').first.click()
-    expect(page.locator('#avCompany [data-financial-series] svg')).to_have_count(3)
+    selected=page.locator('[data-av-code]').first.get_attribute('data-av-code')
+    page.locator('[data-av-code]').first.click()
+    expect(page.locator('#avCompany [data-financial-series]')).to_have_count(0)
+    page.locator('#avBrief').click()
+    expect(page.locator('#researchCompany')).to_have_value(selected)
+    page.locator('#research [data-research-go=trend]').first.click()
+    expect(page.locator('#research [data-financial-series] svg')).to_have_count(3)
+    expect(page.locator('#research [data-financial-series]')).to_contain_text('지수 초과수익')
     (ROOT/'validation/current').mkdir(parents=True,exist_ok=True)
-    page.locator('#avCompany').screenshot(path=str(ROOT/'validation/current/risk-charts-synthetic.png'))
+    page.locator('#research [data-financial-series]').screenshot(path=str(ROOT/'validation/current/risk-charts-synthetic.png'))
     for width in (390,320):
         page.set_viewport_size({'width':width,'height':844})
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
@@ -82,13 +89,19 @@ with sync_playwright() as p:
         else:request.fulfill(status=200,content_type='application/json',body='{"status":"idle"}')
     lazy.route('http://127.0.0.1:8767/**',lazy_route)
     lazy.goto('http://127.0.0.1:8767/',wait_until='load')
-    lazy.evaluate('WORKSPACE_DATA.company_details = {}')
+    assert lazy.evaluate('Object.keys(WORKSPACE_DATA.company_details).length')==0
     lazy.locator('#moreNavigation summary').click()
     lazy.locator('[data-page=advanced]').click()
-    expect(lazy.locator('#avCompany [data-financial-series] svg')).to_have_count(3)
-    assert len(loads)==1,loads
+    selected=lazy.locator('[data-av-code]').first.get_attribute('data-av-code')
+    assert loads==[],loads  # Distribution does not load duplicated detail charts.
     lazy.locator('#avReset').click()
-    assert len(loads)==1,loads
+    lazy.locator('#avBrief').click()
+    expect(lazy.locator('#researchCompany')).to_have_value(selected)
+    lazy.locator('#research [data-research-go=trend]').first.click()
+    expect(lazy.locator('#research [data-financial-series] svg')).to_have_count(3)
+    assert loads==[selected],loads
+    lazy.locator('[data-trend-range="63"]').click()
+    assert loads==[selected],loads
     assert not errors,errors
     browser.close()
-print('PASS synthetic risk correlation/contribution, trend/advanced charts, lazy selected company only, labelled period, mobile390/320, no JS errors')
+print('PASS synthetic risk correlation/contribution, advanced navigation to selected-company trend charts, lazy selected company only, labelled period, mobile390/320, no JS errors')

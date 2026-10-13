@@ -1,3 +1,42 @@
+# home main 이력 보존 통합 · 2026-10-13 17:44 KST
+
+- home Secondary main 5ccae8152ee814f0151dd8f388e10f4b39d34dea clean과 회사 원격08d894d6a73da11dcf9fe57d4fd71da53855dd82의 ahead2/behind4를 실제 확인. START에서 자동 수신 중단 후 사용자 진행 승인으로 일반 merge, 로컬 설치/인증실패 인계2커밋과 회사 주간Library/대시보드4커밋 이력 보존.
+- 충돌은 CURRENT_HANDOFF.md 한 파일이며 양쪽 후속/설치 검증 기록과 실제·과거 검증 구분을 유지해 정리. 코드/테스트는 원격 최신과 동일하게 통합하고 기존 home .venv/설정/인증/DB/원자료/보유 및 별도 작업본을 보존한다. 예약 등록/Agents/claude-mem/시장 수집/앱 재시작 없음.
+- 이번 home 새 실행: 공유344개 경고0·격리portable27명령·실자료없는AppTest·합성UI11여정 PASS. 코드/테스트는 origin/main과 동일, 추가 차이는 통합 상태/인계 문서 두 개뿐. 아래 회사 운영 검증을 home 실행 결과로 사용하지 않는다. 실제 앱/휴대폰·Telegram 약15건·권한/curated 및 회사 가격3/재무6 실패 후속 유지. 통합 commit/push와 다음 실행은 CURRENT_HANDOFF.md 참조.
+
+---
+
+# 대시보드 7개 업그레이드 운영 반영 · 2026-10-13 11:18 KST
+
+- 사용자 전체 업그레이드 요청으로 지연 조회·입력 버전 캐시, 실패 원인/대상 재시도, 화면별 기준일, 안전한 재시작, Research Library 검색·출처·이력·근거, 고급 시각화 통합, 오프라인 Iconify 메뉴를 구현했다. 회사 work/main 60a2d0a의 주간 Research Library 기능을 보존하고 검증한 변경 34개를 운영에 반영했다. Orca 작업본 2e8b10c와 회사 main 모두 미커밋이며 commit/push·다른 PC 수신은 실행하지 않았다.
+- 운영8767 build/source 9d0c47e8695f55527a255e88e2af9e7da4062fe38eaaff9278ea01ec18a30fcd 일치, restart_required=false·HTTP200. 실제 저장자료 22화면×1440/390/320px 전환에서 JS 오류·가로 넘침·실패 요청0, 지연 추세 종목2453개·메뉴 Iconify11개 확인. 사용자 브라우저/실제 휴대폰 확인과 구분한다.
+- 성능: 변경 직전 연속 gzip 응답15.917/10.427초·전송2,946,801/2,946,807바이트·HTML23,438,507바이트. 최종 자료 재조회 후14.465/2.499/2.207초·전송1,980,824바이트·HTML18,355,761바이트. 최초 계산과 입력 변경 뒤 계산은 남으며 안정된 자료의 후속 요청을 캐시한다. 운영 첫 재시작/자동수집 중 비압축 응답22.14초와 브라우저 렌더4.5초도 관측했다. 부하 통제 벤치마크나 실제 휴대폰 속도로 확대하지 않는다.
+- 이번 검증: 회사 주간 기능을 포함한 격리 공유344개 경고0·portable27명령·실자료없는AppTest·합성UI11여정 PASS, 주간 등록11개 PASS. 모바일19개는 GUI 샌드박스 제약 해소 후 PASS, 읽기 전용 후속3개도 PASS. Library12개 및 별도 홈/고급/위험/워크스페이스 UI PASS. 메뉴 키보드·접근성 이름·장식 SVG·최소 글자 대비4.95·44px 조작 영역 확인.
+- 실제 대상 재시도10건(재무7·가격3): 과거 재무 실패487570은 정상화. 현재 대상의 재무6건은 검증 가능한 보고서 미확보, 가격3건은 완료 거래일 누락/배열 불일치로 실패 사유와 확인/재시도 권장 시각을 기록했다. 현재 수집 범위 밖 과거 재무 실패3건은 재시도 비활성으로 구분하고, 일부 보고서 누락은 별도 표시한다. 값을 임의 보충하거나 식별·회계·날짜 검증을 완화하지 않았다.
+- 재시작은 모든 탭의 작성 내용 보관 확인 및 활성 수집·OS 잠금 검사 후 해당 서버가 협력적으로 종료/재실행한다. 이 경로는 합성 회귀로 검증했으며 이번 첫 운영 적용은 기존 서버를 정확히 식별해 잠금 해제 후 재시작했다. Research Library 원자료/해석/근거의 삭제·제외·권한 철회 전파와 work/home 경계를 유지했다.
+- 상세는 docs/SOFT_UI_DESIGN.md. 검증 보고서·화면·원인 목록은 validation/current/ 아래 로컬 전용으로 보존한다. 기존 주간 연구 입력·home Telegram·기타 데이터 연결 후속 및 PC별 설정/인증/보유는 보존했다.
+
+---
+
+# 운영 대시보드 점검·복구 · 2026-10-13 10:47 KST
+
+- 사용자 현시점 점검/문제 해결 요청. Orca invest-grade 기준2e8b10c의 메뉴 미커밋 변경을 보존하고 회사 work/main 60a2d0a73a71f2f099b1de8a6dd9ca94baef569d의 주간 Research Library 추가를 실제 대조. 회사 기존 변경 없음 확인 후 검증된 메뉴와 후속 수정만 적용. main·Orca 모두 미커밋이며 원격 전송 없음.
+- 운영8767 /dashboard HTTP503·build/source 불일치 재현. 실제 회사 root/프로세스 확인 및 가격·재무 잠금 해제 후 해당 서버만 재시작, 더보기15→4 통합 운영 반영. 추가 모바일 재시작 안내 viewport 누락을 실패 회귀검사로 확인·수정하고 오래된 Streamlit 안내를 현재 Research Library/기업 분석 경로로 정정. 정상 자동수집 중에는 재시작을 보류했으며 잠금 해제 후 후속 코드 적용 완료.
+- 최종 운영 /health build=source=87fca4f30aea47b2cdd9655b60a554653466709751d2d9c4a1301c032bd8cc52, restart_required=false 및 /dashboard HTTP200·새 안내·메뉴 소스 확인. 실제 저장자료를 격리 테스트 브라우저에 렌더해22화면×1440/390/320px 전환/가로 넘침0/JS오류0·Iconify 별표/설정 확인. 배경 갱신은 고정하고 쓰기 차단, 사용자 브라우저·실휴대폰 직접 확인과 구분.
+- 이번 새 검증: 관련 unittest36개·안정성 UI(모바일 복구 포함) PASS. 공유334개 경고0·격리portable26명령·실자료없는AppTest·합성UI10여정 PASS. 최종 추가 수정의 운영 응답도 별도 확인. Orca 작업본의 validation/current/dashboard-audit/ 및 share-test-* 근거는 Git 제외.
+- 미해결: 최초 HTML 응답12.57초/렌더5.01초, 최종 gzip 응답17.99초·전송2,946,642바이트/비압축23,438,506바이트(부하 통제 없는 관측값). 가격3건·재무7건 미확보(처음6건에서 자동 재확인 후7건); 실패 세부 원인은 현재 기록만으로 확정 불가. 발굴 종가10-12와 기존 검토자료09-23의 범위 차이를 보존. 업그레이드 우선순위는 docs/SOFT_UI_DESIGN.md의 운영 점검 절에 정리. 기존 주간 등록·home Telegram·PC 수신 후속은 유지.
+
+---
+
+# 더보기 메뉴 통합 · 2026-10-13 10:13 KST
+
+- 사용자 통합 요청으로 Orca shinyj0270-afk/invest-grade 시작 2e8b10c4de94fae7dff95b21b4a634f8bde374b9 clean에서 구현. profile unknown/upstream·작업본 .venv 부재를 유지하고 같은 PC 기존 .venv를 합성 검증 런타임으로만 사용. 기존 main·운영 설정/자료/서버는 수정하지 않음.
+- 더보기 실제15개(Research Library 포함)를 자료 비교·고급 시각화·검토 조건검색·Research Library 4개로 통합. 자료 비교 하위6화면, 기업 찾기/분석/보유/포트폴리오 하위 메뉴로 이동. 모바일22화면은 같은 분류로 그룹화, 원래 화면ID·선택 기업·필터·계산/출처 범위 보존. 검토 조건검색은 발굴 자료와 범위가 달라 별도 유지.
+- 이번 직접 합성 검증: 홈 메뉴4개·비교6화면·모바일22화면·Iconify 별표/설정 PASS, workspace/상세/재무표/보유/실행/새로고침 UI6여정 PASS, workspace_export unittest10개 PASS. 공유334개 경고0·격리portable26명령·실자료 없는AppTest·합성UI10여정 PASS. 새 메뉴 desktop 캡처 육안 확인; 운영 실자료/휴대폰 검증으로 확대하지 않음.
+- 운영8767 /health는 build/source 불일치·restart_required=true 확인. 운영 적용·재시작·commit/push 미실행, 이번 변경은 이 작업본에만 미커밋 상태. 기존 home Telegram 수집·권한/실자료 검증 및 데이터 후속은 CURRENT_HANDOFF.md의 미완료를 보존한다.
+
+---
+
 # home Telegram 접근 조사·수집 대기 · 2026-10-12 19:23 KST
 
 - home Secondary main 6f9830d3d04258d03703ba62545816c77561ad3b clean에서 조사. Telegram Web 연결 브라우저/탭 없음, 새 탭도 Browser is not available. Telegram Desktop 실행은 확인했지만 Computer Use native pipe unavailable 재확인으로 화면 읽기 실패. 실행 프로세스 존재를 로그인/지정 채널 접근 성공으로 보고하지 않는다.
@@ -1221,3 +1260,13 @@
 - 실제 점검: 프로젝트/채팅 목록, Git 상태·최상위 경로·원격, 공식 Projects 문서 확인. 시작 Git 상태 main...origin/main clean. 앱/코드 테스트는 실행하지 않았다.
 - 변경: 이 확인 기록만 추가. 프로젝트 삭제·이름 변경·통합 및 commit/push 없음.
 - 다음 지점: 실제 파일·대시보드 작업은 로컬 프로젝트에서 이어간다. 이름 구분은 사용자 요청 시 진행하며 생성 경위는 미확인이다.
+
+
+## 2026-10-13 work 주간 연구 등록 사후 검증
+
+- 회사 실제 DB의 2026-10-12 source11/master5/thesis2/evidence2 총20건이 보존된 구조화 원본과 일치. 모두 revision1, 무결성 ok. 첨부 Markdown/ZIP 바이트 동일·원본 SHA 재확인.
+- 주간 importer 구현: 원본 해시/월요일/ZIP 확인, 정확 URL 재사용, ID 충돌 보존, 전체 트랜잭션 rollback, 동시 재처리 직렬화, 기존 인물·전략·섹터/topic·명시 가설 참조 연결. 기존20건 재처리 삽입0/재사용20, weekly 영수증1/연결29. 영수증은 연구카드 수와 분리.
+- 신규11개 포함 Library/catalog/read-only 회귀54개 PASS. 공유 후보 보안·portable·home 빈 실제모드 검사 PASS(격리 환경); 실제 집PC 검증으로 취급하지 않음.
+- 원본·ZIP·manifest·DB·backup은 Git 제외. 매주 월요일09:00 KST Codex 이 채팅의 점검 예약은 회사 inbox를 대상으로 신규/오류/필수조치 때만 알림. 원본 작성·첨부 수신과 구조화 등록은 별도이며 DB PC간 자동공유 없음.
+- 집PC 최신 로컬 상태/DB/미커밋·수신·실행 미확인. 기존 미커밋4개는 과거 모바일 후속커밋 이력이 있으나 당시 원본4개 바이트 비교는 이번 수행 불가. 기존 Telegram 권한/원문/curate·실증 미완료는 그대로 유지.
+- 실행 계약은 docs/WEEKLY_RESEARCH_IMPORT.md. 자동 연결은 탐색용이며 사람 검토나 실증 성공을 의미하지 않음.

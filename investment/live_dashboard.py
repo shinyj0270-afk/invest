@@ -5,6 +5,8 @@ import secrets
 import sqlite3
 import hashlib
 import gzip
+import threading
+from collections import OrderedDict
 from datetime import datetime, timedelta
 import time
 from zoneinfo import ZoneInfo
@@ -29,6 +31,29 @@ from .holding_market import HoldingMarket
 from .market_refresh import DailyMarketRefresh, collect_daily, collect_quotes
 from .company_financials import CompanyFinancials, FinancialMonitor, load_cached as load_company_financials
 from urllib.parse import urlsplit, parse_qs
+
+
+def dashboard_input_version(root):
+    """Cheap source versions, including SQLite WAL and deletions; never hash large histories."""
+    cfg=load_local(root)
+    folders=[cfg['data_dir']/cfg['profile'],Path(root)/'config',Path(root)/'.local/research-library'/cfg['profile']]
+    files=[]
+    for folder in folders:
+        if folder.exists():
+            for path in sorted(folder.rglob('*')):
+                if path.suffix in ('.lock','.log','.tmp'):continue
+                try:
+                    if path.is_file():
+                        stat=path.stat();files.append((str(path),stat.st_mtime_ns,stat.st_size,stat.st_ino))
+                except FileNotFoundError:continue
+    manual=cfg.get('manual_snapshot_file')
+    if manual:
+        for path in [manual]+[manual.parent/name for name in ('config-review.json','info.xlsx','income.xlsx','balance.xlsx','income-extra.xlsx','balance-extra.xlsx','debt-extra.xlsx')]:
+            if path.exists():
+                try:
+                    stat=path.stat();files.append((str(path),stat.st_mtime_ns,stat.st_size,stat.st_ino))
+                except FileNotFoundError:continue
+    return (datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat(),tuple(files))
 
 
 def public_receipt(receipt):
@@ -69,6 +94,13 @@ def saved_data(root, *, force=False):
 def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=None, daily=None, latest=None, financial=None, financial_monitor=None, read_only=False):
     token = token or secrets.token_urlsafe(32)
     loaded_build_id = source_fingerprint(root)
+    dashboard_cache={}
+    section_cache=OrderedDict()
+    cache_lock=threading.RLock()
+    from .data_recovery import DataRecovery
+    recovery=DataRecovery(root,None if read_only else daily,None if read_only else financial)
+    restarting=threading.Event()
+    request_lock=threading.RLock()
 
     class DashboardHandler(BaseHTTPRequestHandler):
         def send_body(self, status, content, content_type):
@@ -93,14 +125,35 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                     (self.headers.get('Origin')==origin if mutation else self.headers.get('Origin') in (None,origin)))
 
         def do_GET(self):
+            with request_lock:self.handle_get()
+
+        def handle_get(self):
             current_build_id=source_fingerprint(root)
             if self.path=='/health':
                 identity=build_identity(root,loaded_build_id)
                 identity.update(source_build_id=current_build_id,restart_required=current_build_id!=loaded_build_id)
                 self.send_body(200,json.dumps(identity),'application/json');return
+            if self.path=='/restart':
+                if self.headers.get('Host')!=f'127.0.0.1:{self.server.server_port}':self.send_body(403,'','text/plain');return
+                self.send_body(200,restart_page(token),'text/html');return
+            if restarting.is_set():self.send_body(503,'{"error":"서버 다시 실행 중"}','application/json');return
             if current_build_id!=loaded_build_id:
-                self.send_body(503,restart_page() if self.path in ('/','/dashboard') else '{"error":"서버 다시 실행 필요"}',
+                self.send_body(503,restart_page(token) if self.path in ('/','/dashboard') else '{"error":"서버 다시 실행 필요"}',
                     'text/html' if self.path in ('/','/dashboard') else 'application/json');return
+            if self.path=='/data-recovery':
+                if not self.authorized():self.send_body(403,'{}','application/json');return
+                try:self.send_body(200,json.dumps(recovery.view(),ensure_ascii=False),'application/json')
+                except (OSError,ValueError,TypeError):self.send_body(503,'{"error":"수집 상태 연결 대기"}','application/json')
+                return
+            if urlsplit(self.path).path=='/dashboard-section':
+                if not self.authorized():self.send_body(403,'{}','application/json');return
+                query=parse_qs(urlsplit(self.path).query)
+                with cache_lock:
+                    requested=query.get('version',[])
+                    if set(query)!={'section','version'} or query.get('section')!=['trend-following'] or len(requested)!=1 or requested[0] not in section_cache:
+                        self.send_body(409,'{"error":"저장자료가 바뀌었습니다. 입력을 보관하고 새로고침하세요."}','application/json');return
+                    section=section_cache[requested[0]]['trend-following']
+                self.send_body(200,json.dumps({'trend_following':section},ensure_ascii=False,separators=(',',':')),'application/json');return
             if self.path=='/holdings-frame':
                 if not self.authorized():self.send_body(403,'{"error":"요청 거부"}','application/json');return
                 result=refresh(root)
@@ -216,6 +269,13 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
             result = refresh(root)
             if daily and hasattr(daily,'ensure_due'):daily.ensure_due()
             if financial_monitor:financial_monitor.ensure_due()
+            financial_state=financial_monitor.poll() if financial_monitor else {}
+            monitor_version=json.dumps({key:financial_state.get(key) for key in ('revision','versions')},sort_keys=True)
+            version=(digest(result['snapshot']) if result['snapshot'] else None,dashboard_input_version(root),monitor_version)
+            with cache_lock:
+                cached=dashboard_cache.get('entry')
+                if cached and cached[0]==version:
+                    self.send_body(200,cached[1],'text/html');return
             receipt = public_receipt(result['receipt'])
             if result['snapshot'] is None:
                 message = escape(receipt.get('error') or '실제 저장자료가 없습니다.')
@@ -240,13 +300,24 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
             live['financial_as_of']=financial_as_of
             live['lazy_company_views']=True
             live['lazy_holdings_frame']=True
+            live['lazy_trend_following']=True
+            live['section_version']=hashlib.sha256(repr(version).encode()).hexdigest()
             live['build_id']=loaded_build_id
             live['protocol_version']=build_identity(root,loaded_build_id)['version']
-            self.send_body(200, export_workspace(result['snapshot'], live=live,
+            sections={}
+            content=export_workspace(result['snapshot'], live=live,section_sink=lambda key,value:sections.update({key:value}),
                 events=load_cached_events(root, result['snapshot']),
                 references=load_cached_references(root, result['snapshot']),
                 market_cache=cache, financials=finances,
-                    trend_checkpoint_directory=Path(root)/'.local'/'trend-checkpoints' if daily else None), 'text/html')
+                    trend_checkpoint_directory=Path(root)/'.local'/'trend-checkpoints' if daily else None)
+            with cache_lock:
+                section_cache[live['section_version']]=sections
+                while len(section_cache)>3:section_cache.popitem(last=False)
+                latest_state=financial_monitor.poll() if financial_monitor else {}
+                latest_version=json.dumps({key:latest_state.get(key) for key in ('revision','versions')},sort_keys=True)
+                if version==(digest(result['snapshot']),dashboard_input_version(root),latest_version):
+                    dashboard_cache['entry']=(version,content,live['section_version'])
+            self.send_body(200,content,'text/html')
 
         def empty_refresh_request(self):
             if not self.authorized(mutation=True):
@@ -266,10 +337,50 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
             return False
 
         def do_POST(self):
+            with request_lock:self.handle_post()
+
+        def handle_post(self):
             if read_only:
                 self.send_body(403,'{"error":"읽기 전용 실행"}','application/json');return
+            if restarting.is_set():self.send_body(409,'{"error":"서버 다시 실행 중"}','application/json');return
+            if self.path=='/restart':
+                if not self.authorized(mutation=True):self.send_body(403,'{}','application/json');return
+                leases=[]
+                try:
+                    size=int(self.headers.get('Content-Length','0'))
+                    if not 0<size<=128 or json.loads(self.rfile.read(size))!={'drafts_saved':True}:raise ValueError('작성 내용 보관 확인이 필요합니다.')
+                    for service in (daily,latest,financial_monitor):
+                        if service and service.poll().get('status') in ('running','syncing'):raise ValueError('수집·동기화 진행 중입니다. 완료 후 다시 시도하세요.')
+                    if financial and financial.running():raise ValueError('재무 수집 완료 후 다시 시도하세요.')
+                    from .company_financials import acquire_lock
+                    cfg=load_local(root);folder=cfg['data_dir']/cfg['profile']
+                    for path in folder.rglob('*.lock'):
+                        leases.append(acquire_lock(path))
+                    restarting.set()
+                except (ValueError,TypeError,OSError) as exc:
+                    for lease in leases:lease.close()
+                    message='다시 실행 조건을 확인하지 못했습니다. 수집·동기화 완료와 입력 보관을 확인하세요.' if isinstance(exc,OSError) else str(exc)
+                    self.send_body(409,json.dumps({'error':message},ensure_ascii=False),'application/json');return
+                self.send_body(202,json.dumps({'message':'입력 저장소를 유지하며 서버를 다시 실행합니다.'},ensure_ascii=False),'application/json')
+                def restart():
+                    import subprocess,sys,os
+                    self.server.shutdown();self.server.server_close()
+                    for lease in leases:lease.close()
+                    subprocess.Popen([sys.executable,str(Path(root)/'tools/open_dashboard.py'),'--no-browser','--port',str(self.server.server_port)],cwd=root,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
+                threading.Thread(target=restart,daemon=False).start();return
             if source_fingerprint(root)!=loaded_build_id:
                 self.send_body(503,'{"error":"코드 버전이 달라 서버 다시 실행 필요 · 기존 입력 유지"}','application/json');return
+            if self.path=='/data-recovery':
+                if not self.authorized(mutation=True):self.send_body(403,'{}','application/json');return
+                try:
+                    size=int(self.headers.get('Content-Length','0'))
+                    if not 0<size<=1024:raise ValueError()
+                    request=json.loads(self.rfile.read(size))
+                    if set(request)!={'kind','code'}:raise ValueError()
+                    state=recovery.retry(request['kind'],request['code'])
+                    self.send_body(202,json.dumps(state,ensure_ascii=False),'application/json')
+                except (ValueError,TypeError,KeyError):self.send_body(400,'{"error":"실패 항목을 확인하세요"}','application/json')
+                return
             if self.path=='/recommendations':
                 if not self.authorized(mutation=True):self.send_body(403,'{"error":"요청 거부"}','application/json');return
                 from .recommendations import RecommendationBook,research_context
@@ -346,7 +457,7 @@ def serve(root, *, port=8767, saved_only=False, read_only=False):
         return
     holdings=load_service(root)
     quotes=HoldingMarket(root,lambda:saved_data(root)['snapshot'])
-    daily=DailyMarketRefresh(root,collector=lambda folder, progress:collect_daily(folder,progress,skip_unchanged=True))
+    daily=DailyMarketRefresh(root,collector=lambda folder, progress,**kwargs:collect_daily(folder,progress,skip_unchanged=True,**kwargs))
     latest=DailyMarketRefresh(root,collector=collect_quotes,kind='quote')
     financial=CompanyFinancials(root)
     monitor=FinancialMonitor(root,financial,track_completion=True)
