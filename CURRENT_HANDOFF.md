@@ -1,5 +1,12 @@
 # CURRENT HANDOFF
 
+## 작업 폴더 기준 (2026-10-14 기록)
+
+- 기준은 바탕화면 프로젝트 폴더의 `main`이다. Claude/Codex 세션은 이 폴더에서 실행한다.
+- Orca 워크트리(Orca 워크스페이스의 `<프로젝트>/<이름>` 폴더)는 별도 브랜치 작업용이다. 작업이 끝나면 `main`에 합치고 바탕화면 폴더를 맞춘다.
+- 한 작업은 한 폴더에서만 수정한다. 시작 시 바탕화면 `main`이 원격 `main`과 맞는지 먼저 확인한다.
+- 작업이 끝난 워크트리는 정리 대상이며, 삭제는 사용자 확인 후에만 한다.
+
 Updated: 2026-10-13 19:10 KST
 Handoff version: 2026-10-13-home-main-integration-close
 Last agent: Codex
