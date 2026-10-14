@@ -1,39 +1,37 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-14T13:58:24+09:00
-Handoff version: 2026-10-14-subscription-research-reviewed
+Updated: 2026-10-14T14:33:06+09:00
+Handoff version: 2026-10-14-verified-delisting-and-price-recovery
 Last agent: Codex
 Last PC: work (Primary)
-Last task: 사용자 승인에 따른 실제 버핏 연구 메모 저장·조회 검증
+Last task: 가격3·재무6 최신 사유 확인과 확보 가능 자료 복구
 
 Completed:
-- 추가 비용 없음 사용자 결정 유지. 직접 API 실행 차단. 기존 Claude Pro 구독과 현재 Codex 세션을 사용하고 추가 사용량 비활성은 USER_CONFIRMED. 한도 소진 시 중단, API/유료 크레딧 대체 없음.
-- 근거 부족/반증·저자 의견/실증·자체 기준/출처 수치 구분 지침, revise 상태 전이와 이전 시도 보존, 수정 후 재검토 구현.
-- 승인된 agent_note의 Research Library 통합 검색·출처·검토자·조건/반증/미확보 표시. 읽기 전용 조회, 출처 삭제/제외/분류변경/승인내용 변경 시 숨김. 활성 가설·curated 승격 없음.
-- 이번 검증: 관련 unittest72개 PASS, 공유353개 경고0·격리portable27명령·빈 데이터 AppTest PASS, Research Library 브라우저 탐색/검색/승인노트/XSS/390·320px PASS. 문서 수정 후 공유 재감사0경고. 코드 반영 파일은 검증 stage와 일치 확인 대상.
-- 실제 공개 자료: 버핏 2024 회계연도 주주서한 인쇄1쪽 자체 관측2개 → Claude 초안(13.998초) → Codex revise → Claude 수정(18.629초) → Codex pass. 시간은 CLI 보고값. 직접 실증 지지/반증 없음과 제안 기준임을 명시. 수익 개선·인과효과·매매 판단은 검증한 것이 아님.
-
-- 사용자 구체 메모 보관 승인(USER_CONFIRMED) 후 정확한 review_digest를 대조하여 회사 로컬 agent_note revision1 저장. 실제 저장노트의 새 조회화면 검색·원문 출처·검토자·390/320px 렌더를 격리 브라우저에서 직접 PASS. 운영서버 재시작/실제 사용자 화면 확인과 구분. API 호출·활성 가설·curated 승격 없음.
+- 이번 실행: KRX KIND 전체55개 상장폐지 명단 원문·정확 회사명/코드 prefix/효력일 확인. 수성웹툰084180 2026-10-01, 디에이테크놀로지196490 2026-10-07, 부산주공005030 2026-10-12. 네이버의 마지막 일봉은 각각9/30·10/6·10/8로 상장폐지 직전 거래일까지이며, 폐지 후 일봉을 요구한 대상 오류였음.
+- 수성웹툰9/30 일봉1건을 실제 네이버 원문에서 복구. 상폐 전 전체 거래일418/413/416개를 지수 달력과 대조, 기존 겹친 종가 변경0. 해당3종목을 현재 수집·분석 후보에서 제외하고 과거 이력과 실패 증거 보존. 폐지 후 가격 보충/전진 채움 없음.
+- 현재 대상 실패: 가격0·재무6. 저장된 전체 재무 실패9(현재6·범위 밖 과거3)와 일부 누락163은 구분. 다른 종목 가격 값 보존을 독립 대조했고 수집 잠금·원본 백업·원자적 교체를 사용함.
+- 이번 직접 재무 확인:6법인의 정확 종목/법인코드 확인,2026반기CFS/OFS12조회 모두 공개 정기재무 조회 경로 결과 없음. 일반 회사별 원문목록은 URL 오류/연결 종료로 미검증이며 빈 응답을 공시0건으로 해석하지 않음. 실패 상태를 유지하고 availability 사유로 구체화. 재무값 복구0.
+- 운영8767 health HTTP200·build/source 일치·restart_required=false. 프로그램 코드/서버/예약을 변경하지 않았으며 데이터만 적용. 기존 구독 기반 연구노트는 사용자 승인·저장 완료이고 사용자가 운영 화면 스크린샷을 제공해 표시 확인(USER_CONFIRMED); 이번에 재승인/재실행하지 않음.
 
 Pending:
-- 연구설계 제안값의 효과·인과성·비교설계는 미검증. 메모 보관 승인을 효과 인정이나 운영 규칙 채택으로 해석하지 않음.
-- 운영 앱의 새 화면 반영/사용자 화면 확인, 집 PC 수신·실행 미확인. 예약·서버 재시작 없음.
-- 기존 가격3건·재무6건 공급 실패 및 home Telegram 후속 유지. 이번 작업에서 새로 재시도하지 않음.
+- 재무6의 다른 정기보고서/감사보고서/신고서 원문 존재·제출번호·종류·기간·연결/별도 검증. 공개 정기재무 경로 결과 없음이 전체 공시 부재를 의미하지 않음. 검증된 원문을 확보한 경우에만 기존 계약에 맞춰 반영.
+- 과거 실패3 및 일부 보고서 누락163, home Telegram과 집 PC 수신·실행은 이번 범위 밖 후속 유지.
+- 사용자 실제 데이터 복구 화면 새로고침 확인은 별도. 연구설계 제안값 효과 실증은 미완료.
 
-Next task: 운영 화면 반영 확인과 다음 공개 자료 연구
+Next task: 재무6의 검증 가능한 다른 원문 확보
 Next action:
-- 버핏 메모는 이미 사용자 승인·agent_note 저장 완료. .local의 원래 run은 모델 검토 당시 기록이며 실제 승인 상태는 Library agent_note와 approval-receipt.json을 참조. 같은 보관 승인을 다시 요청하지 않음.
-- 효과 인정·운영 규칙 채택은 별도 검증 대상. docs/RESEARCH_SESSIONS.md를 따른다. 추가 사용량 비활성 확인을 다시 요청하지 않음.
-- 코드 수신 후 운영 build/source·실제 화면을 별도로 확인. 다른 PC로 로컬 연구DB/키/설정/검토안/출력물을 자동 복사하지 않음.
+- 로컬 .local/recovery의 이번 FINDINGS.md·공식 원문 증거·backup을 읽고 DART 회사별 검색의 오류/연결 종료부터 확인. 조회 간격을 두며 빈/오류 목록을 공시 부재로 단정하지 않음.
+- 감사/증권신고서 자료를 사업·반기·분기보고서로 relabel하거나 검증 없이 값을 입력하지 않음. 현재 성공/실패·조회 범위·소스 시각을 구분한다.
+- 폐지3종목은 활성 후보에 다시 넣거나 최신 일봉을 요청하지 않는다. 새 원격 코드 수신 때 로컬 데이터/연구DB/키/설정은 복사하지 않음.
 
-Recommended next agent: Codex(실행·검증), Claude(기존 구독 초안·수정)
-Recommended model/reasoning: 기존 사용자 설정 유지; 실제 모델 전환 없음
-Escalation condition: 구독 한도 소진·자료 권한/출처 충돌·사용자 변경 충돌이면 해당 작업 보존·중단
+Recommended next agent: Codex(공급 원문·기간·검증 복구)
+Recommended model/reasoning: 기존 사용자 설정 유지
+Escalation condition: 원문 식별/기간 충돌·수집 잠금·원격 divergence이면 해당 작업 보존·중단
 Branch: main (회사 기준 폴더)
-Commit: 3c31c942410b0fe8e7311012db1c341e889ace92 (검증·전송한 구현 commit)
-Remote status: 구현3c31c942410b0fe8e7311012db1c341e889ace92 pushed (verified): 회사 HEAD=origin/main=실제 remote main 일치·clean 직접 확인. 이 인계 기록 commit 자체 전송은 최종 보고와 다음 START Git 조회로 검증.
-Notes: 검증 원본은 Orca validation/current/research-final/validation/current 및 public-research-buffett-2024/ 로컬 전용. 운영 연구노트1신규(사용자 승인)·개인 보유/키/PC 설정 변경 없음. Wiki 미반영.
+Commit: 8c8293caedc52037edcc7091742bdf1fb619b82e (이번 작업 시작 기준; 이전 연구 인계 전송 확인 commit)
+Remote status: 이번 작업은 로컬 데이터 변경과 상태 문서 갱신이며 코드 변경 없음. 문서 commit/push 결과는 최종 보고와 다음 START의 실제 Git 조회로 확인.
+Notes: 원본·검증·복구 로그는 .local/recovery와 Orca validation/current/recovery-2026-10-14에 로컬 보존. 이번 새 검사만 위에 기록했으며 과거 unittest/portable/UI 결과를 재실행한 것으로 복사하지 않음. 개인정보·보유·키·PC설정·LLM API·Wiki 변경 없음.
 
 ## 작업 폴더 기준
-- 기준은 바탕화면 프로젝트 폴더 main이며 한 작업은 한 폴더에서 수정한다.
-- Orca 워크트리는 별도 브랜치 작업용, 검증 staging은 로컬 전용이다. 워크트리 삭제는 사용자 확인 후만 한다.
+- 바탕화면 프로젝트 main이 기준이며 한 폴더에서 수정한다. Orca 검증 staging은 로컬 전용이다.
+- 워크트리 삭제는 사용자 확인 후만 한다.
