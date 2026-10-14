@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-14T15:37:56+09:00
+Updated: 2026-10-14T15:40:58+09:00
 Handoff version: 2026-10-14-company-primary-close
 Last agent: Codex
 Last PC: work (Primary)
@@ -36,8 +36,8 @@ Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: 기존 사용자 설정 유지; 원문 식별/기간 충돌 시 high 검토 권장
 Escalation condition: 원문 식별/기간 충돌·수집 잠금·원격 divergence이면 해당 작업 보존·중단
 Branch: main (회사 기준 폴더)
-Commit: 79db815b6e42cf504bede5b9af80f930ccb5ec48 (이번 원문 확보 시작 기준)
-Remote status: verification pending. 시작 기준 main79db815; 이번 CSS/상태/인계 문서 commit/push는 아직 수행 전이다. 성공 후 실제 SHA 대조와 후속 기록으로 갱신한다. 원문35개·상세 자료·화면·DB·키·PC 설정은 로컬 전용, 집 PC 수신/실행 미확인.
+Commit: 54248d48d75f4fa8a5a42734f118c24051575ff1 (헤더 수정·재무 원문 확보·마감 인계 구현 commit; 실제 원격 검증 완료)
+Remote status: refs/heads/main 54248d48d75f4fa8a5a42734f118c24051575ff1 pushed (verified), 2026-10-14T15:40:58+09:00 HEAD=origin/main=실제 remote main 확인. 이 증거를 기록하는 후속 문서 commit 자체의 전송은 최종 보고와 다음 START의 실제 Git 조회로 검증한다. 집 PC 수신·실행은 미확인.
 Notes: 원본·검증·복구 로그는 .local/recovery와 Orca validation/current/recovery-2026-10-14에 로컬 보존. 이번 새 검사만 위에 기록했으며 과거 unittest/portable/UI 결과를 재실행한 것으로 복사하지 않음. 추가 LLM/API 호출·과금 설정 변경 없음. 원문/연구DB/보유/키/PC 설정은 공유 제외. 중앙 Wiki/전체 세션 자동 공유 없음. 다음 작업 완료 보고에는 우선순위별 추천 프롬프트1~3개를 제시한다.
 
 ## 작업 폴더 기준
