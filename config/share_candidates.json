@@ -1,6 +1,10 @@
 {
   "purpose": "Single-source, explicit Git handoff list for the existing INVESTMENT workspace",
   "files": {
+    "investment/official_statements.py": "investment/official_statements.py",
+    "tools/import_official_statements.py": "tools/import_official_statements.py",
+    "tests/test_official_statements.py": "tests/test_official_statements.py",
+    "docs/OFFICIAL_STATEMENTS.md": "docs/OFFICIAL_STATEMENTS.md",
     "investment/research_library.py": "investment/research_library.py",
     "investment/telegram_research.py": "investment/telegram_research.py",
     "tools/research_library.py": "tools/research_library.py",

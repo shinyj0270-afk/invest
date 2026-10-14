@@ -284,10 +284,11 @@ def merge_financials(provider, official, *, as_of=None):
                     prior[field] = raw[field]
                     evidence[field] = copy.deepcopy(raw['cell_provenance'][field])
             filing_day = prior.get('filing_available_at') or prior.get('available_at')
-            prior.update(source='인포맥스 저장 XLSX 우선 / DART 미확보 계정 보충',
+            supplement_label='공식 원문' if prior.get('document_kind') else 'DART'
+            prior.update(source='인포맥스 저장 XLSX 우선 / '+supplement_label+' 미확보 계정 보충',
                 filing_available_at=filing_day, available_at=raw.get('available_at'),
                 cell_provenance=evidence, cell_notes=note)
         # Current collection status belongs to the official collection service.
         target['notes'] = list(dict.fromkeys(target.get('notes', [])+record.get('notes', [])+[
-            '인포맥스 금액 우선, 없는 계정만 DART로 보충합니다. 공개일 미확인 공급자 금액의 과거 시점 재현은 보장하지 않습니다.']))
+            ('인포맥스 금액 우선, 없는 계정만 공식 원문으로 보충합니다.' if target.get('official_document') else '인포맥스 금액 우선, 없는 계정만 DART로 보충합니다.')+' 공개일 미확인 공급자 금액의 과거 시점 재현은 보장하지 않습니다.']))
     return result

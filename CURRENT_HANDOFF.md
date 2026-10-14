@@ -1,45 +1,39 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-14T15:40:58+09:00
-Handoff version: 2026-10-14-company-primary-close
+Updated: 2026-10-15T07:59:33+09:00
+Handoff version: 2026-10-15-official-statements-integration
 Last agent: Codex
-Last PC: work (Primary)
-Last task: 회사 Primary CLOSE — 헤더 수정·재무 원문 확보 검증 및 Git 인계
+Last PC: 원본 profile work (Primary); 개발 워크트리 profile unknown (설정 없음)
+Last task: 공식 대체 원문 반영 구현·검증 및 원본 main 통합
 
 Completed:
-- 회사 work/Primary 마감 점검: main, 진행 Git 작업0·추적 private 경고0·공유 변경3개. PowerShell 정책 차단으로 기존 .venv의 tools/pc_check.py --phase finish 대체 실행; 정책 변경 없음.
-- 같은 세션 15:13:25 KST 시작한 격리 --ui 검증: 공유353개 경고0·portable27명령·빈 실제 모드 AppTest·합성 UI11여정 PASS. 마감 때353개 파일 해시가 검증본과 동일함을 직접 대조하여 재실행하지 않음. 이후 변경은 상태/인계 문서뿐이며 diff/내용/공유 후보 검사를 수행. 실데이터 재무 성공이나 집 PC 실행의 증거로 확대하지 않음.
-- 헤더 UI 이번 검사:1366~901px에서 메뉴가 검색/종가 영역을 침범하는 문제 재현. grid 공간 배분·1500px 이하 메뉴 별도 줄·항목 축소 방지 수정본을 Orca validation/current/header-overlap-20261014/soft_ui.css에 준비. 실제 기준 코드에 적용해 320~1920px20개 폭에서 겹침/잘림0, 검색·더보기/키보드·모바일 전환 PASS 및 diff check 통과.
-- 사용자가 모든 입력 저장을 확인한 뒤 CSS를 적용하고 기존 /restart 인증·수집잠금 검사로 안전 재실행 HTTP202. 운영health build/source 일치·restart_required=false. 실제 /dashboard에서1640/1214/1024/950/390/320px6개 폭의 헤더 겹침/잘림0·JS 오류0 확인. 입력 보관 응답 전에는 기존 CSS를 유지했으며 운영 적용 대기는 해소됨.
-- 이번 새 확보:4개사 공식 투자설명서/증권신고서 PDF(와이즈701쪽·빅웨이브843쪽·네오780쪽·글로벌891쪽), 스카이 공식2025/2024 재무요약, 한화 KRX 분할신고서 원문. URL/시각/SHA256/회사 식별·본문 재무 섹션을 .local/recovery/20261014-financial-originals/inventory.json에 보존. 수치 반영0·현재 실패6 유지. 글로벌 PDF는08-19정정본으로 최신09월정정 대조 필요; 한화 모회사/추정 자료와 신설법인 실제치는 분리.
-- 이번 실행: KRX KIND 전체55개 상장폐지 명단 원문·정확 회사명/코드 prefix/효력일 확인. 수성웹툰084180 2026-10-01, 디에이테크놀로지196490 2026-10-07, 부산주공005030 2026-10-12. 네이버의 마지막 일봉은 각각9/30·10/6·10/8로 상장폐지 직전 거래일까지이며, 폐지 후 일봉을 요구한 대상 오류였음.
-- 수성웹툰9/30 일봉1건을 실제 네이버 원문에서 복구. 상폐 전 전체 거래일418/413/416개를 지수 달력과 대조, 기존 겹친 종가 변경0. 해당3종목을 현재 수집·분석 후보에서 제외하고 과거 이력과 실패 증거 보존. 폐지 후 가격 보충/전진 채움 없음.
-- 현재 대상 실패: 가격0·재무6. 저장된 전체 재무 실패9(현재6·범위 밖 과거3)와 일부 누락163은 구분. 다른 종목 가격 값 보존을 독립 대조했고 수집 잠금·원본 백업·원자적 교체를 사용함.
-- 이번 직접 재무 확인:6법인의 정확 종목/법인코드 확인,2026반기CFS/OFS12조회 모두 공개 정기재무 조회 경로 결과 없음. 일반 회사별 원문목록은 URL 오류/연결 종료로 미검증이며 빈 응답을 공시0건으로 해석하지 않음. 실패 상태를 유지하고 availability 사유로 구체화. 재무값 복구0.
-- 운영8767 health HTTP200·build/source 일치·restart_required=false. 프로그램 코드/서버/예약을 변경하지 않았으며 데이터만 적용. 기존 구독 기반 연구노트는 사용자 승인·저장 완료이고 사용자가 운영 화면 스크린샷을 제공해 표시 확인(USER_CONFIRMED); 이번에 재승인/재실행하지 않음.
+- 사용자 원문 검증 완료 판단(USER_CONFIRMED)을 기준으로 명시적 셀 전사본 반영 경로를 구현. 원문 종류·URL·SHA256·기업·페이지/열·단위·기간·실제치를 보존하며 DART 정기보고서로 재분류하지 않는다. 기계적 대차/현금 검산·수집 잠금·원자적 저장·백업·7% 정정 정책을 적용한다. docs/OFFICIAL_STATEMENTS.md 참조.
+- 개발은 사용자 지정 shinyj0270-afk/investment-up 워크트리에서 수행. 시작 시 원본 main·작업 HEAD·origin/main·실제 원격 main 모두2b7fc78645e3e1c0da30d0204f4b4f8b0c5d7b8f clean. 이전 인계의 원본 직접 수정 방침 대신 이번 명시 지시를 적용. 설정/.venv/개인 입력 복사 없음.
+- 07:57:13 KST 원본 로컬 official-documents 저장소에4개사11기간 반영. 와이즈0010S0/빅웨이브0035S0/네오0161M0 CFS, 글로벌486510 OFS. 2026반기4·2025연간4·2024연간3. 기존 정기보고서/실패/PC설정3230개 파일 SHA256 일치. DB·보유·키·예약·원래 정기보고서 캐시 변경 없음. 원문 검증 완료 판단을 새 독립 회계 검토나 최신 정정본 확인으로 바꾸어 보고하지 않음.
+- 실제 조회/표 연결에서 연간·누적 그룹과 출처 확인, 단독분기 생성0·TTM/ROE pending. 인포맥스 우선·기존 DART 겹친 기간 우선, 기존 정기보고서 실패6을 보존한다.
+- 이번 관련 unittest46개 PASS. 최종 소스 격리 --ui: 공유357개 경고0·portable27명령·빈 실제 모드 AppTest·합성UI11여정 PASS. 이후 변경은 상태/인계 문서뿐. 같은 PC 기존 원본 .venv를 테스트 런타임으로만 사용하고 복제/전역 설치하지 않음. 워크트리 upstream/.venv/설정 부재는 유지.
 
 Pending:
-- Orca INVESTMENT 목록 정리: main(기본) 유지 방침. 작업본 상태 메뉴 Todo/In progress/In review/Done 확인, Done 선택 안내까지만 수행. 실제 선택·목록 숨김·대화 보존은 미확인. Orca 제어 도구 접근 거절, 권한 해제 설정은 확인하지 못했으며 작업본/브랜치/프로젝트 삭제0.
-- 확보된4개사 재무 섹션의 현재/전기 열·정정이력·기간/단위·연결/별도와 대차/현금 검산 후 기존 수집 계약을 확장해 반영. 스카이 전체 감사/검토 원문과 한화 설립 후 실제 결산은 추가 확보 필요. 공개 정기재무 경로 결과 없음은 전체 공시 부재가 아님.
-- 과거 실패3 및 일부 보고서 누락163, home Telegram과 집 PC 수신·실행은 이번 범위 밖 후속 유지.
-- 사용자 실제 데이터 복구 화면 새로고침 확인은 별도. 연구설계 제안값 효과 실증은 미완료.
+- 운영서버 재시작·새 코드의 실제 운영 HTTP/사용자 화면 확인 미실행. main 병합만으로 이미 실행 중인 Python 프로세스가 새 코드를 읽지는 않는다.
+- 글로벌은08-19정정 사본:9월 후속 정정 최신성 미확인. 빅웨이브2024 환율효과 대시는0으로 만들지 않고 해당 연간 보류. 원문/한계 보존.
+- 스카이 전체 감사/검토 원문·한화 설립 후 실제 결산 원문, 누락 단독분기·TTM·ROE 미확보. 과거 재무 실패3·일부 보고서 누락163은 이전 기록이며 이번 전체 재조회 아님.
+- home Telegram·집 PC 수신/실행·기존 Orca 목록 정리·연구설계 효과 실증 후속 유지. API/추가 과금·Wiki·예약·다른 PC 자동 실행 없음.
 
-Next task: 확보한4개사 재무 원문의 표별 검증·반영 계약 및 남은2개사 전체/실제 결산 원문 확보
+Next task: 원본 main 통합 확인 후 운영서버 안전 재실행과4개사 새 재무표 화면 확인
 Next action:
-- 헤더 수정·운영 검증은 완료되어 재적용/재실행하지 않는다. 사용자 기존 브라우저는 새로고침하면 새 헤더를 읽는다. src/soft_ui.css는 검증한 수정본이다. 이번 CLOSE의 Git 전송 상태는 아래 Remote status와 최종 Git 조회를 따른다.
-- .local/recovery/20261014-financial-originals/FINDINGS.md와 inventory.json을 먼저 읽는다. 회사/주관사 원문6개의 확보 유형·제한을 유지한다. DART 브라우저 접근은 권한 거부로 중단했으며 재허용 없이 우회하지 않는다. 스카이 주관사 대안의 TLS 검증도 우회하지 않는다.
-- 감사/증권신고서 자료를 사업·반기·분기보고서로 relabel하거나 검증 없이 값을 입력하지 않음. 현재 성공/실패·조회 범위·소스 시각을 구분한다.
-- 폐지3종목은 활성 후보에 다시 넣거나 최신 일봉을 요청하지 않는다. 새 원격 코드 수신 때 로컬 데이터/연구DB/키/설정은 복사하지 않음.
+- 이 문서·PROJECT_STATE.md·docs/OFFICIAL_STATEMENTS.md를 읽고 실제 Git/원격 상태를 확인한다. 원문·전사본·수치·설정·DB는 코드 원격이나 다른 PC에 복사하지 않는다.
+- 열린 탭의 작성 내용 보관을 확인한 뒤 기존 docs/SOFT_UI_DESIGN.md의 안전 재시작 경로를 사용한다. 수집 잠금·health/build/source 일치와 기업별 CFS/OFS·연간/누적·출처·미확보 표시를 확인한다. 저장 확인을 과거 세션에서 가져오지 않는다.
+- 이후 스카이/한화 실제 원문 확보 또는 글로벌 최신 정정 대조. 기존 DART 브라우저 권한 거부·TLS 오류는 해제 없이 우회하지 않는다. 요약·분할 가정치를 실제 재무로 relabel하지 않는다.
 
-Recommended next agent: Codex(공급 원문·기간·검증 복구)
+Recommended next agent: Codex (운영 연결 확인 및 후속 수집 구현)
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: 기존 사용자 설정 유지; 원문 식별/기간 충돌 시 high 검토 권장
-Escalation condition: 원문 식별/기간 충돌·수집 잠금·원격 divergence이면 해당 작업 보존·중단
-Branch: main (회사 기준 폴더)
-Commit: 54248d48d75f4fa8a5a42734f118c24051575ff1 (헤더 수정·재무 원문 확보·마감 인계 구현 commit; 실제 원격 검증 완료)
-Remote status: refs/heads/main 54248d48d75f4fa8a5a42734f118c24051575ff1 pushed (verified), 2026-10-14T15:40:58+09:00 HEAD=origin/main=실제 remote main 확인. 이 증거를 기록하는 후속 문서 commit 자체의 전송은 최종 보고와 다음 START의 실제 Git 조회로 검증한다. 집 PC 수신·실행은 미확인.
-Notes: 원본·검증·복구 로그는 .local/recovery와 Orca validation/current/recovery-2026-10-14에 로컬 보존. 이번 새 검사만 위에 기록했으며 과거 unittest/portable/UI 결과를 재실행한 것으로 복사하지 않음. 추가 LLM/API 호출·과금 설정 변경 없음. 원문/연구DB/보유/키/PC 설정은 공유 제외. 중앙 Wiki/전체 세션 자동 공유 없음. 다음 작업 완료 보고에는 우선순위별 추천 프롬프트1~3개를 제시한다.
+Escalation condition: 원본 main 변경·원격 divergence·수집 잠금·원문 식별/기간 충돌이면 변경 보존 및 해당 작업 중단
+Branch: shinyj0270-afk/investment-up (개발); main (원본 통합 대상, 병합 검증 대기)
+Commit: 2b7fc78645e3e1c0da30d0204f4b4f8b0c5d7b8f (이번 시작 기준; 구현 commit 생성 전)
+Remote status: refs/heads/main 2b7fc78645e3e1c0da30d0204f4b4f8b0c5d7b8f 실제 조회 2026-10-15T07:55 KST. 이번 작업 not pushed. 요청 범위는 로컬 검증·원본 main 병합이며 원격 전송은 미포함. 집 PC 수신/실행 미확인.
+Notes: 최종 격리 --ui PASS; 원본 main 통합 직전 재확인 대기. 초기 샌드박스 로컬 HTTP 차단 실패와 제한 밖 격리 재실행은 구분한다. 적용 증거는 Orca validation/current/official-statements/applied.json, 원문은 원본 .local/recovery/20261014-financial-originals에 로컬 보존. 검증/전사본/수치·로그는 공유 제외. 후속 기록 commit의 자기 SHA는 미리 쓰지 않고 최종 Git 조회로 확인한다.
 
 ## 작업 폴더 기준
-- 바탕화면 프로젝트 main이 기준이며 한 폴더에서 수정한다. Orca 검증 staging은 로컬 전용이다.
+- 오늘 개발은 사용자 지정 워크트리, 검증 후 바탕화면 원본 main으로 통합. 상시 work/home 브랜치를 만들지 않는다.
 - 워크트리 삭제는 사용자 확인 후만 한다.

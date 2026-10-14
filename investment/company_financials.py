@@ -201,6 +201,23 @@ def load_cached(root,snapshot,rows, *, as_of=None, cache=None):
             existing=result[path.stem];keys={(p['basis'],p['cadence'],p['period_end']) for p in existing['periods']}
             existing['periods'].extend(p for p in derived['periods'] if (p['basis'],p['cadence'],p['period_end']) not in keys)
             existing['native_financial']=derived.get('native_financial');existing['financial_completeness']=derived.get('financial_completeness')
+    # Reviewed alternative originals have their own schema and source label.
+    # Existing public reports win on overlapping periods; Infomax priority is
+    # still enforced by the downstream financial table.
+    from .official_statements import load_official
+    from .native_financial import financial_completeness
+    for path in (folder(root)/'official-documents').glob('*.json'):
+        code=path.stem;row=identities.get(code)
+        if not row or not re.fullmatch(r'[0-9A-Z]{6}',code):continue
+        official=load_official(path,row,cutoff)
+        if not official:continue
+        if code not in result:result[code]=official
+        else:
+            existing=result[code];keys={(p['basis'],p['cadence'],p['period_end']) for p in existing['periods']}
+            existing['periods'].extend(p for p in official['periods'] if (p['basis'],p['cadence'],p['period_end']) not in keys)
+            existing['notes']=list(dict.fromkeys(existing.get('notes',[])+official['notes']))
+            existing['official_document']=official['official_document']
+            existing['financial_completeness']=financial_completeness(existing['periods'],cutoff)
     from .financial_health import collection_health
     dest=folder(root)
     for code,row in identities.items():
@@ -234,7 +251,9 @@ class CompanyFinancials:
             if not retry and prior.get('status')=='complete' and prior.get('checked_on')==now.date().isoformat():return dict(prior)
             stored=folder(self.root)/(code+'.json')
             derived=folder(self.root)/'native-derived'/(code+'.json')
-            if not retry and (stored.is_file() or derived.is_file()):return dict(status='cached',code=code,cache_revision=str((stored if stored.is_file() else derived).stat().st_mtime_ns))
+            official=folder(self.root)/'official-documents'/(code+'.json')
+            cached=next((p for p in (stored,derived,official) if p.is_file()),None)
+            if not retry and cached:return dict(status='cached',code=code,cache_revision=str(cached.stat().st_mtime_ns))
             if prior.get('status')=='failed' and time.monotonic()-prior.get('attempt',0)<(60 if retry else 3600):return dict(prior)
             if any(j.get('status')=='running' for j in self.jobs.values()):return dict(status='busy',code=code,message='다른 기업의 재무자료 조회 중')
             self.jobs[code]=dict(status='running',code=code,completed=0,total=0,attempt=time.monotonic())

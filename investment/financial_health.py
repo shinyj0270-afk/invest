@@ -23,7 +23,10 @@ def collection_health(folder, code, bundle=None):
     last_check=max(filter(None,[attempt.get('checked_at',''),observed.get('retrieved_on',''),incomplete.get('retrieved_on','')]),default=None)
     status=attempt.get('status') if attempt.get('checked_at','')[:10]>=str(observed.get('retrieved_on','')) else None
     status=status or ('partial' if errors else 'ready' if available else 'missing')
+    official=(bundle or {}).get('official_document')
+    # Availability of an alternative original does not erase a regular-report failure.
     return dict(status=status,last_checked=last_check,last_success=saved.get('retrieved_on'),failed_periods=errors,
+        alternative_document=official,
         decision=decision.get('reason'),decision_on=observed.get('retrieved_on'),
         material_changes=sum(c.get('material') is True for c in decision.get('changes',[])),
         source_urls=sorted({r['url'] for r in reports if isinstance(r.get('url'),str) and r['url'].startswith('https://dart.fss.or.kr/')}),
