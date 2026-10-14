@@ -1,3 +1,28 @@
+# 기존 구독 기반 연구 흐름과 승인노트 조회 · 2026-10-14
+
+- 사용자 추가 비용 없음 결정으로 직접 API 실행을 차단하고 기존 Claude Pro/Codex 세션을 사용한다. 근거 부족/반증·저자 의견/실증 구분, 수정 전 시도 보존과 수정 후 재검토를 구현했다.
+- 사람이 승인한 agent_note는 Research Library 통합 검색·검토자·출처·조건/반증/미확보로 조회한다. 삭제/제외·출처/분류/승인내용 변경 시 숨기며 DB 읽기 전용, 활성 가설/curated 자동 반영 없음.
+- 이번 새 검증: 관련 unittest72개·격리 공유353개 경고0·portable27명령·빈 데이터 AppTest·연구노트 포함 Library 검색/XSS/모바일 브라우저 PASS. 합성 UI와 실제 연구 내용 검증은 구분한다.
+- 버핏 2024 공개서한 자체 관측으로 실제 Claude 초안·Codex 검토·Claude 수정·Codex 재검토 통과. 로컬 공개 source 참조 및 승인 대기 run 준비, 사람 승인 전이므로 운영 agent_note 저장 없음. 제안값과 저자 의견은 실증효과·수익 개선·매매 지시로 해석하지 않는다.
+- 기존 실패 가격3/재무6 및 home 후속 보존. 서버/예약/키/개인 보유 변경 없음. 실제 운영 화면·집 PC 수신·Wiki는 미확인/미반영. 현재 전송 및 다음 행동은 CURRENT_HANDOFF.md와 최종 Git 검증을 따른다.
+
+---
+
+# 기존 Codex/Claude 세션 실행 전환 · 2026-10-14
+
+- 사용자 확정: 추가 비용 지출 없음. API 연결 계획 철회. 기존 Codex/Claude 구독 세션을 활용한다. API 키 위치 확인·설정·실호출은 다음 작업에서 제외.
+- 기존 직접 API 실행은 generate/worker 및 CLI run에서 차단(환경변수 키가 있어도 실행 불가). 코드는 보존하되 활성 경로가 아니다.
+- tools/research_sessions.py: 공개 관측 준비 → 기존 세션용 packet → 초안 import → 다른 agent 검토 import → 사람 승인 후 agent_note 저장. 로컬 파일 인계이며 모델/네트워크 자동 호출 없음. 세션 표기 모델/agent는 제공된 기록이고 독립 인증 아님.
+- 회사 PC Claude Code의 claude.ai Pro 로그인 확인. 사용자 추가 사용량 비활성 확인(USER_CONFIRMED). API 인증환경을 제거하고 도구/설정 확장 없는 Claude 실행으로 합성 초안 생성 성공(실제 응답 모델 claude-opus-5-5, 1턴, 모델 보고8.233초). 현재 Codex 세션에서 교차검토하여 근거 부재의 refute 오분류와 가설/반증조건 불일치를 발견, needs_revision으로 기록. 사람 승인/운영 연구DB 쓰기 없음. 별도 Codex CLI 설치 없음.
+- 이번 합성 검증: API 차단·세션 전환·중복 단계/동일 agent 검토 거부·사람 승인, 기존 Library 회귀 포함 통과. 공유353개 경고0·격리portable27명령·실자료 없는 AppTest PASS. 실제 모델 호출/연구 품질 검증이 아님.
+- Next task/action: docs/RESEARCH_SESSIONS.md에 따라 기존 구독 세션으로 제한된 공개 자료 연구를 수행. 이번 합성 초안은 needs_revision이며 실제 자료 연구와 구분. 한도 소진 시 중단, API/추가 크레딧/유료 대체 금지. 실제 연구 선택 및 사람 최종 승인 대기. 추가 사용량 비활성 확인을 다시 요청하지 않는다.
+- 회사 main 기준54449e74736e5a9d356ccb95bcc7df66e14a18b6, 이전 미커밋 구현 보존 후 전환. 로컬 반영만 수행; commit/push·다른 PC 수신·Wiki·예약·운영서버 재시작 없음. 기존 운영 DB/보유/키/PC 설정 변경 없음.
+- 검증 원본: Orca 작업본 validation/current/agent-check/validation/current/share-candidate-review.json 및 share-test-1.txt/2.txt (공유 제외).
+
+- 구독 실행 증거: Orca validation/current/subscription-probe-network/의 status.json, draft.json, codex-review.json (로컬 전용). 제한 환경 첫 시도는90초 시간 초과로 별도 보존; 네트워크 제한 밖 승인 실행은 약10초 성공. 실제 청구 내역은 조회하지 않았으며 CLI의 환산 USD를 추가 청구액으로 해석하지 않는다. 직접 API 연결은 계속 코드 차단.
+
+---
+
 # home main 이력 보존 통합 · 2026-10-13 17:44 KST
 
 - home Secondary main 5ccae8152ee814f0151dd8f388e10f4b39d34dea clean과 회사 원격08d894d6a73da11dcf9fe57d4fd71da53855dd82의 ahead2/behind4를 실제 확인. START에서 자동 수신 중단 후 사용자 진행 승인으로 일반 merge, 로컬 설치/인증실패 인계2커밋과 회사 주간Library/대시보드4커밋 이력 보존.

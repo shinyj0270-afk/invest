@@ -24,6 +24,48 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(len(result['masters']),8)
         self.assertFalse((self.root/'.local').exists())
 
+    def approved_session_note(self):
+        from datetime import datetime,timezone,timedelta
+        from investment.research_sessions import SessionRunner
+        from investment.research_agents import approve
+        today=datetime.now(timezone(timedelta(hours=9))).date().isoformat()
+        lib=Library(self.root/'.local/research-library','work')
+        lib.source('s1',source())
+        value=dict(question='Synthetic question',as_of=today,observations=[dict(source_id='s1',observation='Synthetic observation')],
+                   external_model_allowed=True,independent_analysis=True,no_personal_data=True)
+        runner=SessionRunner(lib,self.root/'session-runs')
+        job=runner.create(value)
+        draft=dict(title='Synthetic reviewed note',hypothesis='Conditional hypothesis',conditions=['Condition'],
+                   invalidation=['Countercondition'],missing_evidence=['Comparison missing'],
+                   claims=[dict(statement='Synthetic observation',stance='context',source_ids=['s1'])])
+        job=runner.accept(job,'research',dict(agent='Claude',model='unknown',value=draft))
+        self.assertEqual([],view(self.root)['notes'])
+        job=runner.accept(job,'review',dict(agent='Codex',model='unknown',value=dict(verdict='pass',issues=[],summary='Synthetic model review')))
+        self.assertEqual([],view(self.root)['notes'])
+        approve(lib,job,dict(review_digest=job['review_digest'],reviewer='Synthetic human',reviewed_on=today,
+                            human_reviewed=True,independent_analysis=True,no_personal_data=True))
+        return lib,job
+
+    def test_approved_note_readonly_projection_and_source_revocation(self):
+        from investment.research_catalog import annotate
+        from tests.test_research_catalog import metadata
+        lib,job=self.approved_session_note()
+        before=hashlib.sha256(lib.path.read_bytes()).hexdigest()
+        result=view(self.root)
+        self.assertEqual(1,len(result['notes']))
+        self.assertEqual('Synthetic human',result['notes'][0]['value']['approval']['reviewer'])
+        self.assertEqual('s1',result['notes'][0]['provenance'][0]['id'])
+        self.assertEqual(before,hashlib.sha256(lib.path.read_bytes()).hexdigest())
+        annotate(lib,'source','s1',metadata('excluded'))
+        self.assertEqual([],view(self.root)['notes'])
+
+    def test_changed_or_unreviewed_note_cannot_be_projected(self):
+        lib,job=self.approved_session_note()
+        value=lib.get('agent_note',job['id'])
+        value['draft']['title']='Changed after approval'
+        lib._put('agent_note',job['id'],value,1)
+        self.assertEqual([],view(self.root)['notes'])
+
     def test_readonly_and_home_database_not_imported(self):
         lib=Library(self.root/'.local'/'research-library','work')
         lib.source('s1',source());lib.master('m1',card());lib.thesis('t1',thesis())

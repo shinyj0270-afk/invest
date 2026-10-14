@@ -14,6 +14,7 @@ data['sources']=[dict(id='source',revision=1,kind='source',stage='raw',value=dic
 data['masters']=[dict(id='minervini',name='Minervini')]
 data['theses'][0]['evidence']=[dict(id='e1',revision=1,recorded_at='2026-01-05',value=dict(thesis_revision=1,stance='refute',observed_on='2026-01-04',observation='Demand actually fell',reasoning='Refutation evidence'),provenance=[dict(id='s2',value=dict(title='Official demand series',url='https://example.invalid/demand'))])]
 data['theses'][0].update(metadata=dict(persons=['minervini'],topic='Capacity',sector='Semiconductors',instruments=[dict(code='005930')]),stage='derived',history=[dict(revision=1,recorded_at='2026-01-03',value=dict(claim='Old claim',change_reason='Initial')),dict(revision=2,recorded_at='2026-01-04',value=dict(claim='New claim',change_reason='New evidence'))],catalog_history=[dict(revision=1,recorded_at='2026-01-04',value=dict(stage='derived',reason='Classified',source_note='Official filing'))])
+data['notes']=[dict(id='note',revision=1,kind='agent_note',stage='derived',metadata={},value=dict(title='Reviewed session note',claim='Conditional reviewed hypothesis',as_of='2026-01-03',invalidation=['Countercondition'],conditions=['<svg onload=alert(2)> condition'],missing_evidence=['Independent comparison missing'],claims=[dict(statement='Attributed author opinion',stance='context',source_ids=['source'])],approval=dict(reviewer='Synthetic human',reviewed_on='2026-01-04'),review=dict(verdict='pass')),provenance=[dict(id='source',value=dict(title='Approved public source',url='https://example.invalid/report',access='public',origin='independent'))])]
 with sync_playwright() as p:
     browser=p.chromium.launch(headless=True,**chromium_options())
     page=browser.new_page(viewport={'width':1440,'height':1000});errors=[]
@@ -48,12 +49,20 @@ with sync_playwright() as p:
     page.locator('#libraryFilters button').first.click()
     assert page.locator('.library-record').count()==0
     page.locator('#libraryReset').click()
-    assert page.locator('.library-record').count()==2
+    assert page.locator('.library-record').count()==3
+    expect(page.locator('#researchLibrary')).to_contain_text('사람 검토 연구노트')
+    expect(page.locator('#researchLibrary')).to_contain_text('Synthetic human')
+    assert page.locator('#researchLibrary svg').count()==0
+    page.locator('#libraryFilters [name=query]').fill('Independent comparison missing')
+    page.locator('#libraryFilters button').first.click()
+    assert page.locator('.library-record').count()==1
+    expect(page.locator('.library-record')).to_contain_text('Approved public source')
+    page.locator('#libraryReset').click()
     for width in (390,320):
         page.set_viewport_size({'width':width,'height':844})
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
         assert page.locator('#researchLibrary button,#researchLibrary input,#researchLibrary select').evaluate_all('(els)=>els.every(el=>el.getBoundingClientRect().height>=44)')
-    data['theses']=[];data['status']='empty'
+    data['theses']=[];data['notes']=[];data['status']='empty'
     page.locator('#libraryReload').click()
     expect(page.locator('#researchLibrary')).to_contain_text('저장된 산업 가설이 없습니다')
     page.locator('#pageSelect').select_option('home',force=True);expect(page.locator('#home')).to_be_visible()

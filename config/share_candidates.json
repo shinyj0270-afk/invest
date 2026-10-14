@@ -344,6 +344,15 @@
     "src/data_recovery_ui.js": "src/data_recovery_ui.js",
     "tests/test_data_recovery.py": "tests/test_data_recovery.py",
     "tests/test_data_recovery_ui.py": "tests/test_data_recovery_ui.py",
-    "tests/test_dashboard_delivery.py": "tests/test_dashboard_delivery.py"
+    "tests/test_dashboard_delivery.py": "tests/test_dashboard_delivery.py",
+    "investment/agent_providers.py": "investment/agent_providers.py",
+    "investment/research_agents.py": "investment/research_agents.py",
+    "tools/research_agents.py": "tools/research_agents.py",
+    "tests/test_research_agents.py": "tests/test_research_agents.py",
+    "docs/RESEARCH_AGENTS.md": "docs/RESEARCH_AGENTS.md",
+    "investment/research_sessions.py": "investment/research_sessions.py",
+    "tools/research_sessions.py": "tools/research_sessions.py",
+    "tests/test_research_sessions.py": "tests/test_research_sessions.py",
+    "docs/RESEARCH_SESSIONS.md": "docs/RESEARCH_SESSIONS.md"
   }
 }

@@ -5,11 +5,13 @@ from contextlib import closing
 from pathlib import Path
 from .local_config import load_local, require_profile
 from .research_library import MASTERS
+from .core import digest
+from .research_agents import validate_draft, validate_review
 
 
 def view(root):
     profile = require_profile(load_local(root))
-    result = dict(status='empty', profile=profile, masters=[dict(id=k, name=v[0], strategy=v[1]) for k, v in MASTERS.items()], cards=[], theses=[], sources=[])
+    result = dict(status='empty', profile=profile, masters=[dict(id=k, name=v[0], strategy=v[1]) for k, v in MASTERS.items()], cards=[], theses=[], sources=[], notes=[])
     path = Path(root)/'.local'/'research-library'/profile/'user_input'/'research_library.sqlite3'
     if not path.exists():
         return result
@@ -77,5 +79,39 @@ def view(root):
         for (k, key), row in latest.items():
             if k != kind or (k, key) in hidden: continue
             result[target].append(project(k, key))
+    # Only explicitly reviewed notes are projected. Stale or revoked provenance
+    # hides the whole note, including historical copies, without mutating the DB.
+    for (kind, key), row in latest.items():
+        if kind != 'agent_note': continue
+        note_rows=[]
+        try:
+            for original in histories[kind, key]:
+                value=original['value']; prepared=value['prepared']; approval=value['approval']
+                if prepared['profile'] != profile or prepared['mode'] != 'user_input': raise ValueError('Profile mismatch')
+                if any(approval.get(flag) is not True for flag in ('human_reviewed','independent_analysis','no_personal_data')):
+                    raise ValueError('Human review missing')
+                if not approval.get('reviewer') or not approval.get('reviewed_on'): raise ValueError('Review metadata missing')
+                validate_draft(value['draft'],prepared['sources']);validate_review(value['review'])
+                if value['review']['verdict'] != 'pass': raise ValueError('Unresolved review')
+                if approval['review_digest'] != digest({k:value[k] for k in ('prepared','config','draft','review')}):
+                    raise ValueError('Reviewed content changed')
+                provenance=[]
+                for snapshot in prepared['sources']:
+                    sid=snapshot['id']; src=latest['source',sid]
+                    meta=latest.get(('catalog',digest(['source',sid])))
+                    if ('source',sid) in hidden or src['value'] != snapshot['value']:
+                        raise ValueError('Provenance changed')
+                    if snapshot['catalog_revision'] != (meta['revision'] if meta else 0): raise ValueError('Catalog changed')
+                    if src['value']['access'] != 'public' or src['value']['origin'] != 'independent': raise ValueError('Public provenance required')
+                    provenance.append(src)
+                draft=value['draft']
+                projected=dict(draft,claim=draft['hypothesis'],as_of=prepared['input']['as_of'],
+                               approval=approval,review=value['review'])
+                note_rows.append(dict(original,id=key,value=projected))
+            current_note=note_rows[-1]
+            result['notes'].append(dict(current_note,kind='agent_note',stage='derived',metadata={},
+                                        history=note_rows,catalog_history=[],evidence=[],provenance=provenance))
+        except (ValueError,KeyError,TypeError,IndexError):
+            continue
     result['status'] = 'ready'
     return result
