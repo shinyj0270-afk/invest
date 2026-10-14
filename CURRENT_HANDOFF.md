@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-14 KST
+Updated: 2026-10-14T13:44:03+09:00
 Handoff version: 2026-10-14-subscription-research-reviewed
 Last agent: Codex
 Last PC: work (Primary)
@@ -20,7 +20,7 @@ Pending:
 
 Next task: 사람 검토 후 승인노트 저장 및 운영 화면 확인
 Next action:
-- .local/agents/reviews/5d23b22d36cd46e981c7e7dc0eccdfe8.md를 사용자와 검토. 현재 run은 awaiting_human. 사용자가 구체 메모 보관을 승인한 후에만 정확한 digest와 reviewer/날짜/확인값으로 tools/research_sessions.py approve 실행.
+- .local/agents/reviews/의 이번 버핏 공개서한 검토안를 사용자와 검토. 현재 run은 awaiting_human. 사용자가 구체 메모 보관을 승인한 후에만 정확한 digest와 reviewer/날짜/확인값으로 tools/research_sessions.py approve 실행.
 - 승인 전 자동 저장·효과 인정·운영 규칙 채택 금지. docs/RESEARCH_SESSIONS.md를 따른다. 추가 사용량 비활성 확인을 다시 요청하지 않음.
 - 코드 수신 후 운영 build/source·실제 화면을 별도로 확인. 다른 PC로 로컬 연구DB/키/설정/검토안/출력물을 자동 복사하지 않음.
 
@@ -28,8 +28,8 @@ Recommended next agent: Codex(실행·검증), Claude(기존 구독 초안·수�
 Recommended model/reasoning: 기존 사용자 설정 유지; 실제 모델 전환 없음
 Escalation condition: 구독 한도 소진·자료 권한/출처 충돌·사용자 변경 충돌이면 해당 작업 보존·중단
 Branch: main (회사 기준 폴더)
-Commit: 54449e74736e5a9d356ccb95bcc7df66e14a18b6 (시작 기준 SHA; 이번 구현 commit은 아직 생성 전)
-Remote status: 이번 구현 미전송. commit/push 및 실제 SHA는 최종 보고와 다음 START의 Git 조회로 확인.
+Commit: 3c31c942410b0fe8e7311012db1c341e889ace92 (검증·전송한 구현 commit)
+Remote status: 구현3c31c942410b0fe8e7311012db1c341e889ace92 pushed (verified): 회사 HEAD=origin/main=실제 remote main 일치·clean 직접 확인. 이 인계 기록 commit 자체 전송은 최종 보고와 다음 START Git 조회로 검증.
 Notes: 검증 원본은 Orca validation/current/research-final/validation/current 및 public-research-buffett-2024/ 로컬 전용. 운영 연구노트0신규·개인 보유/키/PC 설정 변경 없음. Wiki 미반영.
 
 ## 작업 폴더 기준
