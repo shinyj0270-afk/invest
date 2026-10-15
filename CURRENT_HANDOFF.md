@@ -30,8 +30,8 @@ Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: 일반 후속 Medium; 반복 실패·자료 식별 충돌·구조 변경은 High 검토
 Escalation condition: 다른 쓰기 세션·divergence·예상 밖 변경·수집 잠금·자료 식별 충돌이면 보존 후 해당 작업 보류
 Branch: main (home 단일 일상 작업·실행 기준)
-Commit: b318163c6025ba9bf3b8e887d774313df5d5b089 (이번 home 수신·원격 일치를 검증한 시작 기준)
-Remote status: refs/heads/main=b318163c6025ba9bf3b8e887d774313df5d5b089 수신 및 실제 원격 일치 확인. 이번 마감 문서 commit/push는 verification pending; 실제 결과는 최종 보고와 다음 START의 Git 조회로 확인한다.
+Commit: d47643442d1f08a3b1ce601417152556d3e04275 (home 단일 main·Telegram 미완료 인계 commit; push 및 실제 원격 일치 검증됨)
+Remote status: refs/heads/main=d47643442d1f08a3b1ce601417152556d3e04275 pushed (verified, 2026-10-15 home CLOSE에서 HEAD=origin/main=실제 remote main 확인). 이 전송 증거만 갱신하는 후속 기록 commit 자체의 전송은 최종 보고와 다음 START의 실제 Git 조회로 검증한다. 회사 PC 수신/실행은 미확인.
 Notes:
 - 이번 공유 변경은 상태/인계 문서뿐이다. PC 경로·Orca 설정·연구DB·채널/권한/내용·개인 보유·인증·원자료·로그는 제외한다.
 - 현재 대화가 붙은 옛 작업본은 보존했다. main 화면 선택은 현재 대화의 작업 디렉터리 이전을 뜻하지 않는다. 해당 대화를 종료한 뒤 별도 정리가 가능하다.
