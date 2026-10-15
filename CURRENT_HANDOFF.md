@@ -13,8 +13,10 @@ Completed:
 - 직접 포트폴리오79개·원인별/동시누락·가격 있는 종목의 오표시 방지·매입가 미입력·XSS·모바일 UI PASS. 최종 격리 공유358개 경고0·portable27명령·빈 실제모드 AppTest·합성UI14여정 PASS.
 - 이전 Research Library·기업 비교·공식 원문 반영/운영은 보존. 새 시장자료 수집·현금/매입가/수량 변경·주문/자동매매/잔고 API 조회 없음.
 
+- 운영 완료: 구현f061e14fdeada7577f4a86bb25b477bf79a1baf2 원본 main ff 통합·기존 수집/입력 보호 경로로202 안전 재시작. build/source 일치·restart_required=false. 회사PC 저장 캐시를 별도 검증 브라우저에만 복원하여 원인 표시·현금/가격 구분·5폭·JS/가로 넘침0 확인. 개인 입력 쓰기는 차단. 초기 동기화 전 빈 화면은 실보유 검증 증거로 사용하지 않았다.
+
 Pending:
-- 이번 원인 구분의 원본 main 통합·안전 재시작·실제 보유 화면 확인·원격 전송은 후속 기록/최종 Git 조회를 확인한다.
+- 이번 원인 구분의 원본 통합·안전 재시작·실보유 UI·원격 전송 확인 완료. 사용자의 기존 탭 새로고침은 별도다. 개인 보유 동기화 전송 대기 관측으로 새 브라우저 자동 복원은 확인하지 못했으며, 이를 캐시 기반 UI 검증과 구분한다.
 - 기존 미확보 시세 목록·공식 재무 원문·누락 분기/TTM/ROE·재무 실패/일부누락, 실제 휴대폰·집 PC 수신/실행·home Telegram·연구설계 실증 후속 유지. 과거 미확보 건수는 최신 목록부터 재확인한다.
 
 Next task: 실제 보유 화면의 원인 표시 확인 및 기존 미확보 자료 후속
@@ -27,9 +29,9 @@ Recommended next agent: Codex
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: 기존 설정 유지; 반복 실패/자료 식별 충돌이면 high 검토
 Escalation condition: 원본/원격 divergence·예상 밖 로컬 변경·수집 잠금·자료 식별 충돌 시 해당 실행 보존·보류
-Branch: shinyj0270-afk/investment-up (개발); 원본 main (이번 통합 상태는 최종 Git 확인)
-Commit: 1ba634528e758cb0f4d3cf73af5f112dea89088a (이번 작업 시작 기준; 새 구현은 생성 후 최종 보고/후속 기록 확인)
-Remote status: 이번 작업 전 실제 원격 main1ba634528e758cb0f4d3cf73af5f112dea89088a. 이번 구현 전송 verification pending. 문서 자체 SHA는 미리 쓰지 않고 최종 Git 조회로 확인한다. 집 PC 수신/실행 미확인.
+Branch: shinyj0270-afk/investment-up (개발); 원본 main (동일 구현 통합 완료)
+Commit: f061e14fdeada7577f4a86bb25b477bf79a1baf2 (보유 비중 보류 원인 구현; 원본·운영·원격 적용 검증 완료)
+Remote status: refs/heads/main f061e14fdeada7577f4a86bb25b477bf79a1baf2 pushed (verified), 2026-10-15T13:30:03+09:00 실제 원격 SHA 확인. 이 증거를 기록하는 후속 문서 commit 자체의 전송은 최종 보고/다음 START의 실제 Git 조회로 확인한다. 집 PC 수신/실행 미확인.
 Notes: 검증 증거는 공유 제외 validation/current/holding-reasons에 보존. DB/키/보유·현금/연구·원문·시세 전량·로그는 코드 원격에 넣지 않는다. Wiki/전체 세션 수집·예약·LLM/API 비용 추가 없음.
 
 ## 작업 폴더 기준
