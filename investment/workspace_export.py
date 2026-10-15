@@ -75,7 +75,7 @@ def export_holdings_frame(snapshot, *, live=None, market_cache=None, analysis_sn
     if live and live.get('holdings_sync'):
         values['INVESTMENT_HOLDINGS_SYNC'] = dict(enabled=True,endpoint='/holdings',token=live['token'])
     if snapshot['meta']['data_mode'] == 'user_input':
-        values['INVESTMENT_HOLDINGS_INPUT'] = holdings_input(snapshot)
+        values['INVESTMENT_HOLDINGS_INPUT'] = holdings_input(snapshot, market_cache=market_cache)
         values['INVESTMENT_HOLDINGS_CATALOG'] = holdings_catalog(snapshot, market_cache)
     if live and live.get('holdings_market'):
         values['INVESTMENT_HOLDINGS_MARKET'] = dict(enabled=True,endpoint='/holding-market',token=live['token'])

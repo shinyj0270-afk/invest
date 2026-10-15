@@ -5,7 +5,7 @@ import subprocess
 import unittest
 from pathlib import Path
 
-from investment.holdings_bridge import holdings_input, linked_dashboard
+from investment.holdings_bridge import holdings_catalog, holdings_input, linked_dashboard
 from tests import test_infomax_daily
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +27,36 @@ class HoldingsBridgeTests(unittest.TestCase):
         self.assertEqual(row['review']['thesis'], 'unknown')
         self.assertEqual(row['evidence'], [])
         self.assertIn('잠정', row['price_source']['label'])
+
+    def naver_cache(self, code, bars, sessions=None):
+        prices = [dict(date=d, close=c, final=final, venue='KRX', adjustment_basis='naver_chart_adjusted') for d, c, final in bars]
+        return dict(universe=dict(schema_version='naver-universe-0.1', companies=[]),
+                    history=dict(calendar=dict(sessions=sessions or [b[0] for b in bars]),
+                                 histories={code: dict(symbol=code, kind='item', prices=prices)}))
+
+    def test_newer_saved_naver_close_supplements_infomax_observation(self):
+        code = holdings_input(self.snapshot, '2026-10-15')['research'][0]['code']
+        cache = self.naver_cache(code, [('2026-09-27', 90, True), ('2026-10-14', 120, True), ('2026-10-15', 130, False)],
+                                 sessions=['2026-09-27', '2026-10-14', '2026-10-15'])
+        result = holdings_input(self.snapshot, '2026-10-15', market_cache=cache)
+        row = result['research'][0]
+        self.assertEqual((row['price_krw'], row['price_date']), (120, '2026-10-14'))
+        self.assertEqual(row['price_source']['kind'], 'public_chart')
+        self.assertIn('인포맥스 관측 2026-09-27 이후', row['price_source']['label'])
+        self.assertEqual(result['market_data_as_of'], '2026-10-14')
+        self.assertEqual(holdings_catalog(self.snapshot, cache, '2026-10-15')[0]['price_date'], '2026-10-14')
+
+    def test_infomax_observation_kept_when_naver_is_not_newer_or_invalid(self):
+        code = holdings_input(self.snapshot, '2026-10-15')['research'][0]['code']
+        for bars in ([('2026-09-27', 90, True)], [('2026-10-14', 120, False)], [('2026-09-20', 80, True)]):
+            with self.subTest(bars=bars):
+                result = holdings_input(self.snapshot, '2026-10-15', market_cache=self.naver_cache(code, bars))
+                self.assertEqual((result['research'][0]['price_krw'], result['research'][0]['price_date']), (100, '2026-09-27'))
+                self.assertEqual(result['research'][0]['price_source']['kind'], 'local_snapshot')
+        mismatch = self.naver_cache(code, [('2026-10-14', 120, True)])
+        mismatch['history']['histories'][code]['symbol'] = '999999'
+        self.assertEqual(holdings_input(self.snapshot, '2026-10-15', market_cache=mismatch)['research'][0]['price_date'], '2026-09-27')
+        self.assertEqual(holdings_input(self.snapshot, '2026-10-15')['market_data_as_of'], self.snapshot['meta']['price_date'])
 
     def test_missing_prices_do_not_use_undated_metrics(self):
         del self.snapshot['companies'][0]['prices']

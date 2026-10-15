@@ -364,6 +364,7 @@
     "config/excluded_companies.json": "config/excluded_companies.json",
     "tests/test_layout_polish_ui.py": "tests/test_layout_polish_ui.py",
     "investment/listing_seasoning.py": "investment/listing_seasoning.py",
-    "tests/test_listing_seasoning.py": "tests/test_listing_seasoning.py"
+    "tests/test_listing_seasoning.py": "tests/test_listing_seasoning.py",
+    "tests/test_holdings_market_date_ui.py": "tests/test_holdings_market_date_ui.py"
   }
 }
