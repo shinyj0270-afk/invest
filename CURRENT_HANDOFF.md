@@ -1,40 +1,37 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-15T14:13:21+09:00
-Handoff version: 2026-10-15-company-primary-close
-Last agent: Codex
+Updated: 2026-10-15T14:46:50+09:00
+Handoff version: 2026-10-15-exclusions-listing-layout
+Last agent: Claude (Opus 5.5)
 Last PC: company Primary (사용자 확인; 원본 config profile=work)
-Last task: 비교 가격 맥락·기업 상세 연결 복구·상단 배치 개선 후 세션 마감
+Last task: 대시보드 전반 재점검 후 재무 공백 6개사 제외·기업 목록 최신화·화면 개선
 
 Completed:
-- 분리 investment-up 워크트리에서 개발하고 원본 main에 ff 통합했다. 마감 시작 worktree=원본 main=실제 원격 main 8c0e010042589ffc189c8129b456b815f127afcd, 양쪽 clean. worktree의 설정/.venv/upstream 부재는 의도된 분리 상태로 보존하며 물리 PC를 unknown으로 간주하지 않는다.
-- 보유 비중 보류 원인을 현금 미입력/종목별 가격 확인 필요 등으로 구분. 비교 가격에 완료 종가·50/200일선·범위/거리·짧은 추세/가치 근거를 추가했다. 낮은 배수/가격 하락을 저평가나 매수로 단정하지 않는다.
-- 기업 찾기의 상세 공백: 전체 대시보드 생성과 기업 읽기 대기열을 분리하고, 진행 읽기 중 재시작409 보호를 추가. 상세 연결 실패 시 기업별 검증된 요약 금액을 유지하며 재시작 전 탭403은 기존 입력 보존 재연결 경로를 사용한다. 구현6b077dda5f65ef54dd44997728964c07a864c78d.
-- 새로고침을 인쇄/PDF 왼쪽으로 이동, 상태칩·요약 수치·경로·자료 기준·복구/연결 상태는 자료 상태 안에 기본 접힘. 모바일 분석 선택/CSV 접근 유지. 구현474e16d68ab87beb969efa9382f32b8c1533d0f9.
-- 각 구현은 원본 main 통합·보호 경로 안전 재시작·실제 운영 검증을 마쳤다. 비교5기업/5폭, 기업 찾기8기업과 CJ 추세/5폭, 최종 배치8폭에서 차트·손익·접기/펼치기·가로 넘침/JS0 확인. 요청 쓰기·보유 동기화를 차단한 별도 브라우저를 사용했다.
-- 마감 신규 실행: 양쪽 PC/Git finish 점검, 원격 fetch 0/0, 공유 제외·운영 health 점검. 원본 profile=work, 진행 Git 작업/추적 private 경로0. 운영 build/source 일치·restart_required=false. 기존 PowerShell 정책을 우회하지 않고 tools/pc_check.py 대체 사용.
-- 마감 신규 최종 검증 PASS: 공유360개 경고0, 격리 portable28명령, 빈 실제모드 AppTest, 합성 UI14여정을 최종 상단 배치 포함 소스로 다시 실행했다. 이전 검사 결과를 마감 신규 실행으로 복사하지 않았다.
+- 시작 4dacba99dcd48a017214bc5428801f34cebf2c57, 분리 invest-rev 워크트리(upstream 없음)를 원격 main까지 ff 수신 후 작업. 원본 main/원격 main과 clean 일치 확인.
+- 재점검(읽기 전용): 운영 build/source 일치, 격리 검증 16개 PASS·공유360개 경고0, 실제 운영22페이지×1440/390 JS/HTTP 오류·가로 넘침0, 가격2452개 10-14 종가 저장, 재무 실패/일부누락 기록172건.
+- 사용자 결정: 검증 재무자료가 없던 6개사(와이즈플래닛컴퍼니·빅웨이브로보틱스·네오사피엔스·한화머시너리앤서비스홀딩스·스카이랩스·글로벌테크놀로지)를 config/excluded_companies.json 사용자 제외 목록으로 발굴·추세·비교·재무 재시도·복구 목록에서 제외. 원자료/가격 이력은 삭제하지 않음. 목록에서 지우면 복구.
+- 화면: 홈 결론 카드 상단 정렬, 데스크톱 CSV 버튼을 자료 상태 줄 오른쪽으로 이동(모바일 바 유지), 효과 없는 iframe sandbox 제거로 경고 제거.
+- RED→GREEN: test_naver_universe(사용자 제외·형식 검증·공유 목록), test_data_recovery(복구 목록 제외), 신규 test_layout_polish_ui. 최종 격리 검증 17개 PASS·공유362개 경고0.
+- 운영: 구현 15841399e8f87009aa28bc0c81151420df74a81a 원본 main ff·안전 재시작202·build/source 일치. 네이버 목록 --listing-only 갱신(조회 2026-09-30→2026-10-15T14:40, 2764개, 신규3·상장폐지/스팩7 제외, 6개사 사용자 제외 저장). 기존 목록 백업 data/work/market-expansion/universe.backup-20261015-before-listing-refresh.json. 실제 운영44화면 오류/넘침/sandbox 경고0, 발굴940개, 복구 목록에 제외 6개사0. 재시작 직후 재무 자동 점검 중 첫 로딩27~33초, 점검 완료 후 5.1~5.3초.
 
 Pending:
-- 사용자 기존 탭은 새로고침해야 최신 코드와 연결 정보를 받는다. 사용자 탭의 실제 갱신 여부는 미확인.
-- 저장자료 점검 당시2450기업 가격 이력 확보, 손익3금액 확보1334기업. 실제 재무 미확보·일부 누락은 별도 후속이며 최신 목록/원자료부터 재확인한다. 차입금 표시 계정 합계를 총차입금으로 확대 해석하지 않는다.
-- 개인 보유 비공개 동기화 전송 대기는 이전 캐시 관측이며 마감에서 재조회/수정하지 않았다. 캐시 기반 UI 검증과 새 브라우저 원격 복원 성공은 별개다.
-- 집 PC 수신/실행·실제 휴대폰·home Telegram·연구설계 실증 후속은 미확인 상태 유지.
+- 보유 화면 시장자료 2026-09-23은 인포맥스 단말 일별 Excel 조회·저장(Ctrl+S)이 있어야 갱신된다. 자동 API 없음. 사용자 저장 후 반영 필요.
+- 신규 상장 멜콘(179880)·브릴스(468670)도 재무자료 없음(자동 재시도 예정). 제외 여부는 사용자 결정 대기, 자동 제외하지 않음.
+- 기존 재무 일부누락·원인 미기록 기록, 사용자 기존 탭 새로고침, 집 PC 수신/실행·휴대폰 미확인 유지. 보유 실제 화면은 동기화 차단으로 이번에 검증하지 않음.
 
-Next task: 사용자 새 요청 우선; 없으면 실제 재무 미확보 기업의 최신 목록과 원자료 확인
+Next task: 사용자 새 요청 우선; 인포맥스 저장 후 보유 시장자료 반영, 신규 무재무 기업 제외 여부 확인
 Next action:
-1. 다음 PC에서 INVESTMENT START로 실제 Git/PC/원격 main을 확인하고 PROJECT_STATE.md, 이 문서, AGENTS.md, SYNC_CONTRACT.md, docs/DUAL_PC_WORKFLOW.md를 읽는다. clean이면 기존 ff-only 수신 절차를 따른다.
-2. company Primary는 원본 work 실행 환경과 분리 워크트리를 유지한다. 보조 PC는 자기 설정/자료/.venv를 사용하고 다른 PC의 DB·인증·원자료를 복제하지 않는다.
-3. 기존 탭 새로고침 후 상단 새 배치 및 CJ프레시웨이 간단 분석/추세를 확인한다. 재무 미확보 후속은 저장 목록과 출처를 읽기 전용으로 먼저 대조한다. 새 변경·실패 없이 테스트/재시작을 반복하지 않는다.
+1. INVESTMENT START로 Git/PC/원격 main을 확인하고 PROJECT_STATE.md, 이 문서, AGENTS.md, SYNC_CONTRACT.md, docs/DUAL_PC_WORKFLOW.md를 읽는다.
+2. 사용자가 인포맥스 일별 파일을 저장했다면 대시보드 새로고침 또는 tools/refresh_infomax.py로 반영하고 보유 화면 시장자료 날짜를 확인한다.
+3. 제외 목록 변경 요청은 config/excluded_companies.json만 수정하고 test_naver_universe를 실행한다.
 
 Recommended next agent: Codex (구현·검증); 설계 판단이 필요하면 ChatGPT
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: 기존 설정 유지; 반복 실패·식별 충돌·큰 구조 변경이면 high 검토
 Escalation condition: 원본/원격 divergence·예상 밖 로컬 변경·수집 잠금·자료 식별 충돌이면 보존하고 해당 작업 보류
-Branch: shinyj0270-afk/investment-up (분리 개발); 원본 main (통합 완료)
-Commit: 8c0e010042589ffc189c8129b456b815f127afcd (마감 시작 기준; 최종 상단 배치 구현474e16d 및 운영 검증 기록 포함)
-Remote status: refs/heads/main 8c0e010042589ffc189c8129b456b815f127afcd pushed (verified), 2026-10-15 마감 원격 fetch 0/0 확인. 마감 문서 commit 전송은 현재 pending이며 최종 보고/다음 START의 실제 SHA 조회로 확인한다.
+Branch: shinyj0270-afk/invest-rev (분리 개발); 원본 main (통합 완료)
+Commit: 15841399e8f87009aa28bc0c81151420df74a81a (제외 목록·화면 개선 구현)
+Remote status: refs/heads/main 15841399e8f87009aa28bc0c81151420df74a81a pushed (verified), 2026-10-15T14:46 HEAD=origin/main=ls-remote 확인. 이 인계 문서 commit 자체의 전송은 최종 보고/다음 START의 실제 Git 조회로 확인한다. 집 PC 수신/실행 미확인.
 Notes:
-- 검증 증거는 공유 제외 validation/current/company-coverage, comparison-price-context, header-status 및 최종 share-candidate-review.json에 보존한다.
-- 인증·PC 설정·보유/현금·DB·원자료·전체 시세·로그는 코드 원격에 넣지 않는다. Wiki/전체 세션 수집·예약·외부 AI 호출 없음. 과금/토큰 사용량은 미확인.
-- 서버·워크트리·개인 로컬 자료를 보존한다. 워크트리 삭제/운영 서버 종료는 마감에 포함하지 않는다.
+- 검증 증거는 공유 제외 validation/current/recheck/(live-receipt.json, live-status.json, 화면 캡처)와 polish-validate.log에 보존.
+- 인증·PC 설정·보유/현금·DB·원자료·시세·로그는 코드 원격에 넣지 않았다. 입력 쓰기·보유 동기화는 검증 브라우저에서 차단. Wiki/예약/외부 AI 호출 없음.
