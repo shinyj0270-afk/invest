@@ -1,3 +1,12 @@
+# 회사 Primary 세션 마감 · 2026-10-15
+
+- 사용자 확인: 현재 PC는 company Primary. 원본 config/local.json의 work 프로필과 일치한다. 분리 워크트리의 설정/.venv/upstream 미생성 상태는 보존하며 PC 자체를 unknown으로 취급하지 않는다.
+- CLOSE 시작 기준 d1abee3f515bb69bd1f6c322edc94154095064e5, worktree=원본 main=실제 원격 main/clean 확인. PowerShell 실행 정책 차단으로 기존 tools/pc_check.py --phase finish 대체 사용; 양쪽 진행 Git 작업/추적 private 경로0.
+- 이번 세션의 격리 portable27명령·빈 실제모드 AppTest·합성UI14여정 및 실제 운영 검증은 완료되어 있으며, 마감 시 코드 해시가 검증본과 같음을 다시 대조했다. 마감 신규 실행은 PC/Git·공유358개 경고0·소스 해시·diff·운영 health 점검이며 전체 테스트를 재실행한 것으로 기록하지 않는다. 운영 build/source 일치·restart_required=false. 마감 변경은 상태/인계 문서뿐이다.
+- 원본 main·원격의 최종 마감 전송 상태와 다음 실행은 CURRENT_HANDOFF 및 최종 Git 조회를 따른다. 워크트리·서버·개인 로컬 자료는 보존한다.
+
+---
+
 # Research Library 최근 이야기·원문 가독성 · 2026-10-15
 
 - 검색과 원문 참조 사이에 최근 저장 연구 최대3개를 5~8개 논점으로 표시. 근거·조건·반례·미확보·가설 상태와 출처 링크를 유지하고 검색 조건/기록 이동 연결. 등록·분류 수정 시각과 내용 기준일·원문 발행일을 구분한다.
