@@ -17,6 +17,8 @@ def onepager(snapshot,row,research):
     policy=' · '.join(row.get('user_policy_evidence',{}).get('labels',[]))
     if row.get('additional_financial_evidence',{}).get('provider_priority_applied'):
         policy+=' · 순차입금은 인포맥스 우선·원문 보충 혼합 출처 추정치'
+    elif row.get('additional_financial_evidence',{}).get('official_priority_note'):
+        policy+=' · 순차입금은 공식 원문 총차입금 기준'
     financial=row.get('financial_evidence')
     history=row.get('observed_financial_history')
     history_summary=''

@@ -186,7 +186,8 @@ def load_local_financials(root, snapshot):
 def merge_financials(provider, official, *, as_of=None):
     """Merge cells at a checked identity/date; publication uncertainty stays per cell.
 
-    Provider values win even at zero. Unknown provider publication dates are usable
+    Official filing values win (user decision 2026-10-15); provider values, even zero,
+    fill only cells the official record lacks at the cutoff. Unknown provider publication dates are usable
     only as current observations, explicitly marked; they never borrow filing dates.
     """
     import copy
@@ -277,15 +278,17 @@ def merge_financials(provider, official, *, as_of=None):
             for field in INPUTS:
                 if num(raw.get(field)):
                     old = prior.get(field)
-                    # EPS is KRW/share; the monetary 100m KRW tolerance does not apply.
-                    currency=raw.get('native_currency') or raw.get('currency') or 'KRW'
-                    if num(old) and raw[field] != old and (field == 'eps' or currency!='KRW' or abs(raw[field]-old) >= 1e8):
-                        note[field] = '인포맥스 관측값 우선 · 공시 EPS 차이 보존' if field == 'eps' else '인포맥스 관측값 우선 · 공시값과 1억원 이상 차이 보존' if currency=='KRW' else '공급자 관측값 우선 · '+str(currency)+' 원통화 공시 차이 보존'
+                    if num(old):
+                        # EPS is KRW/share; the monetary 100m KRW tolerance does not apply.
+                        currency=raw.get('native_currency') or raw.get('currency') or 'KRW'
+                        if raw[field] != old and (field == 'eps' or currency!='KRW' or abs(raw[field]-old) >= 1e8):
+                            note[field] = '공식 원문 우선 · 인포맥스 EPS 차이 보존' if field == 'eps' else '공식 원문 우선 · 인포맥스와 1억원 이상 차이 보존' if currency=='KRW' else '공식 원문 우선 · '+str(currency)+' 원통화 공급자 차이 보존'
+                        continue
                     prior[field] = raw[field]
                     evidence[field] = copy.deepcopy(raw['cell_provenance'][field])
             filing_day = prior.get('filing_available_at') or prior.get('available_at')
             supplement_label='공식 원문' if prior.get('document_kind') else 'DART'
-            prior.update(source='인포맥스 저장 XLSX 우선 / '+supplement_label+' 미확보 계정 보충',
+            prior.update(source=supplement_label+' 우선 / 인포맥스 저장 XLSX 미확보 계정 보충',
                 filing_available_at=filing_day, available_at=raw.get('available_at'),
                 cell_provenance=evidence, cell_notes=note)
         # Current collection status belongs to the official collection service.

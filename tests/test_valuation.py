@@ -73,7 +73,7 @@ class ValuationTests(unittest.TestCase):
             self.assertIsNone(self.result(self.observation())['per']['value'])
             self.row['prices'][-1] = original
 
-    def test_infomax_priority_and_original_preserved(self):
+    def test_official_priority_and_original_preserved(self):
         before = copy.deepcopy(self.snapshot)
         enriched = enrich_valuation(self.snapshot)
         self.assertEqual(self.snapshot, before)
@@ -81,7 +81,19 @@ class ValuationTests(unittest.TestCase):
         self.assertIn('per', enriched['companies'][0]['metric_missing_reasons'])
         official = self.observation('per', 7, source='official', denominator_positive=True)
         infomax = self.observation('per', 9, denominator_positive=True)
-        self.assertEqual(self.result(official, infomax)['per']['value'], 9)
+        self.assertEqual(self.result(official, infomax)['per']['value'], 7)
+        self.assertEqual(self.result(infomax)['per']['value'], 9)
+
+    def test_official_total_debt_replaces_infomax_priority_net_debt(self):
+        self.row['metrics']['net_debt_equity_pct'] = 125.9048
+        self.row['additional_financial_evidence'] = dict(provider_priority_applied=True, unit='million KRW',
+            total_debt_million_krw=1900.0, official_total_debt_million_krw=1800, observed=dict(cash=300.0, equity=1000.0))
+        before = copy.deepcopy(self.snapshot)
+        row = enrich_valuation(self.snapshot)['companies'][0]
+        self.assertAlmostEqual(row['metrics']['net_debt_equity_pct'], 150.0)
+        self.assertFalse(row['additional_financial_evidence']['provider_priority_applied'])
+        self.assertEqual(row['additional_financial_evidence']['infomax_net_debt_equity_pct'], 125.9048)
+        self.assertEqual(self.snapshot, before)
 
     def test_malformed_evidence_rejected_by_contract(self):
         for changes in (dict(value=float('nan')), dict(value=True), dict(value='1'),

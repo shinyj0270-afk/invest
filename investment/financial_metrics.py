@@ -92,7 +92,7 @@ def common_metrics(row, table, technical=None, basis='CFS'):
         metrics=metrics,metric_details=details,amounts=amounts,ttm_complete=complete,ttm_ocf=ttm['ocf'],financial_completeness=table.get('financial_completeness'),source_urls=sorted(set(c.get('source_url') for c in four+[latest]+([prior] if prior else []) if c.get('source_url'))))
 
 def apply_common(row, facts, common):
-    """Reviewed provider metrics only retain priority at the exact common basis/date."""
+    """Official-first common metrics win; reviewed provider values only fill gaps at the exact basis/date."""
     if not common:return
     f=facts.setdefault('fundamental',{});existing=f.get('metric_details',{})
     result=deepcopy(common)
@@ -100,7 +100,7 @@ def apply_common(row, facts, common):
         old=existing.get(k) or row.get('metric_details',{}).get(k,{})
         if old.get('status')=='reviewed' and old.get('currency','KRW')==result.get('currency','KRW') and str(old.get('period',''))[:10]==result['period'] and old.get('basis')==result['basis'] and (k not in ('per','pbr') or old.get('price_date')==d['price_date']):
             value=row.get('metrics',{}).get(k)
-            if num(value):result['metrics'][k]=value;result['metric_details'][k]=dict(old,value=value)
+            if num(value) and not num(result['metrics'].get(k)):result['metrics'][k]=value;result['metric_details'][k]=dict(old,value=value)
     row.setdefault('metrics',{}).update(result['metrics']);row.setdefault('metric_details',{}).update(result['metric_details'])
     row['common_financial']=result
     f.setdefault('metrics',{}).update(result['metrics']);f.setdefault('metric_details',{}).update(result['metric_details']);f.update(period=result['period'],basis=result['basis'])

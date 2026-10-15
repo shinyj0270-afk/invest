@@ -51,12 +51,17 @@
     }
   },
   "financial_source_priority": {
-    "decision": "prefer_infomax_on_monetary_difference",
-    "user_answer": "인포맥스 값과 공식 재무 원문 차이가 날 때는 인포맥스 값을 사용해",
-    "scope": "인포맥스와 공식 재무 원문의 금액이 다르면 인포맥스 값을 계산에 사용",
-    "retain_official_comparison": true,
-    "missing_provider_components": "supplement_from_official_with_explicit_label",
-    "definition_equivalence_confirmed": false
+    "decision": "prefer_official_on_monetary_difference",
+    "decided_on": "2026-10-15",
+    "user_answer": "공식 원문(DART) 우선으로 변경",
+    "scope": "공식 재무 원문과 인포맥스 금액이 다르면 공식 원문 값을 계산에 사용하고, 인포맥스는 공식 원문에 없는 계정·기간만 보충",
+    "retain_infomax_comparison": true,
+    "missing_official_components": "supplement_from_infomax_with_explicit_label",
+    "definition_equivalence_confirmed": false,
+    "superseded": {
+      "decision": "prefer_infomax_on_monetary_difference",
+      "user_answer": "인포맥스 값과 공식 재무 원문 차이가 날 때는 인포맥스 값을 사용해"
+    }
   },
   "pending": [],
   "implementation_status": "KRX user-declared analysis basis, provisional values, latest 20 common observations accepted; source verification flags preserved."

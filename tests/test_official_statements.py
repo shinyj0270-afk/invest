@@ -64,7 +64,7 @@ class OfficialStatementsTests(unittest.TestCase):
             self.assertEqual(table['financial_completeness']['ttm']['status'], 'pending')
             provider = dict(ROW, periods=[dict(cached['periods'][0], revenue=0, available_at=None)])
             merged = merge_financials({'900000': provider}, {'900000': cached}, as_of='2026-10-15')['900000']
-            self.assertEqual(merged['periods'][0]['revenue'], 0)
+            self.assertEqual(merged['periods'][0]['revenue'], cached['periods'][0]['revenue'])
             self.assertNotIn('DART', merged['periods'][0]['source'])
             self.assertIn('공식 원문', merged['periods'][0]['source'])
             self.assertIsNone(load_official(target, ROW, '2026-09-13'))

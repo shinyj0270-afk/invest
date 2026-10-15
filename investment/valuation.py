@@ -81,10 +81,11 @@ def valuation_records(row, snapshot):
     records = validate_observations(row.get('valuation_observations', []))
     result = {}
     for metric, denominator in (('per', 'eps_ttm'), ('pbr', 'bps')):
-        # Prefer Infomax, then the newest observation/report, then a supplied ratio.
+        # Prefer official filings (user decision 2026-10-15), then Infomax, then the newest observation/report.
         candidates = [r for r in records if r['metric'] in (metric, denominator)]
         candidates.sort(key=lambda r: (
-            0 if ('infomax' in r['source'].lower() or '인포맥스' in r['source']) else 1,
+            0 if any(k in r['source'].lower() for k in ('official', '공식', 'dart')) else
+            1 if ('infomax' in r['source'].lower() or '인포맥스' in r['source']) else 2,
             -date.fromisoformat(r['observed_on']).toordinal(),
             -date.fromisoformat(r['financial_period']).toordinal(), 0 if r['metric'] == metric else 1))
         result[metric] = _result()
@@ -127,10 +128,26 @@ def valuation_records(row, snapshot):
     return result
 
 
+def official_net_debt(row):
+    """Recompute an Infomax-priority net debt ratio from the official total debt (user decision 2026-10-15)."""
+    evidence = row.get('additional_financial_evidence')
+    if not isinstance(evidence, dict) or not evidence.get('provider_priority_applied'):
+        return
+    observed = evidence.get('observed') or {}
+    debt, cash, equity = evidence.get('official_total_debt_million_krw'), observed.get('cash'), observed.get('equity')
+    if not all(num(v) for v in (debt, cash, equity)) or equity <= 0:
+        return
+    evidence['infomax_net_debt_equity_pct'] = row['metrics'].get('net_debt_equity_pct')
+    row['metrics']['net_debt_equity_pct'] = (debt - cash) / equity * 100
+    evidence.update(provider_priority_applied=False, total_debt_million_krw=debt,
+                    official_priority_note='공식 원문 우선 · 공식 총차입금으로 순차입금 재계산 · 인포맥스 기준값 보존')
+
+
 def enrich_valuation(snapshot):
     """Enrich a copy. Unsupported legacy ratios are excluded from cheap screens."""
     result = deepcopy(snapshot)
     for row in result['companies']:
+        official_net_debt(row)
         details = valuation_records(row, result)
         row['valuation_details'] = details
         for metric, record in details.items():

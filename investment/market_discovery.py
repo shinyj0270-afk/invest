@@ -211,9 +211,9 @@ def build_discovery(analysis, research, cache, *, include_series=True):
                 value = old.get('metrics', {}).get(k)
                 if num(value):
                     row['metrics'][k] = value
-                    row['metric_details'][k] = dict(source='인포맥스 우선 저장자료', period=old.get('period'),
+                    row['metric_details'][k] = dict(source='인포맥스 검토 저장자료', period=old.get('period'),
                         basis=old.get('basis'), observed_on=analysis['meta'].get('as_of'),
-                        reason='기존 인포맥스 검토 수치 우선', status='reviewed', price_date=analysis['meta']['price_date'])
+                        reason='인포맥스 검토 수치 · 공식 원문 계산값이 있으면 공식 우선', status='reviewed', price_date=analysis['meta']['price_date'])
         row['valuation_details'] = {k: dict(row['metric_details'][k], value=row['metrics'].get(k)) for k in ('per','pbr')}
         record = histories.get('histories', {}).get(row['code'])
         if record and record.get('symbol') != row['code']:
@@ -249,7 +249,7 @@ def build_discovery(analysis, research, cache, *, include_series=True):
     coverage['cap_excluded']=len(rows)-coverage['discovery_candidates']
     note = (f"네이버 공개 목록 {coverage['total']:,}개 중 시가총액 {MIN_DISCOVERY_CAP_EOK:,}억원 초과 탐색 대상 {coverage['discovery_candidates']:,}개 · 조회 {bundle.get('retrieved_on')} · "
             f"일봉 {calendar.get('valid_through', '미확보')} · 동일 시장 순위 유효 {score_count:,}개. "
-            '재무 기간·연결/별도 미명시 수치는 발굴 참고용이며, 기존 인포맥스 수치가 있으면 우선합니다.')
+            '재무 기간·연결/별도 미명시 수치는 발굴 참고용이며, 공식 원문(DART) 수치가 있으면 우선합니다.')
     return dict(snapshot=dict(meta=dict(discovery=True, discovery_note=note, data_mode=analysis['meta']['data_mode'],
         price_date=calendar.get('valid_through'), retrieved_on=bundle.get('retrieved_on')), companies=rows),
         research=dict(rows=facts, rs_label=RS_LABEL), coverage=coverage)

@@ -228,7 +228,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                     from .workspace_research import build_research
                     checked=enrich_valuation(snapshot);f=build_research(checked)['rows'][code]['fundamental']
                     merged['metrics']=dict(merged.get('metrics',{}),**f['metrics'])
-                    merged['metric_details']={k:dict(source='인포맥스 우선 저장자료',period=f.get('period'),basis=f.get('basis'),status='reviewed',price_date=snapshot['meta']['price_date']) for k in f['metrics']}
+                    merged['metric_details']={k:dict(source='인포맥스 검토 저장자료',period=f.get('period'),basis=f.get('basis'),status='reviewed',price_date=snapshot['meta']['price_date']) for k in f['metrics']}
                 temp={'fundamental':{}}
                 apply_common(merged,temp,common);model['common_financial']=merged.get('common_financial')
                 from .verification import verify_company, compact as compact_verification

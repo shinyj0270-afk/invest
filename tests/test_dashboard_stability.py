@@ -38,10 +38,20 @@ class FinancialMergeStabilityTests(unittest.TestCase):
         p=record(period(available_at=None,revenue=0,source='인포맥스'))
         o=record(period(available_at='2026-08-14',revenue=20e8,balance_debt=30e8,source='DART'),collection_health={'status':'ready'})
         before=copy.deepcopy((p,o));r=self.merge(p,o);c=r['periods'][0]
-        self.assertEqual(c['revenue'],0);self.assertEqual(c['balance_debt'],30e8)
+        self.assertEqual(c['revenue'],20e8);self.assertEqual(c['balance_debt'],30e8)
         self.assertEqual(c['cell_provenance']['balance_debt']['available_at'],'2026-08-14')
-        self.assertIsNone(c['cell_provenance']['revenue']['available_at'])
+        self.assertEqual(c['cell_provenance']['revenue']['available_at'],'2026-08-14')
+        self.assertIn('공식 원문 우선',c['cell_notes']['revenue'])
+        self.assertTrue(c['source'].startswith('DART 우선'))
         self.assertEqual(r['collection_health'],{'status':'ready'});self.assertEqual((p,o),before)
+
+    def test_provider_fills_only_missing_or_withheld_official_cells(self):
+        p=record(period(available_at=None,revenue=10e8,net_income=3e8,source='인포맥스'))
+        o=record(period(available_at='2026-08-14',revenue=11e8,source='DART',
+            cell_provenance={'revenue':{'available_at':'2026-10-08','source':'DART'}}))
+        c=self.merge(p,o)['periods'][0]
+        self.assertEqual((c['revenue'],c['net_income']),(10e8,3e8))
+        self.assertTrue(str(c['cell_provenance']['net_income'].get('source','')).startswith('인포맥스'))
 
     def test_future_official_period_does_not_leak_through_unknown_provider_date(self):
         r=self.merge(record(period(available_at=None,revenue=10,source='인포맥스')),
@@ -87,6 +97,7 @@ class FinancialMergeStabilityTests(unittest.TestCase):
         p=record(period(available_at=None,eps=1200,revenue=1e9,source='인포맥스'))
         o=record(period(available_at='2026-08-14',eps=1100,revenue=1e9+99e6,balance_debt=99,source='DART'))
         first=self.merge(p,o);self.assertIn('EPS',first['periods'][0]['cell_notes']['eps'])
+        self.assertEqual(first['periods'][0]['eps'],1100);self.assertEqual(first['periods'][0]['revenue'],1e9+99e6)
         self.assertNotIn('revenue',first['periods'][0]['cell_notes'])
         self.assertEqual(self.merge(p,first),first)
 

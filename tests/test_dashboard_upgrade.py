@@ -50,9 +50,12 @@ class FinancialContractTests(unittest.TestCase):
         self.assertEqual(r['basis'],'OFS');self.assertAlmostEqual(r['metrics']['roe_pct'],40)
         self.assertIn('별도',r['metric_details']['roe_pct']['reason'])
 
-    def test_reviewed_priority_requires_identical_period_and_basis(self):
+    def test_official_common_value_wins_and_reviewed_only_fills_same_basis_gaps(self):
         r=common_metrics(self.row,self.table,self.t);self.row['metric_details']={'roe_pct':dict(status='reviewed',period='2026-06-30',basis='CFS')}
-        apply_common(self.row,{'fundamental':{}},r);self.assertEqual(self.row['metrics']['roe_pct'],999)
+        apply_common(self.row,{'fundamental':{}},r);self.assertAlmostEqual(self.row['metrics']['roe_pct'],40)
+        self.row['metrics']['roe_pct']=999;self.row['metric_details']['roe_pct']=dict(status='reviewed',period='2026-06-30',basis='CFS');gap=copy.deepcopy(r);gap['metrics']['roe_pct']=None
+        apply_common(self.row,{'fundamental':{}},gap);self.assertEqual(self.row['metrics']['roe_pct'],999)
+        self.row['metrics']['roe_pct']=999
         self.row['metric_details']['roe_pct'].update(period='2025-12-31');apply_common(self.row,{'fundamental':{}},r);self.assertEqual(self.row['metrics']['roe_pct'],40)
 
 class DailyPolicyTests(unittest.TestCase):
