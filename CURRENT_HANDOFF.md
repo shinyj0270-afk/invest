@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-15T09:45:11+09:00
+Updated: 2026-10-15T09:47:41+09:00
 Handoff version: 2026-10-15-navigation-company-recovery
 Last agent: Codex
 Last PC: 원본 work (Primary); 개발 워크트리 unknown (설정 없음)
@@ -17,6 +17,7 @@ Completed:
 - 구현c786911f71fbfab6297e6535b9b591818e963065 원본 main fast-forward 통합. 사용자 탭 저장 완료 확인 후 기존 /restart 인증·활성 수집/OS 잠금 검사로 HTTP202 안전 재실행 완료. 운영 build/source 일치·restart_required=false·dashboard/company-view HTTP200.
 - 09:43:33 KST 기존 공개 조회 경로의 최신 제공 시세2448개 갱신·4개 미확보 유지. SK가스 시세10-15·완료종가10-14로 PER/PBR 날짜 계약 통과. 재무/완료 일봉이나 개인 입력을 임의 보충하지 않음.
 - 이번 실제 브라우저 확인: SK가스 재무 카드11개 전부 표시·주요 금액은 최신 분기 셀과 일치, 추세253개/차트·재무 상세 탭 연결, 데스크톱7폭/390·320px 가로 넘침0·JS 오류0. 테스트 브라우저의 개인 입력 쓰기 차단. 최초 갱신 뒤 dashboard33.02초·company-view0.53초는 관측값이며 전체 성능 보증이 아님. 사용자의 기존 탭 새로고침 확인은 별도.
+- 운영 검증 후 원본 main push 완료. 09:47:41 KST HEAD=main=origin/main=실제 원격 main 7764dd366176a13d1af08e76d63f2b7c42c5ff20 확인, 양쪽 작업본 clean. 이 증거를 기록하는 후속 문서 commit 자체의 병합·push는 최종 보고 및 다음 START의 실제 Git 조회로 확인한다.
 
 Pending:
 - 운영 적용/실제 SK가스 자동 브라우저 검증 완료. 사용자의 기존 탭 새로고침과 실제 휴대폰 확인은 별도. 원격 push·실제 원격 SHA 검증은 아래 Remote status를 따른다.
@@ -36,7 +37,7 @@ Recommended reasoning: 기존 설정 유지; 반복 실패/자료 식별 충돌�
 Escalation condition: 입력 보관 미확인·수집 잠금·원본/원격 divergence·기업/기간 식별 충돌이면 해당 실행 보존·보류
 Branch: shinyj0270-afk/investment-up (구현); 원본 main (구현 동일·통합 완료)
 Commit: c786911f71fbfab6297e6535b9b591818e963065 (검증된 메뉴/조회 수정 구현 commit; 원본 main 통합·운영 적용 완료)
-Remote status: origin/main 2b7fc78645e3e1c0da30d0204f4b4f8b0c5d7b8f, 09:20 KST fetch 성공. 이번 작업 not pushed, 운영 확인 후 공유 검토·원격 재확인·main push 및 실제 SHA 검증 대기. 집 PC 수신/실행 미확인.
+Remote status: refs/heads/main 7764dd366176a13d1af08e76d63f2b7c42c5ff20 pushed (verified), 2026-10-15T09:47:41+09:00 HEAD=main=origin/main=실제 원격 main 확인. 검증된 구현 c786911f71fbfab6297e6535b9b591818e963065와 앞선 공식 원문 반영 코드/문서 포함. 이 증거를 기록하는 후속 문서 commit 자체의 최종 전송은 최종 보고 및 다음 START의 실제 Git 조회로 검증한다. 집 PC 수신/실행 미확인.
 Notes: 증거는 Orca validation/current/skgas-debug와 share-candidate-review.json에 로컬 보존. 실제503 재현·실제 저장 자료 조회·합성 회귀·운영 적용을 구분한다. 과거 정기재무 실패·개인 입력·소스 권한 거부는 유지. 후속 기록 commit의 자기 SHA는 미리 쓰지 않고 최종 Git 조회로 검증한다.
 
 ## 작업 폴더 기준
