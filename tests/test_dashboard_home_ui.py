@@ -20,12 +20,11 @@ with sync_playwright() as p:
     expect(page.locator('#home')).to_be_visible()
     assert page.locator('#moreNavigation').get_attribute('open') is None
     assert page.locator('#navigation>.nav-item').count()==6
-    assert page.locator('#navigation svg.iconify').count()==11
+    assert page.locator('#navigation svg.iconify').count()==10
     assert page.locator('#navigation svg:not([aria-hidden="true"])').count()==0
     expect(page.get_by_role('button',name='기업 찾기',exact=True)).to_have_accessible_name('기업 찾기')
-    page.locator('#moreNavigation summary').focus()
-    page.keyboard.press('Enter')
-    expect(page.locator('#moreNavigation .more-menu')).to_be_visible()
+    expect(page.locator('#moreNavigation summary')).to_have_count(0)
+    expect(page.locator('#moreNavigation [data-page=overview]')).to_be_visible()
     page.get_by_role('button',name='자료 비교',exact=True).focus()
     page.keyboard.press('Enter')
     expect(page.locator('body')).to_have_attribute('data-current-page','overview')
@@ -46,9 +45,8 @@ with sync_playwright() as p:
     expect(page.locator('#homeMarketCharts')).to_contain_text('KOSPI')
     expect(page.locator('#homeVerdict')).to_contain_text('오늘의 결론')
     expect(page.locator('#homeKpis')).to_contain_text('탐색 범위')
-    page.locator('#moreNavigation summary').click()
-    expect(page.locator('#moreNavigation .more-menu')).to_be_visible()
-    page.screenshot(path=str(ROOT/'validation/current/navigation-more-desktop.png'))
+    expect(page.locator('#moreNavigation [data-page=overview]')).to_be_visible()
+    page.screenshot(path=str(ROOT/'validation/current/navigation-expanded-desktop.png'))
     page.locator('#moreNavigation .nav-item').first.click()
     assert page.locator('#moreNavigation').get_attribute('open') is None
     comparison=['overview','prices','bars','heatmap','scatter','data']

@@ -1,6 +1,7 @@
 {
   "purpose": "Single-source, explicit Git handoff list for the existing INVESTMENT workspace",
   "files": {
+    "tests/test_dashboard_connection_ui.py": "tests/test_dashboard_connection_ui.py",
     "investment/official_statements.py": "investment/official_statements.py",
     "tools/import_official_statements.py": "tools/import_official_statements.py",
     "tests/test_official_statements.py": "tests/test_official_statements.py",

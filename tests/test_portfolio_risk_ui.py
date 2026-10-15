@@ -51,7 +51,7 @@ with sync_playwright() as p:
     period=page.locator('#research [data-financial-series]').inner_text()
     page.locator('[data-trend-range="63"]').click()
     assert period==page.locator('#research [data-financial-series]').inner_text()
-    if page.locator('#moreNavigation').get_attribute('open') is None:
+    if page.locator('#moreNavigation summary').count():
         page.locator('#moreNavigation summary').click()
     page.locator('[data-page=advanced]').first.click()
     selected=page.locator('[data-av-code]').first.get_attribute('data-av-code')
@@ -90,7 +90,6 @@ with sync_playwright() as p:
     lazy.route('http://127.0.0.1:8767/**',lazy_route)
     lazy.goto('http://127.0.0.1:8767/',wait_until='load')
     assert lazy.evaluate('Object.keys(WORKSPACE_DATA.company_details).length')==0
-    lazy.locator('#moreNavigation summary').click()
     lazy.locator('[data-page=advanced]').click()
     selected=lazy.locator('[data-av-code]').first.get_attribute('data-av-code')
     assert loads==[],loads  # Distribution does not load duplicated detail charts.

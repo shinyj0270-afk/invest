@@ -6,7 +6,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
 def open_tools(page):
-    if page.locator('#moreNavigation').get_attribute('open') is None:
+    if page.locator('#moreNavigation summary').count():
         page.locator('#moreNavigation summary').click()
 
 
