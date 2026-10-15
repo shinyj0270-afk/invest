@@ -46,6 +46,15 @@ class HoldingsBridgeTests(unittest.TestCase):
         self.assertEqual(result['market_data_as_of'], '2026-10-14')
         self.assertEqual(holdings_catalog(self.snapshot, cache, '2026-10-15')[0]['price_date'], '2026-10-14')
 
+    def test_naver_close_label_when_infomax_has_no_observation(self):
+        snapshot = copy.deepcopy(self.snapshot)
+        snapshot['companies'][0]['prices'] = []
+        code = snapshot['companies'][0]['code']
+        row = holdings_input(snapshot, '2026-10-15', market_cache=self.naver_cache(code, [('2026-10-14', 120, True)]))['research'][0]
+        self.assertEqual(row['price_date'], '2026-10-14')
+        self.assertIn('인포맥스 관측가 없음', row['price_source']['label'])
+        self.assertNotIn('미관측 이후', row['price_source']['label'])
+
     def test_infomax_observation_kept_when_naver_is_not_newer_or_invalid(self):
         code = holdings_input(self.snapshot, '2026-10-15')['research'][0]['code']
         for bars in ([('2026-09-27', 90, True)], [('2026-10-14', 120, False)], [('2026-09-20', 80, True)]):

@@ -39,9 +39,9 @@ def _supplement_with_naver(rows, cache, as_of, snapshot_date):
     for row in rows:
         bar = saved_naver_close(histories.get(row['code']), row['code'], as_of)
         if bar and (row['price_date'] is None or bar['date'] > row['price_date']):
-            prior = row['price_date'] or '미관측'
+            prior = f"인포맥스 관측 {row['price_date']} 이후" if row['price_date'] else '인포맥스 관측가 없음'
             row.update(price_krw=bar['close'], price_date=bar['date'], price_source=naver_price_source(
-                row['code'], f'네이버 저장 완료 일봉 · KRX · 차트 보정가격 · 인포맥스 관측 {prior} 이후'))
+                row['code'], f'네이버 저장 완료 일봉 · KRX · 차트 보정가격 · {prior}'))
     sessions = [d for d in (history.get('calendar') or {}).get('sessions') or [] if isinstance(d, str) and d < as_of]
     return max([snapshot_date] + sessions[-1:])
 
