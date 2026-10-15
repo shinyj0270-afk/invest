@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 from investment.research_library import Library
-from investment.research_library_view import view
+from investment.research_library_view import view, recent_stories
 from tests.test_research_library import source, thesis, card
 
 
@@ -23,6 +23,29 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(result['status'],'empty')
         self.assertEqual(len(result['masters']),8)
         self.assertFalse((self.root/'.local').exists())
+        self.assertEqual(result['stories'], [])
+
+    def test_stories_rank_research_updates_and_keep_source_dates_distinct(self):
+        def record(key, date):
+            return dict(id=key, kind='thesis', recorded_at=date, revision=1,
+                        value=dict(title=key, claim='Conditional claim, not a proven result',
+                                   conditions=['First condition', 'Second condition'],
+                                   invalidation=['Countercondition'], status='invalidated', as_of='2026-01-01'),
+                        provenance=[dict(id='s', value=dict(title='Old source', url='https://example.invalid/source',
+                                                          published_on='2000-01-01'))])
+        rows=[record(str(i), f'2026-01-0{i+1}T00:00:00+00:00') for i in range(5)]
+        rows[0]['catalog_history']=[dict(recorded_at='2026-02-01T00:00:00+00:00')]
+        stories=recent_stories(dict(theses=rows))
+        self.assertEqual([r['id'] for r in stories], ['0','4','3'])
+        self.assertEqual(stories[0]['sources'][0]['published_on'], '2000-01-01')
+        self.assertEqual(stories[0]['as_of'], '2026-01-01')
+        self.assertEqual(len(stories[0]['lines']),5)
+        self.assertIn('반증됨',stories[0]['lines'][-1]['text'])
+        self.assertIn('Countercondition',[l['text'] for l in stories[0]['lines']])
+
+    def test_bibliography_or_sparse_records_do_not_invent_three_stories(self):
+        self.assertEqual(recent_stories(dict(sources=[dict(value=dict(title='Book title only'))])), [])
+        self.assertEqual(recent_stories(dict(theses=[dict(id='t',value=dict(claim='Sparse claim'),provenance=[])])), [])
 
     def approved_session_note(self):
         from datetime import datetime,timezone,timedelta
@@ -58,6 +81,7 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(before,hashlib.sha256(lib.path.read_bytes()).hexdigest())
         annotate(lib,'source','s1',metadata('excluded'))
         self.assertEqual([],view(self.root)['notes'])
+        self.assertEqual([],view(self.root)['stories'])
 
     def test_changed_or_unreviewed_note_cannot_be_projected(self):
         lib,job=self.approved_session_note()
