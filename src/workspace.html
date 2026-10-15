@@ -9,14 +9,15 @@
 <body class="soft-ui">
 <section id="initializationError" role="alert" hidden style="max-width:760px;margin:24px auto;padding:24px;background:#fff2e8;border:1px solid #edb991;border-radius:12px"><h2>화면 연결을 다시 확인하세요</h2><p id="initializationErrorText"></p><p>입력한 내용은 먼저 보관하세요. 이전 INVESTMENT 서버를 종료한 뒤 scripts/open-investment.cmd를 다시 실행하세요.</p><button onclick="location.reload()">다시 실행 후 화면 확인</button></section>
 <script>window.INVESTMENT_SHOW_INIT_ERROR=()=>{const box=document.getElementById('initializationError');box.hidden=false;document.getElementById('initializationErrorText').textContent='화면 구성 요소를 불러오지 못했습니다. 서버와 화면의 코드 버전이 다르거나 실행 오류가 발생했습니다.';};window.addEventListener('error',()=>window.INVESTMENT_SHOW_INIT_ERROR());</script>
-<header class="mast"><div class="mast-in"><h1><i aria-hidden="true"></i><span>INVESTMENT</span><span class="sr-only">통합 투자 대시보드</span></h1><nav id="navigation" aria-label="분석 메뉴"></nav><form id="homeSearch" class="mast-search" role="search"><label for="homeQuery" class="sr-only">기업 찾기</label><input id="homeQuery" placeholder="기업명 또는 종목코드" autocomplete="off"><button type="submit">검색</button></form><div class="asof">종가 <b id="asof">—</b><button id="print">인쇄 / PDF</button></div></div></header>
+<header class="mast"><div class="mast-in"><h1><i aria-hidden="true"></i><span>INVESTMENT</span><span class="sr-only">통합 투자 대시보드</span></h1><nav id="navigation" aria-label="분석 메뉴"></nav><form id="homeSearch" class="mast-search" role="search"><label for="homeQuery" class="sr-only">기업 찾기</label><input id="homeQuery" placeholder="기업명 또는 종목코드" autocomplete="off"><button type="submit">검색</button></form><div class="asof"><span class="asof-date">종가 <b id="asof">—</b></span><button id="refreshData" hidden>새로고침</button><button id="print">인쇄 / PDF</button></div></div></header>
 <div class="app-layout">
 <main>
-<div class="status-row"><p id="priceRefreshStatus" class="status-chip" role="status" aria-live="polite"></p><p id="financialRefreshStatus" class="status-chip" role="status" aria-live="polite"></p><div id="homeKpis" class="kpi-group" aria-label="요약 지표"></div></div>
-<div class="workspace-bar"><span id="workspacePath"></span><label class="mobile-nav">분석 화면<select id="pageSelect" aria-label="분석 화면"></select></label><div class="workspace-actions"><button id="refreshData" hidden>새로고침</button><button id="exportCsv">현재 비교 데이터 CSV</button></div></div>
-<div id="viewFreshness" class="freshness-strip" role="status" aria-label="현재 화면 자료 기준"></div>
+<div class="workspace-bar"><label class="mobile-nav">분석 화면<select id="pageSelect" aria-label="분석 화면"></select></label><div class="workspace-actions"><button id="exportCsv">현재 비교 데이터 CSV</button></div></div>
+<details id="workspaceStatus"><summary>자료 상태</summary><div class="workspace-status-content"><div class="status-row"><p id="priceRefreshStatus" class="status-chip" role="status" aria-live="polite"></p><p id="financialRefreshStatus" class="status-chip" role="status" aria-live="polite"></p><div id="homeKpis" class="kpi-group" aria-label="요약 지표"></div></div>
+<p id="workspacePath"></p><div id="viewFreshness" class="freshness-strip" role="status" aria-label="현재 화면 자료 기준"></div>
 <section id="dataRecovery" aria-label="미확보 자료와 복구"><div id="dataRecoveryContent"></div></section>
 <details id="sourceDetails"><summary>자료 기준·연결 상태</summary><div id="sourceNotice" class="source-note"></div><p class="psub" id="sideSource"></p><p class="psub" id="sourceModeHint">HTML은 내보낸 시점의 자료입니다. 갱신 앱에서 새 결과물을 받으세요.</p><p class="psub">장기 연구는 더보기의 Research Library에서, 저장된 공시·뉴스는 기업 분석의 핵심 요약에서 확인하세요.</p></details>
+</div></details>
 <nav id="contextNavigation" class="context-nav" aria-label="현재 화면의 상세 보기"></nav>
 <section id="comparisonPicker" class="panel below" hidden aria-label="비교 기업 선택">
 <div class="panel-heading"><h2>비교 기업 <small>최대 5개</small></h2><button id="comparisonFind">기업 찾기에서 선택 →</button></div>

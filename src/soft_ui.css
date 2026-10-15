@@ -142,7 +142,7 @@ body.soft-legacy{background:transparent;color:var(--ink)}body.soft-legacy main{p
 body.soft-legacy .card,body.soft-legacy .panel{background:var(--plane);border:0;border-radius:19px;box-shadow:var(--raised)}
 body.soft-legacy button.primary{background:var(--btn);color:var(--on-btn);border:0}body.soft-legacy th{background:rgba(42,47,58,.04)}
 
-@media(max-width:1500px){.mast-in{grid-template-columns:max-content minmax(0,1fr) max-content}.mast h1,.mast-search,.asof{grid-row:1}#navigation{grid-row:2;grid-column:1/-1}.more-menu{left:auto;right:0}}
+@media(max-width:1700px){.mast-in{grid-template-columns:max-content minmax(0,1fr) max-content}.mast h1,.mast-search,.asof{grid-row:1}#navigation{grid-row:2;grid-column:1/-1}.more-menu{left:auto;right:0}}
 @media(max-width:1180px){.home-verdict,.home-markets,.home-sector-map,.home-candidates-panel{grid-column:span 12}.home-bento>.panel:not(.home-verdict):not(.home-sector-map):not(.home-candidates-panel),.home-coverage{grid-column:span 6}.nav-item,#moreNavigation>summary{padding:8px 10px}.asof button{display:none}}
 @media(max-width:900px){#navigation{display:none}.mobile-nav{display:flex;align-items:center;gap:8px}.app-layout{padding:16px 14px 0}.mast-in{padding:10px 14px;min-height:60px;gap:10px}.workspace-bar{position:static;flex-wrap:wrap}.asof{font-size:10px}.status-row{gap:6px}.kpi-group{margin-left:0}}
 @media(max-width:720px){.mast-in{grid-template-columns:max-content minmax(0,1fr)}.home-markets{grid-template-columns:minmax(0,1fr)}.home-bento>.panel:not(.home-verdict):not(.home-sector-map):not(.home-candidates-panel),.home-coverage{grid-column:span 12}.home-tile{min-width:46%;min-height:104px}.home-bento{gap:16px}.panel{padding:18px 16px;border-radius:20px}#workspacePath{display:none}.workspace-actions{margin-left:auto;gap:5px}.workspace-actions button{font-size:10px;padding:8px}.mobile-nav select{font-size:11px;padding:8px;max-width:165px}.mast h1 span:not(.sr-only){display:none}.asof{display:none}#companyDetail{padding:13px;border-radius:19px}.context-nav button{padding:9px 11px;font-size:11px}}
@@ -177,3 +177,9 @@ body.soft-legacy button.primary{background:var(--btn);color:var(--on-btn);border
 @media(max-width:600px){.library-source-record summary{min-height:44px}.library-story-heading h4{font-size:16px}}
 
 @media(max-width:760px){#comparisonPrices{grid-template-columns:minmax(0,1fr)}}
+
+/* Secondary status is available on demand; primary actions stay in the header. */
+.mast .asof{display:flex;align-items:center;gap:10px}.mast .asof button{display:inline-block;min-height:40px}.asof-date{display:flex;gap:8px}
+#workspaceStatus{margin:0 0 16px;color:var(--muted)}#workspaceStatus>summary{display:inline-block;font-size:12px;font-weight:500;cursor:pointer;padding:8px 0}#workspaceStatus>summary:before{content:'▸';margin-right:6px}#workspaceStatus[open]>summary:before{content:'▾'}.workspace-status-content{padding:14px 0 0}#workspaceStatus #workspacePath{display:block;font-size:12px}#workspaceStatus .freshness-strip{margin-bottom:12px}.workspace-bar{margin-bottom:0}
+@media(max-width:720px){.mast .asof{grid-row:2;grid-column:1/-1;justify-self:end;gap:8px}.mast .asof-date{display:none}.mast .asof button{font-size:11px;padding:8px 12px}.workspace-bar{margin-bottom:8px}}
+@media print{#workspaceStatus{display:none!important}}

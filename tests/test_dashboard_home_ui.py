@@ -36,6 +36,8 @@ with sync_playwright() as p:
       const a=lum(rgb(getComputedStyle(el).color)),b=lum(bg);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);
     })''')
     assert min(contrast)>=4.5,contrast
+    expect(page.locator('#viewFreshness')).to_be_hidden()
+    page.locator('#workspaceStatus>summary').click()
     expect(page.locator('#viewFreshness')).to_be_visible()
     expect(page.locator('#viewFreshness')).to_contain_text('발굴 모집단')
     assert page.locator('#moreNavigation .nav-item').all_text_contents()==['자료 비교','고급 시각화','Research Library']
