@@ -10,6 +10,12 @@ const decision=(x,i=0)=>P.companyReview(x.research[i],x.as_of,P.cleanPolicy(cfg(
 test('fixture validates',()=>assert.equal(P.validate(f()).mode,'fixture'));
 test('zero cash is valid',()=>{const x=f();x.cash_krw=0;P.validate(x);});
 test('null cash stays incomplete',()=>{const x=f();x.cash_krw=null;assert.equal(P.reviewHoldings(x,cfg()).book.complete,false);});
+test('missing cash is named without blaming valid prices',()=>{const x=f();x.cash_krw=null;const r=P.reviewHoldings(x,cfg());assert.deepEqual(r.book.incomplete_reasons,['현금 미입력']);assert.ok(r.rows.every(h=>h.portfolio_action==='비중 판단 보류: 현금 미입력'&&h.value_krw!==null));});
+test('missing price identifies the affected company for all portfolio weights',()=>{const x=f();x.research[0].price_krw=null;const r=P.reviewHoldings(x,cfg());const reason=x.research[0].name+'('+x.research[0].code+') 가격 확인 필요';assert.deepEqual(r.book.incomplete_reasons,[reason]);assert.ok(r.rows.every(h=>h.portfolio_action.includes(reason)&&!h.portfolio_action.includes('현금 미입력')));});
+test('cash and price reasons are both retained, unknown names use code',()=>{const x=f();x.cash_krw=null;x.research=x.research.filter(r=>r.code!==x.holdings[0].code);const r=P.reviewHoldings(x,cfg());assert.deepEqual(r.book.incomplete_reasons,['현금 미입력',x.holdings[0].code+' 가격 확인 필요']);});
+test('missing average cost does not block valid portfolio weights',()=>{const x=f();x.cash_krw=0;x.holdings.forEach(h=>h.avg_cost_krw=null);const r=P.reviewHoldings(x,cfg());assert.equal(r.book.complete,true);assert.deepEqual(r.book.incomplete_reasons,[]);assert.ok(r.rows.every(h=>h.weight_pct!==null&&h.pnl_krw===null&&!h.portfolio_action.includes('비중 판단 보류')));});
+test('valuation overflow is distinguished from an absent price',()=>{const x=f();x.holdings[0].quantity=Number.MAX_SAFE_INTEGER;const r=P.reviewHoldings(x,cfg());assert.ok(r.book.incomplete_reasons.some(s=>s.includes('평가액 계산 범위 초과')));assert.ok(!r.book.incomplete_reasons.some(s=>s.includes('가격 확인 필요')));});
+test('zero total has its own denominator explanation',()=>{const x=P.empty('2026-10-01');x.cash_krw=0;assert.deepEqual(P.reviewHoldings(x,cfg()).book.incomplete_reasons,['전체 평가액이 0원이라 비중 계산 불가']);});
 test('invalid calendar date rejected',()=>{const x=f();x.as_of='2026-02-30';assert.throws(()=>P.validate(x));});
 test('negative cash rejected',()=>{const x=f();x.cash_krw=-1;assert.throws(()=>P.validate(x));});
 test('fractional holdings rejected',()=>{const x=f();x.holdings[0].quantity=1.1;assert.throws(()=>P.validate(x));});

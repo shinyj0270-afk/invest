@@ -120,20 +120,27 @@ const PortfolioEngine = (() => {
   function bookSummary(x,p){
     const map=new Map(x.research.map(r=>[r.code,r]));
     let total=x.cash_krw,complete=x.cash_krw!==null;
-    const missing=[];
+    const missing=[],incompleteReasons=[];
+    if(x.cash_krw===null)incompleteReasons.push('현금 미입력');
     const positions=x.holdings.map(h=>{
       const r=map.get(h.code),bad=priceBlockers(r,x.as_of,p);
+      const label=r?.name&&r.name!==h.code?`${r.name}(${h.code})`:h.code;
       let value=!bad.length?h.quantity*r.price_krw:null;
-      if(value!==null&&(!num(value)||value>Number.MAX_SAFE_INTEGER))value=null;
+      if(value!==null&&(!num(value)||value>Number.MAX_SAFE_INTEGER)){value=null;incompleteReasons.push(`${label} 평가액 계산 범위 초과`);}
+      else if(value===null)incompleteReasons.push(`${label} 가격 확인 필요`);
       if(value===null){complete=false;missing.push(h.code);}
       else if(total!==null)total+=value;
       const cost=h.avg_cost_krw===null?null:h.quantity*h.avg_cost_krw;
       const usableCost=cost!==null&&num(cost)&&cost<=Number.MAX_SAFE_INTEGER?cost:null;
       return {...h,name:r?.name||h.code,value_krw:value,cost_krw:usableCost,pnl_krw:value!==null&&usableCost!==null?value-usableCost:null,pnl_pct:value!==null&&usableCost>0?(value/usableCost-1)*100:null,weight_pct:null};
     });
+    if(complete&&total!==null){
+      if(!num(total)||total>Number.MAX_SAFE_INTEGER)incompleteReasons.push('전체 평가액 계산 범위 초과');
+      else if(total<=0)incompleteReasons.push('전체 평가액이 0원이라 비중 계산 불가');
+    }
     if(!complete||total===null||!num(total)||total>Number.MAX_SAFE_INTEGER||total<=0){total=null;complete=false;}
     if(complete)for(const pos of positions)pos.weight_pct=pos.value_krw/total*100;
-    return {complete,total_krw:total,cash_krw:x.cash_krw,positions,missing_codes:missing};
+    return {complete,total_krw:total,cash_krw:x.cash_krw,positions,missing_codes:missing,incomplete_reasons:incompleteReasons};
   }
   function reviewHoldings(x,policy={}){
     validate(x);const p=cleanPolicy(policy),book=bookSummary(x,p),map=new Map(x.research.map(r=>[r.code,r]));
@@ -141,7 +148,7 @@ const PortfolioEngine = (() => {
       const r=map.get(pos.code),c=companyReview(r,x.as_of,p),over=pos.weight_pct!==null&&pos.weight_pct>p.companyCapPct;
       const issuerWeight=r&&book.complete?book.positions.filter(h=>map.get(h.code)?.issuer_id===r.issuer_id).reduce((s,h)=>s+h.weight_pct,0):null;
       const companyOver=issuerWeight!==null&&issuerWeight>p.companyCapPct;
-      let portfolioAction=book.complete?(companyOver?'동일 기업 합산 비중 상한 초과 · 축소 검토':'설정한 개별기업 비중 상한 이내'):'잔고·가격 부족으로 비중 판단 보류';
+      let portfolioAction=book.complete?(companyOver?'동일 기업 합산 비중 상한 초과 · 축소 검토':'설정한 개별기업 비중 상한 이내'):'비중 판단 보류: '+book.incomplete_reasons.join(' · ');
       return {...pos,...c,code:pos.code,company_opinion:c.opinion,portfolio_action:portfolioAction,overweight:companyOver,issuer_weight_pct:issuerWeight,research:r||null};
     })};
   }
