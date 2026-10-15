@@ -9,6 +9,7 @@ from statistics import mean
 from .core import num
 from .local_config import load_local
 from .naver_universe import classify
+from .listing_seasoning import apply_seasoning, read_listing_dates, today_kst
 from .market_history import benchmark_calendar, ADJUSTMENT_NOTE
 from .workspace_research import METRICS, RS_LABEL
 from .trend_diagnostics import diagnose, update_rank
@@ -46,6 +47,8 @@ def load_market_cache(root, snapshot):
                 classification = classify(row)
                 if classification['eligibility'] == 'excluded':
                     row.update(classification)
+        # New listings wait five months after the official listing date (user decision 2026-10-15).
+        universe['companies'] = apply_seasoning(universe['companies'], read_listing_dates(folder), history, today_kst())
         quotes = {}
         try:
             saved=json.loads((folder/'latest-quotes.json').read_text(encoding='utf-8'))

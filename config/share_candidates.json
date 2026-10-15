@@ -362,6 +362,8 @@
     "tests/test_research_sessions.py": "tests/test_research_sessions.py",
     "docs/RESEARCH_SESSIONS.md": "docs/RESEARCH_SESSIONS.md",
     "config/excluded_companies.json": "config/excluded_companies.json",
-    "tests/test_layout_polish_ui.py": "tests/test_layout_polish_ui.py"
+    "tests/test_layout_polish_ui.py": "tests/test_layout_polish_ui.py",
+    "investment/listing_seasoning.py": "investment/listing_seasoning.py",
+    "tests/test_listing_seasoning.py": "tests/test_listing_seasoning.py"
   }
 }

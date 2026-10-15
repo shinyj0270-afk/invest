@@ -91,7 +91,7 @@ class NaverUniverseTests(unittest.TestCase):
                     user_exclusions(path)
 
     def test_shared_exclusion_list_is_valid(self):
-        self.assertTrue(set(user_exclusions()) >= {'0010S0', '0035S0', '0161M0', '0220W0', '386380', '486510'})
+        self.assertTrue(set(user_exclusions()) >= {'0010S0', '0035S0', '0161M0', '0220W0', '386380', '486510', '179880', '468670'})
 
     def test_convertible_preferred_suffix_is_not_an_ordinary_candidate(self):
         for name in ('가상4우(전환)', '가상2우B(전환)', '가상우 (전환)'):

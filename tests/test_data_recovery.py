@@ -47,9 +47,10 @@ class RecoveryTests(unittest.TestCase):
     def test_user_excluded_company_leaves_recovery_inventory(self):
         with tempfile.TemporaryDirectory() as temp:
             base=Path(temp);dest=base/'work/company-financials';dest.mkdir(parents=True)
-            for code in ('0035S0','005930'):
+            for code in ('0035S0','0036S0','005930'):
                 (dest/(code+'.status.json')).write_text(json.dumps(dict(status='failed',checked_at='2026-10-15T09:00:00+09:00')),encoding='utf-8')
             cache=dict(universe=dict(companies=[dict(code='0035S0',name='제외',eligibility='excluded',user_excluded=True,metrics={'market_cap_eok':2000}),
+                dict(code='0036S0',name='신규',eligibility='excluded',seasoning=dict(status='seasoning'),metrics={'market_cap_eok':2000}),
                 dict(code='005930',name='유지',eligibility='candidate',metrics={'market_cap_eok':2000})]),history=dict(errors=[dict(code='0035S0',reason='old')]))
             service=DataRecovery(base,Mock(),Mock())
             with patch('investment.data_recovery.load_local',return_value=dict(data_dir=base,profile='work')),patch('investment.data_recovery.read_market_cache',return_value=cache):

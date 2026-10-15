@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT))
 from investment.local_config import load_local
 from investment.naver_universe import fetch_listing, attach_industries
 from investment.market_history import fetch_history, benchmark_calendar
+from investment.listing_seasoning import codes_needing_dates, collect_listing_dates, read_listing_dates
 
 
 def save(path, value):
@@ -23,10 +24,21 @@ def save(path, value):
     temp.replace(path)
 
 
+def collect_dates(folder, bundle):
+    # Official listing dates feed the five-month new-listing rule; only short histories need them.
+    history_path = folder/'histories.json'
+    history = json.loads(history_path.read_text(encoding='utf-8')) if history_path.exists() else {}
+    codes = codes_needing_dates(bundle['companies'], history, read_listing_dates(folder))
+    summary = collect_listing_dates(folder, codes)
+    print('Listing dates:', json.dumps(dict(requested=len(codes), **{k: summary[k] for k in ('collected', 'failed', 'known')})), flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--reuse-listing', action='store_true')
     parser.add_argument('--listing-only', action='store_true')
+    parser.add_argument('--listing-dates', action='store_true',
+                        help='only collect missing official listing dates for the saved listing')
     parser.add_argument('--retry-errors', action='store_true',
                         help='retry only codes recorded as errors in the last history bundle')
     args = parser.parse_args()
@@ -36,6 +48,10 @@ def main():
     def progress(p):
         if p.get('page', 0) % 5 == 0 or p.get('completed', 0) % 10 == 0:
             print(json.dumps(p, ensure_ascii=False), flush=True)
+    if args.listing_dates:
+        bundle = json.loads(listing.read_text(encoding='utf-8'))
+        collect_dates(folder, bundle)
+        return
     if args.reuse_listing:
         bundle = json.loads(listing.read_text(encoding='utf-8'))
     else:
@@ -46,6 +62,7 @@ def main():
         save(listing, bundle)
     print('Universe:', dict(Counter(r['eligibility'] for r in bundle['companies'])), flush=True)
     if args.listing_only:
+        collect_dates(folder, bundle)
         return
     history_path = folder/'histories.json'
     previous = json.loads(history_path.read_text(encoding='utf-8')) if args.retry_errors and history_path.exists() else None
