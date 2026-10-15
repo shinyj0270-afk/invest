@@ -14,8 +14,10 @@ Completed:
 - 직접 view16개·이야기3개/5~8논점/정렬·서지 정보와 빈 연구 처리·근거 철회·DB 읽기 전용·XSS·필터/기록 이동/타이포/320·390px UI PASS. 최종 격리 공유358개 경고0·portable27명령·빈 실제모드 AppTest·합성UI14여정 PASS.
 - 이전 선택 기업 비교 구현be5b6c99595f0c6359aad71632d7e2be768bdd21과 기록06b8ed8은 원본/운영/원격 통합 완료 상태로 보존. 기존 공식 원문·보유/DB/키/PC설정·원문/가격·연구 내용은 변경하지 않는다.
 
+- 운영 완료: 구현651a7210ceea0266320458a850935944e4479189 원본 main ff 통합, 기존 /restart 인증·수집 보호로202 안전 재시작. build/source 일치·restart_required=false. 실제 이야기3개·원문12개·메타 글씨/접힘·검색/초기화, 1440/1024/901/390/320px 가로 넘침0·JS 오류0. 연구 DB 전후 SHA256 동일, 브라우저 개인 입력 쓰기 차단. 스크린샷 확인.
+
 Pending:
-- 이번 Library 변경 원본 main 통합·안전 재시작·실제 UI·원격 전송 결과는 후속 기록/최종 Git 조회를 확인한다. 과거 검증을 이번 실데이터 검사로 복사하지 않는다.
+- 이번 Library 운영 적용·실제 검증·원격 전송 확인 완료. 사용자의 기존 탭 새로고침·실제 휴대폰 확인은 별도다.
 - 기존 시세4개 미확보·글로벌 정정 최신성/빅웨이브2024 대시·스카이/한화 원문·누락 단독분기/TTM/ROE·재무 실패/일부누락 후속 유지. home Telegram·집 PC 수신/실행·실제 휴대폰·연구설계 실증 미확인.
 
 Next task: 배포된 Library 이야기/원문 가독성 확인 및 기존 자료 후속
@@ -28,9 +30,9 @@ Recommended next agent: Codex
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: 기존 설정 유지; 권한/자료 식별 충돌이면 high 검토
 Escalation condition: 수집 잠금·원본/원격 divergence·자료 식별 충돌 시 해당 실행 보존·보류
-Branch: shinyj0270-afk/investment-up (구현); 원본 main (이번 통합은 최종 Git 조회 확인)
-Commit: 06b8ed8fd48b4939d75dd3d7c750d40676b97752 (이번 작업 시작 기준; 새 구현은 생성 후 최종 보고/후속 기록에서 확인)
-Remote status: 작업 시작 기준06b8ed8fd48b4939d75dd3d7c750d40676b97752. 이번 구현 전송 verification pending. 문서 자기 SHA는 미리 쓰지 않고 최종 Git 조회로 확인한다.
+Branch: shinyj0270-afk/investment-up (구현); 원본 main (구현 동일·통합 완료)
+Commit: 651a7210ceea0266320458a850935944e4479189 (Library 구현; 원본 main·운영·원격 적용 검증 완료)
+Remote status: refs/heads/main 651a7210ceea0266320458a850935944e4479189 pushed (verified), 2026-10-15T11:07:22+09:00 실제 원격 SHA 확인. 이 증거를 기록하는 후속 문서 commit 자체의 전송은 최종 보고/다음 START의 실제 Git 조회로 확인한다. 집 PC 수신/실행 미확인.
 Notes: 합성/실제 증거는 공유 제외 validation/current/library-stories에 보존. 기존 compare-flow/skgas-debug/official-statements 증거는 유지. DB/인증/개인 입력/Wiki 자동 수집·공유 없음.
 
 ## 작업 폴더 기준
