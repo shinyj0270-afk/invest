@@ -127,7 +127,7 @@ with sync_playwright() as p:
         page.locator('#sd-tab-value').click()
         page.locator('#companyDetail').screenshot(path=str(ROOT/'validation/company-detail-value.png'))
     # The old condition-search result now opens the same native detail.
-    open_tools(page);page.locator('[data-page=screen]').click();frame=page.frame_locator('#detailFrame')
+    open_tools(page);page.locator('#pageSelect').select_option('screen',force=True);frame=page.frame_locator('#detailFrame')
     frame.locator('[data-company]').first.click();expect(page.locator('#companyDetail')).to_be_visible()
     page.locator('#sd-tab-summary').click()
     page.locator('#sd-tab-summary').focus();page.locator('#sd-tab-summary').press('ArrowRight')

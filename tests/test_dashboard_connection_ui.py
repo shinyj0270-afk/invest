@@ -60,9 +60,9 @@ with sync_playwright() as p:
     page.locator('[data-research-go=company]').click()
     expect(page.locator('#sdCompany')).to_be_visible()
     assert not errors,errors
-    # All ten destinations are directly visible and keyboard accessible.
+    # All nine primary destinations are directly visible and keyboard accessible.
     expect(page.locator('#moreNavigation summary')).to_have_count(0)
-    expect(page.locator('#navigation .nav-item')).to_have_count(10)
+    expect(page.locator('#navigation .nav-item')).to_have_count(9)
     for width in (1920,1640,1440,1366,1214,1024,950,901):
         page.set_viewport_size({'width':width,'height':1000})
         boxes=page.locator('#navigation .nav-item').evaluate_all('(els)=>els.map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom}})')
@@ -72,6 +72,21 @@ with sync_playwright() as p:
         page.set_viewport_size({'width':width,'height':844})
         expect(page.locator('#pageSelect')).to_be_visible()
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+    # Comparing a second company must also recover from a failed lazy request.
+    page.set_viewport_size({'width':1440,'height':1000})
+    page.locator('[data-page=overview]').click()
+    for code in ('900001','900002'):
+        if code=='900002':fail[0]=True
+        page.locator('#comparisonQuery').fill(code)
+        page.locator(f'[data-add-comparison="{code}"]').click()
+    expect(page.locator('[data-comparison-retry="900002"]')).to_be_visible()
+    expect(page.locator('#comparisonPrices')).not_to_contain_text('이력 연결 중')
+    fail[0]=False
+    page.locator('[data-comparison-retry="900002"]').click()
+    expect(page.locator('#comparisonPrices svg')).to_have_count(2)
+    expect(page.locator('[data-comparison-retry]')).to_have_count(0)
+    page.reload();page.locator('[data-page=overview]').click()
+    expect(page.locator('#comparisonChips [data-remove-comparison]')).to_have_count(2)
     timed=browser.new_page();timed.set_default_timeout(4000)
     timed.add_init_script('''const original=window.setTimeout;window.setTimeout=(f,t,...a)=>original(f,t===20000?80:t,...a);
     const fetchOriginal=window.fetch;window.fetch=(url,options)=>String(url).startsWith('/company-view?')?
@@ -82,4 +97,4 @@ with sync_playwright() as p:
     expect(timed.locator('[data-company-view-error]')).to_contain_text('지연')
     expect(timed.locator('[data-company-view-retry]')).to_be_visible()
     browser.close()
-print('PASS company503 stops loading, restart guidance, retry loads metrics/detail/trend, timeout, ten direct menus, responsive widths')
+print('PASS company503 stops loading, restart guidance, retry loads metrics/detail/trend, timeout, nine direct menus, responsive widths')

@@ -18,6 +18,12 @@
 <section id="dataRecovery" aria-label="미확보 자료와 복구"><div id="dataRecoveryContent"></div></section>
 <details id="sourceDetails"><summary>자료 기준·연결 상태</summary><div id="sourceNotice" class="source-note"></div><p class="psub" id="sideSource"></p><p class="psub" id="sourceModeHint">HTML은 내보낸 시점의 자료입니다. 갱신 앱에서 새 결과물을 받으세요.</p><p class="psub">장기 연구는 더보기의 Research Library에서, 저장된 공시·뉴스는 기업 분석의 핵심 요약에서 확인하세요.</p></details>
 <nav id="contextNavigation" class="context-nav" aria-label="현재 화면의 상세 보기"></nav>
+<section id="comparisonPicker" class="panel below" hidden aria-label="비교 기업 선택">
+<div class="panel-heading"><h2>비교 기업 <small>최대 5개</small></h2><button id="comparisonFind">기업 찾기에서 선택 →</button></div>
+<div id="comparisonChips" class="research-actions"></div>
+<label for="comparisonQuery">기업 추가</label><input id="comparisonQuery" placeholder="기업명 또는 종목코드" autocomplete="off">
+<div id="comparisonResults" class="research-actions"></div><p id="comparisonNotice" class="psub" role="status"></p>
+</section>
 <section id="home" class="view" hidden>
 <h2 class="sr-only">내 투자, 한눈에</h2>
 <div class="home-bento">
