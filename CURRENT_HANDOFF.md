@@ -1,10 +1,10 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-15T09:20:40+09:00
+Updated: 2026-10-15T09:45:11+09:00
 Handoff version: 2026-10-15-navigation-company-recovery
 Last agent: Codex
 Last PC: 원본 work (Primary); 개발 워크트리 unknown (설정 없음)
-Last task: 메뉴 직접 표시와 SK가스 기업 조회 실패 수정·검증·운영 적용 준비
+Last task: 메뉴 직접 표시와 SK가스 기업 조회 복구·운영 검증 및 Git 인계
 
 Completed:
 - 사용자 지정 shinyj0270-afk/investment-up 워크트리에서 구현. 시작 기준55ce2d14f0f7d725b6dac3d0f52b501a9b4947e4; 원본 main과 시작 시 같은 commit/clean. 원본 설정/.venv/개인 데이터는 복제하지 않고 같은 PC 기존 .venv를 검증 런타임으로 사용.
@@ -14,28 +14,29 @@ Completed:
 - 이번 직접 새 검증:503→실패 표시→탭 전환→재시도→추세/상세 연결, 응답 지연 종료, 데스크톱8폭/390·320px, 홈 키보드·대비·22개 모바일 목적지, 위험·상세 UI PASS. 격리 공유358개 경고0·portable27명령·빈 실제 모드 AppTest·합성UI12여정 PASS. 적용/실제 화면 확인은 별도이며 과거 검사를 재실행으로 복사하지 않음.
 - 기존 공식 원문 반영 유지: 와이즈/빅웨이브/네오 CFS·글로벌 OFS 총11기간. 원본 재무/실패/PC설정3230개 파일의 반영 시 해시 보존 증거는 validation/current/official-statements/applied.json. 이전 구현/인계 commit1294157/55ce2d1은 원본 main 통합 완료·원격 미전송 상태로 보존.
 - 사용자 추가 지시: 수정 검증→원본 main 반영→안전 재시작→실제 SK가스 확인→원격 push 순서 승인. 원격 전송 범위는 검증한 공유 코드·테스트·인계 문서이며 개인 자료/원문/전사본/수치·로그는 제외.
+- 구현c786911f71fbfab6297e6535b9b591818e963065 원본 main fast-forward 통합. 사용자 탭 저장 완료 확인 후 기존 /restart 인증·활성 수집/OS 잠금 검사로 HTTP202 안전 재실행 완료. 운영 build/source 일치·restart_required=false·dashboard/company-view HTTP200.
+- 09:43:33 KST 기존 공개 조회 경로의 최신 제공 시세2448개 갱신·4개 미확보 유지. SK가스 시세10-15·완료종가10-14로 PER/PBR 날짜 계약 통과. 재무/완료 일봉이나 개인 입력을 임의 보충하지 않음.
+- 이번 실제 브라우저 확인: SK가스 재무 카드11개 전부 표시·주요 금액은 최신 분기 셀과 일치, 추세253개/차트·재무 상세 탭 연결, 데스크톱7폭/390·320px 가로 넘침0·JS 오류0. 테스트 브라우저의 개인 입력 쓰기 차단. 최초 갱신 뒤 dashboard33.02초·company-view0.53초는 관측값이며 전체 성능 보증이 아님. 사용자의 기존 탭 새로고침 확인은 별도.
 
 Pending:
-- 열린 탭 작성 내용 보관 확인을 요청한 상태. 안전 재시작은 그 확인 후 기존 /restart의 인증·활성 수집·OS 잠금 검사로 실행. 확인 전 drafts_saved=true를 임의 선언하거나 서버 프로세스를 강제 종료하지 않는다.
-- 최종 수정의 원본 main 통합, 운영 재시작·실제 HTTP/화면·최신 제공 시세 갱신, 원격 push와 원격 SHA 확인은 아직 대기.
-- SK가스 PER/PBR는 저장 시세10-02와 완료종가10-14 날짜 차이로 보류. 날짜 검증을 완화하지 않고 실제 최신 제공 시세 조회 후 확인한다.
+- 운영 적용/실제 SK가스 자동 브라우저 검증 완료. 사용자의 기존 탭 새로고침과 실제 휴대폰 확인은 별도. 원격 push·실제 원격 SHA 검증은 아래 Remote status를 따른다.
+- 최신 제공 시세4개 미확보는 남아 있으며 코드·이름·분류·공급 여부를 별도 확인할 후속이다. SK가스는 갱신/조회 완료.
 - 글로벌08-19 정정 사본의9월 최신성·빅웨이브2024 대시 표시, 스카이 전체/한화 설립 후 실제 원문, 누락 단독분기·TTM·ROE·기존 실패6/과거3/일부누락163 후속 유지. 실패 수를 임의로 해소하지 않는다.
 - home Telegram·집 PC 수신/실행·Orca 목록·연구설계 효과 실증은 기존 후속. 보유/DB/키/PC설정/예약·LLM/API 추가 비용·Wiki 변경 없음.
 
-Next task: 검증한 수정본의 원본 main 통합과 안전 재시작 후 실제 SK가스 UI 확인·원격 전송
+Next task: 최신 제공 시세 미확보4개 원인 확인 또는 남은 공식 재무 원문 확보
 Next action:
-- 실제 Git 상태와 원본 main을 확인하고 검증 소스 해시를 대조해 명시 파일만 commit·fast-forward 통합한다. 변경/충돌이면 보존하고 중단.
-- 사용자 입력 보관 확인 후 기존 안전 재시작. health build/source 일치·dashboard/company-view200, SK가스 금액·추세253개/차트·재무 상세·모바일/데스크톱을 실제 저장자료로 확인. 새 테스트 브라우저의 개인 입력 쓰기는 차단한다.
-- 최신 제공 시세를 기존 공개 조회 경로로 갱신한 뒤 PER/PBR의 날짜·출처·근사 한계를 확인한다. 기존 완료 일봉/재무 값을 덮어쓰거나 가상 값으로 성공 처리하지 않는다.
-- 실제 검증 결과를 이 문서에 기록하고 공유 제외·staged diff·원격 재확인 후 main push 및 실제 원격 SHA 확인. 집 PC 수신/실행은 별도.
+- 실제 Git·원본 main·원격 SHA를 다시 확인하고 이 문서와 PROJECT_STATE를 읽는다. 운영 재시작/검증은 완료했으므로 새 코드 변경이나 실패가 없으면 반복하지 않는다. 기존 사용자 탭은 새로고침해 새 메뉴와 응답을 읽는다.
+- 미확보4개는 원본 market-expansion의 latest-quotes.json과 universe.json을 로컬에서 대조해 원인만 확인한다. 공급 실패를0/가상 가격으로 채우지 않는다. 글로벌 정정/스카이 전체/한화 실제 결산 후속은 기존 .local/recovery의 근거와 한계를 유지한다.
+- 코드 원격에 원문·개인 입력·시세 전량·DB/키·PC설정·로그를 보내지 않는다. 집 PC 수신/실행은 별도 확인한다.
 
 Recommended next agent: Codex (운영 복구 확인 및 구현 마감)
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: 기존 설정 유지; 반복 실패/자료 식별 충돌이면 high 검토
 Escalation condition: 입력 보관 미확인·수집 잠금·원본/원격 divergence·기업/기간 식별 충돌이면 해당 실행 보존·보류
-Branch: shinyj0270-afk/investment-up (수정 개발); 원본 main (수정 통합 대기)
-Commit: 55ce2d14f0f7d725b6dac3d0f52b501a9b4947e4 (이번 작업 시작 기준; 새 수정 commit 생성 전)
-Remote status: origin/main 2b7fc78645e3e1c0da30d0204f4b4f8b0c5d7b8f, 09:20 KST 원본 clean main에서 fetch 성공; 기존 main ahead2/behind0. 이번 수정 not pushed. 사용자 승인 순서에 따라 운영 확인 후 push 예정. 집 PC 수신/실행 미확인.
+Branch: shinyj0270-afk/investment-up (구현); 원본 main (구현 동일·통합 완료)
+Commit: c786911f71fbfab6297e6535b9b591818e963065 (검증된 메뉴/조회 수정 구현 commit; 원본 main 통합·운영 적용 완료)
+Remote status: origin/main 2b7fc78645e3e1c0da30d0204f4b4f8b0c5d7b8f, 09:20 KST fetch 성공. 이번 작업 not pushed, 운영 확인 후 공유 검토·원격 재확인·main push 및 실제 SHA 검증 대기. 집 PC 수신/실행 미확인.
 Notes: 증거는 Orca validation/current/skgas-debug와 share-candidate-review.json에 로컬 보존. 실제503 재현·실제 저장 자료 조회·합성 회귀·운영 적용을 구분한다. 과거 정기재무 실패·개인 입력·소스 권한 거부는 유지. 후속 기록 commit의 자기 SHA는 미리 쓰지 않고 최종 Git 조회로 검증한다.
 
 ## 작업 폴더 기준
