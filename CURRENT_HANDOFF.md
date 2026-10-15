@@ -1,10 +1,10 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-15T15:14:46+09:00
-Handoff version: 2026-10-15-holdings-daily-close
+Updated: 2026-10-15T16:42:34+09:00
+Handoff version: 2026-10-15-official-first-financials
 Last agent: Claude (Opus 5.5)
 Last PC: company Primary (사용자 확인; 원본 config profile=work)
-Last task: 재무 공백 기업 제외·기업 목록 최신화·화면 개선, 신규 상장 5개월 편입 규칙, 보유 시장자료 일봉 보강
+Last task: 재무 공백 기업 제외·기업 목록 최신화·화면 개선, 신규 상장 5개월 편입 규칙, 보유 시장자료 일봉 보강, 재무 공식 원문(DART) 우선 전환
 
 Completed:
 - 시작 4dacba99dcd48a017214bc5428801f34cebf2c57, 분리 invest-rev 워크트리(upstream 없음)를 원격 main까지 ff 수신 후 작업. 원본 main/원격 main과 clean 일치 확인.
@@ -21,7 +21,11 @@ Completed:
 - 운영: 구현 f7fe36fed47fdf27a60b52e809d9f54f2365b5e6 원본 main·안전 재시작202·build/source 일치. 실제 보유 화면 1440/390 배지 "시장자료 2026-10-14 · 인포맥스 검토 2026-09-23", 3종목(SK하이닉스·현대차·삼성전자) 10-14 종가·"인포맥스 관측가 없음" 출처, 오류/넘침0. 실제 보유 내용은 동기화 차단으로 미검증.
 - 정정: 회사 PC config에는 infomax_refresh.daily_file이 연결되지 않아 Excel 저장만으로는 반영되지 않는다(이전 안내 정정). 인포맥스 자동화(②)·DATAFEED(③)는 미착수.
 
+- 재무 출처 우선순위 변경(사용자 결정, 기존 인포맥스 우선 대체): merge_financials는 충돌 시 공식 원문 유지·인포맥스는 빈 셀만 보충(1억원 이상 차이는 셀 메모), 공통 지표는 공식 기준 계산값 우선·인포맥스 검토값은 같은 기간/기준 공백만, 가치평가 관측은 공식 출처 우선, 인포맥스 우선 순차입금은 분석 사본에서 공식 총차입금으로 재계산(현대차 125.9048%→125.6587%, 저장 스냅샷·인포맥스값 보존). 결정 기록 config/infomax.user-decisions.json·USER_DATA_DECISIONS.md 5번. RED→GREEN 6건, 격리18개 PASS·공유365개 경고0(1차 실행에서 무관한 test_dashboard_delivery 재시작 소켓 경합 1회 실패, 변경 전 코드 8/8·현재 10/10 단독 통과, 재실행 전체 PASS).
+- 운영: 구현 c88ee4d6b65085ecd25934e6c5b8f83a40e67797 원본 main·안전 재시작202·build/source 일치. 실제 3종목 재무표/지표 출처 "DART 우선 / 인포맥스 저장 XLSX 미확보 계정 보충", ROE 등 수치 불변, 현대차 순차입금 125.66%, 44화면 오류0·첫 로딩5.1초.
+
 Pending:
+- 공식 원문에 없는 총차입금 등은 기존 인포맥스 혼합 출처 검토값으로 보충된다(셀 메모 표시). test_dashboard_delivery 재시작 테스트의 간헐 소켓 경합은 별도 후속.
 - 인포맥스 검토 스냅샷(09-23) 자체 갱신은 ②Excel COM 자동화(이용 범위 확인 선행) 또는 ③DATAFEED(계약 확인) 결정 대기.
 - 새 기업 목록 갱신 시 tools/expand_market.py --listing-only가 필요한 상장일을 함께 수집한다. 편입 대기 기업은 검색·발굴에서 보이지 않는다.
 - 기존 재무 일부누락·원인 미기록 기록, 사용자 기존 탭 새로고침, 집 PC 수신/실행·휴대폰 미확인 유지. 보유 실제 화면은 동기화 차단으로 이번에 검증하지 않음.
@@ -37,8 +41,8 @@ Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: 기존 설정 유지; 반복 실패·식별 충돌·큰 구조 변경이면 high 검토
 Escalation condition: 원본/원격 divergence·예상 밖 로컬 변경·수집 잠금·자료 식별 충돌이면 보존하고 해당 작업 보류
 Branch: shinyj0270-afk/invest-rev (분리 개발); 원본 main (통합 완료)
-Commit: f7fe36fed47fdf27a60b52e809d9f54f2365b5e6 (보유 일봉 보강 구현; 1584139·8969df6 포함)
-Remote status: refs/heads/main f7fe36fed47fdf27a60b52e809d9f54f2365b5e6 pushed (verified), 2026-10-15T15:14 ls-remote 확인. 이 인계 문서 commit 자체의 전송은 최종 보고/다음 START의 실제 Git 조회로 확인한다. 집 PC 수신/실행 미확인.
+Commit: c88ee4d6b65085ecd25934e6c5b8f83a40e67797 (재무 공식 원문 우선 구현; 1584139·8969df6·f7fe36f 포함)
+Remote status: refs/heads/main c88ee4d6b65085ecd25934e6c5b8f83a40e67797 pushed (verified), 2026-10-15T16:42 ls-remote 확인. 이 인계 문서 commit 자체의 전송은 최종 보고/다음 START의 실제 Git 조회로 확인한다. 집 PC 수신/실행 미확인.
 Notes:
 - 검증 증거는 공유 제외 validation/current/recheck/(live-receipt.json, live-status.json, 화면 캡처)와 polish-validate.log에 보존.
 - 인증·PC 설정·보유/현금·DB·원자료·시세·로그는 코드 원격에 넣지 않았다. 입력 쓰기·보유 동기화는 검증 브라우저에서 차단. Wiki/예약/외부 AI 호출 없음.
