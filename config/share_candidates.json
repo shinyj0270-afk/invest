@@ -1,6 +1,8 @@
 {
   "purpose": "Single-source, explicit Git handoff list for the existing INVESTMENT workspace",
   "files": {
+    "src/comparison_price_ui.js": "src/comparison_price_ui.js",
+    "tests/test_comparison_price.js": "tests/test_comparison_price.js",
     "tests/test_dashboard_connection_ui.py": "tests/test_dashboard_connection_ui.py",
     "investment/official_statements.py": "investment/official_statements.py",
     "tools/import_official_statements.py": "tools/import_official_statements.py",

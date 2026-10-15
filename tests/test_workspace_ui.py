@@ -39,6 +39,24 @@ with sync_playwright() as p:
     page.locator('[data-open-comparison]').click()
     expect(page.locator('#comparisonTable tbody tr')).to_have_count(5)
     expect(page.locator('#comparisonPrices svg')).to_have_count(5)
+    expect(page.locator('#comparisonPrices .cp-current')).to_have_count(5)
+    expect(page.locator('#comparisonPrices [data-cp-series="ma50"]')).to_have_count(5)
+    expect(page.locator('#comparisonPrices .cp-value').first).to_contain_text('가치 매력')
+    assert not page.locator('#comparisonPrices .cp-method').first.get_attribute('open')
+    summary=page.locator('#comparisonPrices .cp-stats').first.inner_text()
+    page.locator('[data-comparison-range="63"]').click()
+    expect(page.locator('[data-comparison-range="63"]')).to_have_attribute('aria-pressed','true')
+    assert page.locator('#comparisonPrices .cp-stats').first.inner_text()==summary
+    hit=page.locator('#comparisonPrices [data-cp-hit]').first
+    hit.focus();hit.press('Home')
+    expect(hit).to_have_attribute('aria-valuenow','0')
+    hit.press('End')
+    assert hit.get_attribute('aria-valuenow')!='0'
+    for width in (390,320):
+        page.set_viewport_size({'width':width,'height':900})
+        assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+    page.set_viewport_size({'width':1600,'height':1100})
+    page.locator('[data-comparison-range="253"]').click()
     expect(page.locator('#comparisonTable')).to_contain_text('—')
     expect(page.locator('#comparisonTable')).to_contain_text('CFS')
     # Remove and add directly on the basic screen; no hidden filter controls.

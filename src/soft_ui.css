@@ -160,7 +160,7 @@ body.soft-legacy button.primary{background:var(--btn);color:var(--on-btn);border
 #comparisonPicker { margin-bottom:20px; }
 #comparisonPicker input { max-width:420px; width:100%; box-sizing:border-box; margin:8px 0; }
 #comparisonResults { margin-top:8px; }
-#comparisonPrices { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:20px; }
+#comparisonPrices { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
 #comparisonPrices svg { width:100%; height:auto; }
 #contextNavigation details { min-width:0; }
 #contextNavigation summary { cursor:pointer; padding:12px; }
@@ -175,3 +175,5 @@ body.soft-legacy button.primary{background:var(--btn);color:var(--on-btn);border
 .library-story-lines p{font-size:14px;line-height:1.8;margin:8px 0}.library-story-lines p span{font-weight:600}
 .library-story-sources{display:flex;flex-wrap:wrap;gap:6px 16px;margin:12px 0}.library-story-sources small{font-size:11px}
 @media(max-width:600px){.library-source-record summary{min-height:44px}.library-story-heading h4{font-size:16px}}
+
+@media(max-width:760px){#comparisonPrices{grid-template-columns:minmax(0,1fr)}}
