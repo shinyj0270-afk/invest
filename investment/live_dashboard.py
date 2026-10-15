@@ -101,6 +101,8 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
     recovery=DataRecovery(root,None if read_only else daily,None if read_only else financial)
     restarting=threading.Event()
     request_lock=threading.RLock()
+    company_read_lock=threading.Lock()
+    company_reads=set()
 
     class DashboardHandler(BaseHTTPRequestHandler):
         def send_body(self, status, content, content_type):
@@ -125,6 +127,17 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                     (self.headers.get('Origin')==origin if mutation else self.headers.get('Origin') in (None,origin)))
 
         def do_GET(self):
+            # Selected-company reads must not wait for a full dashboard/iframe export.
+            # Keep other routes and all mutations on the existing serialized path.
+            if urlsplit(self.path).path=='/company-view':
+                with company_read_lock:
+                    if restarting.is_set():
+                        self.send_body(503,'{"error":"서버 다시 실행 중"}','application/json');return
+                    company_reads.add(self)
+                try:self.handle_get()
+                finally:
+                    with company_read_lock:company_reads.discard(self)
+                return
             with request_lock:self.handle_get()
 
         def handle_get(self):
@@ -356,7 +369,9 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                     cfg=load_local(root);folder=cfg['data_dir']/cfg['profile']
                     for path in folder.rglob('*.lock'):
                         leases.append(acquire_lock(path))
-                    restarting.set()
+                    with company_read_lock:
+                        if company_reads:raise ValueError('기업 자료 조회 중입니다. 완료 후 다시 시도하세요.')
+                        restarting.set()
                 except (ValueError,TypeError,OSError) as exc:
                     for lease in leases:lease.close()
                     message='다시 실행 조건을 확인하지 못했습니다. 수집·동기화 완료와 입력 보관을 확인하세요.' if isinstance(exc,OSError) else str(exc)

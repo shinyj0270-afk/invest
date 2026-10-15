@@ -170,7 +170,7 @@ function render(){renderComparisonPicker();updateFreshness();if(page==='research
 }
 
 const labels={bars:['지표별 데이터바','하나의 지표를 같은 기준선으로 비교합니다.','기업별 '+specs[$('barMetric').value].label,'막대 또는 기업명을 눌러 오른쪽 상세를 확인하세요.'],heatmap:['기업 × 지표 히트맵','선택 기업의 지표를 비교합니다. 기업별 기간·회계기준을 확인하세요.','재무 지표 한눈에','셀 클릭으로 기업을 선택합니다.'],scatter:['수익성 · 재무 관계','선택한 두 지표의 기업별 분포를 살펴봅니다.','두 지표의 관계','X/Y 지표를 바꾸고 기업 점을 선택하세요.'],prices:['관측 가격 이력','선택 기업의 저장된 종가를 확인합니다.','선택 기업의 가격 추이','저장된 날짜를 기준으로 표시하며 가격 이력을 임의 생성하지 않습니다.']};if(labels[page]){const [t,d,c,n]=labels[page];$('exploreTitle').textContent=t;$('exploreDescription').textContent=d;$('chartTitle').textContent=c;$('chartNote').textContent=n;$('barMetric').parentElement.hidden=page!=='bars';for(const id of ['xMetric','yMetric'])$(id).parentElement.hidden=page!=='scatter';$('metricControls').hidden=!['bars','scatter'].includes(page);$('mainChart').innerHTML=page==='bars'?bars(rs,$('barMetric').value):page==='heatmap'?heat(rs,heatKeys):page==='scatter'?scatter(rs):price(rs.find(r=>r.code===code));}
-document.querySelectorAll('[data-comparison-retry]').forEach(b=>b.onclick=()=>window.INVESTMENT_LOAD_COMPANY_VIEW(b.dataset.comparisonRetry,true));
+document.querySelectorAll('[data-comparison-retry]').forEach(b=>b.onclick=()=>reconnectCompany(b.dataset.comparisonRetry));
 document.querySelectorAll('[data-comparison-range]').forEach(b=>b.onclick=()=>{comparisonRange=Number(b.dataset.comparisonRange);render();});
  document.querySelectorAll('[data-comparison-analysis]').forEach(b=>b.onclick=()=>{code=b.dataset.comparisonAnalysis;go('brief');});
  if(page==='overview')ComparisonPriceUI.bind($('comparisonPrices'),comparisonPriceModels,comparisonRange);
@@ -201,16 +201,18 @@ function reloadWithInputs(){
     page,code,recommendations:recommendationUI.state(),research:researchUI.state(),companyDetail:companyUI.state(),filters:Object.fromEntries(['viewMarket','viewIndustry','viewSearch','barMetric','xMetric','yMetric'].map(id=>[id,$(id).value]))};
   sessionStorage.setItem(handoffKey,JSON.stringify(state));location.reload();}
   catch{$('priceRefreshStatus').textContent='새 가격은 저장됐습니다. 입력을 내보낸 뒤 이 페이지를 다시 열어주세요.';}
-}
-let priceTimer=null,pricePending=false,autoWasRunning=false;
+  }
+window.INVESTMENT_RELOAD_WITH_INPUTS=reloadWithInputs;
+  let priceTimer=null,pricePending=false,autoWasRunning=false;
 const retryAt=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v)?v.slice(5,10)+' '+v.slice(11,16):v;
 const financialJobs=new Map();
 const companyViews=new Map();
 const companyViewErrors=new Map(),companyViewPending=new Set();
+const reconnectCompany=c=>companyViewErrors.get(c)?.refreshRequired?reloadWithInputs():window.INVESTMENT_LOAD_COMPANY_VIEW(c,true);
 function showCompanyViewError(c,failure){
  researchUI.setLoadError(c,failure);
  if(code===c&&['brief','trend'].includes(page))researchUI.render(page);
- if(code===c&&page==='company'){$('companyDetail').innerHTML=empty(failure.message)+(failure.restartRequired?'<p><a href="/restart" target="_blank" rel="noopener">안전 재시작 안내 열기</a></p>':'')+'<button data-company-retry>기업 자료 다시 연결</button>';$('companyDetail').querySelector('button').onclick=()=>window.INVESTMENT_LOAD_COMPANY_VIEW(c,true);}
+ if(code===c&&page==='company'){$('companyDetail').innerHTML=empty(failure.message)+(failure.restartRequired?'<p><a href="/restart" target="_blank" rel="noopener">안전 재시작 안내 열기</a></p>':'')+'<button data-company-retry>'+(failure.refreshRequired?'입력을 보존하고 화면 다시 연결':'기업 자료 다시 연결')+'</button>';$('companyDetail').querySelector('button').onclick=()=>reconnectCompany(c);}
 }
 $('companyDetail').addEventListener('change',e=>{
  if(e.target.id==='sdCompany'&&INVESTMENT_LIVE?.lazy_company_views&&!WORKSPACE_DATA.company_details[e.target.value]){
@@ -227,7 +229,7 @@ window.INVESTMENT_LOAD_COMPANY_VIEW=async(c,force=false)=>{
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
   try{
   const response=await fetch('/company-view?code='+encodeURIComponent(c),{headers:{'X-Dashboard-Token':INVESTMENT_LIVE.token},cache:'no-store',signal:controller.signal});
-  if(!response.ok){const body=await response.json().catch(()=>({})),restart=body.restart_required===true||/서버 다시 실행 필요/.test(body.error||'');const error=Error(restart?'새 코드가 저장되어 서버 안전 재시작이 필요합니다.':'기업 자료를 연결하지 못했습니다. 다시 연결해 주세요.');error.restartRequired=restart;throw error;}
+   if(!response.ok){const body=await response.json().catch(()=>({})),restart=body.restart_required===true||/서버 다시 실행 필요/.test(body.error||'');const error=Error(response.status===403?'서버 연결 정보가 변경되었습니다. 입력을 보존하고 화면을 다시 연결해 주세요.':restart?'새 코드가 저장되어 서버 안전 재시작이 필요합니다.':'기업 자료를 연결하지 못했습니다. 다시 연결해 주세요.');error.restartRequired=restart;error.refreshRequired=response.status===403;throw error;}
   const data=await response.json(),row=researchRows.find(r=>r.code===c);
   if(!row||data.code!==c||data.name!==row.name||data.market!==row.market)throw Error('기업 식별 확인 필요');
   WORKSPACE_DATA.financial_tables[c]=data.table;WORKSPACE_DATA.company_details[c]=data.model;
@@ -240,7 +242,7 @@ window.INVESTMENT_LOAD_COMPANY_VIEW=async(c,force=false)=>{
   updateFreshness();return true;
   }catch(error){
    const message=error.name==='AbortError'?'기업 자료 응답이 지연되어 조회를 중단했습니다. 다시 연결해 주세요.':error instanceof TypeError?'서버에 연결하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.':error.message||'기업 자료 연결 실패 · 저장자료를 유지합니다.';
-   const failure={message,restartRequired:error.restartRequired===true};companyViewErrors.set(c,failure);showCompanyViewError(c,failure);if(comparisonPages.includes(page))render();
+    const failure={message,restartRequired:error.restartRequired===true,refreshRequired:error.refreshRequired===true};companyViewErrors.set(c,failure);showCompanyViewError(c,failure);if(comparisonPages.includes(page))render();
    return false;
   }finally{clearTimeout(timer);companyViewPending.delete(c);}
  })();

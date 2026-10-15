@@ -5,7 +5,7 @@ import threading
 import unittest
 import time
 from pathlib import Path
-from http.server import HTTPServer
+from http.server import HTTPServer,ThreadingHTTPServer
 from urllib.request import Request,urlopen
 from urllib.error import HTTPError
 from unittest.mock import patch,MagicMock
@@ -23,7 +23,8 @@ class DeliveryTests(unittest.TestCase):
     def tearDown(self):self.temp.cleanup()
 
     def start(self,**kwargs):
-        self.server=HTTPServer(('127.0.0.1',0),handler_for(self.root,token='test-token',refresh=lambda root,**kw:dict(snapshot=self.snapshot,receipt={}),**kwargs))
+        server_class=kwargs.pop('server_class',HTTPServer)
+        self.server=server_class(('127.0.0.1',0),handler_for(self.root,token='test-token',refresh=lambda root,**kw:dict(snapshot=self.snapshot,receipt={}),**kwargs))
         self.thread=threading.Thread(target=self.server.serve_forever,daemon=True);self.thread.start()
         self.base=f'http://127.0.0.1:{self.server.server_port}'
         self.addCleanup(self.stop)
@@ -50,6 +51,41 @@ class DeliveryTests(unittest.TestCase):
             self.assertEqual(json.load(self.get(endpoint))['trend_following']['rows'][0]['code'],'900000')
             self.get('/dashboard').close();self.assertEqual(len(calls),2)
             wal.unlink();self.get('/dashboard').close();self.assertEqual(len(calls),3)
+
+    def test_company_read_does_not_queue_behind_whole_dashboard_build(self):
+        entered=threading.Event();release=threading.Event();errors=[]
+        def slow_export(*args,**kwargs):
+            entered.set();release.wait(5);return 'fixture'
+        def build():
+            try:self.get('/dashboard').close()
+            except Exception as exc:errors.append(type(exc).__name__)
+        with patch('investment.live_dashboard.export_workspace',side_effect=slow_export):
+            self.start(server_class=ThreadingHTTPServer)
+            thread=threading.Thread(target=build);thread.start()
+            try:
+                self.assertTrue(entered.wait(2))
+                request=Request(self.base+'/company-view?code=900001',headers={'X-Dashboard-Token':'test-token'})
+                with urlopen(request,timeout=1) as response:
+                    self.assertEqual(json.load(response)['code'],'900001')
+            finally:release.set();thread.join(3)
+        self.assertFalse(errors)
+
+    def test_restart_preserves_active_company_read(self):
+        entered=threading.Event();release=threading.Event()
+        from investment.financial_table import build_table
+        def slow_table(*args,**kwargs):
+            entered.set();release.wait(5);return build_table(*args,**kwargs)
+        with patch('investment.live_dashboard.build_table',side_effect=slow_table):
+            self.start(server_class=ThreadingHTTPServer)
+            thread=threading.Thread(target=lambda:self.get('/company-view?code=900001').close())
+            thread.start()
+            try:
+                self.assertTrue(entered.wait(2))
+                with self.assertRaises(HTTPError) as error:self.post({'drafts_saved':True})
+                self.assertEqual(error.exception.code,409)
+                self.assertIn('기업 자료 조회',error.exception.read().decode())
+            finally:release.set();thread.join(3)
+        self.assertFalse(thread.is_alive())
 
     def test_inputs_changed_during_export_never_cached(self):
         def export(snapshot,**kwargs):

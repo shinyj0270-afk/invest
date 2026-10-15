@@ -107,3 +107,9 @@
 짧은 문장은 추세 정렬·조정·추격 부담을 구분한다. 50일선 +5%/+10% 구간은 자체 화면 설명 규칙이며 매수/매도나 적정가 신호가 아니다. PER/PBR 업종 비교는 기존 DiscoveryEngine의 동일 산업·기간·회계기준·가격일 계약과 자기 자신 제외/양수5개 이상을 사용한다. 한 배수만 확보되면 일부 비교, 없으면 가치 비교 대기다. 낮은 배수 자체를 저평가로 단정하지 않는다. 종가일과 가치 배수 가격일은 별도 보존한다. 긴 출처·보정·방법은 닫힌 자료·계산 기준에 둔다.
 
 기초 정의: [Fidelity 단순 이동평균](https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/sma), [Investor.gov PER](https://www.investor.gov/introduction-investing/investing-basics/glossary/priceearnings-ratio). 자체 임계값과 개별 종목 매력은 별도 판단이다.
+
+## 기업 찾기 상세 연결 공백 방지 (2026-10-15)
+
+발굴 화면은 전역 회계기준을 강제하지 않는다. 상세 모델을 아직 받지 못해도 해당 기업 행에 검증된 common_financial이 있으면 그 기업의 기간·기준·금액을 사용한다. 다른 기업의 기준이나 금액은 가져오지 않는다. 상세 연결 실패와 실제 자료 미확보를 구분하며, 확보된 요약은 유지한다.
+
+선택 기업 /company-view 읽기는 전체 대시보드/보유 프레임 생성의 직렬 대기열과 분리한다. 다른 경로와 쓰기 직렬화는 유지하고, 진행 중 기업 읽기가 있으면 안전 재시작을409로 보류한다. 인증·종목 식별·원자료 검증은 유지한다. 서버 재시작 전 탭의403은 입력 보존 재연결로 안내하며 기존 reloadWithInputs 경로를 재사용한다. 가격 공백 바로 아래에서도 재연결할 수 있다.

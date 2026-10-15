@@ -1,5 +1,6 @@
 """Lazy company failures must end loading and support explicit retry."""
 import json
+from copy import deepcopy
 import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -18,6 +19,19 @@ for prices in snapshot['benchmarks'].values():
 full=export_workspace(snapshot)
 payload=json.JSONDecoder().raw_decode(full.split('const WORKSPACE_DATA=',1)[1])[0]
 html=export_workspace(snapshot,live={'token':'synthetic','lazy_company_views':True})
+# Model the actual discovery overview: validated common amounts arrive before lazy details.
+overview=json.JSONDecoder().raw_decode(html.split('const WORKSPACE_DATA=',1)[1])[0]
+overview['analysis_snapshot']['companies'][0]['common_financial']={
+    'basis':'CFS','period':'2026-06-30','currency':'KRW',
+    'amounts':{'revenue':1234,'operating_profit':56,'net_income':34},
+    'metrics':{},'metric_details':{}}
+overview['discovery']={'snapshot':deepcopy(overview['analysis_snapshot']),'research':deepcopy(overview['research'])}
+overview['discovery']['snapshot']['meta'].update(discovery=True,financial_basis=None)
+overview['discovery']['research']['rows']['900000']['technical'].update(series=[],series_pending=True)
+prefix,tail=html.split('const WORKSPACE_DATA=',1)
+_,length=json.JSONDecoder().raw_decode(tail)
+from investment.workspace_export import script_json
+html=prefix+'const WORKSPACE_DATA='+script_json(overview)+tail[length:]
 base='http://127.0.0.1:8767'
 with sync_playwright() as p:
     browser=p.chromium.launch(headless=True,**chromium_options())
@@ -40,6 +54,9 @@ with sync_playwright() as p:
     page.route(base+'/**',route)
     page.goto(base+'/',wait_until='load')
     page.locator('[data-page=brief]').click()
+    expect(page.locator('[data-company-view-error]')).to_be_visible()
+    # A failed detail request must not hide validated amounts already in the overview.
+    expect(page.locator('[data-brief-metric="revenue"] b')).not_to_have_text('—')
     page.locator('[data-research-go=trend]').first.click()
     expect(page.locator('#research [data-company-view-error]')).to_be_visible()
     expect(page.locator('#research')).not_to_contain_text('불러오는 중')
@@ -53,7 +70,7 @@ with sync_playwright() as p:
     expect(page.locator('#research [data-company-view-error]')).to_be_visible()
     assert len(calls)==1,calls
     fail[0]=False
-    page.locator('#research [data-company-view-retry]').click()
+    page.locator('#research [data-company-view-retry]').first.click()
     expect(page.locator('#research .interactiveTrendChart svg').first).to_be_visible()
     expect(page.locator('#research [data-company-view-error]')).to_have_count(0)
     assert len(calls)==2,calls
@@ -95,6 +112,31 @@ with sync_playwright() as p:
     timed.route(base+'/**',lambda r:r.fulfill(content_type='text/html',body=html) if r.request.url==base+'/' else r.fulfill(content_type='application/json',body='{"status":"idle","records":[]}'))
     timed.goto(base+'/',wait_until='load');timed.locator('[data-page=brief]').click()
     expect(timed.locator('[data-company-view-error]')).to_contain_text('지연')
-    expect(timed.locator('[data-company-view-retry]')).to_be_visible()
+    expect(timed.locator('[data-company-view-retry]').first).to_be_visible()
+    # A tab left open across restart has an expired token. Retrying it cannot work;
+    # reconnect must use the existing input-preserving reload path instead.
+    stale=browser.new_page();stale.set_default_timeout(4000);documents=[0]
+    stale.add_init_script("window.capturedHandoff=JSON.parse(sessionStorage.getItem('investment-live-refresh-handoff'));")
+    def stale_route(request):
+        if request.request.url==base+'/':
+            documents[0]+=1
+            body=html if documents[0]==1 else html.replace('"token":"synthetic"','"token":"new-synthetic"')
+            request.fulfill(content_type='text/html',body=body)
+        elif '/company-view?' in request.request.url and request.request.headers.get('x-dashboard-token')!='new-synthetic':
+            request.fulfill(status=403,content_type='application/json',body='{"error":"request denied"}')
+        else:route(request)
+    stale.route(base+'/**',stale_route)
+    stale.goto(base+'/',wait_until='load');stale.locator('[data-page=brief]').click()
+    expect(stale.locator('[data-company-view-error]')).to_contain_text('서버 연결 정보가 변경')
+    expect(stale.locator('[data-brief-metric="revenue"] b')).to_have_text('1,234억')
+    assert stale.evaluate("WORKSPACE_DATA.discovery.research.rows['900000'].technical.series.length")==0
+    expect(stale.locator('[data-company-view-retry]').first).to_have_text('입력을 보존하고 화면 다시 연결')
+    before_input=stale.evaluate("document.getElementById('detailFrame').contentWindow.INVESTMENT_GET_HOLDINGS()")
+    stale.locator('[data-company-view-retry]').last.click()
+    expect(stale.locator('.interactiveTrendChart svg').first).to_be_visible()
+    expect(stale.locator('[data-company-view-error]')).to_have_count(0)
+    saved=stale.evaluate('window.capturedHandoff')
+    assert saved['page']=='brief' and saved['code']=='900000',(saved['page'],saved['code'])
+    assert saved['input']==before_input
     browser.close()
 print('PASS company503 stops loading, restart guidance, retry loads metrics/detail/trend, timeout, nine direct menus, responsive widths')
