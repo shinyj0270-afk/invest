@@ -25,7 +25,7 @@ class DataRecovery:
         for kind,items in [('price',errors),('financial', [dict(read_record(p),code=p.name[:-12]) for p in (base/'company-financials').glob('*.status.json')])]:
             for item in items:
                 code=item.get('code','')
-                if not re.fullmatch(r'[0-9A-Z]{6}',code) or code not in names:continue
+                if not re.fullmatch(r'[0-9A-Z]{6}',code) or code not in names or rows[code].get('user_excluded'):continue
                 if kind=='financial' and item.get('status') not in ('failed','partial'):continue
                 eligible=rows[code].get('eligibility')=='candidate'
                 if kind=='financial':

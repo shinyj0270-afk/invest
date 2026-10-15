@@ -61,7 +61,7 @@ th{background:rgba(42,47,58,.04);color:var(--muted)}td{border-color:var(--line)}
 /* Home bento: 1/3 conclusion · KOSPI · KOSDAQ / sector map + candidates / four summary cards */
 .home-bento{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:20px}
 .home-bento>.panel,.home-coverage>.panel{margin:0;min-width:0}
-.home-verdict{grid-column:span 4;display:flex;flex-direction:column;justify-content:center;padding:28px 24px;word-break:keep-all}
+.home-verdict{grid-column:span 4;display:flex;flex-direction:column;justify-content:flex-start;padding:28px 24px;word-break:keep-all}
 .home-kicker{font-size:10.5px;color:var(--muted)}
 #homeVerdict h2{font-size:17px;font-weight:800;line-height:1.4;letter-spacing:-.02em;margin:6px 0 16px}
 .home-points{margin:0;padding:0;list-style:none;counter-reset:n;display:grid;gap:10px}
@@ -181,5 +181,7 @@ body.soft-legacy button.primary{background:var(--btn);color:var(--on-btn);border
 /* Secondary status is available on demand; primary actions stay in the header. */
 .mast .asof{display:flex;align-items:center;gap:10px}.mast .asof button{display:inline-block;min-height:40px}.asof-date{display:flex;gap:8px}
 #workspaceStatus{margin:0 0 16px;color:var(--muted)}#workspaceStatus>summary{display:inline-block;font-size:12px;font-weight:500;cursor:pointer;padding:8px 0}#workspaceStatus>summary:before{content:'▸';margin-right:6px}#workspaceStatus[open]>summary:before{content:'▾'}.workspace-status-content{padding:14px 0 0}#workspaceStatus #workspacePath{display:block;font-size:12px}#workspaceStatus .freshness-strip{margin-bottom:12px}.workspace-bar{margin-bottom:0}
+/* Desktop: the comparison CSV action shares the collapsed status row instead of adding its own row. */
+@media(min-width:851px){.workspace-bar{float:right;margin:0 0 0 12px}.workspace-status-content,#contextNavigation{clear:both}}
 @media(max-width:720px){.mast .asof{grid-row:2;grid-column:1/-1;justify-self:end;gap:8px}.mast .asof-date{display:none}.mast .asof button{font-size:11px;padding:8px 12px}.workspace-bar{margin-bottom:8px}}
 @media print{#workspaceStatus{display:none!important}}

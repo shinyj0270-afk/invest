@@ -3,7 +3,7 @@ import copy
 import json
 import unittest
 
-from investment.naver_universe import attach_industries, classify, fetch_listing, listing_url, normalize
+from investment.naver_universe import attach_industries, classify, fetch_listing, listing_url, normalize, user_exclusions
 
 
 TIME = '2026-09-30T14:00:00+09:00'
@@ -65,6 +65,33 @@ class NaverUniverseTests(unittest.TestCase):
             with self.subTest(patch=patch, industry=industry):
                 data = raw(name=patch.get('name', '가상제조'), **{k:v for k,v in patch.items() if k != 'name'})
                 self.assertEqual(normalize(data, 'KOSPI', TIME, industry)['eligibility'], 'excluded')
+
+    def test_user_excluded_company_is_not_a_candidate(self):
+        exclusions = {'900000': dict(code='900000', name='가상제조', reason='재무자료 없음')}
+        row = normalize(raw(), 'KOSPI', TIME, '기계')
+        result = classify(row, exclusions=exclusions)
+        self.assertEqual(result['eligibility'], 'excluded')
+        self.assertTrue(result['user_excluded'])
+        self.assertIn('사용자 제외: 재무자료 없음', result['exclusion_reasons'])
+        self.assertEqual(classify(normalize(raw(code='900001'), 'KOSPI', TIME, '기계'), exclusions=exclusions)['eligibility'], 'candidate')
+
+    def test_user_exclusion_file_is_validated(self):
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)/'excluded.json'
+            self.assertEqual(user_exclusions(path), {})
+            path.write_text(json.dumps(dict(schema_version='user-company-exclusions-1', companies=[
+                dict(code='0035S0', name='가상', reason='재무자료 없음', decided_on='2026-10-15')])), encoding='utf-8')
+            self.assertEqual(set(user_exclusions(path)), {'0035S0'})
+            for bad in (dict(schema_version='x', companies=[]), dict(schema_version='user-company-exclusions-1', companies=[dict(code='12', name='a', reason='b')]),
+                        dict(schema_version='user-company-exclusions-1', companies=[dict(code='0035S0', name='a', reason='')])):
+                path.write_text(json.dumps(bad), encoding='utf-8')
+                with self.assertRaises(ValueError):
+                    user_exclusions(path)
+
+    def test_shared_exclusion_list_is_valid(self):
+        self.assertTrue(set(user_exclusions()) >= {'0010S0', '0035S0', '0161M0', '0220W0', '386380', '486510'})
 
     def test_convertible_preferred_suffix_is_not_an_ordinary_candidate(self):
         for name in ('가상4우(전환)', '가상2우B(전환)', '가상우 (전환)'):

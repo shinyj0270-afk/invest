@@ -6,9 +6,12 @@ The public, page-linked Wise summary can provide dated accounting labels on dema
 """
 from copy import deepcopy
 from datetime import date, datetime
+from functools import lru_cache
 from html.parser import HTMLParser
 import calendar
+import json
 import math
+from pathlib import Path
 import re
 import time
 from urllib.parse import urlencode
@@ -23,6 +26,7 @@ BASE = 'https://stock.naver.com'
 WISE = 'https://navercomp.wisereport.co.kr'
 TZ = ZoneInfo('Asia/Seoul')
 MARKETS = {'KOSPI': '0', 'KOSDAQ': '1'}
+USER_EXCLUSIONS = Path(__file__).resolve().parents[1]/'config'/'excluded_companies.json'
 FINANCIAL_INDUSTRIES = {'은행', '증권', '생명보험', '손해보험', '기타금융', '창업투자', '카드'}
 RAW_NUMBERS = ('nowPrice', 'marketSum', 'eps', 'per', 'pbr', 'roe', 'roa',
     'propertyTotal', 'debtTotal', 'sales', 'salesIncreasingRate', 'operatingProfit',
@@ -81,11 +85,39 @@ def _ratio(numerator, denominator):
     return value if math.isfinite(value) else None
 
 
-def classify(row):
+@lru_cache(maxsize=4)
+def _read_exclusions(path, version):
+    value = json.loads(Path(path).read_text(encoding='utf-8'))
+    if not isinstance(value, dict) or value.get('schema_version') != 'user-company-exclusions-1' or not isinstance(value.get('companies'), list):
+        raise ValueError('사용자 제외 목록 형식 오류')
+    result = {}
+    for item in value['companies']:
+        if not isinstance(item, dict) or not isinstance(item.get('code'), str) or not re.fullmatch(r'[0-9A-Z]{6}', item['code']):
+            raise ValueError('사용자 제외 종목코드 오류')
+        if not all(isinstance(item.get(k), str) and item[k].strip() for k in ('name', 'reason')):
+            raise ValueError('사용자 제외 기업명·사유 필요')
+        result[item['code']] = dict(item)
+    return result
+
+
+def user_exclusions(path=USER_EXCLUSIONS):
+    """User-decided removals from discovery; kept outside source caches so new listings keep them out."""
+    path = Path(path)
+    try:
+        stat = path.stat()
+    except FileNotFoundError:
+        return {}
+    return _read_exclusions(str(path), (stat.st_mtime_ns, stat.st_size))
+
+
+def classify(row, exclusions=None):
     """Exclusions are explicit; a retained stock is a candidate, not a verified class."""
     name = row['name']
     industry = row.get('industry', '미분류')
     reasons = []
+    user = (user_exclusions() if exclusions is None else exclusions).get(row.get('code'))
+    if user:
+        reasons.append('사용자 제외: ' + user['reason'])
     kind = row.get('source_security_type')
     if kind is not None and kind != 'ST':
         reasons.append('네이버 주식(ST) 이외 상품')
@@ -101,7 +133,7 @@ def classify(row):
         reasons.append('네이버 업종 분류: 금융업')
     if reasons:
         return dict(eligibility='excluded', security_type='excluded', analysis_profile='excluded',
-                    classification_verified=False, exclusion_reasons=reasons)
+                    classification_verified=False, exclusion_reasons=reasons, user_excluded=bool(user))
     unknown = kind is None or industry in ('미분류', '기타', '') or row.get('industry_conflict') is True
     return dict(eligibility='unknown' if unknown else 'candidate', security_type='ordinary_candidate',
         analysis_profile='unknown' if unknown else 'nonfinancial_candidate', classification_verified=False,

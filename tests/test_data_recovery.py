@@ -44,6 +44,17 @@ class RecoveryTests(unittest.TestCase):
                 self.assertFalse(failures[0]['can_retry']);self.assertFalse(failures[0]['eligible'])
                 with self.assertRaises(ValueError):service.retry('financial','000660')
 
+    def test_user_excluded_company_leaves_recovery_inventory(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp);dest=base/'work/company-financials';dest.mkdir(parents=True)
+            for code in ('0035S0','005930'):
+                (dest/(code+'.status.json')).write_text(json.dumps(dict(status='failed',checked_at='2026-10-15T09:00:00+09:00')),encoding='utf-8')
+            cache=dict(universe=dict(companies=[dict(code='0035S0',name='제외',eligibility='excluded',user_excluded=True,metrics={'market_cap_eok':2000}),
+                dict(code='005930',name='유지',eligibility='candidate',metrics={'market_cap_eok':2000})]),history=dict(errors=[dict(code='0035S0',reason='old')]))
+            service=DataRecovery(base,Mock(),Mock())
+            with patch('investment.data_recovery.load_local',return_value=dict(data_dir=base,profile='work')),patch('investment.data_recovery.read_market_cache',return_value=cache):
+                self.assertEqual([f['code'] for f in service.view()['failures']],['005930'])
+
     def test_financial_failure_keeps_reason_without_raw_exception(self):
         with tempfile.TemporaryDirectory() as temp:
             dest=Path(temp)
