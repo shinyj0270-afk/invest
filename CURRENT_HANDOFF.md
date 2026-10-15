@@ -1,48 +1,42 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-15T16:42:34+09:00
-Handoff version: 2026-10-15-official-first-financials
-Last agent: Claude (Opus 5.5)
+Updated: 2026-10-15T16:45:00+09:00
+Handoff version: 2026-10-15-close-company-primary-official-first
+Last agent: Claude (Haiku 5.5)
 Last PC: company Primary (사용자 확인; 원본 config profile=work)
-Last task: 재무 공백 기업 제외·기업 목록 최신화·화면 개선, 신규 상장 5개월 편입 규칙, 보유 시장자료 일봉 보강, 재무 공식 원문(DART) 우선 전환
+Last task: INVESTMENT CLOSE — 재무 공식 원문 우선 전환 이후 마감
 
 Completed:
-- 시작 4dacba99dcd48a017214bc5428801f34cebf2c57, 분리 invest-rev 워크트리(upstream 없음)를 원격 main까지 ff 수신 후 작업. 원본 main/원격 main과 clean 일치 확인.
-- 재점검(읽기 전용): 운영 build/source 일치, 격리 검증 16개 PASS·공유360개 경고0, 실제 운영22페이지×1440/390 JS/HTTP 오류·가로 넘침0, 가격2452개 10-14 종가 저장, 재무 실패/일부누락 기록172건.
-- 사용자 결정: 검증 재무자료가 없던 6개사(와이즈플래닛컴퍼니·빅웨이브로보틱스·네오사피엔스·한화머시너리앤서비스홀딩스·스카이랩스·글로벌테크놀로지)를 config/excluded_companies.json 사용자 제외 목록으로 발굴·추세·비교·재무 재시도·복구 목록에서 제외. 원자료/가격 이력은 삭제하지 않음. 목록에서 지우면 복구.
-- 화면: 홈 결론 카드 상단 정렬, 데스크톱 CSV 버튼을 자료 상태 줄 오른쪽으로 이동(모바일 바 유지), 효과 없는 iframe sandbox 제거로 경고 제거.
-- RED→GREEN: test_naver_universe(사용자 제외·형식 검증·공유 목록), test_data_recovery(복구 목록 제외), 신규 test_layout_polish_ui. 최종 격리 검증 17개 PASS·공유362개 경고0.
-- 운영: 구현 15841399e8f87009aa28bc0c81151420df74a81a 원본 main ff·안전 재시작202·build/source 일치. 네이버 목록 --listing-only 갱신(조회 2026-09-30→2026-10-15T14:40, 2764개, 신규3·상장폐지/스팩7 제외, 6개사 사용자 제외 저장). 기존 목록 백업 data/work/market-expansion/universe.backup-20261015-before-listing-refresh.json. 실제 운영44화면 오류/넘침/sandbox 경고0, 발굴940개, 복구 목록에 제외 6개사0. 재시작 직후 재무 자동 점검 중 첫 로딩27~33초, 점검 완료 후 5.1~5.3초.
-
-- 후속(사용자 결정): 멜콘(179880)·브릴스(468670) 사용자 제외 추가. 신규 상장은 공식 상장일(FnGuide 기업개요, PC 로컬 market-expansion/listing-dates.json)로부터 5개월 후 발굴 후보로 편입. 가격 이력이 이력 기간 첫날부터 있으면 조회 생략, 상장일 미확보면 확인 대기로 제외. 읽기 시 적용, universe.json·일봉 수집 불변, 재무 자동 수집·복구 목록 대상 아님. RED→GREEN test_listing_seasoning·test_data_recovery. 격리17개 PASS·공유364개 경고0.
-- 운영: 구현 8969df67a6043202c1201e2378a64f1f8978aaee 원본 main ff·상장일122개 수집(실패0)·안전 재시작202·build/source 일치. 편입 대기18개(발굴 규모: 마키나락스 10-20, 덕산넵코어스 2027-02-28 편입), 발굴936개. 실제44화면 오류/넘침0. 재시작 직후 수 분은 첫 로딩28~34초, 이후5.2초.
-
-- 보유 시장자료 고도화(①안, 사용자 선택): 인포맥스 검토 종목도 네이버 저장 완료 일봉(KRX·확정·평가일 이전)이 더 최신이면 그 종가 사용, 같은 날/인포맥스 최신은 유지. 시장자료 배지=저장 일봉 최신 거래일, 인포맥스 검토일은 별도 표시. 동기화 계약·재무·수집 불변. RED→GREEN test_holdings_bridge·신규 test_holdings_market_date_ui, 격리18개 PASS·공유365개 경고0.
-- 운영: 구현 f7fe36fed47fdf27a60b52e809d9f54f2365b5e6 원본 main·안전 재시작202·build/source 일치. 실제 보유 화면 1440/390 배지 "시장자료 2026-10-14 · 인포맥스 검토 2026-09-23", 3종목(SK하이닉스·현대차·삼성전자) 10-14 종가·"인포맥스 관측가 없음" 출처, 오류/넘침0. 실제 보유 내용은 동기화 차단으로 미검증.
-- 정정: 회사 PC config에는 infomax_refresh.daily_file이 연결되지 않아 Excel 저장만으로는 반영되지 않는다(이전 안내 정정). 인포맥스 자동화(②)·DATAFEED(③)는 미착수.
-
-- 재무 출처 우선순위 변경(사용자 결정, 기존 인포맥스 우선 대체): merge_financials는 충돌 시 공식 원문 유지·인포맥스는 빈 셀만 보충(1억원 이상 차이는 셀 메모), 공통 지표는 공식 기준 계산값 우선·인포맥스 검토값은 같은 기간/기준 공백만, 가치평가 관측은 공식 출처 우선, 인포맥스 우선 순차입금은 분석 사본에서 공식 총차입금으로 재계산(현대차 125.9048%→125.6587%, 저장 스냅샷·인포맥스값 보존). 결정 기록 config/infomax.user-decisions.json·USER_DATA_DECISIONS.md 5번. RED→GREEN 6건, 격리18개 PASS·공유365개 경고0(1차 실행에서 무관한 test_dashboard_delivery 재시작 소켓 경합 1회 실패, 변경 전 코드 8/8·현재 10/10 단독 통과, 재실행 전체 PASS).
-- 운영: 구현 c88ee4d6b65085ecd25934e6c5b8f83a40e67797 원본 main·안전 재시작202·build/source 일치. 실제 3종목 재무표/지표 출처 "DART 우선 / 인포맥스 저장 XLSX 미확보 계정 보충", ROE 등 수치 불변, 현대차 순차입금 125.66%, 44화면 오류0·첫 로딩5.1초.
+- 시작 2f750da... (원본 main=원격 main=작업 브랜치 일치, clean). 이번 세션은 코드 변경 없이 마감 점검만 수행했다.
+- 마감 점검: tools/pc_check.py --phase finish 결과 clean, profile=work, 추적 중인 private 경로 0, 진행 중 Git 작업 0, scheduled_jobs_enabled=false. 작업 브랜치와 원본 main 모두 원격 main과 0/0 일치.
+- 원격 확인: git ls-remote refs/heads/main = 2f750da1afc53b70ad28bb911dedee3031720e9b.
+- 운영 서버 /health: restart_required=false, build_id=source_build_id=41fedfbc… (현재 파일과 일치).
+- 이번 세션 직전까지 완료된 구현: 재무 공식 원문(DART) 우선 c88ee4d, 신규 상장 5개월 편입 규칙 8969df6, 보유 시장자료 일봉 보강 f7fe36f/74d98f0, 제외 목록·화면 1584139. 각 구현은 격리 검증 통과 후 원본 main 반영·안전 재시작·실제 화면 확인을 거쳤다.
 
 Pending:
-- 공식 원문에 없는 총차입금 등은 기존 인포맥스 혼합 출처 검토값으로 보충된다(셀 메모 표시). test_dashboard_delivery 재시작 테스트의 간헐 소켓 경합은 별도 후속.
-- 인포맥스 검토 스냅샷(09-23) 자체 갱신은 ②Excel COM 자동화(이용 범위 확인 선행) 또는 ③DATAFEED(계약 확인) 결정 대기.
-- 새 기업 목록 갱신 시 tools/expand_market.py --listing-only가 필요한 상장일을 함께 수집한다. 편입 대기 기업은 검색·발굴에서 보이지 않는다.
-- 기존 재무 일부누락·원인 미기록 기록, 사용자 기존 탭 새로고침, 집 PC 수신/실행·휴대폰 미확인 유지. 보유 실제 화면은 동기화 차단으로 이번에 검증하지 않음.
+- 사용자 기존 탭은 새로고침해야 최신 코드(재무 공식 원문 우선, 제외 목록, 편입 규칙)를 받는다. 실제 갱신 여부는 미확인.
+- 인포맥스 검토 스냅샷(2026-09-23) 자체 갱신은 미해결. 보유 화면의 "인포맥스 검토" 날짜는 그대로이며, ② Excel COM 자동화(이용 범위 확인 선행) 또는 ③ DATAFEED(계약 확인) 중 선택이 필요하다.
+- 실제 보유 종목 화면은 동기화 차단 검증 브라우저에서 확인하지 못했다. 사용자 탭에서 보유 가격일(시장자료 2026-10-14)과 인포맥스 검토 2026-09-23 표시를 직접 확인해야 한다.
+- 편입 대기 기업: 마키나락스(2026-10-20), 케이피항공산업(10-19) 등은 편입일 이후 발굴 후보가 된다. 편입일 이후 목록에서 추세·재무 자동 수집이 정상 동작하는지 확인이 필요하다.
+- 멜콘(179880)·브릴스(468670)·기존 6개사는 사용자 제외 목록에 있다. 미확보 재무 목록은 제외 반영 후 다시 확인해야 한다(이전 172건은 제외 전 기준).
+- test_dashboard_delivery.test_restart_requires_auth_saved_drafts_and_idle_collectors가 전체 검증 중 간헐적으로 소켓 연결 중단(WinError 10053)으로 실패한다. 변경 전 코드와 단독 실행에서는 재현되지 않았다. 원인 분석 후속 과제.
+- 집 PC 수신·실행, 실제 휴대폰 접속, home Telegram, 연구설계 실증은 미확인.
 
-Next task: 사용자 새 요청 우선; 사용자 탭 새로고침 후 보유 화면 실제 보유 가격 날짜 확인
+Next task: 사용자 새 요청 우선. 없으면 (1) 사용자 탭 새로고침 후 보유 화면 날짜 표시 확인, (2) 인포맥스 검토 스냅샷 갱신 방식(②/③) 결정.
+
 Next action:
-1. INVESTMENT START로 Git/PC/원격 main을 확인하고 PROJECT_STATE.md, 이 문서, AGENTS.md, SYNC_CONTRACT.md, docs/DUAL_PC_WORKFLOW.md를 읽는다.
-2. 사용자 보유 화면에서 배지(시장자료/인포맥스 검토)와 보유 종목 가격일을 확인한다. 인포맥스 자동화가 요청되면 이용 범위 확인부터 계획한다.
-3. 제외 목록 변경 요청은 config/excluded_companies.json만 수정하고 test_naver_universe를 실행한다.
+1. INVESTMENT START에서 Git/PC/원격 main을 확인하고 PROJECT_STATE.md, 이 문서, AGENTS.md, SYNC_CONTRACT.md, docs/DUAL_PC_WORKFLOW.md를 읽는다.
+2. 원본 회사 work를 실행 환경으로 유지하고 분리 워크트리(invest-rev)를 보존한다. 분리 워크트리에는 config/local.json과 .venv가 없는 것이 의도된 상태다.
+3. 인포맥스 자동화 요청이 나오면 INFOMAX_CONNECTIVITY.md와 이용 범위 확인부터 계획한다. 실제 인포맥스 주문·잔고 조회는 금지.
 
 Recommended next agent: Codex (구현·검증); 설계 판단이 필요하면 ChatGPT
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: 기존 설정 유지; 반복 실패·식별 충돌·큰 구조 변경이면 high 검토
 Escalation condition: 원본/원격 divergence·예상 밖 로컬 변경·수집 잠금·자료 식별 충돌이면 보존하고 해당 작업 보류
-Branch: shinyj0270-afk/invest-rev (분리 개발); 원본 main (통합 완료)
-Commit: c88ee4d6b65085ecd25934e6c5b8f83a40e67797 (재무 공식 원문 우선 구현; 1584139·8969df6·f7fe36f 포함)
-Remote status: refs/heads/main c88ee4d6b65085ecd25934e6c5b8f83a40e67797 pushed (verified), 2026-10-15T16:42 ls-remote 확인. 이 인계 문서 commit 자체의 전송은 최종 보고/다음 START의 실제 Git 조회로 확인한다. 집 PC 수신/실행 미확인.
+Branch: shinyj0270-afk/invest-rev (분리 개발, upstream 없음); 원본 main (통합 완료)
+Commit: c88ee4d6b65085ecd25934e6c5b8f83a40e67797 (재무 공식 원문 우선 구현 기준; 이후 2f750da 인계 기록 포함)
+Remote status: refs/heads/main 2f750da1afc53b70ad28bb911dedee3031720e9b pushed (verified, 2026-10-15 16:44 ls-remote 확인). 이 마감 기록 commit 자체의 전송은 최종 보고/다음 START의 실제 Git 조회로 확인한다. 집 PC 수신/실행 미확인.
 Notes:
-- 검증 증거는 공유 제외 validation/current/recheck/(live-receipt.json, live-status.json, 화면 캡처)와 polish-validate.log에 보존.
+- 검증 증거는 공유 제외 validation/current/ (recheck/live-receipt.json, live-status.json, polish-validate.log, official-first-validate2.log 등)에 보존.
 - 인증·PC 설정·보유/현금·DB·원자료·시세·로그는 코드 원격에 넣지 않았다. 입력 쓰기·보유 동기화는 검증 브라우저에서 차단. Wiki/예약/외부 AI 호출 없음.
+- 서버·워크트리·개인 로컬 자료를 보존했다. 워크트리 삭제·운영 서버 종료는 마감에 포함하지 않았다.
