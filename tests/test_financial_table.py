@@ -44,6 +44,26 @@ class FinancialTableTests(unittest.TestCase):
         self.assertEqual(table['groups'],[]);self.assertIn('중복',table['notes'][0])
         wrong=dict(self.source(self.period),name='다른 기업')
         self.assertEqual(build_table(self.row,self.snapshot,wrong)['groups'],[])
+    def test_snapshot_and_official_overlap_uses_official_cells_without_mutation(self):
+        self.row['quarters']=[dict(period_end='2026-06-30',available_at=None,basis='CFS',
+            revenue=90e8,op=8e8,net_income=2e8,ebitda=17e8)]
+        src=self.source(self.period);before=copy.deepcopy((self.snapshot,src))
+        table=build_table(self.row,self.snapshot,src)
+        self.assertTrue(table['groups'],'Normal snapshot/official overlap must not erase the table')
+        column=table['groups'][0]['columns'][0]
+        self.assertEqual(column['values']['revenue'],100)
+        self.assertEqual(column['values']['operating_profit'],-10)
+        self.assertEqual(column['values']['net_income'],0)
+        self.assertEqual((self.snapshot,src),before)
+    def test_future_official_overlap_does_not_hide_current_snapshot(self):
+        self.row['quarters']=[dict(period_end='2026-06-30',available_at=None,basis='CFS',
+            revenue=90e8,op=8e8,net_income=2e8)]
+        table=build_table(self.row,self.snapshot,self.source(dict(self.period,available_at='2026-12-01')))
+        self.assertEqual(table['groups'][0]['columns'][0]['values']['revenue'],90)
+    def test_duplicate_snapshot_is_rejected_even_with_official_overlap(self):
+        item=dict(period_end='2026-06-30',available_at=None,basis='CFS',revenue=90e8,op=8e8)
+        self.row['quarters']=[item,copy.deepcopy(item)]
+        self.assertEqual(build_table(self.row,self.snapshot,self.source(self.period))['groups'],[])
     def test_source_and_snapshot_are_not_modified(self):
         src=self.source(self.period);before=copy.deepcopy((self.snapshot,src))
         html=export_workspace(self.snapshot,financials={self.row['code']:src})

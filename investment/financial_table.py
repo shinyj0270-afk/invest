@@ -54,6 +54,7 @@ def build_table(row, snapshot, supplemental=None, max_columns=6):
                 ebitda=item.get('ebitda'),interest_expense=item.get('interest_expense'),
                 borrowings=item.get('borrowings'),total_borrowings=item.get('total_borrowings'),
                 assets=item.get('assets'),equity=item.get('equity'),liabilities=item.get('liabilities')))
+    provider_count=len(records)
     notes=[];verified_supplemental=None
     if supplemental:
         if (supplemental.get('code'),supplemental.get('name'),supplemental.get('market'))==(row['code'],row['name'],row['market']):
@@ -61,8 +62,8 @@ def build_table(row, snapshot, supplemental=None, max_columns=6):
             records.extend(supplemental.get('periods',[]));notes.extend(supplemental.get('notes',[]))
         else:
             notes.append('추가 재무자료의 종목 식별이 달라 연결을 보류했습니다.')
-    groups={};seen=set()
-    for raw in records:
+    groups={};seen=set();prepared=[]
+    for index,raw in enumerate(records):
         r=dict(raw)
         if r.get('currency','KRW')!='KRW':continue
         end=r.get('period_end');available=r.get('available_at');basis=r.get('basis');cadence=r.get('cadence')
@@ -85,11 +86,26 @@ def build_table(row, snapshot, supplemental=None, max_columns=6):
             r['filing_available_at']=None
             r['source_url']=None
             r['receipt']=None
-        # Duplicate period/basis/cadence is ambiguous; never silently add or overwrite it.
-        identity=(end,basis,cadence)
+        # Duplicates within one input remain ambiguous. A snapshot and a checked
+        # supplement may legitimately cover the same accounting period.
+        identity=(index>=provider_count,end,basis,cadence)
         if identity in seen:
             return dict(groups=[],rows=ROWS,notes=['동일 기간·기준의 재무자료가 중복되어 표 연결을 보류했습니다.'])
         seen.add(identity)
+        r['cell_provenance']=provenance
+        prepared.append((index>=provider_count,r))
+    if verified_supplemental and any(not supplemental_row for supplemental_row,_ in prepared):
+        identity={k:row[k] for k in ('code','name','market')}
+        provider=dict(identity,periods=[r for supplemental_row,r in prepared if not supplemental_row],notes=[])
+        supplement=dict(verified_supplemental,periods=[r for supplemental_row,r in prepared if supplemental_row])
+        # Dates and per-cell publication cutoffs were checked above. Reuse the
+        # official-first merge without inventing publication dates for snapshots.
+        resolved=merge_financials({row['code']:provider},{row['code']:supplement})[row['code']]
+        prepared=[(True,r) for r in resolved['periods']]
+        notes.extend(resolved.get('notes',[]))
+    for _,r in prepared:
+        end=r['period_end'];available=r.get('available_at');basis=r['basis'];cadence=r['cadence']
+        provenance=r.get('cell_provenance',{})
         cell_notes={k:v for k,v in r.get('cell_notes',{}).items() if k in INPUTS|{x[0] for x in ROWS} and isinstance(v,str)}
         if cadence!='annual':cell_notes['debt_ebitda']='연간 EBITDA가 필요합니다. 분기·누적 EBITDA를 연간으로 환산하지 않습니다.'
         groups.setdefault((basis,cadence),[]).append(dict(period_end=end,available_at=available,
@@ -293,5 +309,5 @@ def merge_financials(provider, official, *, as_of=None):
                 cell_provenance=evidence, cell_notes=note)
         # Current collection status belongs to the official collection service.
         target['notes'] = list(dict.fromkeys(target.get('notes', [])+record.get('notes', [])+[
-            ('인포맥스 금액 우선, 없는 계정만 공식 원문으로 보충합니다.' if target.get('official_document') else '인포맥스 금액 우선, 없는 계정만 DART로 보충합니다.')+' 공개일 미확인 공급자 금액의 과거 시점 재현은 보장하지 않습니다.']))
+            '공식 원문 금액 우선, 없는 계정만 저장 보충자료로 채웁니다. 공개일 미확인 공급자 금액의 과거 시점 재현은 보장하지 않습니다.']))
     return result
