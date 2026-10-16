@@ -1,3 +1,10 @@
+# 인포맥스 자료 갱신 방식 확정 · 2026-10-16
+
+- 시작 main 9af2828. 사용자 결정(USER_DATA_DECISIONS.md 13번): 인포맥스는 수급 금액·DART 미보유 계정 보충 전용, 필요 시 1333 Excel 일별 파일 수동 저장 후 기존 갱신 경로로 반영. 요청 시 AI 화면 조작 저장 허용(이용 범위는 사용자 책임). Excel COM·DATAFEED·무인 예약 미도입으로 기존 미결 항목 종결.
+- 문서만 변경, git diff --check만 실행. 코드·운영 재시작 없음. telegram-intake는 home에서 진행 중으로 회사 PC 통합 대상에서 제외. 전송 상태는 CURRENT_HANDOFF.md 참조.
+
+---
+
 # Company Primary 마감·원격 인계 · 2026-10-16
 
 - 구현 통합 commit a3b4c8aabad63fc8c64a9bd838e2453f31d75c5f 생성 및 main/investment-up 코드 일치·clean 확인 완료.
