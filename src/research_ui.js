@@ -20,7 +20,7 @@ const ResearchUI = (() => {
     const labels={...baseLabels,...(discovery?{per:'참고 PER',pbr:'참고 PBR'}:{})};
     const metricNote=(r,k)=>{const d=E.detail(r,research,k);return `출처 ${d.source||'미연결'} · 기간 ${d.period||'미확인'} · 기준 ${d.basis||'미확인'} · 관측 ${d.observed_on||'미확인'}${d.reason?' · '+d.reason:''}`;};
     const latestPrice=r=>{if(!r.latest_quote)return '';const q=r.latest_quote,info=typeof DashboardStability!=='undefined'?DashboardStability.quoteStatus(q):{label:'조회 참고가격',detail:'조회 '+(q.retrieved_at||'미확인')+' · 시세시각 미확인',action:'조회일과 시세시각 확인 필요'};return `<p class="psub">${esc(info.label)} <b>${fmt(q.price,0)}원</b> · ${esc(info.detail)}${info.action?' · '+esc(info.action):''}</p>`;};
-    const canDetail=r=>r?.legacy_available!==false||!!companyModels[r?.code]?.native_financial||!!financialTables[r?.code]?.native_financial||lazyTables;
+    const canDetail=r=>r?.legacy_available!==false||!!(companyModels[r?.code]?.code===r?.code&&companyModels[r?.code]?.groups?.length)||!!companyModels[r?.code]?.native_financial||!!financialTables[r?.code]?.native_financial||lazyTables;
     function completeness(r){if(typeof FinancialCompletenessUI==='undefined')return '';const model=companyModels[r.code],table=financialTables[r.code];return FinancialCompletenessUI.render(model?.financial_completeness||model?.native_financial?model:table?.financial_completeness||table?.native_financial?table:null);}
 
     const sourceNote=()=>discovery?`<p class="psub">${esc(meta.discovery_note||'기업 발굴용 공개 참고자료입니다. 보통주·비금융 분류를 확인할 후보가 포함됩니다. 공식 원문 우선 자료와 네이버 보완자료의 출처·기간을 개별 확인하세요.')}</p>`:'';

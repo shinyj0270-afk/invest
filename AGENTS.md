@@ -21,6 +21,8 @@
 - 중앙 Wiki 직접 수정과 전체 세션 자동 수집 금지는 유지한다. 중요한 장기 결정이 생긴 경우에만 SYNC_CONTRACT.md의 Wiki 경계와 실제 /wiki-sync 정의를 확인한다. Git 인계와 별개이며 Wiki 없이 개발할 수 있다.
 <!-- END DUAL-PC -->
 
+- 회사 계산·집 조회(사용자 승인 2026-10-16): 결과 발행/수신 및 해당 모드의 START/CLOSE는 [docs/SHARED_DASHBOARD.md](docs/SHARED_DASHBOARD.md)를 읽는다. 검증된 공개 기업 조회 결과만 전용 비공개 저장소로 전달하는 예외이며, DB·원자료·인증·보유·Telegram 제외와 기존 보유 동기화는 유지한다.
+
 ## GLOBAL WORKFLOW 상속
 
 [공통 파일 참조](GLOBAL_WORKFLOW_REFERENCE.md)에 지정된 GLOBAL_WORKFLOW.md를 읽고 공통 START/CLOSE 골격을 상속한다. 충돌 시 기존 INVESTMENT 규칙이 우선한다. 독립 investment-session 스킬, SYNC_CONTRACT, 상태 원본과 Git/데이터/인증/PC별 예외를 유지한다.

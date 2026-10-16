@@ -154,7 +154,7 @@ def share_live_text(payload):
     payload['wire_text']=texts
 
 
-def export_workspace(snapshot, *, live=None, events=None, references=None, market_cache=None, financials=None, trend_following_data=None, trend_checkpoint_directory=None, section_sink=None):
+def export_workspace(snapshot, *, live=None, events=None, references=None, market_cache=None, financials=None, trend_following_data=None, trend_checkpoint_directory=None, section_sink=None, result_view=False):
     """Embed only the supplied snapshot; never read local credentials or holdings."""
     validate_snapshot(snapshot)
     analysis = enrich_valuation(snapshot)
@@ -212,7 +212,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
         if facts:
             row['metrics'].update(facts['fundamental']['metrics'])
     src = ROOT / 'src'
-    legacy = None if (live or {}).get('lazy_holdings_frame') else export_holdings_frame(snapshot,live=live,market_cache=market_cache,analysis_snapshot=analysis)
+    legacy = None if result_view or (live or {}).get('lazy_holdings_frame') else export_holdings_frame(snapshot,live=live,market_cache=market_cache,analysis_snapshot=analysis)
     html = (src / 'workspace.html').read_text(encoding='utf-8')
     # Insert payload last so data containing template marker text stays literal.
     for marker, name in [('/*DASHBOARD_ICONS*/', 'icons.js'), ('/*DASHBOARD_STABILITY*/', 'dashboard_stability.js'), ('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*SOFT_UI_CSS*/','soft_ui.css'), ('/*HOME_DASHBOARD_UI*/', 'home_dashboard_ui.js'), ('/*VERIFICATION_UI*/', 'verification_ui.js'), ('/*HOLDINGS_BRIEF_UI*/', 'holdings_brief_ui.js'), ('/*RESEARCH_LIBRARY_UI*/', 'research_library_ui.js'), ('/*DATA_RECOVERY_UI*/', 'data_recovery_ui.js'), ('/*COMPARISON_PRICE_UI*/', 'comparison_price_ui.js'), ('/*WORKSPACE_JS*/', 'workspace.js'),
@@ -236,7 +236,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     # Thesis checks need the trend diagnostics and market regime, so they run after the trend board exists.
     trend_rows={r['code']:r for r in trend_data.get('rows',[])};regimes={m['market']:m.get('regime') for m in trend_data.get('markets',[])}
     thesis_monitor={code:evaluate_thesis(theses[code],table,((discovery or {}).get('research',{}).get('rows',{}).get(code,{}).get('technical')),trend_rows.get(code),regimes.get(trend_rows.get(code,{}).get('market'))) for code,table in thesis_tables.items()}
-    payload=dict(snapshot=snapshot, analysis_snapshot=analysis,
+    payload=dict(snapshot=snapshot, analysis_snapshot=analysis, result_view=result_view,
         research=research, discovery=discovery, financial_tables=financial_tables, company_details=company_details,market_insights=market_insights,thesis_monitor=thesis_monitor,
         trend_following=trend_data, market_contract=dict(same_day_after='%02d:%02d'%DAILY_PUBLICATION_TIME,timezone='Asia/Seoul'),
         market_summary=market_summary(analysis, market_cache, discovery['snapshot']['meta']['price_date'] if discovery else analysis['meta']['price_date']),

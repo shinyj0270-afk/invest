@@ -376,6 +376,11 @@
     "docs/EXTERNAL_REPORTS.md": "docs/EXTERNAL_REPORTS.md",
     "investment/report_inbox.py": "investment/report_inbox.py",
     "tests/test_report_inbox.py": "tests/test_report_inbox.py",
-    "docs/GOOSE_APPLICABILITY_AUDIT.md": "docs/GOOSE_APPLICABILITY_AUDIT.md"
+    "docs/GOOSE_APPLICABILITY_AUDIT.md": "docs/GOOSE_APPLICABILITY_AUDIT.md",
+    "investment/shared_dashboard.py": "investment/shared_dashboard.py",
+    "tools/shared_dashboard.py": "tools/shared_dashboard.py",
+    "tests/test_shared_dashboard.py": "tests/test_shared_dashboard.py",
+    "tests/test_shared_dashboard_ui.py": "tests/test_shared_dashboard_ui.py",
+    "docs/SHARED_DASHBOARD.md": "docs/SHARED_DASHBOARD.md"
   }
 }

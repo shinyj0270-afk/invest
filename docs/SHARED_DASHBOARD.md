@@ -1,0 +1,43 @@
+# 회사 계산 결과 · 집 조회
+
+사용자 승인(2026-10-16): 회사 work Primary에서 수집·계산하고 home Secondary는 마지막 검증 결과를 조회한다. 회사 PC가 꺼져 있어도 사용한다. 로컬 Python 계산 자체는 AI 크레딧을 쓰지 않지만, 같은 수집·계산·AI 조사를 PC마다 반복하지 않는다.
+
+## 전달 범위
+
+`shinyj0270-afk/invest-results-private`의 비공개 Release에 결과 HTML 압축본과 manifest만 저장한다. 공개 코드 저장소와 보유 전용 저장소는 사용하지 않는다. PC별 GitHub CLI 인증은 각 PC에 남긴다.
+
+공개 기업의 저장 재무·가격으로 계산한 조회 대시보드만 전달한다. 원문 파일·DB/WAL·인증·보유/현금·연구노트·Telegram·외부 보고서·개인 정책 근거는 제외한다. 개인 보유 프레임과 실시간 API 연결을 넣지 않으며, 기존 보유 동기화와는 별도다.
+
+## 회사에서 발행
+
+최신 공통 코드 반영·관련 검사 후 work 원본 main에서 실행한다.
+
+```powershell
+.\.venv\Scripts\python.exe tools\shared_dashboard.py publish
+```
+
+이미 저장된 자료로 결과를 한 번 계산한다. 새 시세 수집·원문 다운로드·AI 호출은 하지 않는다. 데이터 갱신이 필요하면 회사에서 기존 수집·검증을 먼저 실행한다. work가 아니면 계산 전에 중단한다. 수급·시장·재무의 서로 다른 기준일과 미확보는 그대로 보존한다.
+
+전송 직전 비공개·쓰기 권한, 개인 자료 제외, 자료 모드·기준일·해시·길이를 검사한다. draft에 첨부를 먼저 올리고 완성된 release만 latest로 발행한다. 덮어쓰기·force는 사용하지 않는다.
+
+원본 `config/local.json`의 `shared_dashboard.enabled=true`인 work는 이후 CLOSE에서 검증된 반영 후 한 번 발행하고 tag·자료일·해시를 인계한다. 예약·무인 반복은 등록하지 않는다. 코드 push와 결과 발행, home 수신/화면 확인은 각각 보고한다.
+
+## 집에서 조회
+
+회사 첫 결과 발행 후 home의 원본 `config/local.json`에 `shared_dashboard: {"enabled": true}`를 설정한다. 기존 `scripts/open-investment.cmd`가 결과를 받고 파일을 브라우저로 연다. 직접 명령은 다음과 같다.
+
+```powershell
+.\.venv\Scripts\python.exe tools\shared_dashboard.py open
+.\.venv\Scripts\python.exe tools\shared_dashboard.py status
+```
+
+생성 시각·자료 기준일·수신 시각을 표시한다. 수신 실패 시 검증된 이전 결과를 연다. 첫 결과가 없으면 발행 대기로 표시하고 집에서 수집/재계산하지 않는다. 더 오래된 원격 결과는 최신 로컬 결과를 덮어쓰지 않는다. `.local/shared-dashboard/`에 세대별로 저장하고 검증 후 포인터만 원자적으로 바꾼다.
+
+같은 대시보드의 조회 기능을 사용한다. 보유 입력·추천 작성·연구 DB·원자료 수집 메뉴는 제외하며, 필요하면 기존 별도 앱과 기존 데이터 계약을 따른다. 새 뉴스·공시 조회 성공으로 표시하지 않는다.
+
+## 최초 전환·복구
+
+- 회사 첫 실제 발행, home 실제 수신/화면 확인 전에는 전환 PENDING이다. 회사가 오프라인이면 발행을 미완료로 남긴다. 준비 코드·합성 검사를 실제 자료 전달 완료로 보고하지 않는다.
+- 양 PC의 `.venv`·설정·개인 DB·원자료는 보존한다. home의 `shared_dashboard.enabled=false`는 기존 실행기로 돌아간다. 수신 결과/원자료를 삭제하지 않는다.
+- 결과 정정은 회사에서 새 검증 결과를 발행한다. 실패 다운로드·해시 불일치 때 정상 포인터를 바꾸지 않는다.
+- 같은 코드/자료 기준에서 끝난 AI 조사와 필수 검사를 집에서 다시 하지 않는다. home은 수신 해시·열람만 확인하고 새로운 증상이 있을 때 재진단한다.

@@ -30,6 +30,8 @@ description: INVESTMENT START/시작, 합쳐줘/MERGE, CLOSE/마감 요청에서
 
 ## GLOBAL WORKFLOW 상속
 
+회사 계산·집 조회 모드를 사용하거나 전환하는 START/CLOSE에서는 [회사 결과 조회](../../docs/SHARED_DASHBOARD.md)를 읽는다. home은 결과 수신·해시·열람만 확인하며 이미 끝난 회사 수집·계산·AI 조사를 반복하지 않는다. work의 `shared_dashboard.enabled=true` CLOSE는 검증된 코드 반영 후 결과를 한 번 발행하고 코드 전송과 별도로 tag·기준일·해시를 인계한다. 회사 첫 실제 발행 및 home 수신/열람 확인 전에는 전환 PENDING이다. 결과 발행 실패와 코드 전송 성공을 구분한다.
+
 [공통 파일 참조](../../GLOBAL_WORKFLOW_REFERENCE.md)를 통해 GLOBAL_WORKFLOW.md를 읽는다. 공통 골격을 상속하되 충돌 시 아래 INVESTMENT 규칙이 우선한다. 기존 START의 안전 점검·수신 후 기준 문서 재조회 순서와 CLOSE의 검증·상태 갱신·commit/push 조건을 유지한다. 오늘 목표는 기존 START 완료 보고의 사용자 지정 작업/다음 작업에서 확정한다. 기존 미완료 변경은 보존한다.
 
 ## START 모드

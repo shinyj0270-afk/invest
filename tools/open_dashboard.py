@@ -21,6 +21,13 @@ def health(port):
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--port',type=int,default=8767);parser.add_argument('--no-browser',action='store_true');args=parser.parse_args()
     if not 1<=args.port<=65535:parser.error('올바른 포트 번호를 입력하세요.')
+    from investment.local_config import load_local
+    cfg=load_local(ROOT)
+    if cfg['profile']=='home' and (cfg.get('shared_dashboard') or {}).get('enabled') is True:
+        from investment.shared_dashboard import open_home
+        path,status=open_home(ROOT,browser=None if args.no_browser else webbrowser.open)
+        print('회사 결과 수신 완료' if status=='received' else '수신 연결 대기 · 마지막 정상 회사 결과를 열었습니다.')
+        return
     if not health(args.port):
         import socket
         with socket.socket() as s:
@@ -47,4 +54,4 @@ def main():
 
 if __name__=='__main__':
     try:main()
-    except (RuntimeError,OSError) as e:print(str(e),file=sys.stderr);sys.exit(1)
+    except (RuntimeError,OSError,ValueError) as e:print(str(e),file=sys.stderr);sys.exit(1)

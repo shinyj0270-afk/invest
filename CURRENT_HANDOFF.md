@@ -1,41 +1,37 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-16T15:42:00+09:00
-Handoff version: 2026-10-16-stockeasy-link-socket-drain
-Last agent: Claude (Opus 5.5)
-Last PC: company Primary/work (사용자 확인; 원본 config profile=work)
-Last task: 기업 간단 분석 스탁이지 링크, 재시작 테스트 WinError 10053 원인 분석·수정, INVESTMENT CLOSE
+Updated: 2026-10-16T21:34:04+09:00
+Handoff version: 2026-10-16-home-samsung-shared-results-ready
+Last agent: Codex
+Last PC: home Secondary (사용자 확인; 원본 profile=home)
+Last task: 삼성전자 손익 공백 수정 및 사용자 승인 회사 계산·집 조회 기능 준비
 
 Completed:
-- 시작 dbf8994. 원본 main·invest-rev·원격 main 0/0 clean에서 START.
-- 스탁이지 링크(a8a7ed2): 기업 간단 분석의 기업 선택 줄 아래에 "스탁이지에서 보기 ↗"(https://stockeasy.intellio.kr/stock-analysis/stock-info/<종목코드>, 새 탭, noopener). 종목코드가 [0-9A-Z]{6}일 때만 표시, 추세 확인 화면에는 없음. 내용 복제·스크래핑 없음. 사용자가 실제 운영 화면에서 새 탭 열림 확인.
-- WinError 10053 원인(34201b8): 인증 실패 POST /restart가 요청 본문을 읽지 않고 403 후 연결을 닫아 Windows가 RST를 보내 클라이언트가 403 대신 연결 중단을 받음. 재현 수정 전 12/300·17/300·32/600 실패, 수정 후 0/600. drain_small_body()로 1024바이트 이하 본문을 읽고 응답.
-- 같은 위험의 읽기 전용 403·재시작 중 409 POST 거절 분기도 수정(cfb43a2), 결정적 회귀 테스트 test_post_rejections_drain_small_body_before_replying 추가(RED→GREEN, 300회 0실패).
-- 각 반영 전 validate_share_candidates.py --ui 18명령 PASS·공유376 경고0(3회 실행). 각 반영 후 /restart 경로 안전 재시작 HTTP202, 최종 /health build=source(93340823…)·restart_required=false.
-- 마감 점검: tools/pc_check.py --phase finish clean·profile=work·진행 Git 작업0·추적 private0.
+- main/원격 fb507d1 clean 확인과 기존 Orca 작업본 ff 동기화 후 구현했다. 사용자 스크린샷의 삼성전자 금액 공백은 정상적인 스냅샷/DART 기간 겹침을 중복 오류로 처리한 문제였다. 삼성전자 공식 보고서6개 모두 valid, 겹침 제거 시 표가 복원되는 실제 최소 재현과 합성 RED를 확인했다.
+- 재무 수정 commit ce5e4f6a096c04348edeff65b18ab59c7e304c45: 동일 입력 내부 중복은 계속 차단하고 정상적인 출처 간 겹침을 공식 우선 계정 병합으로 처리한다. 미래 공개일·기업 식별·0/음수·원자료 불변 회귀검사 유지. 실제 CFS/2026-06-30 손익3항목 복원 확인. 수정은 아직 운영 main에 반영하지 않았다.
+- 사용자 승인: 회사에서 수집·계산하고 home은 회사 PC가 꺼져도 마지막 결과를 조회한다. Python 계산 자체의 크레딧과 AI 재조사 비용을 구분했다. 회사 결과 전용 비공개 저장소 shinyj0270-afk/invest-results-private를 생성하고 비공개/접근 권한을 확인했다. 실제 회사 결과 asset은 아직 없다.
+- shared_dashboard 모듈/CLI와 기존 실행기 옵션, 개인 보유·로컬 연구·Telegram 없는 결과 화면, 생성/자료/수신 시각, 수신 실패 이전 결과 유지, 해시·길이·모드·날짜 검증 및 원자적 포인터를 구현했다. home은 수신·열람만 하며 첫 결과가 없으면 PENDING으로 끝나고 계산/수집을 대신 시작하지 않는다. docs/SHARED_DASHBOARD.md 및 USER_DATA_DECISIONS 14번.
+- 이번 실제 검증: 공유381개 경고0·격리 portable/빈 실제모드 AppTest/합성UI19명령 PASS. 후속 정적 결과의 발굴기업 상세 진입 RED→GREEN 후 해당 UI(1440/390/320px·외부 요청0), 기존 연결/기업 상세 UI2개 PASS, 최종 공유 감사381개 경고0. 관련32개 단위검사 PASS; 마지막 출처 설명 문구 변경 후 재무24개 PASS. 검증 로그는 Git 제외 validation/current/에 보존한다. 실제 운영 서버 변경 후 검사와는 별개다.
 
 Pending:
-- 원격 shinyj0270-afk/telegram-intake: home PC에서 진행 중(사용자 확인). 회사 PC에서는 수정·통합·삭제하지 않는다. 통합과 CURRENT_HANDOFF 충돌 처리는 home 작업 종료 후 home 세션에서 판단.
-- 수급 금액 기준일 10/15. 필요 시 daily.xlsx 저장(사용자 직접 또는 Codex 화면 조작) → refresh_infomax.py 반영(USER_DATA_DECISIONS.md 13번).
-- 스탁이지 화면 중 우리 자료(DART)로 다시 만들 후보(배당 DPS·배당성향 차트 등)는 사용자 선택 대기. 기존 DPS 연도 범위 미확인.
-- 정리 후보(선택): empty_refresh_request의 본문 읽기 처리가 drain_small_body와 중복.
-- home 수신/실행·휴대폰·재무 미확보 후속 미확인. personal-ai-wiki의 잠긴 Codex 빈 폴더 수동 삭제.
+- 사용자 열린 대시보드 탭의 입력 보관 확인 후 작업 브랜치를 원본 main에 ff-only 반영·안전 재시작·실제 삼성전자 화면 확인·코드 push. 확인 전 운영 main과 서버는 보존한다.
+- 회사 원격 실행 통로에서 온라인 장치를 확인하지 못해 회사 첫 실제 결과 발행은 미실행. 회사가 사용 가능해지면 최신 코드 수신·work 확인 후 tools/shared_dashboard.py publish 실행. full 실제 자료의 크기/프라이버시 검사·발행 성공은 아직 PENDING이다. 실패 시 이전 결과 유지, 원자료/DB 복사로 우회하지 않는다.
+- 최초 발행 후 home 실제 수신/열람 확인과 shared_dashboard.enabled=true 활성화. 현재 home 설정은 변경하지 않았다. 기존 보유 동기화는 별도이며 결과 조회에 보유/연구/Telegram 입력을 합치지 않는다.
+- Telegram 별도 branch 통합은 미실행. 기존 회사 인계의 수급 금액 기준일·인포맥스 수동 저장 정책, 스탁이지 참고 배당 차트 선택, 재무 미확보/휴대폰 후속은 유지한다.
 
-Next task: 사용자 새 요청 우선. 없으면 스탁이지 참고 화면 중 DART 자료로 만들 항목(배당 차트 등) 선택.
+Next task: 입력 보관 확인 후 검증된 수정의 main 반영·안전 재시작. 회사 최초 결과 발행은 회사 접근 가능 시 별도 실행.
 Next action:
-1. Orca의 invest rev 작업 공간에서 새 세션을 열고 `INVESTMENT START`.
-2. 운영 반영은 `합쳐줘`, 마감은 `INVESTMENT CLOSE`. invest-rev는 지우지 않고 재사용한다. 원본(바탕화면)에서 코드를 직접 고치지 않는다.
-3. 다른 PC의 설정·DB·원자료는 복사하지 않는다.
-
-Recommended next agent: Codex (구현·검증, 인포맥스 화면 저장), ChatGPT (설계 판단)
+1. 사용자가 입력 보관과 반영을 확인하면 investment-session MERGE 절차로 원본/작업본/원격 재확인 → ff-only → 안전 재시작 → build/source 및 실제 삼성전자 간단 분석 확인 → 원격 push·SHA 검증. 새로운 코드 변경이 없으면 통과한 전체 검사를 반복하지 않는다.
+2. 회사에서 docs/SHARED_DASHBOARD.md를 읽고 최신 main 수신 후 work .venv의 tools/shared_dashboard.py publish. 새 수집이 필요하면 기존 회사 수집·검증을 먼저 실행한다. 결과 발행은 코드 전송과 따로 tag·기준일·해시를 기록한다.
+3. home에서 tools/shared_dashboard.py open으로 실제 첫 수신·열람을 확인한 뒤 기존 실행기의 shared_dashboard.enabled=true를 설정한다. 회사·집 설정/DB/인증은 복사하지 않는다. 실제 전환 완료 전까지 PENDING 유지.
+Recommended next agent: Codex (반영·검증); 회사 최초 발행은 work Codex
 Recommended model: 기존 사용자 설정 유지
-Recommended reasoning: 일반 후속 Medium, 회귀/공급자 정의 불일치 High 검토
-Escalation condition: 다른 쓰기 세션·divergence·자료 식별/단위/날짜 불일치면 기존 자료를 보존하고 반영 보류
-Branch: main (회사 바탕화면 운영 원본); shinyj0270-afk/invest-rev (Orca 작업 워크트리, 재사용)
-Commit: cfb43a28128fd153a21838510d787cc9f12fde9a (이번 세션 마지막 코드 반영 commit)
-Remote status: refs/heads/main cfb43a28128fd153a21838510d787cc9f12fde9a pushed (verified, 2026-10-16 ls-remote 확인). 이 마감 기록 commit 자체의 전송은 최종 보고와 다음 START의 실제 Git 조회로 확인한다. 상대 PC 수신/실행 미확인.
-
+Recommended reasoning: 일반 후속 Medium; 식별·날짜·개인정보 제외 충돌은 High 검토
+Escalation condition: 미보관 입력·다른 쓰기 세션·원본/원격 divergence·잠금·자료 식별 충돌이면 보존 후 해당 반영 중단
+Branch: shinyj0270-afk/invest (home 작업 워크트리); main (원본 운영, fb507d1 보존)
+Commit: ce5e4f6a096c04348edeff65b18ab59c7e304c45 (재무 겹침 수정 로컬 commit). 결과 조회 기능/문서의 후속 commit 및 원본 반영은 아래 실제 Git 조회를 기준으로 확인한다.
+Remote status: 실제 refs/heads/main=fb507d14b578b0e49a099b4f886128d4ea22e372 확인. 이번 구현 코드 push/원본 반영은 pending. 결과 저장소는 비공개 생성만 완료; 첫 실제 결과 발행 없음.
 Notes:
-- 재현용 반복 스크립트는 세션 임시 파일(/tmp)로 저장소에 넣지 않았다.
-- PC 로컬 설정·원자료·DB/WAL/journal·보고서·보유내역·로그·검증 산출물은 stage하지 않았다. Wiki/전체 세션 자동 공유 없음.
-- invest-rev 작업 워크트리는 다음 세션에서 재사용한다.
+- 사용자 원자료/DB/보유·인증·PC설정·Telegram/전체 세션·검증 로그는 stage하지 않는다. 결과 저장소에는 개인 자료가 없는 계산 결과만 허용한다.
+- 원본 main 직접 개발·강제 종료·자동stash/reset/force·예약·외부 AI 호출·주문/잔고 조회 없음. 회사 원격 연결 불가를 회사 전원 OFF로 단정하지 않는다.
+- 이전 회사 완료: 스탁이지 링크와 WinError10053 수정은 PROJECT_STATE의 SOURCE_RECORDED. 이번 home 운영 재검증으로 보고하지 않는다.
