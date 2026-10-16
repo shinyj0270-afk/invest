@@ -14,12 +14,13 @@ Completed:
 - 운영 실제 SK하이닉스 보고서·출처32개·작성자 limited·폴더중복·모바일/JS오류0 확인. 실제 사용자 보고서의 사실성 재조사는 하지 않았다. 검증 중 만든 줄바꿈 차이 중복은 에이전트 생성분만 되돌리고 사용자 원본 보존.
 - 통합 점검에서 보고서 업로드의 지역 LIMIT가 보유 동기화 경로를 가리는 회귀를 발견해 REPORT_LIMIT로 분리. 보유/보고서19검사 통과. 최종 격리 portable·빈 실제모드 AppTest·합성UI 포함18명령 모두 PASS, 공유376개 경고0. 초기 실패를 숨기지 않고 수정 후 전체 재검증했다.
 
-Completed (로컬 통합·마감 점검):
+Completed (로컬 통합·마감 점검·원격 전송):
 - 로컬 통합 완료: 구현 a3b4c8a, main과 investment-up HEAD 일치·양쪽 clean 확인. 개발34파일을 명시 stage/commit했고 private/local 자료는 제외했다.
+- 일반 push로 원격 main 전송 완료. 검증된 구현 commit은 위 Commit 필드 참조. 상대 PC 수신은 별도다.
 - 마감 신규 점검: work Primary·진행 Git 작업0·추적 private 경로0, 공유376/경고0, 직전18명령 통과 소스와 코드 해시 차이0, 운영 build/source 일치·restart_required=false. 스크립트 정책 차단 후 기존 pc_check.py 대체 사용. 전체 테스트를 마감에서 재실행했다고 보고하지 않는다.
 
 Pending:
-- 이번 마감 전 원격 fetch 완료: origin/main 8c62a8f, 구현 대비 ahead1/behind0. 원격 전송·실제 SHA 확인 진행 예정. home 수신/실행·휴대폰·home Telegram·재무 미확보 후속은 미확인 상태 유지.
+- home 수신/실행·휴대폰·home Telegram·재무 미확보 후속은 미확인 상태 유지. 회사 전송 완료가 home 실행 완료를 뜻하지 않는다.
 
 Next task: 다음 PC에서 INVESTMENT START로 실제 원격 main을 확인하고 안전하게 수신·실행한다. 이후 사용자 요청 우선.
 Next action:
@@ -33,7 +34,7 @@ Recommended reasoning: 일반 후속 Medium, 회귀/공급자 정의 불일치 H
 Escalation condition: 다른 쓰기 세션·divergence·자료 식별/단위/날짜 불일치면 기존 자료를 보존하고 반영 보류
 Branch: main (회사 바탕화면 운영 원본); shinyj0270-afk/investment-up (분리 코드 작업본)
 Commit: a3b4c8aabad63fc8c64a9bd838e2453f31d75c5f (이미 생성된 구현 통합 commit). 이 마감 기록 자체의 SHA는 최종 보고와 다음 START의 Git 조회로 확인한다.
-Remote status: a3b4c8aabad63fc8c64a9bd838e2453f31d75c5f not pushed / verification pending. 마감 fetch에서 원격 main 8c62a8f7dde63cdb320434a76c375bf2c9120cd3 확인. 일반 push 후 실제 remote SHA를 검증한다.
+Remote status: 구현 a3b4c8aabad63fc8c64a9bd838e2453f31d75c5f pushed (verified). 이를 포함하는 마감 commit f3523aac4d233985a6b9460af6ef24dab2aaee8f에서 HEAD=origin/main=실제 remote main 일치를 확인했다. 이 증거 기록 commit 자체의 전송은 최종 보고와 다음 START의 실제 Git 조회로 확인한다.
 
 Notes:
 - 공통 GLOBAL_WORKFLOW 원본과 로컬 사본 HEAD 010d12491bf9ef1e25228ac14da88dc2246c8fa1 일치 확인. 공통 Wiki 수정/전체 세션 수집은 실행하지 않는다.

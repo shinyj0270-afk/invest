@@ -1,8 +1,8 @@
-# Company Primary 마감 준비 · 2026-10-16
+# Company Primary 마감·원격 인계 · 2026-10-16
 
 - 구현 통합 commit a3b4c8aabad63fc8c64a9bd838e2453f31d75c5f 생성 및 main/investment-up 코드 일치·clean 확인 완료.
 - 마감 신규 PC/Git/공유 제외·운영 버전 점검 완료. 직전 통합의 격리18명령 통과 소스와 코드 해시 동일하여 새 수정 없는 전체 검사는 반복하지 않았다. 새로 실행한 검사와 이전 검증을 구분한다.
-- 원격 fetch에서 구현 ahead1/behind0 확인. 이후 전송/검증 상태와 다음 PC 수신은 CURRENT_HANDOFF.md를 따른다. PC 설정·원자료·DB·보고서 원본·로그는 원격 공유에서 제외한다.
+- 원격 fetch에서 구현 ahead1/behind0 확인 후 일반 push 완료. 구현을 포함하는 마감 f3523aac4d233985a6b9460af6ef24dab2aaee8f의 HEAD=origin/main=실제 remote main 일치 확인. 이 증거 기록 자체와 다음 PC 수신은 CURRENT_HANDOFF.md 및 실제 Git 조회를 따른다. PC 설정·원자료·DB·보고서 원본·로그는 원격 공유에서 제외한다.
 
 ---
 
