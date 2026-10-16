@@ -35,6 +35,23 @@ enabled_data_adapters의 kiwoom/dart는 별도 runtime.local.json의 같은 프�
 
 tracked_private_paths는 경로 기반 경고일 뿐 비밀 탐지 인증이 아니다. 소스/문서에 들어간 값과 전송할 전체 커밋의 내용·이력은 별도 검토한다. 비밀 발견 시 전송을 중단하고 값 없이 위치만 보고한다. 임의 이력 재작성/키 폐기는 하지 않는다.
 
+## 작업 워크트리 · 2026-10-16 사용자 결정
+
+두 폴더를 구분한다.
+
+- **원본(바탕화면 실제 폴더)**: 회사 PC는 `바탕화면\신영재\한국\INVESTMENT`. Git의 메인 워크트리(`main`)이며 운영 서버(127.0.0.1:8767)가 이 코드로 돈다. `config/local.json`·`.venv`·`data/`가 여기 있다. 여기서 파일을 고치면 즉시 `restart_required`가 켜지고 작업 중인 코드가 운영에 노출되므로 직접 고치지 않는다.
+- **작업 워크트리(Orca 폴더)**: Orca가 같은 저장소에서 만들어 관리하는 폴더(예: `C:\Users\<사용자>\orca\workspaces\INVESTMENT\invest-rev`). 개발·검증은 여기서 한다. 하나를 계속 재사용하고 설정·`.venv`·데이터는 없다.
+- **세션**: 작업 워크트리 안에서 여는 AI 대화. 폴더와 별개이며 사용량은 세션 길이에 따라 늘어난다. 작업 단위마다 새로 열고 CLOSE 후 닫는다. 이어 갈 내용은 CURRENT_HANDOFF.md가 넘긴다.
+
+문서만 바꾸는 경우도 같은 흐름을 기본으로 한다.
+
+1. 시작: Orca의 작업 공간에서 새 세션을 열고 START한다. 원본 main이 clean이고 원격 main과 일치하는지 확인한 뒤, 작업 워크트리를 `pull --ff-only`로 main까지 따라잡는다. 작업 워크트리가 없으면 Orca에서 작업 공간을 만든다. Orca 밖에서 임의로 워크트리를 만들지 않는다.
+2. 개발·검증: 워크트리에는 `config/local.json`과 `.venv`가 없다. 설정·DB를 복사하지 않고 원본의 `.venv` Python으로 테스트와 `tools/validate_share_candidates.py --ui`를 실행한다. 검증 기록은 워크트리의 `validation/current/`(Git 제외)에 둔다.
+3. 반영: 워크트리 브랜치를 commit한 뒤 원본 main에서 `git merge --ff-only <작업 브랜치>`로 반영한다. 빨리감기가 안 되면(원격이나 main이 먼저 전진) 자동 병합하지 않고 중단·보고한다. 반영 후 기존 안전 재시작 경로로 운영 서버를 재시작하고 build/source 일치와 실제 화면을 확인한 다음 원격 main에 push한다.
+4. 정돈: push와 원격 SHA 확인이 끝나면 작업 워크트리가 clean이고 원격 main과 같은지 확인하고 세션을 닫는다. 워크트리는 다음 세션에서 재사용하므로 지우지 않는다. 작업 공간을 없앨 때는 Orca에서 지우고 브랜치는 `git branch -d`로만 지운다(`-d`가 거부하면 보고). 빈 폴더·오래된 브랜치·파일 복사 백업을 작업 공간에 쌓아 두지 않으며, 남길 검증 기록은 원본의 `validation/archive/`(Git 제외)로 옮긴다.
+
+1단계는 `INVESTMENT START`, 3단계는 `합쳐줘`(MERGE), 3·4단계 전체는 `INVESTMENT CLOSE`가 [investment-session 스킬](../skills/investment-session/SKILL.md)로 실행한다. 작업용 워크트리는 동시에 하나만 둔다. 다른 PC나 다른 세션이 원격 main을 먼저 전진시켰다면 기존 수신 규칙(`pull --ff-only`)으로 따라잡은 뒤 진행한다. 이 흐름은 운영 관례이며 기술적 잠금이 아니다.
+
 ## 공유 후보와 제외 대상
 
 코드·테스트·의존성 목록·공통 지침·PROJECT_STATE.md·CURRENT_HANDOFF.md의 공유 가능한 상태/인계를 공유할 수 있다. 실행 후보의 정확한 파일 목록은 config/share_candidates.json을 따른다. 인증정보와 PC 로컬 설정·DB는 분리한다.
