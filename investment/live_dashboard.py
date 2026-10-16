@@ -382,6 +382,16 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                 pass
             return False
 
+        def drain_small_body(self):
+            # Read a small rejected body so Windows delivers the response
+            # instead of resetting the socket (WinError 10053).
+            try:
+                size=int(self.headers.get('Content-Length','0'))
+                if 0<size<=1024:
+                    self.connection.settimeout(1);self.rfile.read(size)
+            except (ValueError,OSError):
+                pass
+
         def do_POST(self):
             with request_lock:self.handle_post()
 
@@ -390,7 +400,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                 self.send_body(403,'{"error":"읽기 전용 실행"}','application/json');return
             if restarting.is_set():self.send_body(409,'{"error":"서버 다시 실행 중"}','application/json');return
             if self.path=='/restart':
-                if not self.authorized(mutation=True):self.send_body(403,'{}','application/json');return
+                if not self.authorized(mutation=True):self.drain_small_body();self.send_body(403,'{}','application/json');return
                 leases=[]
                 try:
                     size=int(self.headers.get('Content-Length','0'))
