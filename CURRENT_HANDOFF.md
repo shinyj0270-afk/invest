@@ -1,12 +1,13 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-16T21:44:48+09:00
-Handoff version: 2026-10-16-home-samsung-shared-results-merged
+Updated: 2026-10-16T21:48:49+09:00
+Handoff version: 2026-10-16-home-samsung-shared-results-close
 Last agent: Codex
 Last PC: home Secondary (사용자 확인; 원본 profile=home)
-Last task: 사용자 반영 승인 후 main ff·안전 재시작·실제 삼성전자 확인·구현 push
+Last task: home Secondary CLOSE — 오프라인 마감 점검·원격 대조·인계 갱신
 
 Completed:
+- CLOSE 실제 실행: 원본 pc-finish.ps1 PASS(home, 변경0, 진행 중 Git 작업0, 추적 private 경로0), 작업본/원본 clean 및 fetch 후 HEAD와 origin/main 0·0 확인. 실제 원격 main=4047685ab067bcfff2ff007e51bd6761bbf44727 대조. 아래 MERGE 기능검사는 재실행하지 않았으며 이번 변경은 인계 문서뿐이다. 문서 diff 검사 후 commit/ff-only/push 예정이며 서버와 재사용 작업본을 유지한다.
 - 사용자 `진행해`로 입력 보관·반영 확인. 원본 clean/원격0·0, 작업본 ahead2/behind0 확인 후 main을 f6de422c2e23051416656330adab331d6248c4d6까지 ff-only 반영했다. /restart HTTP202 안전 재시작, 실제 build/source 일치·restart_required=false 확인. 강제 종료 없음.
 - 별도 입력 차단 브라우저에서 실제 삼성전자(005930) 손익3항목·기간 표시, 영업이익률 계산 근거, 확인 차입금 범위 안내·1440/390/320px·JS오류0 확인. PER/PBR은 날짜·계산 근거 부족으로 대기이며 기존 참고값으로 채우지 않았다. 첫 대시보드 응답 지연과 이후 화면 PASS를 구분한다.
 - 구현 ce5e4f6 및 f6de422 일반 push 완료. HEAD=origin/main=실제 refs/heads/main=f6de422c2e23051416656330adab331d6248c4d6 일치 확인. 아래 기록만 갱신하는 후속 문서 commit은 최종 보고/다음 START의 Git 조회로 검증한다.
@@ -30,9 +31,9 @@ Recommended next agent: Codex (반영·검증); 회사 최초 발행은 work Cod
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: 일반 후속 Medium; 식별·날짜·개인정보 제외 충돌은 High 검토
 Escalation condition: 미보관 입력·다른 쓰기 세션·원본/원격 divergence·잠금·자료 식별 충돌이면 보존 후 해당 반영 중단
-Branch: shinyj0270-afk/invest (home 작업 워크트리); main (원본 운영, 구현 f6de422 ff 반영)
-Commit: f6de422c2e23051416656330adab331d6248c4d6 (재무 수정 ce5e4f6을 포함한 결과 조회 구현; main/실제 원격 일치 검증됨)
-Remote status: refs/heads/main=f6de422c2e23051416656330adab331d6248c4d6 pushed (verified, 2026-10-16 home MERGE). 증거만 갱신하는 후속 기록 commit 자체의 전송은 최종 보고와 다음 START의 Git 조회로 검증한다. 결과 저장소는 비공개 생성만 완료; 첫 실제 결과 발행 및 회사 PC 코드 수신/실행은 미확인.
+Branch: shinyj0270-afk/invest (재사용 home 작업 워크트리); main (원본 운영)
+Commit: 4047685ab067bcfff2ff007e51bd6761bbf44727 (구현 및 실제 운영 검증 기록; CLOSE 시작 시 main/작업본/실제 원격 일치 검증됨)
+Remote status: refs/heads/main=4047685ab067bcfff2ff007e51bd6761bbf44727 pushed (verified, 2026-10-16 home CLOSE). 이번 인계 문서 commit은 전송 예정이며 그 자체의 전송은 최종 보고와 다음 START의 Git 조회로 검증한다. 결과 저장소는 비공개 생성만 완료; 첫 실제 결과 발행 및 회사 PC 코드 수신/실행은 미확인.
 Notes:
 - 사용자 원자료/DB/보유·인증·PC설정·Telegram/전체 세션·검증 로그는 stage하지 않는다. 결과 저장소에는 개인 자료가 없는 계산 결과만 허용한다.
 - 원본 main 직접 개발·강제 종료·자동stash/reset/force·예약·외부 AI 호출·주문/잔고 조회 없음. 회사 원격 연결 불가를 회사 전원 OFF로 단정하지 않는다.
