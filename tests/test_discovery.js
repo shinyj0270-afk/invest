@@ -61,7 +61,9 @@ assert.ok(element.innerHTML.includes('참고 PER · PBR 확보')&&element.innerH
 ui.render('brief');
 assert.ok(element.innerHTML.includes('data-research-go="company" disabled')&&element.innerHTML.includes('data-research-go="holdings" disabled'));
 assert.ok(element.innerHTML.includes('NAVER 공개 참고')&&element.innerHTML.includes('기간 미확인'));
+assert.ok(element.innerHTML.includes(`<a class="research-external" href="https://stockeasy.intellio.kr/stock-analysis/stock-info/${candidate.code}" target="_blank" rel="noopener noreferrer">스탁이지에서 보기 ↗</a>`),'brief links the selected stock to StockEasy');
 ui.render('trend');
+assert.ok(!element.innerHTML.includes('스탁이지에서 보기'),'StockEasy link stays on the brief view');
 assert.ok(element.innerHTML.includes('기본 가격 배열 충족 · 거래대금 미확인')&&element.innerHTML.includes('NAVER 전일 일별 자료'));
 console.log('PASS discovery: canonical + separate candidate eligibility, source metadata, comparisons, CSV, and UI labels');
 
