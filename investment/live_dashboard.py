@@ -397,8 +397,8 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
 
         def handle_post(self):
             if read_only:
-                self.send_body(403,'{"error":"읽기 전용 실행"}','application/json');return
-            if restarting.is_set():self.send_body(409,'{"error":"서버 다시 실행 중"}','application/json');return
+                self.drain_small_body();self.send_body(403,'{"error":"읽기 전용 실행"}','application/json');return
+            if restarting.is_set():self.drain_small_body();self.send_body(409,'{"error":"서버 다시 실행 중"}','application/json');return
             if self.path=='/restart':
                 if not self.authorized(mutation=True):self.drain_small_body();self.send_body(403,'{}','application/json');return
                 leases=[]

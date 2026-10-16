@@ -138,6 +138,22 @@ class DeliveryTests(unittest.TestCase):
             self.assertEqual(error.exception.code,status)
         self.assertIn('draftsSaved',self.get('/restart').read().decode())
 
+    def test_post_rejections_drain_small_body_before_replying(self):
+        for read_only,status in [(True,403),(False,409)]:
+            handler=handler_for(self.root,token='test-token',refresh=lambda root,**kw:dict(snapshot=self.snapshot,receipt={}),read_only=read_only)
+            drained=[]
+            original=handler.drain_small_body
+            def spy(self,original=original,drained=drained):drained.append(self.path);original(self)
+            with patch.object(handler,'drain_small_body',spy):
+                self.start(read_only=read_only)
+                self.server.RequestHandlerClass=handler
+                if not read_only:
+                    restarting=dict(zip(handler.handle_post.__code__.co_freevars,handler.handle_post.__closure__))['restarting'].cell_contents
+                    restarting.set()
+                with self.assertRaises(HTTPError) as error:self.post({'drafts_saved':True})
+                self.assertEqual(error.exception.code,status);self.assertEqual(drained,['/restart'])
+                self.stop()
+
     def test_restart_rejects_cross_process_collection_lock(self):
         from investment.company_financials import acquire_lock
         lock=acquire_lock(self.data/'collection.lock')
