@@ -91,8 +91,18 @@ def saved_data(root, *, force=False):
         data_as_of=snapshot['meta']['price_date'] if snapshot else None,stale=True,error=None))
 
 
-def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=None, daily=None, latest=None, financial=None, financial_monitor=None, read_only=False):
+def configured_data(root, *, force=False):
+    """Naver opted-in PCs check freshness on opening; file-only PCs keep saved reads."""
+    cfg = load_local(root)
+    if (cfg.get('infomax_refresh') or {}).get('provider') == 'naver':
+        return ensure_data(root, force=force)
+    return saved_data(root, force=force)
+
+
+def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=None, daily=None, latest=None, financial=None, financial_monitor=None, read_only=False, report_inbox=None):
     token = token or secrets.token_urlsafe(32)
+    from .report_inbox import ReportInbox
+    report_inbox = report_inbox or ReportInbox(root,read_only=read_only)
     loaded_build_id = source_fingerprint(root)
     dashboard_cache={}
     section_cache=OrderedDict()
@@ -129,6 +139,26 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
         def do_GET(self):
             # Selected-company reads must not wait for a full dashboard/iframe export.
             # Keep other routes and all mutations on the existing serialized path.
+            if urlsplit(self.path).path=='/company-reports':
+                if not self.authorized():self.send_body(403,'{}','application/json');return
+                q=parse_qs(urlsplit(self.path).query)
+                if set(q) not in ({'code'},{'code','id'}) or any(len(v)!=1 for v in q.values()):self.send_body(400,'{}','application/json');return
+                from .company_reports import listing,read
+                try:
+                    value=read(root,q['code'][0],q['id'][0]) if 'id' in q else listing(root,q['code'][0])
+                    self.send_body(200,json.dumps(value,ensure_ascii=False),'application/json')
+                except ValueError as exc:self.send_body(400,json.dumps({'error':str(exc)},ensure_ascii=False),'application/json')
+                except (OSError,KeyError,TypeError,sqlite3.Error):self.send_body(503,'{"error":"보고서 저장소 연결 대기"}','application/json')
+                return
+            if urlsplit(self.path).path=='/company-events':
+                if not self.authorized():self.send_body(403,'{"error":"요청 거부"}','application/json');return
+                q=parse_qs(urlsplit(self.path).query)
+                if set(q)!={'code'} or len(q['code'])!=1 or not re.fullmatch(r'\d{6}',q['code'][0]):
+                    self.send_body(400,'{"error":"종목코드 확인 필요"}','application/json');return
+                from .company_events import view as event_view
+                try:self.send_body(200,json.dumps(event_view(root,q['code'][0],read_only=read_only),ensure_ascii=False),'application/json')
+                except (OSError,ValueError,KeyError,TypeError):self.send_body(503,'{"error":"뉴스·공시 연결 대기"}','application/json')
+                return
             if urlsplit(self.path).path=='/company-view':
                 with company_read_lock:
                     if restarting.is_set():
@@ -153,6 +183,9 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
             if current_build_id!=loaded_build_id:
                 self.send_body(503,restart_page(token) if self.path in ('/','/dashboard') else '{"error":"서버 다시 실행 필요"}',
                     'text/html' if self.path in ('/','/dashboard') else 'application/json');return
+            if self.path=='/report-inbox':
+                if not self.authorized():self.send_body(403,'{}','application/json');return
+                self.send_body(200,json.dumps(report_inbox.view(),ensure_ascii=False),'application/json');return
             if self.path=='/data-recovery':
                 if not self.authorized():self.send_body(403,'{}','application/json');return
                 try:self.send_body(200,json.dumps(recovery.view(),ensure_ascii=False),'application/json')
@@ -371,6 +404,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                         leases.append(acquire_lock(path))
                     with company_read_lock:
                         if company_reads:raise ValueError('기업 자료 조회 중입니다. 완료 후 다시 시도하세요.')
+                        report_inbox.pause()
                         restarting.set()
                 except (ValueError,TypeError,OSError) as exc:
                     for lease in leases:lease.close()
@@ -385,6 +419,21 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                 threading.Thread(target=restart,daemon=False).start();return
             if source_fingerprint(root)!=loaded_build_id:
                 self.send_body(503,'{"error":"코드 버전이 달라 서버 다시 실행 필요 · 기존 입력 유지"}','application/json');return
+            if self.path=='/report-inbox':
+                if not self.empty_refresh_request():self.send_body(403,'{}','application/json');return
+                self.send_body(200,json.dumps(report_inbox.scan(),ensure_ascii=False),'application/json');return
+            if self.path=='/company-reports':
+                if not self.authorized(mutation=True):self.send_body(403,'{}','application/json');return
+                from .company_reports import register,LIMIT as REPORT_LIMIT
+                try:
+                    size=int(self.headers.get('Content-Length','0'))
+                    if not 0<size<=6*REPORT_LIMIT or self.headers.get('Content-Type')!='application/json':raise ValueError('HTML 파일 크기·형식을 확인하세요.')
+                    self.connection.settimeout(15)
+                    value=register(root,json.loads(self.rfile.read(size)))
+                    self.send_body(200,json.dumps(value,ensure_ascii=False),'application/json')
+                except (ValueError,UnicodeError) as exc:self.send_body(400,json.dumps({'error':str(exc)},ensure_ascii=False),'application/json')
+                except (OSError,KeyError,TypeError,sqlite3.Error):self.send_body(503,'{"error":"보고서 저장 실패 · 기존 자료 유지"}','application/json')
+                return
             if self.path=='/data-recovery':
                 if not self.authorized(mutation=True):self.send_body(403,'{}','application/json');return
                 try:
@@ -476,6 +525,10 @@ def serve(root, *, port=8767, saved_only=False, read_only=False):
     latest=DailyMarketRefresh(root,collector=collect_quotes,kind='quote')
     financial=CompanyFinancials(root)
     monitor=FinancialMonitor(root,financial,track_completion=True)
-    with ThreadingHTTPServer(('127.0.0.1', port), handler_for(root,holdings=holdings,quotes=quotes,daily=daily,latest=latest,financial=financial,financial_monitor=monitor,refresh=saved_data if saved_only else ensure_data)) as server:
+    from .report_inbox import ReportInbox
+    inbox=ReportInbox(root)
+    with ThreadingHTTPServer(('127.0.0.1', port), handler_for(root,holdings=holdings,quotes=quotes,daily=daily,latest=latest,financial=financial,financial_monitor=monitor,report_inbox=inbox,refresh=configured_data if saved_only else ensure_data)) as server:
         print(f'INVESTMENT live dashboard: http://127.0.0.1:{server.server_port}/', flush=True)
-        server.serve_forever()
+        inbox.start()
+        try:server.serve_forever()
+        finally:inbox.stop()

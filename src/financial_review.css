@@ -9,3 +9,5 @@
 .risk-review-flags{font-weight:600;color:var(--warning,#92520b)}
 @media(max-width:720px){.financial-completeness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:360px){.financial-completeness-grid{grid-template-columns:1fr}.risk-review,.financial-completeness{padding:12px}}
+
+.financial-completeness>summary{cursor:pointer;font-weight:600;line-height:1.6}.financial-completeness[open]>summary{margin-bottom:12px}

@@ -57,7 +57,7 @@ def holdings_input(snapshot, as_of=None, events=None, market_cache=None):
     for row in snapshot['companies']:
         bar = observed_close(row, snapshot['meta']['price_date'])
         # An observed price is not a verified thesis, valuation or disclosure.
-        price_label = ('Infomax 저장 관측 종가 · 거래소 ' + (bar['venue'] or '미확인') +
+        price_label = (('네이버 저장 완료 일봉 · 거래소 ' if snapshot['meta'].get('market_provider') == 'naver' else 'Infomax 저장 관측 종가 · 거래소 ') + (bar['venue'] or '미확인') +
                        (' · 확정' if bar['final'] else ' · 잠정') +
                        ' · 보정 ' + bar['adjustment_basis']) if bar else ''
         rows.append(dict(code=row['code'], issuer_id=row.get('issuer_id') or row['code'],

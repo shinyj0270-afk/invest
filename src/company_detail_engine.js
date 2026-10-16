@@ -105,6 +105,17 @@ const CompanyDetailEngine=(()=>{
       ['borrowings','총차입금',v.total_borrowings,'억원',latest?.cell_notes?.total_borrowings||latest?.period_end]
     ];
   }
-  return {num,ratio,consecutive,priorYear,periods,aggregate,indicators,relative,eventList,estimatedShares,valuation,quantile,distribution,rim,decomposition,summary};
+
+  // Descriptive observations only; never infer profit quality or forecasts.
+  function reading(model,basis){
+    const quarters=periods(model,basis,'quarter').filter(c=>day(c.period_end)).sort((a,b)=>a.period_end.localeCompare(b.period_end));
+    const latest=quarters.at(-1),prior=priorYear(latest,quarters),v=latest?.values||{},p=prior?.values||{};
+    const growth=k=>num(v[k])&&num(p[k])&&p[k]>0?ratio(v[k]-p[k],p[k],100):null;
+    return {quarters,latest,prior,revenueGrowth:growth('revenue'),
+      marginChange:num(v.operating_margin)&&num(p.operating_margin)?v.operating_margin-p.operating_margin:null,
+      cash:{ocf:v.ocf??null,capex:num(v.capex_ppe)&&num(v.capex_intangibles)?Math.abs(v.capex_ppe)+Math.abs(v.capex_intangibles):null,
+        fcf:v.fcf??null,cash:v.cash_end??null,borrowings:v.total_borrowings??null,debtRatio:v.debt_ratio??null}};
+  }
+  return {reading,num,ratio,consecutive,priorYear,periods,aggregate,indicators,relative,eventList,estimatedShares,valuation,quantile,distribution,rim,decomposition,summary};
 })();
 if(typeof module!=='undefined')module.exports=CompanyDetailEngine;

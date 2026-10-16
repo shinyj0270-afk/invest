@@ -94,7 +94,7 @@
     $('pReturnSaved').hidden=data.mode!=='fixture';
     $('pHoldCount').textContent=data.holdings.length+'종목';
     // Saved daily closes may be newer than the reviewed Infomax snapshot; show both dates.
-    const review=data.mode==='user_input'?window.INVESTMENT_INITIAL_SNAPSHOT?.meta?.price_date:null,separate=review&&review!==data.market_data_as_of;
+    const review=data.mode==='user_input'?(window.INVESTMENT_INITIAL_SNAPSHOT?.meta?.infomax_review_date||window.INVESTMENT_INITIAL_SNAPSHOT?.meta?.price_date):null,separate=review&&review!==data.market_data_as_of;
     $('pScopeDetail').innerHTML=[`평가 기준일 ${data.as_of}`,data.market_data_as_of?`저장 시장자료 ${data.market_data_as_of} · 가격 기한 검사 적용 · 공시 검토 별도`:`가격·공시 최신성 자동확인 없음`,...(separate?[`인포맥스 검토 스냅샷 ${review} · 이후 가격은 네이버 저장 완료 일봉`]:[]),`후보 ${data.research.length}개 / 보유 ${data.holdings.length}개`,`스냅샷 ${data.snapshot_id}`].map(s=>`<span>${esc(s)}</span>`).join('');
     $('pScope').innerHTML=`<span>평가 ${esc(data.as_of)}</span><span>${data.market_data_as_of?'시장자료 '+esc(data.market_data_as_of):'가격 최신성 자동확인 없음'}</span>`+(separate?`<span>인포맥스 검토 ${esc(review)}</span>`:'');
     if(data.as_of!==today())$('pScope').innerHTML+=`<span class="p-date-warn">현재 날짜가 아닌 입력 평가일의 검토입니다.</span>`;

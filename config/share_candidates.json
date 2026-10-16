@@ -365,6 +365,17 @@
     "tests/test_layout_polish_ui.py": "tests/test_layout_polish_ui.py",
     "investment/listing_seasoning.py": "investment/listing_seasoning.py",
     "tests/test_listing_seasoning.py": "tests/test_listing_seasoning.py",
-    "tests/test_holdings_market_date_ui.py": "tests/test_holdings_market_date_ui.py"
+    "tests/test_holdings_market_date_ui.py": "tests/test_holdings_market_date_ui.py",
+    "investment/naver_review.py": "investment/naver_review.py",
+    "tests/test_naver_review.py": "tests/test_naver_review.py",
+    "investment/company_events.py": "investment/company_events.py",
+    "tests/test_company_events.py": "tests/test_company_events.py",
+    "investment/company_reports.py": "investment/company_reports.py",
+    "src/company_reports_ui.js": "src/company_reports_ui.js",
+    "tests/test_company_reports.py": "tests/test_company_reports.py",
+    "docs/EXTERNAL_REPORTS.md": "docs/EXTERNAL_REPORTS.md",
+    "investment/report_inbox.py": "investment/report_inbox.py",
+    "tests/test_report_inbox.py": "tests/test_report_inbox.py",
+    "docs/GOOSE_APPLICABILITY_AUDIT.md": "docs/GOOSE_APPLICABILITY_AUDIT.md"
   }
 }

@@ -222,7 +222,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
                          ('/*FINANCIAL_COMPLETENESS_UI*/', 'financial_completeness_ui.js'), ('/*FINANCIAL_REVIEW_CSS*/', 'financial_review.css'),
                          ('/*TREND_FOLLOWING_UI*/', 'trend_following_ui.js'), ('/*TREND_FOLLOWING_CSS*/', 'trend_following.css'),
                          ('/*COMPANY_DETAIL_CSS*/', 'company_detail.css'), ('/*COMPANY_DETAIL_ENGINE*/', 'company_detail_engine.js'), ('/*COMPANY_DETAIL_UI*/', 'company_detail_ui.js'),
-                         ('/*DISCOVERY_ENGINE*/', 'discovery_engine.js'), ('/*EBITDA_INPUTS*/', 'ebitda_inputs.js'), ('/*EBITDA_EDITOR*/', 'ebitda_editor.js'), ('/*FINANCIAL_TABLE_UI*/', 'financial_table_ui.js'), ('/*ADVANCED_VISUALS*/', 'advanced_visuals.js'), ('/*TREND_CHART_UI*/', 'trend_chart_ui.js'), ('/*DASHBOARD_UPGRADE_UI*/', 'dashboard_upgrade_ui.js'), ('/*RESEARCH_UI*/', 'research_ui.js'),
+                         ('/*DISCOVERY_ENGINE*/', 'discovery_engine.js'), ('/*EBITDA_INPUTS*/', 'ebitda_inputs.js'), ('/*EBITDA_EDITOR*/', 'ebitda_editor.js'), ('/*FINANCIAL_TABLE_UI*/', 'financial_table_ui.js'), ('/*ADVANCED_VISUALS*/', 'advanced_visuals.js'), ('/*TREND_CHART_UI*/', 'trend_chart_ui.js'), ('/*DASHBOARD_UPGRADE_UI*/', 'dashboard_upgrade_ui.js'), ('/*COMPANY_REPORTS_UI*/', 'company_reports_ui.js'), ('/*RESEARCH_UI*/', 'research_ui.js'),
                          ('/*ENGINE*/', 'engine.js'), ('/*PORTFOLIO_ENGINE*/', 'portfolio_engine.js')]:
         html = html.replace(marker, (src / name).read_text(encoding='utf-8'))
     html = html.replace('/*LIVE_CONFIG*/', script_json(live))

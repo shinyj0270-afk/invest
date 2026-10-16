@@ -38,6 +38,9 @@ def merge_daily(previous, daily):
     new_fetched = daily['meta'].get('fetched_at')
     if old_fetched and new_fetched and datetime.fromisoformat(new_fetched) < datetime.fromisoformat(old_fetched):
         raise ValueError('기존 자료보다 과거인 관측 시각입니다')
+    if daily['meta'].get('adapter_version') == 'naver-reviewed-market-0.1':
+        from .naver_review import validate_candidate
+        return copy.deepcopy(validate_candidate(previous, daily))
     result = copy.deepcopy(previous)
     # The daily importer has no financials; never copy those placeholders.
     market_meta = {k: v for k, v in daily['meta'].items()

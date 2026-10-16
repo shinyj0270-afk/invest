@@ -44,6 +44,9 @@ def provider_for(root, local, converter):
         raise ValueError('이 PC의 인포맥스 저장 파일 경로를 먼저 설정하세요')
     config = local.get('infomax_refresh') or {}
     kind = config.get('provider', 'daily' if config.get('daily_file') else 'snapshot')
+    if kind == 'naver':
+        from .naver_review import NaverMarketProvider
+        return NaverMarketProvider(root, local)
     if kind == 'daily':
         return SavedDailyProvider(root, config, converter)
     if kind == 'snapshot' and local.get('manual_snapshot_file'):

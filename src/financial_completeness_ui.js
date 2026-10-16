@@ -9,7 +9,7 @@ const FinancialCompletenessUI = (() => {
     if(!payload)return '';
     const native=payload.native_financial,complete=payload.financial_completeness||native?.completeness||payload;
     const latest=complete.latest_stored||{},ttm=complete.ttm||{},required=complete.required_accounts||{},roe=complete.roe||{};
-    let html='<section class="financial-completeness"><h3>재무 확보 상태</h3><div class="financial-completeness-grid">';
+    let html='<details class="financial-completeness"><summary>재무 확보 상태</summary><div class="financial-completeness-grid">';
     for(const [title,status,detail] of [['최근 저장 원문',latest.status,`${latest.period_start||''}${latest.period_start?' → ':''}${latest.period_end||'기간 미확인'} · ${complete.basis||'기준 미확인'} · ${complete.currency||'통화 미확인'}`],['TTM 연속 4분기',ttm.status,ttm.reason||(ttm.periods||[]).join(' / ')],['필수 계정',required.status,(required.missing||[]).length?'미확보 '+required.missing.map(k=>names[k]||k).join(', '):'매출·영업손익·순손익·대차·영업현금흐름'],['ROE 계산 조건',roe.status,roe.reason||'TTM 귀속 손익·전년 같은 회계분기 평균 자본']])html+=`<article><strong>${esc(title)} · ${label(status)}</strong><p>${esc(detail)}</p></article>`;
     html+='</div><p>다음 확인: '+esc(complete.next_action||'공식 원문·기간·통화 확인')+'</p>';
     if(latest.available_at)html+=`<p class="psub">최근 원문 공개 ${esc(latest.available_at)} · 제출번호 ${esc(latest.receipt||'미확인')}</p>`;
@@ -28,7 +28,7 @@ const FinancialCompletenessUI = (() => {
     }
     const urls=(complete.source_urls||[]).map(safeUrl).filter(Boolean);
     if(urls.length)html+='<p>'+urls.slice(0,6).map((url,i)=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">DART 원문 ${i+1}</a>`).join(' · ')+'</p>';
-    return html+'</section>';
+    return html+'</details>';
   }
   return {render};
 })();
