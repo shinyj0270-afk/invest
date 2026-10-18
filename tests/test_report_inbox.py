@@ -56,6 +56,18 @@ class ReportInboxTests(unittest.TestCase):
         other.start();self.assertFalse(other.folder.exists());self.assertFalse(other.view()['enabled'])
         with self.assertRaises(ValueError):other.scan()
         self.put();self.inbox.pause();self.inbox.scan();self.assertEqual(listing(self.root,'900001')['reports'],[])
+    def test_unchanged_scan_preserves_dashboard_input_version(self):
+        from investment.live_dashboard import dashboard_input_version
+        self.inbox.scan()
+        os.utime(self.inbox.state_path,(1,1))
+        with patch('investment.live_dashboard.load_local',return_value=self.cfg):
+            before=dashboard_input_version(self.root)
+            self.inbox.scan()
+            self.assertEqual(dashboard_input_version(self.root),before)
+        self.put()
+        self.inbox.scan()
+        saved=json.loads(self.inbox.state_path.read_text(encoding='utf-8'))
+        self.assertIn('arbitrary.html',saved['files'])
     def test_background_lifecycle(self):
         event=threading.Event()
         with patch('investment.dashboard_build.source_fingerprint',return_value='test'),patch.object(self.inbox,'scan',side_effect=event.set):

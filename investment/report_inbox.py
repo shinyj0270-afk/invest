@@ -27,9 +27,13 @@ class ReportInbox:
                         files=sorted(self.files.values(),key=lambda x:x.get('checked_at',''),reverse=True)[:30])
 
     def save(self):
+        content=json.dumps(dict(folder=str(self.folder),files=self.files),ensure_ascii=False)
+        try:
+            if self.state_path.read_text(encoding='utf-8')==content:return
+        except FileNotFoundError:pass
         self.state_path.parent.mkdir(parents=True,exist_ok=True)
         temp=self.state_path.with_suffix('.tmp')
-        temp.write_text(json.dumps(dict(folder=str(self.folder),files=self.files),ensure_ascii=False),encoding='utf-8')
+        temp.write_text(content,encoding='utf-8')
         os.replace(temp,self.state_path)
 
     def import_file(self,path,raw):
