@@ -60,6 +60,37 @@ Saved Messages를 일반 Bot API로 직접 읽는 방식은 이번 기본 경로
 보호된 메시지 전달 제한은 [Bot API](https://core.telegram.org/bots/api#forwardmessage)를 따른다.
 업데이트 보관 기간은 [Getting updates](https://core.telegram.org/bots/api#getting-updates)에 따른다.
 
+## 2단계 최소 수신기 (2026-10-19 구현)
+
+`investment/telegram_listen.py` / `tools/telegram_listen.py`는 지정한 비공개 채널 한 곳의
+신규 게시물을 Bot API `getUpdates`로 받아 로컬 참조 메타데이터만 남기는 최소 수신기다.
+예약·자동 시작·상시 데몬이 아니며 사용자가 직접 실행할 때만 한 번 poll한다. DB·Research
+Library 입력은 하지 않으며 그 연결은 3단계(연구 연결)에서 별도로 진행한다.
+
+- 토큰은 `TELEGRAM_BOT_TOKEN` 환경변수로만 전달한다. 파일·채팅·코드에 토큰을 넣지 않는다.
+- 채널 식별: 먼저 `discover`로 대기 중인 업데이트의 chat id/제목만 확인한다(파일을 쓰지 않고
+  오프셋도 소비하지 않음). 사용자가 올바른 채널임을 직접 확인한 뒤 `channels.json`(기존
+  `tools/telegram_export.py`와 같은 형식)의 `expected_id`에 숫자를 고정해야 `poll`이 동작한다.
+  `expected_id`가 비어 있으면 거부한다.
+- `poll`은 저장된 offset부터 해당 chat_id의 `channel_post`/`edited_channel_post`만 받는다.
+  다른 chat 메시지는 `rejected_wrong_chat`으로 세고 저장하지 않는다. 채널 제목이 바뀌면 상태를
+  보존한 채 중단해 사람이 확인하게 한다. 원문 본문·첨부·발신자는 저장하지 않고, 각 항목은
+  `message_id`/`published_on`(KST)/`reference`(`t.me/c/` 링크)/추출된 외부 HTTPS 링크/본문
+  변경 감지용 digest만 남긴다. `t.me`/`telegram.me`/`telegram.dog` 링크는 추출하지 않는다.
+  수정 게시물은 같은 message_id라도 `is_edit=true`로 다시 기록한다.
+- 출력은 `.local/` 아래 상태 파일(offset·처리된 message_id)과 poll마다 새로 생기는
+  `receipt-*.json`(신규 항목이 있을 때만 생성)이다. 최대 24시간 보관되는 Bot API 업데이트
+  한도, 완전성 미확인, PC/수신 프로그램이 꺼져 있으면 수신되지 않는다는 점은 그대로 유지한다.
+
+```powershell
+$env:TELEGRAM_BOT_TOKEN = '<home 전용, 채팅에 붙여넣지 않음>'
+python tools/telegram_listen.py discover
+python tools/telegram_listen.py poll --channels .local/telegram-research/channels.json --channel channel-a --state .local/telegram-research/state/channel-a.json --output-dir .local/telegram-research/live/channel-a
+```
+
+실제 봇 연결·실제 채널 잠금·실제 소량 수신 검증은 집 PC에서 사용자가 토큰을 직접 입력한 뒤
+진행한다. 이 구현만으로 실제 연결 완료로 보고하지 않는다.
+
 ## 기존 보조 방식: home JSON 입력 준비 (2026-10-13 구현)
 
 Telegram Desktop의 채널별 **Export chat history → JSON**을 사람이 실행하고,
