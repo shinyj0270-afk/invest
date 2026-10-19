@@ -406,6 +406,10 @@
     "tests/test_leader_strategy.py": "tests/test_leader_strategy.py",
     "tests/test_strategy_views_ui.py": "tests/test_strategy_views_ui.py",
     "tools/check_strategy_observations.py": "tools/check_strategy_observations.py",
-    "docs/STRATEGY_OBSERVATION_CHECK.md": "docs/STRATEGY_OBSERVATION_CHECK.md"
+    "docs/STRATEGY_OBSERVATION_CHECK.md": "docs/STRATEGY_OBSERVATION_CHECK.md",
+    "investment/telegram_export.py": "investment/telegram_export.py",
+    "tools/telegram_export.py": "tools/telegram_export.py",
+    "tests/test_telegram_export.py": "tests/test_telegram_export.py",
+    "docs/TELEGRAM_COLLECTION.md": "docs/TELEGRAM_COLLECTION.md"
   }
 }
