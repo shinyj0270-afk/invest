@@ -37,6 +37,12 @@ assert.ok(Math.abs(semis.concentration.top3_share_pct-980/1000*100)<1e-9);
 assert.equal(semis.spread.median1m_pct,0.5);
 const exTop=(50*-5+30*2+5*-1)/(50+30+5);
 assert.ok(Math.abs(semis.spread.ex_top1m_pct-exTop)<1e-9);
+// The largest member stays the exclusion target even when its return is missing.
+const missingTop=E.groups([row('T0','MissingTop',1000),row('T1','MissingTop',100),row('T2','MissingTop',50)],
+  {rows:{T0:tech(null,100,null,null),T1:tech(110,100,10,10),T2:tech(90,100,-10,-10)}},null)[0];
+assert.equal(missingTop.concentration.top.code,'T0');
+assert.equal(missingTop.spread.ex_top_count,2);
+assert.ok(Math.abs(missingTop.spread.ex_top1m_pct-10/3)<1e-9);
 // Financial medians come from DiscoveryEngine.sectors with comparability checks.
 assert.equal(semis.financial.roe_pct.value,10);assert.equal(semis.financial.roe_pct.count,5);
 // Revenue breadth: existing revenue growth, only within the most common period/basis cohort.
@@ -60,6 +66,13 @@ assert.deepEqual(E.overview(groups,{sort:'breadth'}).ranked.map(g=>g.key),[]);
 const bare=E.groups(rows,research,null);
 assert.equal(bare.find(g=>g.key==='KOSPI|Semis').rs,null);
 assert.equal(E.overview(bare,{sort:'rs1m'}).ranked.length,0);
+// Valid scores from different exchange distributions never form a shared ranking.
+const twoMarkets=[{...semis,key:'KOSPI|A',industry:'A'},
+  {...semis,key:'KOSDAQ|B',industry:'B',market:'KOSDAQ',rs:{'1m':short(99,5)}}];
+const separated=E.overview(twoMarkets);
+assert.deepEqual(separated.markets.map(m=>[m.market,m.ranked.map(g=>g.key)]),
+  [['KOSPI',['KOSPI|A']],['KOSDAQ',['KOSDAQ|B']]]);
+assert.deepEqual(E.overview(twoMarkets,{market:'KOSDAQ'}).markets.map(m=>m.market),['KOSDAQ']);
 
 // Research links: explicit instrument links and transparent name-correspondence candidates only.
 const library={theses:[

@@ -105,6 +105,30 @@ with sync_playwright() as p:
     page.locator('#navigation [data-page="industry"]').click();view.locator('[data-industry]').first.click()
     expect(page.locator('#industryResearch')).to_contain_text('연구자료가 포함되지 않습니다')
     assert calls==[],calls
+    # Both exchanges have valid scores, but each table starts its own ranking at 1.
+    both=copy.deepcopy(payload)
+    for i, original in enumerate(companies[:5]):
+        extra=copy.deepcopy(original);extra.update(code=f'98000{i}',market='KOSDAQ')
+        both['discovery']['snapshot']['companies'].append(extra)
+        both['discovery']['research']['rows'][extra['code']]=copy.deepcopy(discovery['research']['rows'][original['code']])
+    both['market_insights']['sectors'].append(dict(market='KOSDAQ',industry=semis,count=5,
+        short_rs={k:dict(return_pct=9,score=99,count=5,cap_eok=6000) for k in ('1m','3m','6m')}))
+    current['html']=document(both,None);page.reload()
+    page.locator('#navigation [data-page="industry"]').click()
+    for market in ('KOSPI','KOSDAQ'):
+        market_view=view.locator(f'[data-industry-market="{market}"]')
+        expect(market_view).to_be_visible()
+        assert market_view.locator('.ind-rank').all_text_contents()==['1']
+        assert market_view.locator('[data-industry]').evaluate_all('(els)=>els.every(e=>e.dataset.industry.startsWith('+json.dumps(market+'|')+'))')
+    for width in (1440,390,320):
+        page.set_viewport_size({'width':width,'height':844})
+        assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),width
+    # A live token must not bypass result-view research exclusion.
+    page.set_viewport_size({'width':1440,'height':1000})
+    calls.clear();current['html']=document(result,{'token':'synthetic'});page.reload()
+    page.locator('#navigation [data-page="industry"]').click();view.locator('[data-industry]').first.click()
+    expect(page.locator('#industryResearch')).to_contain_text('연구자료가 포함되지 않습니다')
+    assert calls==[],calls
     assert not errors,errors
     browser.close()
 print('PASS industry overview/detail/company/library flow, unranked thin groups, XSS, failure, result view, 1440/390/320px')

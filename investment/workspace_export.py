@@ -1,5 +1,6 @@
 """Offline HTML viewer using the existing market and portfolio engines."""
 import json
+from datetime import date
 from copy import deepcopy
 from pathlib import Path
 from .core import validate_snapshot
@@ -24,11 +25,16 @@ def load_sector_map(path=None):
     """User-confirmed research sector → industry names. Invalid files link nothing."""
     try:
         data = json.loads(Path(path or ROOT/'config/industry_sector_map.json').read_text(encoding='utf-8'))
+        if type(data['version']) is not int or data['version'] != 1 or data['decided_by'] != 'user':
+            raise ValueError('confirmation')
+        decided_on = data['decided_on']
+        if not isinstance(decided_on, str) or date.fromisoformat(decided_on).isoformat() != decided_on:
+            raise ValueError('decided_on')
         sectors = data['sectors']
         if not isinstance(sectors, dict) or not all(isinstance(k, str) and k.strip() and isinstance(v, list) and v
                 and all(isinstance(x, str) and x.strip() for x in v) for k, v in sectors.items()):
             raise ValueError('sectors')
-        return dict(status='ready', decided_on=str(data['decided_on']), decided_by=str(data['decided_by']), sectors=sectors)
+        return dict(status='ready', decided_on=decided_on, decided_by='user', sectors=sectors)
     except (OSError, ValueError, KeyError, TypeError):
         return dict(status='invalid', sectors={})
 

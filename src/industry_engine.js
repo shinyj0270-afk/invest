@@ -27,7 +27,8 @@ const IndustryEngine=(()=>{
   function spread(members,research){
     const r1=r=>tech(research,r).short_rs?.['1m']?.return_pct;
     const valid=members.filter(r=>priced(tech(research,r))&&num(r1(r)));
-    const capped=valid.filter(r=>cap(r)!==null).sort((a,b)=>cap(b)-cap(a)||a.code.localeCompare(b.code)).slice(1);
+    const top=concentration(members).top;
+    const capped=valid.filter(r=>cap(r)!==null&&r.code!==top?.code);
     const weight=capped.reduce((s,r)=>s+cap(r),0);
     return {median1m_pct:median(valid.map(r1)),count:valid.length,
       ex_top1m_pct:weight?capped.reduce((s,r)=>s+cap(r)*r1(r),0)/weight:null,ex_top_count:capped.length};
@@ -63,9 +64,12 @@ const IndustryEngine=(()=>{
   function overview(all,{sort='rs1m',market='',query=''}={}){
     const q=String(query).trim().toLocaleLowerCase();
     const shown=all.filter(g=>(!market||g.market===market)&&(!q||g.industry.toLocaleLowerCase().includes(q)));
-    const ranked=shown.filter(g=>rankValue(g,sort)!==null).sort((a,b)=>rankValue(b,sort)-rankValue(a,sort)||a.key.localeCompare(b.key));
-    const limited=shown.filter(g=>rankValue(g,sort)===null).sort((a,b)=>a.key.localeCompare(b.key));
-    return {ranked,limited,sort,min_members:MIN_MEMBERS};
+    const order=['KOSPI','KOSDAQ'];
+    const names=[...new Set(shown.map(g=>g.market))].sort((a,b)=>(order.indexOf(a)<0?2:order.indexOf(a))-(order.indexOf(b)<0?2:order.indexOf(b))||a.localeCompare(b));
+    const markets=names.map(m=>{const members=shown.filter(g=>g.market===m);return {market:m,
+      ranked:members.filter(g=>rankValue(g,sort)!==null).sort((a,b)=>rankValue(b,sort)-rankValue(a,sort)||a.key.localeCompare(b.key)),
+      limited:members.filter(g=>rankValue(g,sort)===null).sort((a,b)=>a.key.localeCompare(b.key))};});
+    return {markets,ranked:markets.flatMap(m=>m.ranked),limited:markets.flatMap(m=>m.limited).sort((a,b)=>a.key.localeCompare(b.key)),sort,min_members:MIN_MEMBERS};
   }
   const sectorsOf=r=>[...new Set([r.metadata?.sector,r.value?.sector].filter(s=>typeof s==='string'&&!GENERIC.has(s.trim())))];
   const instrumentsOf=r=>[...(r.metadata?.instruments||[]),...(r.value?.instruments||[])];
