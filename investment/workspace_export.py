@@ -20,6 +20,19 @@ from .thesis_monitor import load_theses, evaluate as evaluate_thesis
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def load_sector_map(path=None):
+    """User-confirmed research sector → industry names. Invalid files link nothing."""
+    try:
+        data = json.loads(Path(path or ROOT/'config/industry_sector_map.json').read_text(encoding='utf-8'))
+        sectors = data['sectors']
+        if not isinstance(sectors, dict) or not all(isinstance(k, str) and k.strip() and isinstance(v, list) and v
+                and all(isinstance(x, str) and x.strip() for x in v) for k, v in sectors.items()):
+            raise ValueError('sectors')
+        return dict(status='ready', decided_on=str(data['decided_on']), decided_by=str(data['decided_by']), sectors=sectors)
+    except (OSError, ValueError, KeyError, TypeError):
+        return dict(status='invalid', sectors={})
+
+
 def market_summary(snapshot, market_cache, target_date):
     """Same-date observed benchmark closes; never substitute intraday quotes."""
     result = []
@@ -239,7 +252,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
         research=research, discovery=discovery, financial_tables=financial_tables, company_details=company_details,market_insights=market_insights,thesis_monitor=thesis_monitor,
         trend_following=trend_data, market_contract=dict(same_day_after='%02d:%02d'%DAILY_PUBLICATION_TIME,timezone='Asia/Seoul'),
         market_summary=market_summary(analysis, market_cache, discovery['snapshot']['meta']['price_date'] if discovery else analysis['meta']['price_date']),
-        references=sanitize_references(references or {}, snapshot), detail_html=legacy)
+        references=sanitize_references(references or {}, snapshot), detail_html=legacy, industry_sector_map=load_sector_map())
     if (live or {}).get('lazy_company_views'):
         # Wire compaction edits only a private graph, outside source caches
         # and caller-supplied trend models.

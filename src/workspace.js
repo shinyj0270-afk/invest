@@ -44,7 +44,7 @@ pages.unshift(['내 투자','home','대시보드']);
 pages.push(['장기 연구','research-library','Research Library']);
 pages.push(['기업 발굴','industry','산업 연구']);
 const libraryUI=ResearchLibraryUI.create($('researchLibrary'),INVESTMENT_LIVE);
-const industryUI=IndustryUI.create({element:$('industryView'),rows:researchRows,research:researchData||{},insights:WORKSPACE_DATA.market_insights,meta:researchSnap.meta,live:INVESTMENT_LIVE,resultView:!!WORKSPACE_DATA.result_view,openCompany:c=>{code=c;go('brief');},openLibrary:preset=>{libraryUI.open(preset);go('research-library');}});
+const industryUI=IndustryUI.create({element:$('industryView'),rows:researchRows,research:researchData||{},insights:WORKSPACE_DATA.market_insights,meta:researchSnap.meta,live:INVESTMENT_LIVE,resultView:!!WORKSPACE_DATA.result_view,sectorMap:WORKSPACE_DATA.industry_sector_map,openCompany:c=>{code=c;go('brief');},openLibrary:preset=>{libraryUI.open(preset);go('research-library');}});
 const mainPages=[['home','대시보드'],['industry','산업 연구'],['finder','기업 찾기'],['watch','관심 기업'],['brief','기업 분석'],['holdings','내 보유종목'],['recommendations','포트폴리오']];
 const comparisonPages=['overview','prices','bars','heatmap','scatter','data'];
 const extraPages=[['자료 비교','overview','자료 비교'],['도구','advanced','고급 시각화'],['검토 기업 분석','screen','검토 조건검색'],['장기 연구','research-library','Research Library']];

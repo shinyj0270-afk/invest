@@ -21,6 +21,7 @@ for i,row in enumerate(companies):
              short_rs={k:dict(return_pct=(i-2)*1.5 if close else None,score=50+i if close else None) for k in ('1m','3m','6m')})
 payload['discovery']=discovery
 semis=companies[0]['industry']
+payload['industry_sector_map']=dict(status='ready',decided_on='2026-10-19',decided_by='user',sectors={'반도체':[semis]})
 payload['market_insights']={'definition':'합성 업종 정의','markets':[],'sectors':[
     {'market':'KOSPI','industry':semis,'count':5,'short_rs':{k:{'return_pct':4.2,'score':88.5,'count':5,'cap_eok':6000} for k in ('1m','3m','6m')}},
     {'market':'KOSPI','industry':'화학','count':2,'short_rs':{k:{'return_pct':1.0,'score':None,'count':2,'cap_eok':3200} for k in ('1m','3m','6m')}}]}
@@ -60,12 +61,15 @@ with sync_playwright() as p:
     expect(view).to_contain_text('구성기업으로의 확산')
     expect(view.locator('.ind-facts').first).to_contain_text('200일선 위 기업60%3/5개')
     expect(view).to_contain_text('연구 중 · 검증 전')
-    expect(view).to_contain_text('산업명 대응 후보 · 사람 확인 전')
+    expect(view).to_contain_text('매출 증가 기업 비중')
+    expect(view).to_contain_text('영업이익 증가 기업 비중미확보')
+    expect(view).to_contain_text('사용자 확정 산업 대응표 연결')
     expect(view).to_contain_text('구성기업 직접 연결')
     expect(view).to_contain_text('원문 발행 2026-10-01')
     assert view.locator('a[href^="javascript:"]').count()==0
     assert view.locator('#industryResearch a[href="https://example.invalid/a"]').count()>=1
     assert set(calls)=={'GET'},calls
+    expect(view).to_contain_text('사용자 확정 대응표(2026-10-19)')
     for width in (390,320):
         page.set_viewport_size({'width':width,'height':844})
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),width

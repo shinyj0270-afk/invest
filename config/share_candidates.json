@@ -338,6 +338,8 @@
     "src/industry.css": "src/industry.css",
     "tests/test_industry_engine.js": "tests/test_industry_engine.js",
     "tests/test_industry_ui.py": "tests/test_industry_ui.py",
+    "tests/test_industry_sector_map.py": "tests/test_industry_sector_map.py",
+    "config/industry_sector_map.json": "config/industry_sector_map.json",
     "tests/test_research_library_view.py": "tests/test_research_library_view.py",
     "tests/test_research_library_ui.py": "tests/test_research_library_ui.py",
     "src/icons.js": "src/icons.js",

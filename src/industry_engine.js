@@ -32,6 +32,17 @@ const IndustryEngine=(()=>{
     return {median1m_pct:median(valid.map(r1)),count:valid.length,
       ex_top1m_pct:weight?capped.reduce((s,r)=>s+cap(r)*r1(r),0)/weight:null,ex_top_count:capped.length};
   }
+  // Revenue breadth reuses the stored revenue growth; only the most common
+  // known period/basis cohort is compared, other members are counted as excluded.
+  function revenue(members,research){
+    const valid=members.filter(r=>num(r.metrics?.revenue_growth_pct)),cohorts=new Map();
+    for(const r of valid){const d=DiscoveryEngine.detail(r,research||{},'revenue_growth_pct');
+      if(!DiscoveryEngine.known(d.period)||!DiscoveryEngine.known(d.basis))continue;
+      const key=d.period+'|'+d.basis;if(!cohorts.has(key))cohorts.set(key,[]);cohorts.get(key).push(r);}
+    const [key,cohort]=[...cohorts].sort((a,b)=>b[1].length-a[1].length||b[0].localeCompare(a[0]))[0]||[null,[]];
+    const [period,basis]=key?key.split('|'):[null,null],count=cohort.filter(r=>r.metrics.revenue_growth_pct>0).length;
+    return {count,eligible:cohort.length,pct:cohort.length?count/cohort.length*100:null,period,basis,excluded:valid.length-cohort.length,missing:members.length-valid.length};
+  }
   function groups(rows,research,insights){
     const map=new Map();
     for(const r of rows){if(r.discovery_allowed===false)continue;const industry=r.industry||'산업 미분류',key=r.market+'|'+industry;
@@ -40,7 +51,7 @@ const IndustryEngine=(()=>{
     return [...map.values()].sort((a,b)=>a.key.localeCompare(b.key)).map(g=>{
       const sector=stored.get(g.key),fin=DiscoveryEngine.sectors(g.members,research||{})[0];
       return {...g,count:g.members.length,rs:sector?sector.short_rs:null,rs_count:sector?.count??null,
-        breadth:breadth(g.members,research),concentration:concentration(g.members),spread:spread(g.members,research),
+        breadth:breadth(g.members,research),revenue:revenue(g.members,research),concentration:concentration(g.members),spread:spread(g.members,research),
         financial:fin?.metrics||{},priced_count:g.members.filter(r=>priced(tech(research,r))).length};
     });
   }
@@ -59,13 +70,13 @@ const IndustryEngine=(()=>{
   const sectorsOf=r=>[...new Set([r.metadata?.sector,r.value?.sector].filter(s=>typeof s==='string'&&!GENERIC.has(s.trim())))];
   const instrumentsOf=r=>[...(r.metadata?.instruments||[]),...(r.value?.instruments||[])];
   const records=lib=>[['thesis',lib?.theses],['master',lib?.cards],['agent_note',lib?.notes],['source',lib?.sources]].flatMap(([kind,rs])=>(rs||[]).map(record=>({kind,record})));
-  // Name correspondence is a transparent text rule (research sector contained in the
-  // industry name or vice versa). It is a candidate for human review, not a mapping.
-  function related(lib,{industry,members}){
-    const codes=new Set((members||[]).map(m=>m.code)),out=[];
+  // Sector links use only the user-confirmed table (config/industry_sector_map.json);
+  // text similarity alone never links research to an industry.
+  function related(lib,{industry,members},map){
+    const codes=new Set((members||[]).map(m=>m.code)),mapped=s=>(map?.sectors?.[s]||[]).includes(industry),out=[];
     for(const {kind,record} of records(lib)){
       if(instrumentsOf(record).some(i=>codes.has(i?.code)))out.push({kind,record,link:'company'});
-      else if(sectorsOf(record).some(s=>industry.includes(s)||s.includes(industry)))out.push({kind,record,link:'name'});
+      else if(sectorsOf(record).some(mapped))out.push({kind,record,link:'map'});
     }
     return out.sort((a,b)=>(a.link==='company'?0:1)-(b.link==='company'?0:1));
   }

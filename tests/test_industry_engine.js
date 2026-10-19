@@ -39,6 +39,15 @@ const exTop=(50*-5+30*2+5*-1)/(50+30+5);
 assert.ok(Math.abs(semis.spread.ex_top1m_pct-exTop)<1e-9);
 // Financial medians come from DiscoveryEngine.sectors with comparability checks.
 assert.equal(semis.financial.roe_pct.value,10);assert.equal(semis.financial.roe_pct.count,5);
+// Revenue breadth: existing revenue growth, only within the most common period/basis cohort.
+assert.deepEqual(semis.revenue,{count:5,eligible:5,pct:100,period:'2026-06-30',basis:'CFS',excluded:0,missing:0});
+const mixed=[row('M1','Mix',10),row('M2','Mix',10),row('M3','Mix',10),row('M4','Mix',10),row('M5','Mix',10)];mixed[4].metrics.revenue_growth_pct=null;
+mixed[1].metrics.revenue_growth_pct=-2;mixed[2].metrics.revenue_growth_pct=0;
+mixed[3].metric_details={...mixed[3].metric_details,revenue_growth_pct:{period:'2025-12-31',basis:'OFS'}};
+const mix=E.groups(mixed,{rows:{}},null)[0].revenue;
+assert.deepEqual(mix,{count:1,eligible:3,pct:1/3*100,period:'2026-06-30',basis:'CFS',excluded:1,missing:1});
+const unknown=[row('U1','Unk',10)];unknown[0].metric_details={revenue_growth_pct:{period:'미확인',basis:'CFS'}};
+assert.deepEqual(E.groups(unknown,{rows:{}},null)[0].revenue,{count:0,eligible:0,pct:null,period:null,basis:null,excluded:1,missing:0});
 // Ranking only where the existing RS percentile exists; thin groups are listed, never ranked.
 const view=E.overview(groups,{sort:'rs1m'});
 assert.deepEqual(view.ranked.map(g=>g.key),['KOSPI|Semis']);
@@ -57,9 +66,14 @@ const library={theses:[
   {id:'t1',value:{sector:'반도체',claim:'c',instruments:[]},metadata:{sector:'반도체'}},
   {id:'t2',value:{sector:'전력기기',claim:'c',instruments:[{code:'A',market:'KOSPI',kind:'stock'}]},metadata:{}},
   {id:'t3',value:{sector:'산업공통',claim:'c'},metadata:{sector:'산업공통'}}],cards:[],notes:[],sources:[]};
-const linked=E.related(library,{industry:'반도체와반도체장비',members:[{code:'A'}]});
-assert.deepEqual(linked.map(l=>[l.record.id,l.link]),[['t2','company'],['t1','name']]);
-assert.deepEqual(E.related(library,{industry:'화학',members:[]}),[]);
+const map={sectors:{'반도체':['반도체와반도체장비'],'전력기기':['전기장비']}};
+const linked=E.related(library,{industry:'반도체와반도체장비',members:[{code:'A'}]},map);
+assert.deepEqual(linked.map(l=>[l.record.id,l.link]),[['t2','company'],['t1','map']]);
+// Only the user-confirmed table links sectors; substring similarity alone never does.
+assert.deepEqual(E.related(library,{industry:'반도체와반도체장비',members:[]},{sectors:{}}),[]);
+assert.deepEqual(E.related(library,{industry:'반도체장비',members:[]},map),[]);
+assert.deepEqual(E.related(library,{industry:'전기장비',members:[]},map).map(l=>l.record.id),['t2']);
+assert.deepEqual(E.related(library,{industry:'화학',members:[]},map),[]);
 assert.deepEqual(E.librarySectors(library),['반도체','전력기기']);
 // Thesis states are labelled as research, never as a current leading-industry call.
 assert.equal(E.statusLabel('active'),'연구 중 · 검증 전');
