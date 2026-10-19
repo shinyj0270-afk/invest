@@ -398,20 +398,27 @@ const PortfolioEngine = (() => {
   function bookSummary(x,p){
     const map=new Map(x.research.map(r=>[r.code,r]));
     let total=x.cash_krw,complete=x.cash_krw!==null;
-    const missing=[];
+    const missing=[],incompleteReasons=[];
+    if(x.cash_krw===null)incompleteReasons.push('현금 미입력');
     const positions=x.holdings.map(h=>{
       const r=map.get(h.code),bad=priceBlockers(r,x.as_of,p);
+      const label=r?.name&&r.name!==h.code?`${r.name}(${h.code})`:h.code;
       let value=!bad.length?h.quantity*r.price_krw:null;
-      if(value!==null&&(!num(value)||value>Number.MAX_SAFE_INTEGER))value=null;
+      if(value!==null&&(!num(value)||value>Number.MAX_SAFE_INTEGER)){value=null;incompleteReasons.push(`${label} 평가액 계산 범위 초과`);}
+      else if(value===null)incompleteReasons.push(`${label} 가격 확인 필요`);
       if(value===null){complete=false;missing.push(h.code);}
       else if(total!==null)total+=value;
       const cost=h.avg_cost_krw===null?null:h.quantity*h.avg_cost_krw;
       const usableCost=cost!==null&&num(cost)&&cost<=Number.MAX_SAFE_INTEGER?cost:null;
       return {...h,name:r?.name||h.code,value_krw:value,cost_krw:usableCost,pnl_krw:value!==null&&usableCost!==null?value-usableCost:null,pnl_pct:value!==null&&usableCost>0?(value/usableCost-1)*100:null,weight_pct:null};
     });
+    if(complete&&total!==null){
+      if(!num(total)||total>Number.MAX_SAFE_INTEGER)incompleteReasons.push('전체 평가액 계산 범위 초과');
+      else if(total<=0)incompleteReasons.push('전체 평가액이 0원이라 비중 계산 불가');
+    }
     if(!complete||total===null||!num(total)||total>Number.MAX_SAFE_INTEGER||total<=0){total=null;complete=false;}
     if(complete)for(const pos of positions)pos.weight_pct=pos.value_krw/total*100;
-    return {complete,total_krw:total,cash_krw:x.cash_krw,positions,missing_codes:missing};
+    return {complete,total_krw:total,cash_krw:x.cash_krw,positions,missing_codes:missing,incomplete_reasons:incompleteReasons};
   }
   function reviewHoldings(x,policy={}){
     validate(x);const p=cleanPolicy(policy),book=bookSummary(x,p),map=new Map(x.research.map(r=>[r.code,r]));
@@ -419,7 +426,7 @@ const PortfolioEngine = (() => {
       const r=map.get(pos.code),c=companyReview(r,x.as_of,p),over=pos.weight_pct!==null&&pos.weight_pct>p.companyCapPct;
       const issuerWeight=r&&book.complete?book.positions.filter(h=>map.get(h.code)?.issuer_id===r.issuer_id).reduce((s,h)=>s+h.weight_pct,0):null;
       const companyOver=issuerWeight!==null&&issuerWeight>p.companyCapPct;
-      let portfolioAction=book.complete?(companyOver?'동일 기업 합산 비중 상한 초과 · 축소 검토':'설정한 개별기업 비중 상한 이내'):'잔고·가격 부족으로 비중 판단 보류';
+      let portfolioAction=book.complete?(companyOver?'동일 기업 합산 비중 상한 초과 · 축소 검토':'설정한 개별기업 비중 상한 이내'):'비중 판단 보류: '+book.incomplete_reasons.join(' · ');
       return {...pos,...c,code:pos.code,company_opinion:c.opinion,portfolio_action:portfolioAction,overweight:companyOver,issuer_weight_pct:issuerWeight,research:r||null};
     })};
   }
@@ -777,14 +784,16 @@ const HoldingsSyncUI = (() => {
     if(entryAuto)$('pEntryPanel').open=!data.holdings.length;
     $('pReturnSaved').hidden=data.mode!=='fixture';
     $('pHoldCount').textContent=data.holdings.length+'종목';
-    $('pScopeDetail').innerHTML=[`평가 기준일 ${data.as_of}`,data.market_data_as_of?`저장 시장자료 ${data.market_data_as_of} · 가격 기한 검사 적용 · 공시 검토 별도`:`가격·공시 최신성 자동확인 없음`,`후보 ${data.research.length}개 / 보유 ${data.holdings.length}개`,`스냅샷 ${data.snapshot_id}`].map(s=>`<span>${esc(s)}</span>`).join('');
-    $('pScope').innerHTML=`<span>평가 ${esc(data.as_of)}</span><span>${data.market_data_as_of?'시장자료 '+esc(data.market_data_as_of):'가격 최신성 자동확인 없음'}</span>`;
+    // Saved daily closes may be newer than the reviewed Infomax snapshot; show both dates.
+    const review=data.mode==='user_input'?(window.INVESTMENT_INITIAL_SNAPSHOT?.meta?.infomax_review_date||window.INVESTMENT_INITIAL_SNAPSHOT?.meta?.price_date):null,separate=review&&review!==data.market_data_as_of;
+    $('pScopeDetail').innerHTML=[`평가 기준일 ${data.as_of}`,data.market_data_as_of?`저장 시장자료 ${data.market_data_as_of} · 가격 기한 검사 적용 · 공시 검토 별도`:`가격·공시 최신성 자동확인 없음`,...(separate?[`인포맥스 검토 스냅샷 ${review} · 이후 가격은 네이버 저장 완료 일봉`]:[]),`후보 ${data.research.length}개 / 보유 ${data.holdings.length}개`,`스냅샷 ${data.snapshot_id}`].map(s=>`<span>${esc(s)}</span>`).join('');
+    $('pScope').innerHTML=`<span>평가 ${esc(data.as_of)}</span><span>${data.market_data_as_of?'시장자료 '+esc(data.market_data_as_of):'가격 최신성 자동확인 없음'}</span>`+(separate?`<span>인포맥스 검토 ${esc(review)}</span>`:'');
     if(data.as_of!==today())$('pScope').innerHTML+=`<span class="p-date-warn">현재 날짜가 아닌 입력 평가일의 검토입니다.</span>`;
     $('pValue').textContent=fmt(b.total_krw,'원',0);
     $('pReviewCount').textContent=data.holdings.length?String(result.rows.filter(r=>['SELL','REVIEW','REDUCE'].includes(r.opinion)).length):'—';
     $('pWaitCount').textContent=data.holdings.length?String(result.rows.filter(r=>r.opinion==='WAIT').length):'—';
     $('pHoldBody').innerHTML=result.rows.length?result.rows.map(r=>`<tr><td class="left">${window.parent!==window&&window.parent.INVESTMENT_CAN_OPEN_HOLDING_COMPANY?.(r.code)?`<button class="p-company-link" data-holding-company="${esc(r.code)}">${esc(r.name)}</button>`:`<b>${esc(r.name)}</b>`}<div class="sub">${esc(r.code)}</div></td><td>${fmt(r.quantity,'',0)}</td><td>${fmt(r.cost_krw,'',0)}</td><td>${fmt(r.value_krw,'',0)}</td><td>${fmt(r.pnl_krw,'',0)}</td><td>${fmt(r.pnl_pct,'%',2)}</td><td>${fmt(r.weight_pct,'%',2)}</td><td class="left">${tag(r.opinion)}</td><td class="left">${esc(r.portfolio_action)}</td><td><button class="small" data-holding-edit="${esc(r.code)}">입력 수정</button> <button class="small" data-review-detail="${esc(r.code)}">근거 보기</button></td></tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:40px">보유목록을 직접 입력하거나 JSON 파일을 가져오세요. 실제 보유종목은 포함되어 있지 않습니다.</td></tr>';
-    $('pBookNote').textContent=b.complete?'':[data.cash_krw===null?'현금 미입력: 현금이 없으면 0을 입력하세요.':'',b.missing_codes.length?'가격 확인 필요: '+b.missing_codes.join(', ')+'. 입력 수정에서 현재가·기준일·출처를 확인하거나 가격을 갱신하세요.':'','전체 평가액·비중은 모든 보유종목 가격과 현금을 확인한 뒤 계산합니다.'].filter(Boolean).join(' ');
+    $('pBookNote').textContent=b.complete?'':[b.incomplete_reasons.join(' · '),data.cash_krw===null?'현금이 실제로 없으면 0을 입력하세요. 금액을 모르면 미입력으로 두세요.':'',b.missing_codes.length?'입력 수정에서 해당 종목의 현재가·기준일·출처를 확인하세요.':'','전체 평가액·비중은 모든 보유종목 가격과 현금을 확인한 뒤 계산합니다.'].filter(Boolean).join(' ');
     $('pKnownCodes').innerHTML=[...new Map([...catalog,...data.research.map(r=>[r.code,r])]).values()].map(r=>`<option value="${esc(r.code)}">${esc(r.name)}</option>`).join('');
     $('pHoldBody').querySelectorAll('[data-holding-edit]').forEach(el=>el.onclick=()=>{openEntry();$('pCode').value=el.dataset.holdingEdit;loadHoldingForm();$('pCode').scrollIntoView({behavior:'smooth',block:'center'});});
     $('pHoldBody').querySelectorAll('[data-holding-company]').forEach(el=>el.onclick=()=>window.parent.INVESTMENT_OPEN_HOLDING_COMPANY(el.dataset.holdingCompany));
