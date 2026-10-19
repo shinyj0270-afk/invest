@@ -1,6 +1,7 @@
 # INVESTMENT 공통 작업 지침
 
 - 사용자가 `INVESTMENT START`/`INVESTMENT 시작`, `합쳐줘`/`INVESTMENT MERGE`/`INVESTMENT 합치기`, `INVESTMENT CLOSE`/`INVESTMENT 마감`이라고 하면 [skills/investment-session/SKILL.md](skills/investment-session/SKILL.md)의 해당 모드(START·MERGE·CLOSE)를 실행한다.
+- 사용자가 `자료 확인`/`INVESTMENT 자료 확인`이라고 하거나 START 때 `다운로드/INVESTMENT 자료`에 미처리 파일이 있으면 같은 스킬의 자료 확인 모드로 자료를 읽고 대시보드 반영 선택지를 제시한다. 사용자가 고르기 전에는 등록하지 않는다([docs/RESEARCH_DROP.md](docs/RESEARCH_DROP.md)).
 - 모든 PC·Claude/Codex·ChatGPT 간 상태 일치는 [SYNC_CONTRACT.md](SYNC_CONTRACT.md)를 따른다. 원격에서 확인한 `main`의 `PROJECT_STATE.md`는 전체 개발 상태, [CURRENT_HANDOFF.md](CURRENT_HANDOFF.md)는 바로 다음 세션의 작업 기준이다. 과거 대화/Wiki 요약만으로 최신 상태를 단정하지 않는다.
 
 <!-- BEGIN DUAL-PC -->

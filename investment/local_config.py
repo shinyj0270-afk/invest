@@ -31,6 +31,7 @@ def load_local(root):
     return dict(profile=profile, project_root=root, data_dir=data.resolve(),
                 market_events=config.get('market_events'),
                 goose_report_inbox=config.get('goose_report_inbox'),
+                research_drop_inbox=config.get('research_drop_inbox'),
                 shared_dashboard=config.get('shared_dashboard'),
                 infomax_refresh=config.get('infomax_refresh'),
                 manual_snapshot_file=manual_file,
