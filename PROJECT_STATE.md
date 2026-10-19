@@ -1,3 +1,12 @@
+# Telegram 개인 채널 최소 수신기 구현 (2단계) · 2026-10-19
+
+- home Secondary, Claude. 사용자 결정(USER_DATA_DECISIONS.md 15번)에 따른 2단계(수신 봇 연결)의 최소 구현이다. `investment/telegram_listen.py`/`tools/telegram_listen.py`는 지정한 비공개 채널 한 곳의 신규 게시물을 Bot API `getUpdates`로 받아 로컬 참조 메타데이터만 남긴다. 예약·데몬·상시 실행이 아니며 사용자가 수동으로 실행할 때만 한 번 poll한다.
+- 토큰은 `TELEGRAM_BOT_TOKEN` 환경변수로만 받고 파일·Git·채팅에 저장하지 않는다. `discover`로 대기 중 업데이트의 chat id/제목만 확인(파일 미생성·offset 미소비)한 뒤 사용자가 직접 올바른 채널임을 확인하고 `channels.json`의 `expected_id`에 숫자를 고정해야 `poll`이 동작한다. `poll`은 그 chat_id의 `channel_post`/`edited_channel_post`만 받고 다른 chat은 `rejected_wrong_chat`으로 버리며, 채널 제목이 바뀌면 상태를 보존한 채 중단한다. 원문 본문·첨부·발신자는 저장하지 않고 `message_id`/KST 발행일/`t.me/c/` 참조링크/추출된 외부 HTTPS 링크(`t.me` 계열 제외)/본문 변경 감지 digest만 `.local/`에 남긴다. DB·Research Library 입력은 하지 않으며 그 연결(3단계)은 별도다.
+- 검증: 신규 합성 unittest 15개 PASS(네트워크 없음, 가짜 fetch 주입), 기존 `tests/test_telegram_export.py`와 합계 28개 PASS. 전체 `tools/verify_portable.py` 23개 명령 PASS(기존 `test_telegram_export` 포함, 240초 제한 없이 직접 실행해 회귀 없음 확인). `config/share_candidates.json` manifest 감사 421개 경고0, 신규 3개 파일 등록. 검증 중 `build.py`를 실제 작업공간에서 직접 실행한 부수효과로 `INVESTMENT_Dashboard.html`이 변경됐으나 이번 작업과 무관해 commit 전 되돌렸다.
+- bc76834326f08b511a52db9f5a31fdfd1ff76f30 원본 main ff-only 반영·push·실제 remote main SHA 일치 확인. 이 PC에 실행 중인 대시보드 서버가 없어(8767/8501/8768 무응답) 재시작 대상 없음. 실제 Telegram 연결(토큰 입력·채널 잠금·소량 실수신)은 사용자가 직접 진행해야 하며 미실행이다. 다음 실행은 CURRENT_HANDOFF.md를 따른다.
+
+---
+
 # 기업 상세 밸류에이션·재무안정성·5개년 이력 운영 반영 · 2026-10-19
 
 - work Primary, Codex. 이번 세션 네이버 PER/PBR 밴드·상세 현재가격 연결 수정과 미연결 부문매출 영역 제거는 26320f31a50dfe75e24d0c05ff3cfb5e353b2676으로 원본 main/원격 반영·안전 재시작·실화면 검증을 완료했다. PCR은 자체 계산을 유지하며 출처별 기간·회계기준 경계를 보존한다.
