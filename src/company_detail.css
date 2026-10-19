@@ -40,3 +40,6 @@
 .report-review{display:block;color:#53647b}.external-report-dialog[open]{display:flex;flex-direction:column}.external-report-dialog>header,.external-report-dialog>.psub{flex-shrink:0}.external-report-dialog .report-sources{flex-shrink:0;max-height:25vh;overflow:auto;overflow-wrap:anywhere}.report-sources summary{cursor:pointer;padding:6px 0}.report-sources li{margin:8px 0}.report-sources small{display:block;color:#53647b}.external-report-dialog iframe{flex:1;min-height:180px;height:auto}
 
 .report-inbox{margin:12px 0;padding:10px;border:1px solid #d6dde7;border-radius:8px}.report-inbox summary{cursor:pointer}.report-inbox code{overflow-wrap:anywhere;user-select:all}.report-inbox ul{max-height:180px;overflow:auto;font-size:12px}
+
+.sd-analysis-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:18px}
+@media(max-width:600px){.sd-analysis-kpis{grid-template-columns:1fr}}

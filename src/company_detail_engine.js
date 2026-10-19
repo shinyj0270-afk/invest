@@ -116,6 +116,20 @@ const CompanyDetailEngine=(()=>{
       cash:{ocf:v.ocf??null,capex:num(v.capex_ppe)&&num(v.capex_intangibles)?Math.abs(v.capex_ppe)+Math.abs(v.capex_intangibles):null,
         fcf:v.fcf??null,cash:v.cash_end??null,borrowings:v.total_borrowings??null,debtRatio:v.debt_ratio??null}};
   }
-  return {reading,num,ratio,consecutive,priorYear,periods,aggregate,indicators,relative,eventList,estimatedShares,valuation,quantile,distribution,rim,decomposition,summary};
+  function financialStability(model,basis,table,reference){
+    const own=periods(model,basis,'annual',table),valid=reference?.status==='ready'&&reference.basis===basis&&reference.currency==='KRW'&&reference.cadence==='annual';
+    const refs=valid?reference.columns:[],dates=[...new Set([...own,...refs].map(c=>c.period_end))].sort().slice(-5);
+    return dates.map(period_end=>{
+      const original=own.find(c=>c.period_end===period_end),ref=refs.find(c=>c.period_end===period_end),v={...original?.values},sources={};
+      const keys=['liabilities','equity','assets','total_borrowings','net_borrowings','debt_ratio','borrowing_dependence','net_borrowing_dependence','debt_ebitda','net_debt_ebitda'];
+      for(const k of keys)if(num(v[k]))sources[k]=original.source||'저장 재무';
+      // Compute from one original period first; NICE ratios remain intact references.
+      const calculated={debt_ratio:ratio(v.liabilities,v.equity,100),borrowing_dependence:ratio(v.total_borrowings,v.assets,100),net_borrowing_dependence:ratio(v.net_borrowings,v.assets,100),debt_ebitda:ratio(v.total_borrowings,v.ebitda),net_debt_ebitda:ratio(v.net_borrowings,v.ebitda)};
+      for(const [k,value] of Object.entries(calculated))if(!num(v[k])&&num(value)){v[k]=value;sources[k]=(original?.source||'저장 재무')+' · 같은 연간자료로 계산';}
+      for(const k of keys)if(!num(v[k])&&num(ref?.values[k])){v[k]=ref.values[k];sources[k]='NICE 원제공값';}
+      return {period_end,values:v,sources,source:original?.source,source_url:original?.source_url};
+    });
+  }
+  return {financialStability,reading,num,ratio,consecutive,priorYear,periods,aggregate,indicators,relative,eventList,estimatedShares,valuation,quantile,distribution,rim,decomposition,summary};
 })();
 if(typeof module!=='undefined')module.exports=CompanyDetailEngine;

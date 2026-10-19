@@ -37,6 +37,16 @@ class LiveDashboardTests(unittest.TestCase):
             with urlopen(Request(self.base+'/company-view?code='+row['code'],headers={'X-Dashboard-Token':'test-token'})) as response:
                 self.assertEqual(json.load(response)['model']['latest_quote'],quote)
 
+    def test_financial_reference_auth_and_query_validation(self):
+        path=self.base+'/financial-reference?code=000660&basis=CFS&name=SK'
+        with self.assertRaises(HTTPError) as caught:urlopen(path)
+        self.assertEqual(caught.exception.code,403)
+        with urlopen(Request(path,headers={'X-Dashboard-Token':'test-token'})) as response:
+            self.assertEqual(json.load(response)['status'],'unavailable')
+        for suffix in ('&basis=OFS','&unexpected=1'):
+            with self.assertRaises(HTTPError) as caught:urlopen(Request(path+suffix,headers={'X-Dashboard-Token':'test-token'}))
+            self.assertEqual(caught.exception.code,400)
+
     def test_valuation_reference_auth_and_query_validation(self):
         path=self.base+'/valuation-reference?code=000660&basis=CFS'
         with self.assertRaises(HTTPError) as caught:urlopen(path)

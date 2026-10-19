@@ -1,6 +1,11 @@
 {
   "purpose": "Single-source, explicit Git handoff list for the existing INVESTMENT workspace",
   "files": {
+    "investment/nice_financial.py": "investment/nice_financial.py",
+    "tests/test_nice_financial.py": "tests/test_nice_financial.py",
+    "tests/test_financial_stability.js": "tests/test_financial_stability.js",
+    "tests/test_financial_stability_ui.py": "tests/test_financial_stability_ui.py",
+
     "investment/naver_bands.py": "investment/naver_bands.py",
     "tests/test_naver_bands.py": "tests/test_naver_bands.py",
     "tests/test_naver_bands_ui.py": "tests/test_naver_bands_ui.py",
