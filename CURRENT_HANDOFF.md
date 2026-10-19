@@ -1,10 +1,10 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-19T14:15:00+09:00
-Handoff version: 2026-10-19-research-drop-folder
+Updated: 2026-10-19T14:40:00+09:00
+Handoff version: 2026-10-19-first-research-drop-review
 Last agent: Claude (사용자 요청으로 회사 재발행 단계 수행)
 Last PC: company Primary/work (원본 config/local.json profile=work 확인)
-Last task: 회사 조회 결과 재발행 + 자료 투입 폴더(자료 확인 모드) 추가
+Last task: 회사 결과 재발행 + 자료 투입 폴더 추가 + 첫 자료 확인(5건) 처리 + 국면 확산 설계 승인
 
 Completed:
 - START 점검: 원본 main·invest·origin/main·remote main=d49e652(Codex CLOSE 기록) clean·0/0, 운영 build=source=8d6cfcc311518b042cf1e599fc6aa90e191f9ce37e024a6411c659dae4c5666e·restart_required=false.
@@ -16,12 +16,17 @@ Completed:
 - 자료 투입 폴더(사용자 결정 2026-10-19): 회사·집 모두 `다운로드/INVESTMENT 자료`(local.json `research_drop_inbox`로 변경 가능). START 4-1단계와 `자료 확인` 호출 때 AI가 미처리 파일을 읽고 report/library/thesis/archive 선택지를 제시, 사용자 선택 후에만 등록. 처리 기록은 PC별 `.local/research-drop/<profile>/ledger.json`(내용 SHA256 기준), 원본 이동·삭제 없음, 예약 없음. 문서 docs/RESEARCH_DROP.md, 스킬 자료 확인 모드, AGENTS 호출어.
 - 검증: tests.test_research_drop 등 관련 unittest 78개 OK(skip2), 격리 공유394개 경고0·portable/AppTest PASS. 구현 d5e1458 ff 반영·/restart 202·build=source 782365b3…·restart_required=false·대시보드 HTTP200, push 확인. 회사 PC에 폴더 생성·status pending0 확인.
 
+- 첫 자료 확인(work, 5건 PDF·증권사 리서치): ① DS투자증권 순환주기론(2026-07-28)은 공개 PDF와 SHA256 일치 확인 후 사용자 선택 library — SRC-20261019-DS01, THESIS-20261019-03(반도체)/04(전력기기)/05(산업공통), CTX-20261019-03/04/05 등록(요약·해석만, 원문 복제 없음, active=검증 전). DB 42→49행, integrity ok, 출처 재입력 duplicate, 백업 .local/research-library/inbox/drop-20261019/before-registration.sqlite3. ③ DB증권 엘리어트·④ SK FactorCube·⑤ SK Market Visualized는 사용자 선택 archive. 처리 기록 4건.
+- 사용자 결정: 다음 개발은 산업별 국면 확산(생왕쇠사 자체 고정 규칙, 제안 기준값을 설정 파일에 고정). 설계는 docs/INDUSTRY_DASHBOARD.md "다음 개발" 절. 미구현.
+
 Pending:
+- ② SK증권 「[퀀트전략] 이길 수 없다면 합류하라」(2025-04-30): 사용자 선택 library이나 공개 원문 URL 미확인(웹 검색·네이버 리서치 목록 조회 실패)으로 보류, 처리 기록 없음 → 다음 자료 확인 때 다시 표시. 사용자 URL 제공 시 등록.
 - home 수신·열람·조회모드 전환은 미실행(home PC 필요).
 - ROIC/WACC·마진 변화·수주 등 미확보 유지. 월요일09:00 inbox 점검·ChatGPT→inbox 자동 수신 미연결·Telegram·재무/휴대폰 후속은 변경 없음.
 
-Next task: home에서 새 회사 결과 수신·열람 확인 후 조회 모드 전환
+Next task: (1) 회사: 산업별 국면 확산 구현(설계 승인됨) (2) home: 새 회사 결과 수신·열람 확인 후 조회 모드 전환
 Next action:
+0. 회사 work 새 세션 START → docs/INDUSTRY_DASHBOARD.md "다음 개발" 절대로 국면 확산을 TDD 구현(config 기준값·서버측 계산·개요/상세 열·가설 C 기간 분포 문서화) → 격리 UI 검증 → MERGE/CLOSE(입력 보관 확인 후 안전 재시작). 구현 후 결과 재발행은 별도 요청 시.
 1. home PC에서 INVESTMENT START. 최신 코드 ff-only 수신(d5e1458·이 기록 commit 포함), docs/SHARED_DASHBOARD.md 확인. START 4-1에서 home의 `다운로드/INVESTMENT 자료` 폴더가 생성·확인된다(투입 자료가 있으면 선택지 제시).
 2. home .venv로 `tools\shared_dashboard.py open` 실행. tag results-20261019T045455Z-627039e4a5b9·자료기준 2026-10-16·SHA256 627039e4…4174 일치와 산업 연구 화면·영업이익 증가 비중 표시를 확인한다. 회사 수집·계산·AI 조사는 반복하지 않는다.
 3. 실제 수신/열람 성공 뒤에만 home 원본 config/local.json에 shared_dashboard.enabled=true 설정. 실패 시 기존 결과 보존·전환 PENDING 유지.
