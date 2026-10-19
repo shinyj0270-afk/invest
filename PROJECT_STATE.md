@@ -1,3 +1,13 @@
+# 배포 HTML 소스 일치 복원·회사 결과 재발행 · 2026-10-20
+
+- work Primary, Codex. 시작 원본 main·재사용 Orca invest·실제 remote main은 831638a06bec7d35563f08f0e9d790f66b963c1c, clean·0/0. 배포 HTML과 src 조립 결과의 차이를 격리 재빌드로 재현했다. 과거 f061e14의 평가 보류 사유와 5a8bace의 시장자료/인포맥스 기준일 표시가 소스에만 반영되어 있었다. 소스·계산을 변경하지 않고 `INVESTMENT_Dashboard.html`을 재생성해 일치 검사 PASS, 구현 commit 6a8e8de. 운영/공유 결과는 원래 src를 직접 조립하므로 이 차이의 직접 영향은 별도 배포 HTML이다.
+- 이번 검증: 배포 HTML 기본 UI 13항목·보유/포트폴리오 UI 30항목 PASS, 격리 공유421개 경고0·portable/빈 실제모드/합성UI 등23명령 PASS. 240초 래퍼는 이번 환경에서 정상 완주했다. 기존 타임아웃 값을 수정하지 않았다.
+- 기존 work main의 저장 자료로 새 회사 결과를 생성·unpack/해시 검증하고 실제 파일의 삼성전자 요약→기업상세→재무, 1440/390/320px·JS오류0·넘침0·외부요청0·보유프레임 제외·기업상세2428개를 확인했다. 초기 검증 도구가 이전 결과를 가리킨 오류를 발견해 경로 수정 후 이번 파일로 다시 PASS했다. 새 시세 수집·AI 호출·Telegram 연결은 실행하지 않았다.
+- 결과 전용 비공개 저장소의 비공개/쓰기 권한 확인 후 `results-20261019T230634Z-efa2efff53d7` 발행. 자료기준 2026-10-16, HTML SHA256 efa2efff53d7d6d261f31e9a5cd504ede4fc7d01f8e18e471e65e6c4ecb68547, source_build 693f0fbc070873dfd08b4d9369678b896357a42ea116a95467ecefbd1e456eda. latest 및 원격 manifest/gzip asset 해시 일치 확인. home 실제 수신·열람은 미확인이다.
+- 운영 서버는 START 당시부터 실행/소스 build가 달라 restart_required=true였다. 열린 탭의 입력 보관 확인을 요청했고 아직 응답이 없어 원본 main 반영·재시작·코드 push는 보류한다. 결과 발행 성공과 코드 인계 미완료를 구분하며 다음 실행은 CURRENT_HANDOFF.md를 따른다.
+
+---
+
 # Telegram 개인 채널 최소 수신기 구현 (2단계) · 2026-10-19
 
 - home Secondary, Claude. 사용자 결정(USER_DATA_DECISIONS.md 15번)에 따른 2단계(수신 봇 연결)의 최소 구현이다. `investment/telegram_listen.py`/`tools/telegram_listen.py`는 지정한 비공개 채널 한 곳의 신규 게시물을 Bot API `getUpdates`로 받아 로컬 참조 메타데이터만 남긴다. 예약·데몬·상시 실행이 아니며 사용자가 수동으로 실행할 때만 한 번 poll한다.
