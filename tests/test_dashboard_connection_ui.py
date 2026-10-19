@@ -77,9 +77,9 @@ with sync_playwright() as p:
     page.locator('[data-research-go=company]').click()
     expect(page.locator('#sdCompany')).to_be_visible()
     assert not errors,errors
-    # All nine primary destinations are directly visible and keyboard accessible.
+    # All ten primary destinations are directly visible and keyboard accessible.
     expect(page.locator('#moreNavigation summary')).to_have_count(0)
-    expect(page.locator('#navigation .nav-item')).to_have_count(9)
+    expect(page.locator('#navigation .nav-item')).to_have_count(10)
     for width in (1920,1640,1440,1366,1214,1024,950,901):
         page.set_viewport_size({'width':width,'height':1000})
         boxes=page.locator('#navigation .nav-item').evaluate_all('(els)=>els.map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom}})')
@@ -139,4 +139,4 @@ with sync_playwright() as p:
     assert saved['page']=='brief' and saved['code']=='900000',(saved['page'],saved['code'])
     assert saved['input']==before_input
     browser.close()
-print('PASS company503 stops loading, restart guidance, retry loads metrics/detail/trend, timeout, nine direct menus, responsive widths')
+print('PASS company503 stops loading, restart guidance, retry loads metrics/detail/trend, timeout, ten direct menus, responsive widths')

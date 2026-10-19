@@ -19,8 +19,8 @@ with sync_playwright() as p:
     page.set_content(export_workspace(snapshot),wait_until='load')
     expect(page.locator('#home')).to_be_visible()
     assert page.locator('#moreNavigation').get_attribute('open') is None
-    assert page.locator('#navigation>.nav-item').count()==6
-    assert page.locator('#navigation svg.iconify').count()==9
+    assert page.locator('#navigation>.nav-item').count()==7
+    assert page.locator('#navigation svg.iconify').count()==10
     assert page.locator('#navigation svg:not([aria-hidden="true"])').count()==0
     expect(page.get_by_role('button',name='기업 찾기',exact=True)).to_have_accessible_name('기업 찾기')
     expect(page.locator('#moreNavigation summary')).to_have_count(0)
@@ -42,7 +42,7 @@ with sync_playwright() as p:
     expect(page.locator('#viewFreshness')).to_contain_text('발굴 모집단')
     assert page.locator('#moreNavigation .nav-item').all_text_contents()==['자료 비교','고급 시각화','Research Library']
     options=page.locator('#pageSelect option').evaluate_all('(items)=>items.map(item=>item.value)')
-    assert len(options)==len(set(options))==22
+    assert len(options)==len(set(options))==23
     assert page.locator('#sourceDetails').get_attribute('open') is None
     expect(page.locator('#homeMarketCharts')).to_contain_text('KOSPI')
     expect(page.locator('#homeVerdict')).to_contain_text('오늘의 결론')
@@ -108,4 +108,4 @@ with sync_playwright() as p:
     assert not errors,errors
     assert not network,network
     browser.close()
-print(f'PASS menu minimum contrast={min(contrast):.2f}, keyboard/labels/44px targets; dashboard home, six primary/three extra menus, comparison with secondary charts, search/watch/detail/trend/sector/holdings flows, 22 mobile views, no network/JS errors')
+print(f'PASS menu minimum contrast={min(contrast):.2f}, keyboard/labels/44px targets; dashboard home, seven primary/three extra menus, comparison with secondary charts, search/watch/detail/trend/sector/holdings flows, 23 mobile views, no network/JS errors')
