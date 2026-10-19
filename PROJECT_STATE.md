@@ -1,3 +1,12 @@
+# Research Library 주간 자료 등록 실행 · 2026-10-19
+
+- work Primary, 시작 원본 main/재사용 Orca invest d217ee69befc9addf0ab8d1ac506d7d023d0af5a clean·원격0/0 확인. 문서 반영 직전 다른 세션의 CLOSE 인계 commit cb9bb2ead0936563ce2504cd8137a6f243e51c79를 감지해 보류하고, 해당 세션 종료·문서만 변경·원격 일치 재확인 후 재개했다. 기존 작업은 보존한다.
+- 단일 등록 실행에서 10월12일 원본 해시·기존20건 일치를 확인하고, 새 자체작성 10월19일 노트의 연구9건(source2/master3/thesis2/evidence2)과 catalog9·weekly 영수증1을 추가했다. 기존 서지source1 재사용, 기존 DB23행 보존. 원본/DB/manifest/백업은 Git 제외다.
+- 이 기록은 등록 실행 결과이며 여러 검사 결과의 종합 완료 승인이 아니다. 기존 G4 Claude 교차검토는 외부 모델 전송의 자동 승인 거절로 미완료다. 승인 없이 우회하지 않는다. 검토 전 종합 완료 판정을 보류한다.
+- 기존 월요일09:00 KST inbox 점검을 유지한다. ChatGPT 생성→회사 inbox 자동 수신과 catalog 자동 입력은 미연결이며 docs/WEEKLY_RESEARCH_IMPORT.md에 수동 경계를 명시했다. 대시보드 개발·예약 변경·운영 재시작 없음. 다음 실행과 Git 전송 상태는 CURRENT_HANDOFF.md를 따른다.
+
+---
+
 # 회사 첫 결과 발행·대용량 오프라인 복원 수정 · 2026-10-19
 
 - company Primary/work, 시작 원본·invest fb507d1에서 최신 ec569e9를 ff-only 수신. 사용자 선택 작업본 invest에서 수정하고 원본 main에는 ff-only로 반영했다.
