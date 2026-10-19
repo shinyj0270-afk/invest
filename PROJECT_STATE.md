@@ -1,3 +1,13 @@
+# 주도산업 중심 산업 연구 화면 · 2026-10-19
+
+- 담당 Claude(사용자 지정, 이번 작업 한정). work Primary, 시작 원본 main·Orca invest e5ae0812061f1f40c133f29c1aa39c00f3dd9144 clean·원격0/0. 기존 Orca 작업본에서 개발하고 원본 main에 ff-only 반영했다.
+- 상단 메뉴 **산업 연구** 추가: 산업 개요(1/3/6개월 업종 RS·가중수익률, 200일선 위 비중, 최대기업 비중, 매출성장률·영업이익률·ROE 중앙값) → 산업 상세(추세 지속/약화, 확산·집중도, 재무·투자효율, 확인할 공시·재무·위험, 구성기업→기업 분석) → 관련 연구·원문(Research Library 필터 이동). 기존 market_insights 업종 RS와 DiscoveryEngine 중앙값을 재사용하고 확산·집중도만 사전 정의해 추가했다. 정렬값이 없거나 유효5개 미만 산업은 순위 없이 "자료 부족"에 둔다. 실적 확산·마진 변화·ROIC/WACC·수주·업종지수 총수익률은 미확보로 표시하고 계산하지 않는다. 상세 docs/INDUSTRY_DASHBOARD.md.
+- 연구 연결은 기존 읽기 전용 /research-library GET만 사용한다. 종목 직접 연결 또는 "산업명 대응 후보 · 사람 확인 전"으로 표시하고 대응표를 새로 만들지 않았다(반도체→반도체와반도체장비 대응, 전력기기는 자동 대응 없음). 가설은 "연구 중 · 검증 전"으로만 표시하며 주도산업 판정·투자 판단으로 승격하지 않는다. 회사 결과 조회/정적 화면은 연구를 요청하지 않는다.
+- 이번 새 검증: 신규 엔진 node 검사·신규 화면 Playwright(XSS·실패·결과화면·1440/390/320px) PASS, 관련 unittest 77개(OK, skip2)·76개 OK와 기존 JS 검사들 PASS, 격리 공유388개 경고0·portable/AppTest·합성UI19명령 PASS. 메뉴 수 증가에 따른 기존 UI 테스트 3개의 고정 기대값만 갱신했다. 실제 저장 payload+실제 Library projection 및 재시작 후 실제 운영 화면(입력·보유 연결 차단 브라우저)에서 JS오류0·가로넘침0·연구3건·원문링크4개를 확인했고 Library DB는 조회 전후 42행·파일 해시 동일, sidecar 생성 없음.
+- 구현 a353bc77327bd4f67ca1b10fa7234036ef9ebf48 ff 반영·/restart 202 안전 재시작·build/source 일치·restart_required=false 후 push, HEAD=origin/main=remote main 확인. 구현자 자기 검증이며 독립 G4 교차검토는 미실행이다. 다음 실행은 CURRENT_HANDOFF.md를 따른다.
+
+---
+
 # Research Library 1단계 교차검토 마감 · 2026-10-19
 
 - 사용자 명시 승인 후 공개 자체작성 노트와 비민감 실행 요약만 도구 없는 Claude 검토로 전달했다. 최초 조건부 의견의 집계/자동화 설명을 보완했고 재검토 판정은 USABLE이다. DB·원자료·인증은 전달하지 않았다. 이 판정은 제공된 서술의 교차검토이며 Claude의 DB/원전 직접 재현·사람 curate·투자 판단 승인이 아니다.

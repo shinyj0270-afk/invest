@@ -1,37 +1,36 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-19T10:40:19+09:00
-Handoff version: 2026-10-19-research-library-stage1-reviewed
-Last agent: Codex
-Last PC: company Primary/work (기존 profile 확인)
-Last task: Research Library 1단계 교차검토 마감·Claude 개발 전달용 프롬프트 준비
+Updated: 2026-10-19T11:05:00+09:00
+Handoff version: 2026-10-19-industry-research-view
+Last agent: Claude (사용자 지정, 주도산업 대시보드 구현 한정)
+Last PC: company Primary/work (config/local.json profile=work 확인)
+Last task: 주도산업 중심 산업 연구 화면 구현·검증·운영 반영
 
 Completed:
-- 10월12일 첨부 (28).md 해시와 기존 회사 DB 연구20건이 일치해 신규 등록하지 않았다.
-- 단일 등록 실행에서 신규10월19일 연구9건, catalog9, weekly영수증1을 추가하고 기존23행을 보존했다. THESIS-20261019-01/02는 이전 대화 원문 복원이 아닌 공개 원문 기반 신규 합성 가설이며 검증 전이다.
-- 기존 원본과 작업본·다른 DB기록·설정은 보존했다. Git 공유는 자체작성 노트와 운영/상태 문서·공유 목록에 한정하며 DB·원자료·manifest·인증을 제외한다.
-- 다른 세션 CLOSE의 인계 commit cb9bb2ead0936563ce2504cd8137a6f243e51c79를 다시 읽고 재개했다. Orca의 잠긴 준비 중 detached 작업 폴더는 수정·정리하지 않는다.
-
-- 사용자 명시 승인 후 공개 자체작성 노트·비민감 요약만 Claude에 도구 없이 전달했다. 최초 조건부 의견에 집계·검사/자동화 범위를 보완한 재검토 판정 USABLE. 1단계 등록·검증 마감. 검토자는 DB/실행/원전을 직접 재현하지 않았으며 사람 curate/투자판단 승인 아님. 로컬 검토 기록은 .local/research-library/inbox/2026-10-19/claude-review-clarified.txt.
+- 상단 메뉴 "산업 연구": 산업 개요 → 산업 상세 → 구성기업(기업 분석 이동) · Research Library(산업 필터) · 원문 링크. 기존 업종 RS·재무 중앙값 재사용, 확산(200일선 위·3개월 양수·중앙값·최대기업 제외)·집중도만 추가. 자료 부족 산업은 비순위. 미확보 지표는 계산하지 않음. 문서 docs/INDUSTRY_DASHBOARD.md.
+- 연구 연결은 읽기 전용 GET, 종목 직접 연결/산업명 대응 후보(사람 확인 전) 구분, 가설은 "연구 중 · 검증 전". 결과 조회/정적 화면은 연구 미요청.
+- 검증(이번 실행): 엔진 node·화면 Playwright PASS, 관련 unittest 77(OK, skip2)+76 OK, 격리 공유388 경고0·portable/AppTest·합성UI19명령 PASS. 실제 운영 화면(쓰기·보유 연결 차단) JS오류0·1440/390/320px 넘침0, Library DB 전후 42행·해시 동일. 기존 UI 테스트 3개는 메뉴 수 고정값만 갱신.
+- 구현 a353bc7 원본 main ff 반영, /restart 202, build=source d8aa40b3…, restart_required=false, push 확인.
 
 Pending:
-- 기존 월요일09:00 KST inbox 점검 예약 유지. ChatGPT08:00 노트 생성→회사 inbox 자동 수신은 미연결. catalog별 검증/입력, 출처 원문 대조·의미 중복·사람 curate는 자동화되지 않음.
-- 기존 home 회사결과 수신/열람·조회모드 전환, Telegram 별도 branch/권한·실자료, 재무/휴대폰 후속은 범위 밖이며 보존한다. 이전 인계의 회사 결과 tag results-20261019T011726Z-91955d7d312f와 자료기준2026-10-16은 그대로다.
+- 독립 G4 교차검토 미실행(이번 결과는 구현자 자기 검증). 산업명 대응 규칙(문자열 포함)과 전력기기 등 미대응 태그의 처리, 확산 지표 정의의 사람 검토 필요.
+- 실적 확산(이익 증가 기업 비중)·마진 변화·ROIC/WACC·수주는 미확보. 추가하려면 자료원·정의를 별도 결정.
+- 기존 보류 유지: 월요일09:00 inbox 점검, ChatGPT→inbox 자동 수신 미연결, home 회사결과 수신/열람·조회모드 전환(tag results-20261019T011726Z-91955d7d312f, 자료기준2026-10-16), Telegram·재무/휴대폰 후속.
 
-Next task: 사용자 지정에 따라 Claude가 새 세션에서 START 후 주도산업 중심 대시보드 개발을 맡는다. 현재 Codex 세션은 프롬프트 작성만 수행하고 구현하지 않는다.
+Next task: 산업 연구 화면의 독립 교차검토(G4) 또는 사용자 지정 후속 작업
 Next action:
-1. Claude 담당 새 세션에서 INVESTMENT START. 최신 Git·동시쓰기·AGENTS/CLAUDE/SYNC_CONTRACT/PROJECT_STATE/이 인계와 docs/RESEARCH_LIBRARY.md·WEEKLY_RESEARCH_IMPORT.md·SHARED_DASHBOARD.md를 읽는다. 기존 Orca 작업본·DB/원자료/설정을 보존한다.
-2. 사용자가 전달하는 Claude 주도산업 대시보드 개발 프롬프트에 따라 산업 개요→산업 상세→기업/Library 연결을 구현한다. 해당 프롬프트는 이번 작업의 담당 지정이며 공통 역할 레지스트리 영구 변경 요청이 아니다. 현재 산업 순위·실적 확산·ROIC/WACC가 확보됐다고 가정하지 않는다.
-3. 기존 읽기 전용 Library·회사 계산/집 조회·정적 결과의 연구자료 제외를 유지한다. UI/데이터/권한 경계를 관련 합성 검사와 실제 읽기 전용 화면으로 검증하고 기존 MERGE/CLOSE 절차를 따른다. 다른 쓰기 세션이 있으면 적용 보류한다.
-Recommended next agent: Claude (사용자 지정, 다음 대시보드 구현 작업에 한정); Codex는 인계 후 동시 쓰기하지 않음
+1. 새 세션에서 INVESTMENT START(work). Git·동시쓰기·기준 문서와 docs/INDUSTRY_DASHBOARD.md를 읽는다.
+2. 검토 담당은 a353bc7의 src/industry_engine.js·src/industry_ui.js·tests/test_industry_*.js|py diff만 대상으로 관측/해석 구분, 비순위 기준(유효5개), 연구 연결 규칙, 결과 화면 연구 제외를 검토한다. 완료 판정: 쟁점별 USABLE/수정 필요 목록.
+3. 수정이 필요하면 같은 Orca 작업본에서 RED→GREEN 후 기존 MERGE/CLOSE 절차.
+Recommended next agent: Codex(독립 검토/후속 구현) 또는 사용자 지정
 Recommended model: 기존 사용자 설정 유지; 자동 전환 없음
-Recommended reasoning: 출처/보존/검토 경계 High 권장
+Recommended reasoning: High(지표 정의·출처 경계 검토)
 Escalation condition: 다른쓰기·미커밋충돌·원격divergence·DB기준불일치·출처/권한불명·외부 전송 미승인이면 해당 적용 보류
 Branch: shinyj0270-afk/invest (재사용 Orca); main (회사 원본)
-Commit: 202f8d633ccbc77807a0b4c105b9f9d19ede2748 (이전 등록·문서 인계 기준; 이번 검토 마감 기록은 commit 전 pending)
-Remote status: refs/heads/main=202f8d633ccbc77807a0b4c105b9f9d19ede2748 pushed (이전 인계 실제 확인). 이번 G4 검토 마감 기록의 commit/push는 pending이며 최종 보고 및 다음 START의 Git 조회로 확인한다.
+Commit: a353bc77327bd4f67ca1b10fa7234036ef9ebf48 (구현 commit, 검증된 push 기준)
+Remote status: refs/heads/main=a353bc77327bd4f67ca1b10fa7234036ef9ebf48 pushed (verified 2026-10-19 11:02 KST). 이 인계 기록 commit 자체의 전송은 최종 보고 및 다음 START의 실제 Git 조회로 확인한다.
 
 Notes:
-- 10월19일 가설의 sector 태그는 반도체/전력기기의 연구 적용 후보이지 현재 주도력·투자 판단·사람 검토 완료가 아니다. 신규 evidence는 context다.
-- 검증 기록·입력·backup은 Git 제외 .local/에 보존한다. 코드·UI 변경이나 운영 서버 재시작·결과 재발행 없음. 기존 home 결과 열람과 이번 연구 DB는 별개다.
-- G4는 제공된 서술의 일관성을 USABLE로 판단했다. 실제 DB 검증·합성 검사·원문 확인의 실행 주체와 범위를 구분한다. 이전 자동 승인 거절은 사용자 명시 승인으로 외부 검토 전송 부분만 해소했다. 준비용 프로세스 종료는 수행하지 않았다. 중앙 Wiki·전체세션·주문/매매/잔고 조회 없음.
+- 운영 서버 재시작은 사용자 입력 보관 확인 후 /restart 안전 경로로만 수행. 재시작 직후 첫 로딩 지연 가능.
+- 검증 기록(스크린샷·실데이터 확인 스크립트·결과)은 Git 제외 validation/industry-dev, validation/current/industry에 보존. 토큰이 든 임시 HTML은 삭제.
+- DB·원자료·설정·인증·보유·Telegram은 복사/공유하지 않음. 중앙 Wiki·예약·외부 모델 호출·주문/매매/잔고 조회 없음.
