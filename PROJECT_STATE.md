@@ -4,7 +4,7 @@
 - 이번 검증: 배포 HTML 기본 UI 13항목·보유/포트폴리오 UI 30항목 PASS, 격리 공유421개 경고0·portable/빈 실제모드/합성UI 등23명령 PASS. 240초 래퍼는 이번 환경에서 정상 완주했다. 기존 타임아웃 값을 수정하지 않았다.
 - 기존 work main의 저장 자료로 새 회사 결과를 생성·unpack/해시 검증하고 실제 파일의 삼성전자 요약→기업상세→재무, 1440/390/320px·JS오류0·넘침0·외부요청0·보유프레임 제외·기업상세2428개를 확인했다. 초기 검증 도구가 이전 결과를 가리킨 오류를 발견해 경로 수정 후 이번 파일로 다시 PASS했다. 새 시세 수집·AI 호출·Telegram 연결은 실행하지 않았다.
 - 결과 전용 비공개 저장소의 비공개/쓰기 권한 확인 후 `results-20261019T230634Z-efa2efff53d7` 발행. 자료기준 2026-10-16, HTML SHA256 efa2efff53d7d6d261f31e9a5cd504ede4fc7d01f8e18e471e65e6c4ecb68547, source_build 693f0fbc070873dfd08b4d9369678b896357a42ea116a95467ecefbd1e456eda. latest 및 원격 manifest/gzip asset 해시 일치 확인. home 실제 수신·열람은 미확인이다.
-- 운영 서버는 START 당시부터 실행/소스 build가 달라 restart_required=true였다. 열린 탭의 입력 보관 확인을 요청했고 아직 응답이 없어 원본 main 반영·재시작·코드 push는 보류한다. 결과 발행 성공과 코드 인계 미완료를 구분하며 다음 실행은 CURRENT_HANDOFF.md를 따른다.
+- 운영 서버는 START 당시부터 실행/소스 build가 달라 restart_required=true였다. 이후 사용자 입력 보관 완료 확인을 받아 d040217까지 원본 main ff-only 반영·/restart HTTP202를 실행했다. 실행/소스 build 693f0fbc070873dfd08b4d9369678b896357a42ea116a95467ecefbd1e456eda 일치·restart_required=false, 재시작 후 실제 삼성전자 화면1440/390/320px·JS오류0·넘침0(입력 쓰기·보유 동기화 요청 차단)을 확인했다. d040217의 HEAD=origin/main=실제 remote main 일치 확인. 회사 결과는 재발행하지 않았다. 이 후속 기록 전송과 다음 실행은 CURRENT_HANDOFF.md 및 최종 실제 Git 조회를 따른다.
 
 ---
 
