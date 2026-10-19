@@ -1,7 +1,7 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-19T14:40:00+09:00
-Handoff version: 2026-10-19-first-research-drop-review
+Updated: 2026-10-19T14:55:00+09:00
+Handoff version: 2026-10-19-leader-strategy-design
 Last agent: Claude (사용자 요청으로 회사 재발행 단계 수행)
 Last PC: company Primary/work (원본 config/local.json profile=work 확인)
 Last task: 회사 결과 재발행 + 자료 투입 폴더 추가 + 첫 자료 확인(5건) 처리 + 국면 확산 설계 승인
@@ -20,13 +20,13 @@ Completed:
 - 사용자 결정: 다음 개발은 산업별 국면 확산(생왕쇠사 자체 고정 규칙, 제안 기준값을 설정 파일에 고정). 설계는 docs/INDUSTRY_DASHBOARD.md "다음 개발" 절. 미구현.
 
 Pending:
-- ② SK증권 「[퀀트전략] 이길 수 없다면 합류하라」(2025-04-30): 사용자 선택 library이나 공개 원문 URL 미확인(웹 검색·네이버 리서치 목록 조회 실패)으로 보류, 처리 기록 없음 → 다음 자료 확인 때 다시 표시. 사용자 URL 제공 시 등록.
+- ② SK증권 「[퀀트전략] 이길 수 없다면 합류하라」(2025-04-30, 황지우·사용자 제공): 사용자 결정으로 대시보드 주요 전략 채택 → 새 '주도주 전략' 화면(분류·후보 우선, HRP는 다음 단계) 설계 docs/LEADER_STRATEGY.md. 공개 URL 미확인으로 Library 미등록(사용자 선택). 투입 폴더 처리 기록 5건 완료, 미처리 0.
 - home 수신·열람·조회모드 전환은 미실행(home PC 필요).
 - ROIC/WACC·마진 변화·수주 등 미확보 유지. 월요일09:00 inbox 점검·ChatGPT→inbox 자동 수신 미연결·Telegram·재무/휴대폰 후속은 변경 없음.
 
-Next task: (1) 회사: 산업별 국면 확산 구현(설계 승인됨) (2) home: 새 회사 결과 수신·열람 확인 후 조회 모드 전환
+Next task: (1) 회사: 산업별 국면 확산 구현 → (2) 회사: 주도주 전략 화면 구현(docs/LEADER_STRATEGY.md) (3) home: 새 회사 결과 수신·열람 확인 후 조회 모드 전환
 Next action:
-0. 회사 work 새 세션 START → docs/INDUSTRY_DASHBOARD.md "다음 개발" 절대로 국면 확산을 TDD 구현(config 기준값·서버측 계산·개요/상세 열·가설 C 기간 분포 문서화) → 격리 UI 검증 → MERGE/CLOSE(입력 보관 확인 후 안전 재시작). 구현 후 결과 재발행은 별도 요청 시.
+0. 회사 work 새 세션 START → docs/INDUSTRY_DASHBOARD.md "다음 개발" 절대로 국면 확산을 TDD 구현(config 기준값·서버측 계산·개요/상세 열·가설 C 기간 분포 문서화) → 격리 UI 검증 → MERGE/CLOSE(입력 보관 확인 후 안전 재시작). 구현 후 결과 재발행은 별도 요청 시. 이어서 같은 방식으로 주도주 전략 화면(docs/LEADER_STRATEGY.md) 구현, 실제 자료의 칸별 분포를 보고 기준값 재검토를 사용자에게 제시.
 1. home PC에서 INVESTMENT START. 최신 코드 ff-only 수신(d5e1458·이 기록 commit 포함), docs/SHARED_DASHBOARD.md 확인. START 4-1에서 home의 `다운로드/INVESTMENT 자료` 폴더가 생성·확인된다(투입 자료가 있으면 선택지 제시).
 2. home .venv로 `tools\shared_dashboard.py open` 실행. tag results-20261019T045455Z-627039e4a5b9·자료기준 2026-10-16·SHA256 627039e4…4174 일치와 산업 연구 화면·영업이익 증가 비중 표시를 확인한다. 회사 수집·계산·AI 조사는 반복하지 않는다.
 3. 실제 수신/열람 성공 뒤에만 home 원본 config/local.json에 shared_dashboard.enabled=true 설정. 실패 시 기존 결과 보존·전환 PENDING 유지.
