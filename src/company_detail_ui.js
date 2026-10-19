@@ -61,13 +61,13 @@ const CompanyDetailUI=(()=>{
     const displayPrice=()=>{const chart=models[row().code].chart,last=chart.bars.at(-1);return last?{value:last.close,date:last.date,label:'저장 수정 종가'}:{value:row().metrics.price,date:meta.price_date,label:'검토 가격'};};
     const table=()=>shared.ebitda.apply(row(),shared.tables[row().code]);
     const inputGroup=()=>financialViews[row().code]||table().groups.find(g=>g.basis===state.basis&&g.cadence==='quarter')?.id||table().groups.find(g=>g.basis===state.basis)?.id;
-    const periods=(cadence=state.cadence,basis=state.basis)=>E.periods(models[row().code],basis,cadence,table());
+    const periods=(cadence=state.cadence,basis=state.basis)=>E.periods(models[row().code],basis,cadence,table()).slice(cadence==='annual'?-5:-12);
     const segments=(field,options)=>`<div class="sd-segments" aria-label="${esc(field)}">${options.map(([v,t])=>`<button data-sd-field="${field}" data-value="${v}" aria-pressed="${state[field]===v}">${esc(t)}</button>`).join('')}</div>`;
     const basis=()=>segments('basis',[['CFS','연결'],['OFS','별도']]);
     const cadence=()=>segments('cadence',[['ttm','TTM'],['annual','연간'],['quarter','분기']]);
     function jump(items){return `<nav class="sd-jump" aria-label="섹션 바로가기">${items.map(([id,t])=>`<button data-sd-jump="${id}">${esc(t)}</button>`).join('')}</nav>`;}
     function financialCharts(){return ['revenue','operating_profit','net_income'].map((k,i)=>{
-      const label=['매출액','영업이익','당기순이익'][i],color=['#8172c7','#2d9c90','#5a87b7'][i];return `<section class="sd-trend-row"><h4>${label}</h4><div class="sd-grid"><div><p class="sd-muted">연간</p>${plot(periods('annual'),[[k,label,color]],label+' 연간 추이','bars',k==='eps'?'원':'억원')}</div><div><p class="sd-muted">분기별</p>${plot(periods('quarter'),[[k,label,color]],label+' 분기 추이','bars',k==='eps'?'원':'억원')}</div></div></section>`;}).join('');}
+      const label=['매출액','영업이익','당기순이익'][i],color=['#8172c7','#2d9c90','#5a87b7'][i];return `<section class="sd-trend-row"><h4>${label}</h4><div class="sd-grid"><div><p class="sd-muted">연간 · 최근 5년</p>${plot(periods('annual'),[[k,label,color]],label+' 연간 추이','bars',k==='eps'?'원':'억원')}</div><div><p class="sd-muted">분기별 · 최근 3년</p>${plot(periods('quarter'),[[k,label,color]],label+' 분기 추이','bars',k==='eps'?'원':'억원')}</div></div></section>`;}).join('');}
     function priceChart(){const model=models[row().code].chart;
       if(!model.bars.length)return empty(model.reason);
       const all=E.indicators(E.aggregate(model.bars,state.chart)),count=state.range==='all'?all.length:Math.ceil(Number(state.range)/(state.chart==='week'?5:state.chart==='month'?21:1)),ps=all.slice(-count),rs=E.relative(ps,model.benchmark);
@@ -99,7 +99,7 @@ const CompanyDetailUI=(()=>{
       if(state.reverse)cs=[...cs].reverse();
       return heading('재무제표',basis()+cadence())+`<div class="sd-box"><div class="sd-heading">${segments('statement',[['income','손익계산서'],['balance','재무상태표'],['cash','현금흐름표']])}<button data-sd-toggle="reverse">${state.reverse?'오래된순':'최신순'}으로 정렬</button></div>
       ${!cs.length?empty('선택한 회계기준·기간의 재무제표가 없습니다.'):`<div class="sd-table-scroll" tabindex="0" aria-label="재무제표 좌우 스크롤"><table class="sd-table"><thead><tr><th>항목</th>${cs.map(c=>`<th>${short(c.period_end)}</th>`).join('')}</tr></thead><tbody>${defs.map(([k,l,u])=>`<tr data-sd-account="${k}"><th><button data-sd-trend="${k}" aria-label="${l} 추세 차트">${l} ◷</button></th>${cs.map(c=>`<td title="${esc(c.source+' · '+(c.cell_notes?.[k]||''))}">${u?unit(c.values[k],u,u==='원'?0:1):money(c.values[k])}${c.cell_notes?.[k]&&E.num(c.values[k])?'*':''}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
-      <p class="sd-muted">${state.statement==='balance'?'재무상태표는 기말 잔액':state.cadence==='quarter'?'단독 3개월 실적 · 현금흐름은 같은 연도 누적 차감':state.cadence==='ttm'?'연속 4개 단독분기 합계 · 기초현금은 시작 잔액':'연간 실적'} · EPS는 기간 차감·합계하지 않으며 TTM 공시 주당값은 별도 확인 · FCF = 영업현금흐름 − 유형/무형자산 취득</p>
+      <p class="sd-muted">${state.cadence==='annual'?'최근 5년':'최근 3년'} · ${state.statement==='balance'?'재무상태표는 기말 잔액':state.cadence==='quarter'?'단독 3개월 실적 · 현금흐름은 같은 연도 누적 차감':state.cadence==='ttm'?'연속 4개 단독분기 합계 · 기초현금은 시작 잔액':'연간 실적'} · EPS는 기간 차감·합계하지 않으며 TTM 공시 주당값은 별도 확인 · FCF = 영업현금흐름 − 유형/무형자산 취득</p>
       <details><summary>기간별 출처와 공시일</summary>${cs.map(c=>`<p>${esc(c.period_end)} · ${esc(c.source)} · 공개일 ${esc(c.available_at||c.filing_available_at||'공급자 미확인')} ${c.source_url?`<a href="${esc(c.source_url)}" target="_blank" rel="noopener noreferrer">DART 원문 ↗</a>`:''}</p>`).join('')}</details>`}<div id="sdRowTrend"></div></div>`;
     }
     function financialAnalysis(){

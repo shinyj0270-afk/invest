@@ -5,12 +5,34 @@ from urllib.request import Request,urlopen
 from urllib.error import HTTPError
 from pathlib import Path
 from unittest.mock import Mock,patch
-from investment.company_financials import FinancialMonitor,fetch_filings,acquire_lock,resolve_company
+from investment.company_financials import FinancialMonitor,fetch_filings,acquire_lock,resolve_company,history_targets,history_covered
 from investment.dart_statements import parse_viewer
 from investment.live_dashboard import handler_for
 
 
 class CompanyFinancialTests(unittest.TestCase):
+    def test_history_targets_five_annual_and_twelve_quarters_with_predecessor(self):
+        targets=set(history_targets('2026-10-19'))
+        self.assertTrue({(y,4) for y in range(2021,2026)}<=targets)
+        self.assertTrue({(2023,2),(2023,3),(2026,2)}<=targets)
+        self.assertNotIn((2026,3),targets)
+        self.assertNotIn((2020,4),targets)
+        winter=set(history_targets('2026-02-01'))
+        self.assertTrue({(y,4) for y in range(2020,2025)}<=winter)
+        self.assertNotIn((2025,4),winter)
+
+    def test_incomplete_saved_history_is_extended_without_replacing_other_basis(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'900000.json'
+            reports=[dict(basis='CFS',year=y,quarter=q) for y,q in history_targets('2026-10-19')]
+            def save(rs):path.write_text(json.dumps({'companies':{'900000':{'reports':rs}}}))
+            save(reports[1:]);self.assertFalse(history_covered(path,'900000','2026-10-19'))
+            save(reports);self.assertFalse(history_covered(path,'900000','2026-10-19'))
+            separate=[dict(r,basis='OFS') for r in reports if r['quarter']==4]
+            save(reports+separate);self.assertTrue(history_covered(path,'900000','2026-10-19'))
+            reports[0]['basis']='OFS';save(reports)
+            self.assertFalse(history_covered(path,'900000','2026-10-19'))
+
     def test_name_fallback_still_requires_exact_ticker_identity(self):
         s=Mock();a=Mock();a.content=b'<table><tr><td>none</td></tr></table>';b=Mock();b.content=('<table><tr><td>0001A0</td></tr></table><input name="hiddenCikCD0" value="12345678"><input name="hiddenCikNM0" value="가상기업">').encode()
         s.post.side_effect=[a,b];self.assertEqual(resolve_company(s,'0001A0','가상기업')[0],'12345678')

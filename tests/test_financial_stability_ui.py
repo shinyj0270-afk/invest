@@ -42,6 +42,16 @@ with sync_playwright() as p:
     expect(page.locator('#sd-financial-analysis sup')).to_have_count(0)
     page.locator('[data-sd-field=basis][data-value=CFS]').first.click()
     expect(page.locator('#sd-financial-analysis')).to_contain_text('NICE 공개 재무 연결됨')
+    # A longer saved history must not expand the requested display windows.
+    page.evaluate("""d.model.groups=['annual','quarter'].map(cadence=>({basis:'CFS',cadence,columns:Array.from({length:cadence==='annual'?7:16},(_,i)=>({period_end:cadence==='annual'?`${2019+i}-12-31`:`${2022+Math.floor(i/4)}-${['03-31','06-30','09-30','12-31'][i%4]}`,values:{revenue:100+i,operating_profit:10+i,net_income:5+i}}))}));testUI.render();""")
+    page.locator('[data-sd-field=cadence][data-value=annual]').click()
+    expect(page.locator('#sd-statement thead th')).to_have_count(6)
+    expect(page.locator('#sd-statement thead')).to_contain_text('21.12')
+    page.locator('[data-sd-field=cadence][data-value=quarter]').click()
+    expect(page.locator('#sd-statement thead th')).to_have_count(13)
+    page.locator('#sd-tab-summary').click()
+    expect(page.locator('.sd-trend-row').first.locator('svg').nth(0).locator('rect')).to_have_count(5)
+    expect(page.locator('.sd-trend-row').first.locator('svg').nth(1).locator('rect')).to_have_count(12)
     assert not errors,errors
     assert not external,external
     browser.close()

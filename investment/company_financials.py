@@ -74,15 +74,33 @@ def collect_company(root,row,cutoff,progress=lambda _:None, *, force=False, extr
         finally:lease.close()
 
 
+def history_targets(cutoff):
+    """Five annual reports plus 12 standalone quarters and their YTD predecessor."""
+    year=int(cutoff[:4]);month=int(cutoff[5:7])
+    quarter=0 if month<5 else 1 if month<8 else 2 if month<11 else 3
+    latest=year*4+quarter-1 if month>=4 else (year-1)*4+2
+    annual_year=year-1 if month>=4 else year-2
+    quarters={(i//4,i%4+1) for i in range(latest-12,latest+1)}
+    return sorted(quarters|{(y,4) for y in range(annual_year-4,annual_year+1)})
+
+
+def history_covered(path,code,cutoff):
+    try:
+        reports=json.loads(path.read_text(encoding='utf-8'))['companies'][code]['reports']
+        if any(r.get('period_contract') for r in reports):return True
+        wanted=set(history_targets(cutoff))
+        by_basis={basis:{(r['year'],r['quarter']) for r in reports if r['basis']==basis} for basis in ('CFS','OFS')}
+        return (wanted<=by_basis['CFS'] and {p for p in wanted if p[1]==4}<=by_basis['OFS']) or wanted<=by_basis['OFS']
+    except (OSError,ValueError,KeyError,TypeError):return False
+
+
 def _collect_company(root,row,cutoff,progress=lambda _:None, *, force=False, extra_targets=()):
     inventory=folder(root)/'fiscal-inventory'/(row['code']+'.json')
     if inventory.is_file():return _collect_inventory(root,row,cutoff,inventory,progress,force=force)
     from tools.company_statements import collect
     cache=folder(root)/'sources';cache.mkdir(parents=True,exist_ok=True)
-    year=int(cutoff[:4]);month=int(cutoff[5:7])
     # Filing availability is verified from receipts by load_bundle, not assumed.
-    latest_quarter=0 if month<5 else 1 if month<8 else 2 if month<11 else 3
-    targets=[(year-1,q) for q in range(1,5) if q<4 or month>=4]+[(year,q) for q in range(1,latest_quarter+1)]
+    targets=history_targets(cutoff)
     targets=sorted(set(targets)|set(extra_targets))
     records=[];errors=[]
     with requests.Session() as session:
@@ -97,6 +115,17 @@ def _collect_company(root,row,cutoff,progress=lambda _:None, *, force=False, ext
             progress(dict(completed=len(records)+len(errors),total=len(targets)))
             if not cached:time.sleep(.2)
         cfs_errors=list(errors)
+        if records:
+            # Annual comparison is available for either UI basis, not only CFS.
+            annual_targets=[(y,q) for y,q in targets if q==4]
+            for y,q in annual_targets:
+                cached=(cache/f"{row['code']}-OFS-{y}q{q}.html").is_file() and (cache/f"{row['code']}-OFS-{y}q{q}.json").is_file() and not force
+                try:
+                    record=collect(session,row['code'],'OFS',y,q,cache,'public',identity=identity,market=row['market'],force=force,display_name=row['name'])
+                    if record['available_at']<=cutoff:records.append(record)
+                except (ValueError,KeyError,AttributeError,OSError) as error:errors.append(dict(year=y,quarter=q,basis='OFS',**failure_detail(error,financial=True)))
+                progress(dict(completed=len(records)+len(errors),total=len(targets)+len(annual_targets)))
+                if not cached:time.sleep(.2)
         if not records:
             errors=[]
             for y,q in targets:
@@ -253,7 +282,8 @@ class CompanyFinancials:
             derived=folder(self.root)/'native-derived'/(code+'.json')
             official=folder(self.root)/'official-documents'/(code+'.json')
             cached=next((p for p in (stored,derived,official) if p.is_file()),None)
-            if not retry and cached:return dict(status='cached',code=code,cache_revision=str(cached.stat().st_mtime_ns))
+            if not retry and cached and (cached!=stored or history_covered(stored,code,now.date().isoformat())):
+                return dict(status='cached',code=code,cache_revision=str(cached.stat().st_mtime_ns))
             if prior.get('status')=='failed' and time.monotonic()-prior.get('attempt',0)<(60 if retry else 3600):return dict(prior)
             if any(j.get('status')=='running' for j in self.jobs.values()):return dict(status='busy',code=code,message='다른 기업의 재무자료 조회 중')
             self.jobs[code]=dict(status='running',code=code,completed=0,total=0,attempt=time.monotonic())
