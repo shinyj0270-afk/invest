@@ -27,8 +27,8 @@ Recommended model: 기존 사용자 설정 유지; 자동 전환 없음
 Recommended reasoning: 출처/보존/검토 경계 High 권장
 Escalation condition: 다른쓰기·미커밋충돌·원격divergence·DB기준불일치·출처/권한불명·외부 전송 미승인이면 해당 적용 보류
 Branch: shinyj0270-afk/invest (재사용 Orca); main (회사 원본)
-Commit: cb9bb2ead0936563ce2504cd8137a6f243e51c79 (시작 기준)
-Remote status: 시작 HEAD=origin/main=cb9bb2ead0936563ce2504cd8137a6f243e51c79, fetch0/0 확인. 이번 문서 commit/push는 pending이며 최종 보고 및 다음 START 실제 Git 조회로 확인한다.
+Commit: 898bbe53fc6c9efb1c35a3735185556b5db791c5 (이번 자체작성 연구노트·운영 문서 commit)
+Remote status: refs/heads/main=898bbe53fc6c9efb1c35a3735185556b5db791c5 pushed (verified, 원본/main·Orca·origin/main·실제 remote SHA 일치, 2026-10-19). 이 증거 기록 commit 자체의 전송은 최종 보고 및 다음 START 실제 Git 조회로 확인한다. G4 검토는 미완료다.
 
 Notes:
 - 10월19일 가설의 sector 태그는 반도체/전력기기의 연구 적용 후보이지 현재 주도력·투자 판단·사람 검토 완료가 아니다. 신규 evidence는 context다.
