@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "ma_fast": 50,
+  "ma_slow": 200,
+  "breakout_days": 60,
+  "high_weeks": 52,
+  "weak_drawdown_pct": 10,
+  "dead_drawdown_pct": 20,
+  "alert_days": 20,
+  "min_members": 5,
+  "priority": "birth_first"
+}

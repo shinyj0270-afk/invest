@@ -42,7 +42,7 @@ with sync_playwright() as p:
     expect(page.locator('#viewFreshness')).to_contain_text('발굴 모집단')
     assert page.locator('#moreNavigation .nav-item').all_text_contents()==['자료 비교','고급 시각화','Research Library']
     options=page.locator('#pageSelect option').evaluate_all('(items)=>items.map(item=>item.value)')
-    assert len(options)==len(set(options))==23
+    assert len(options)==len(set(options))==24
     assert page.locator('#sourceDetails').get_attribute('open') is None
     expect(page.locator('#homeMarketCharts')).to_contain_text('KOSPI')
     expect(page.locator('#homeVerdict')).to_contain_text('오늘의 결론')
@@ -108,4 +108,4 @@ with sync_playwright() as p:
     assert not errors,errors
     assert not network,network
     browser.close()
-print(f'PASS menu minimum contrast={min(contrast):.2f}, keyboard/labels/44px targets; dashboard home, seven primary/three extra menus, comparison with secondary charts, search/watch/detail/trend/sector/holdings flows, 23 mobile views, no network/JS errors')
+print(f'PASS menu minimum contrast={min(contrast):.2f}, keyboard/labels/44px targets; dashboard home, seven primary/three extra menus, comparison with secondary charts, search/watch/detail/trend/sector/holdings flows, 24 mobile views, no network/JS errors')

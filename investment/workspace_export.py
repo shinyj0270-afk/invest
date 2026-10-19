@@ -14,6 +14,8 @@ from .company_detail import build_details
 from .market_history import benchmark_calendar, DAILY_PUBLICATION_TIME
 from .financial_metrics import common_metrics,apply_common
 from .market_insights import enrich_market
+from .industry_phase import build as build_industry_phase
+from .leader_strategy import build as build_leader_strategy
 from .trend_following import build_trend_following
 from .verification import verify_company, compact as compact_verification
 from .thesis_monitor import load_theses, evaluate as evaluate_thesis
@@ -224,6 +226,8 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
             technical=discovery['research']['rows'].get(row['code'],{}).get('technical')
             row['verification']=compact_verification(verify_company(row,technical,verified_on))
     market_insights=enrich_market(discovery,market_cache)
+    industry_phase=build_industry_phase(discovery,market_cache)
+    leader_strategy=build_leader_strategy(discovery,market_cache)
     # Every analysis view uses the same date-checked metrics; keep original payload intact.
     for row in analysis['companies']:
         facts = research['rows'].get(row['code'])
@@ -233,7 +237,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
     legacy = None if result_view or (live or {}).get('lazy_holdings_frame') else export_holdings_frame(snapshot,live=live,market_cache=market_cache,analysis_snapshot=analysis)
     html = (src / 'workspace.html').read_text(encoding='utf-8')
     # Insert payload last so data containing template marker text stays literal.
-    for marker, name in [('/*DASHBOARD_ICONS*/', 'icons.js'), ('/*DASHBOARD_STABILITY*/', 'dashboard_stability.js'), ('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*SOFT_UI_CSS*/','soft_ui.css'), ('/*HOME_DASHBOARD_UI*/', 'home_dashboard_ui.js'), ('/*VERIFICATION_UI*/', 'verification_ui.js'), ('/*HOLDINGS_BRIEF_UI*/', 'holdings_brief_ui.js'), ('/*RESEARCH_LIBRARY_UI*/', 'research_library_ui.js'), ('/*INDUSTRY_ENGINE*/', 'industry_engine.js'), ('/*INDUSTRY_UI*/', 'industry_ui.js'), ('/*INDUSTRY_CSS*/', 'industry.css'), ('/*DATA_RECOVERY_UI*/', 'data_recovery_ui.js'), ('/*COMPARISON_PRICE_UI*/', 'comparison_price_ui.js'), ('/*WORKSPACE_JS*/', 'workspace.js'),
+    for marker, name in [('/*DASHBOARD_ICONS*/', 'icons.js'), ('/*DASHBOARD_STABILITY*/', 'dashboard_stability.js'), ('/*WORKSPACE_CSS*/', 'workspace.css'), ('/*SOFT_UI_CSS*/','soft_ui.css'), ('/*HOME_DASHBOARD_UI*/', 'home_dashboard_ui.js'), ('/*VERIFICATION_UI*/', 'verification_ui.js'), ('/*HOLDINGS_BRIEF_UI*/', 'holdings_brief_ui.js'), ('/*RESEARCH_LIBRARY_UI*/', 'research_library_ui.js'), ('/*INDUSTRY_ENGINE*/', 'industry_engine.js'), ('/*INDUSTRY_UI*/', 'industry_ui.js'), ('/*INDUSTRY_CSS*/', 'industry.css'), ('/*LEADER_STRATEGY_UI*/','leader_strategy_ui.js'), ('/*LEADER_STRATEGY_CSS*/','leader_strategy.css'), ('/*DATA_RECOVERY_UI*/', 'data_recovery_ui.js'), ('/*COMPARISON_PRICE_UI*/', 'comparison_price_ui.js'), ('/*WORKSPACE_JS*/', 'workspace.js'),
                          ('/*DASHBOARD_JOURNEY*/', 'dashboard_journey.js'),
                          ('/*MARKET_EXPLANATION_CSS*/', 'market_explanation.css'), ('/*MARKET_EXPLANATION_UI*/', 'market_explanation_ui.js'),
                          ('/*TREND_CHANGES_UI*/', 'trend_changes_ui.js'), ('/*RISK_REVIEW_UI*/', 'risk_review_ui.js'),
@@ -258,7 +262,8 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
         research=research, discovery=discovery, financial_tables=financial_tables, company_details=company_details,market_insights=market_insights,thesis_monitor=thesis_monitor,
         trend_following=trend_data, market_contract=dict(same_day_after='%02d:%02d'%DAILY_PUBLICATION_TIME,timezone='Asia/Seoul'),
         market_summary=market_summary(analysis, market_cache, discovery['snapshot']['meta']['price_date'] if discovery else analysis['meta']['price_date']),
-        references=sanitize_references(references or {}, snapshot), detail_html=legacy, industry_sector_map=load_sector_map())
+        references=sanitize_references(references or {}, snapshot), detail_html=legacy, industry_sector_map=load_sector_map(),
+        industry_phase=industry_phase,leader_strategy=leader_strategy)
     if (live or {}).get('lazy_company_views'):
         # Wire compaction edits only a private graph, outside source caches
         # and caller-supplied trend models.

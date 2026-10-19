@@ -39,7 +39,7 @@ with sync_playwright() as p:
     page.route('http://127.0.0.1:8767/**',route)
     page.goto('http://127.0.0.1:8767/',wait_until='load')
     page.locator('#navigation > [data-page=finder]').click()
-    assert page.locator('#contextNavigation button').all_text_contents()==['산업 연구','추세추종','조건검색','산업별 후보']
+    assert page.locator('#contextNavigation button').all_text_contents()==['산업 연구','추세추종','주도주 전략','조건검색','산업별 후보']
     page.locator('[data-context-page="trend-following"]').click()
     expect(page.locator('#trendFollowing')).to_be_visible()
     expect(page.locator('#navigation > [data-page=finder]')).to_have_attribute('aria-current','page')

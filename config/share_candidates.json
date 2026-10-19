@@ -395,6 +395,17 @@
     "tests/test_shared_dashboard.py": "tests/test_shared_dashboard.py",
     "tests/test_shared_dashboard_ui.py": "tests/test_shared_dashboard_ui.py",
     "docs/SHARED_DASHBOARD.md": "docs/SHARED_DASHBOARD.md",
-    "docs/research/INVESTMENT_MASTERS_WEEKLY_2026-10-19.md": "docs/research/INVESTMENT_MASTERS_WEEKLY_2026-10-19.md"
+    "docs/research/INVESTMENT_MASTERS_WEEKLY_2026-10-19.md": "docs/research/INVESTMENT_MASTERS_WEEKLY_2026-10-19.md",
+    "config/industry_phase.json": "config/industry_phase.json",
+    "config/leader_strategy.json": "config/leader_strategy.json",
+    "investment/industry_phase.py": "investment/industry_phase.py",
+    "investment/leader_strategy.py": "investment/leader_strategy.py",
+    "src/leader_strategy_ui.js": "src/leader_strategy_ui.js",
+    "src/leader_strategy.css": "src/leader_strategy.css",
+    "tests/test_industry_phase.py": "tests/test_industry_phase.py",
+    "tests/test_leader_strategy.py": "tests/test_leader_strategy.py",
+    "tests/test_strategy_views_ui.py": "tests/test_strategy_views_ui.py",
+    "tools/check_strategy_observations.py": "tools/check_strategy_observations.py",
+    "docs/STRATEGY_OBSERVATION_CHECK.md": "docs/STRATEGY_OBSERVATION_CHECK.md"
   }
 }

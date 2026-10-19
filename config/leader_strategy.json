@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "window": 21,
+  "momentum_lag": 252,
+  "winsor_tail": 0.02,
+  "size_floor": 0.3,
+  "size_adjustment": "divide_raw",
+  "z_threshold": 1.5,
+  "value_tail_pct": 30,
+  "min_members": 5
+}
