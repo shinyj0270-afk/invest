@@ -1,5 +1,6 @@
 """Company-calculated offline result artifacts, never a raw DB/holdings sync."""
 import gzip
+import base64
 import hashlib
 import html
 import io
@@ -8,6 +9,7 @@ import os
 import re
 import subprocess
 import tempfile
+import zlib
 from copy import deepcopy
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -15,10 +17,37 @@ from pathlib import Path
 SCHEMA = 'investment-dashboard-result-1'
 REPOSITORY = 'shinyj0270-afk/invest-results-private'
 MAX_HTML = 180 * 1024 * 1024
-MAX_GZIP = 45 * 1024 * 1024
+MAX_GZIP = 100 * 1024 * 1024
+MAX_RESULT_EXPANDED = 1024 * 1024 * 1024
 BLOCKED = {'holdings', 'account_number', 'password', 'api_key', 'appkey', 'secretkey',
            'access_token', 'refresh_token', 'authorization', 'cookies', 'channel_registry',
            'telegram', 'investment_notes', 'user_policy_evidence'}
+
+
+def encode_result_payload(payload):
+    """Keep the complete offline result within transport limits without dropping data."""
+    raw=json.dumps(payload,ensure_ascii=False,separators=(',',':'),allow_nan=False).encode('utf-8')
+    if len(raw)>MAX_RESULT_EXPANDED:raise ValueError('회사 결과 복원 크기 제한 초과')
+    compressed=gzip.compress(raw,mtime=0)
+    if len(compressed)>MAX_GZIP:raise ValueError('회사 결과 압축 크기 제한 초과')
+    return dict(wire_format='result-gzip-v1',wire_bytes=len(raw),
+                wire_gzip=base64.b64encode(compressed).decode('ascii'))
+
+
+def restore_result_payload(wire):
+    """Bound decompression before parsing, including malformed length declarations."""
+    size=wire.get('wire_bytes');encoded=wire.get('wire_gzip')
+    if type(size) is not int or not 0<size<=MAX_RESULT_EXPANDED or not isinstance(encoded,str) or len(encoded)>MAX_GZIP*4//3+4:
+        raise ValueError('회사 결과 복원 크기 확인 필요')
+    try:
+        compressed=base64.b64decode(encoded,validate=True)
+        with gzip.GzipFile(fileobj=io.BytesIO(compressed)) as stream:raw=stream.read(size+1)
+        if len(raw)!=size:raise ValueError('회사 결과 복원 길이 불일치')
+        result=json.loads(raw)
+    except (OSError,EOFError,ValueError,zlib.error) as exc:
+        raise ValueError('회사 결과 압축·복원 길이 확인 필요') from exc
+    if not isinstance(result,dict):raise ValueError('회사 결과 본문 확인 필요')
+    return result
 
 
 def now():
@@ -35,7 +64,7 @@ def public_data(value):
         for item in value:
             public_data(item)
     elif isinstance(value, str):
-        if re.search(r'(?i)([A-Z]:[\\/]|\\\\[^\\]+\\|sk-proj-|github_pat_|ghp_[A-Za-z0-9]|BEGIN [A-Z ]*PRIVATE KEY)', value):
+        if re.search(r'(?i)((?<![A-Z0-9])[A-Z]:[\\/]|\\\\[^\\]+\\|sk-proj-|github_pat_|ghp_[A-Za-z0-9]|BEGIN [A-Z ]*PRIVATE KEY)', value):
             raise ValueError('로컬 경로·인증정보가 있어 결과를 공유하지 않았습니다.')
         if re.search(r'https?://(?:[^/]+\.)?(?:t\.me|telegram\.(?:me|org|dog))/', value, re.I):
             raise ValueError('Telegram 자료는 결과 공유에서 제외해야 합니다.')
@@ -61,6 +90,7 @@ def public_snapshot(snapshot):
 
 def payload_from_html(content):
     value = json.JSONDecoder().raw_decode(content.split('const WORKSPACE_DATA=', 1)[1])[0]
+    if value.get('wire_format')=='result-gzip-v1':value=restore_result_payload(value)
     live = json.JSONDecoder().raw_decode(content.split('const INVESTMENT_LIVE=', 1)[1])[0]
     if live is not None or value.get('detail_html'):
         raise ValueError('개인 보유 프레임·실시간 연결 없는 결과만 공유할 수 있습니다.')

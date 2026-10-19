@@ -18,6 +18,7 @@ for row in snapshot['companies']:
 for bars in snapshot['benchmarks'].values():
     for bar in bars:bar.update(final=True,venue='KRX',adjustment_basis='index_level')
 content=export_workspace(snapshot,result_view=True)
+compressed_content=content
 payload=payload_from_html(content)
 assert payload['detail_html'] is None
 assert payload['company_details']
@@ -41,6 +42,10 @@ with tempfile.TemporaryDirectory() as temp:
         page.on('pageerror',lambda e:errors.append(str(e)))
         page.route('http://**/*',lambda route:(requests.append(route.request.url),route.abort()))
         page.route('https://**/*',lambda route:(requests.append(route.request.url),route.abort()))
+        compressed_path=Path(temp)/'compressed.html';compressed_path.write_text(compressed_content,encoding='utf-8')
+        page.goto(compressed_path.as_uri(),wait_until='load')
+        page.locator('[data-page=brief]').click()
+        expect(page.locator('[data-brief-metric="revenue"] b')).not_to_have_text('—')
         page.goto(path.as_uri(),wait_until='load')
         page.locator('[data-page=brief]').click()
         expect(page.locator('[data-brief-metric="revenue"] b')).not_to_have_text('—')

@@ -20,6 +20,30 @@ def result_html():
 
 
 class SharedDashboardTests(unittest.TestCase):
+    def test_official_https_sources_are_not_mistaken_for_windows_drive_paths(self):
+        from investment.shared_dashboard import public_data
+        public_data({'source_url':'https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000001',
+                     'source_urls':['https://finance.naver.com/']})
+        for value in ('C:/private/input','source D:\\private\\input','file:///C:/private/input'):
+            with self.assertRaises(ValueError):public_data({'source_url':value})
+    def test_compressed_result_preserves_complete_independent_values_and_rejects_corruption(self):
+        from investment.shared_dashboard import encode_result_payload,restore_result_payload
+        item={'source':'공식 원문 <script> 보존 '*20,'values':[0,None,-1,True], 'date':'2026-06-30'}
+        value={'analysis_snapshot':{'meta':{'price_date':'2026-09-23'}},
+               'financial_tables':{'900001':deepcopy(item),'900002':deepcopy(item)},
+               'company_details':{'900001':deepcopy(item)},'detail_html':None}
+        before=deepcopy(value)
+        wire=encode_result_payload(value)
+        self.assertEqual(wire['wire_format'],'result-gzip-v1')
+        self.assertEqual(value,before)
+        self.assertLess(len(json.dumps(wire)),len(json.dumps(value)))
+        restored=restore_result_payload(wire)
+        self.assertEqual(restored,before)
+        restored['company_details']['900001']['values'][0]=99
+        self.assertEqual(restored['financial_tables']['900001']['values'][0],0)
+        for bad in (dict(wire,wire_bytes=1),dict(wire,wire_bytes=2**40),dict(wire,wire_gzip='invalid'),dict(wire,wire_bytes=True)):
+            with self.assertRaises(ValueError):restore_result_payload(bad)
+
     def bundle(self,**kwargs):
         return pack(result_html(),source_build='0'*64,**kwargs)
 
@@ -79,6 +103,11 @@ class SharedDashboardTests(unittest.TestCase):
         for value in ({'password':'synthetic'}, {'extra':'C:/private/input'}, {'telegram':[]}):
             content=result_html().replace('"detail_html": null','"detail_html": null, "unexpected":'+json.dumps(value))
             with self.assertRaises(ValueError):pack(content,source_build='0'*64)
+            from investment.shared_dashboard import encode_result_payload
+            before,tail=content.split('const WORKSPACE_DATA=',1)
+            value,length=json.JSONDecoder().raw_decode(tail)
+            compressed=before+'const WORKSPACE_DATA='+json.dumps(encode_result_payload(value))+tail[length:]
+            with self.assertRaises(ValueError):pack(compressed,source_build='0'*64)
 
     def test_public_or_wrong_repository_blocks_transfer(self):
         run=Mock(return_value=Mock(returncode=0,stdout=json.dumps({'private':False,'full_name':'shinyj0270-afk/invest-results-private'})))

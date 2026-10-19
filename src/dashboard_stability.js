@@ -13,6 +13,21 @@ const DashboardStability=(()=>{
    action:stale?'새로고침으로 가격 다시 조회':''};
  }
  function restoreWire(data){
+  if(data.wire_format==='result-gzip-v1')return (async()=>{
+   const size=data.wire_bytes,encoded=data.wire_gzip;
+   if(!Number.isInteger(size)||size<=0||size>1024*1024*1024||typeof encoded!=='string'||encoded.length>100*1024*1024*4/3+4)throw Error('회사 결과 복원 크기 확인 필요');
+   const binary=atob(encoded),bytes=new Uint8Array(binary.length);
+   for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+   const reader=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip')).getReader();
+   const text=[],decoder=new TextDecoder('utf-8',{fatal:true});let total=0;
+   try{
+    while(true){const {done,value}=await reader.read();if(done)break;total+=value.length;if(total>size)throw Error('회사 결과 복원 길이 불일치');text.push(decoder.decode(value,{stream:true}));}
+   }finally{await reader.cancel();}
+   if(total!==size)throw Error('회사 결과 복원 길이 불일치');
+   const restored=JSON.parse(text.join('')+decoder.decode());
+   if(!restored||Array.isArray(restored)||typeof restored!=='object')throw Error('회사 결과 본문 확인 필요');
+   delete data.wire_bytes;delete data.wire_gzip;delete data.wire_format;Object.assign(data,restored);
+  })();
   if(data.wire_format!=='live-v2')return;
   if(Array.isArray(data.wire_text)){
    const text=data.wire_text,marker='__investment_wire_text__';

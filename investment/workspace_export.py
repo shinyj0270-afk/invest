@@ -251,4 +251,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
             payload['trend_following']={key:value for key,value in payload['trend_following'].items() if key not in ('rows','previews')}
             payload['trend_following']['rows']=[]
         compact_live_payload(payload)
+    if result_view:
+        from .shared_dashboard import encode_result_payload
+        payload=encode_result_payload(payload)
     return html.replace('/*PAYLOAD*/', script_json(payload))

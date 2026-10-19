@@ -1,7 +1,7 @@
 'use strict';
-(() => {
+(async() => {
 try {
-DashboardStability.restoreWire(WORKSPACE_DATA);
+await DashboardStability.restoreWire(WORKSPACE_DATA);
 const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const snap=WORKSPACE_DATA.analysis_snapshot||WORKSPACE_DATA.snapshot, rows=eligible(snap.companies), meta=snap.meta;
 const discovery=WORKSPACE_DATA.discovery?.snapshot?.meta?.discovery===true?WORKSPACE_DATA.discovery:null;
