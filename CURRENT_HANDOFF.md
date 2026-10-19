@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-19T14:55:00+09:00
+Updated: 2026-10-19T15:05:00+09:00
 Handoff version: 2026-10-19-leader-strategy-design
 Last agent: Claude (사용자 요청으로 회사 재발행 단계 수행)
 Last PC: company Primary/work (원본 config/local.json profile=work 확인)
@@ -30,7 +30,7 @@ Next action:
 1. home PC에서 INVESTMENT START. 최신 코드 ff-only 수신(d5e1458·이 기록 commit 포함), docs/SHARED_DASHBOARD.md 확인. START 4-1에서 home의 `다운로드/INVESTMENT 자료` 폴더가 생성·확인된다(투입 자료가 있으면 선택지 제시).
 2. home .venv로 `tools\shared_dashboard.py open` 실행. tag results-20261019T045455Z-627039e4a5b9·자료기준 2026-10-16·SHA256 627039e4…4174 일치와 산업 연구 화면·영업이익 증가 비중 표시를 확인한다. 회사 수집·계산·AI 조사는 반복하지 않는다.
 3. 실제 수신/열람 성공 뒤에만 home 원본 config/local.json에 shared_dashboard.enabled=true 설정. 실패 시 기존 결과 보존·전환 PENDING 유지.
-Recommended next agent: Codex 또는 Claude (home 수신·검증)
+Recommended next agent: Codex (사용자 지정 2026-10-19: 사용량 사유로 국면 확산·주도주 전략 구현을 Codex가 이어받음; Claude 세션은 CLOSE)
 Recommended model: 기존 사용자 설정 유지; 자동 전환 없음
 Recommended reasoning: Medium; 해시·날짜·권한 불일치는 High
 Escalation condition: 다른 쓰기·미커밋 충돌·원격 divergence·해시/자료일 불일치·개인정보 경계 의심이면 보존 후 중단
