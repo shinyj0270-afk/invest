@@ -1,6 +1,9 @@
 {
   "purpose": "Single-source, explicit Git handoff list for the existing INVESTMENT workspace",
   "files": {
+    "investment/naver_bands.py": "investment/naver_bands.py",
+    "tests/test_naver_bands.py": "tests/test_naver_bands.py",
+    "tests/test_naver_bands_ui.py": "tests/test_naver_bands_ui.py",
     "src/comparison_price_ui.js": "src/comparison_price_ui.js",
     "tests/test_comparison_price.js": "tests/test_comparison_price.js",
     "tests/test_dashboard_connection_ui.py": "tests/test_dashboard_connection_ui.py",

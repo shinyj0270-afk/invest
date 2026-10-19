@@ -58,7 +58,7 @@ const CompanyDetailEngine=(()=>{
   }
   function valuation(row,model,basis='CFS'){
     const ttm=periods(model,basis,'ttm'),qs=periods(model,basis,'quarter'),last=ttm.at(-1),common=model?.common_financial||row.common_financial,bars=model?.chart?.bars||[],cutoff=model?.chart?.as_of||bars.at(-1)?.date,price=bars.at(-1)?.close;
-    const estimate=estimatedShares(row,cutoff,common?.basis===basis?common.currency||'KRW':last?.currency||'KRW'),shares=num(price)&&price>0&&bars.at(-1)?.date===cutoff?estimate.shares:null,equity=x=>basis==='OFS'?x.equity:x.parent_equity,
+    const estimate=estimatedShares({...row,latest_quote:model?.latest_quote||row.latest_quote},cutoff,common?.basis===basis?common.currency||'KRW':last?.currency||'KRW'),shares=num(price)&&price>0&&bars.at(-1)?.date===cutoff?estimate.shares:null,equity=x=>basis==='OFS'?x.equity:x.parent_equity,
       profit=x=>basis==='OFS'?x.net_income:x.parent_net;
     const history=bars.map(p=>{
       const eligible=key=>ttm.filter(c=>c.period_end<=p.date&&publication(c,key)&&publication(c,key)<=p.date&&num(c.values[key])).at(-1);

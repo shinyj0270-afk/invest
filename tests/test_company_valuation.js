@@ -43,3 +43,11 @@ const element={innerHTML:'',querySelector:id=>['#sdCompany','#sdWatch'].includes
 ui.create({element,rows:[displayRow],models:{'900000':displayModel},research:{rows:{}},meta:{financial_basis:'CFS',price_date:'2026-09-23'},getCode:()=>displayRow.code,setCode(){},shared:{isWatched:()=>false,tables:{}},initial:{tab:'value'}}).render();
 assert.match(element.innerHTML,/id="sdValueFrom"[^>]+max="2026-10-07"/);assert.match(element.innerHTML,/완료 종가 기준 2026-10-07/);assert.match(element.innerHTML,/시총·제공가격 조회일 2026-10-08/);
 console.log('PASS valuation UI renders separate quote and completed-price dates and current detail date control');
+
+// Lazy detail has a fresher, validated quote than the initial overview row.
+const lazyModel={...quotedModel,latest_quote:splitQuote.latest_quote};
+const lazyValuation=E.valuation({code:'900000',metrics:{}},lazyModel);
+assert.equal(lazyValuation.current.shares,5e9);
+assert.equal(lazyValuation.current.pcr,12.5);
+assert.equal(lazyValuation.history.at(-1).per,12.5);
+console.log('PASS lazy valuation uses the detail quote, not a missing overview quote');

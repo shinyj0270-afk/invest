@@ -99,7 +99,7 @@ def configured_data(root, *, force=False):
     return saved_data(root, force=force)
 
 
-def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=None, daily=None, latest=None, financial=None, financial_monitor=None, read_only=False, report_inbox=None):
+def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=None, daily=None, latest=None, financial=None, financial_monitor=None, read_only=False, report_inbox=None, valuation_references=None):
     token = token or secrets.token_urlsafe(32)
     from .report_inbox import ReportInbox
     report_inbox = report_inbox or ReportInbox(root,read_only=read_only)
@@ -159,7 +159,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                 try:self.send_body(200,json.dumps(event_view(root,q['code'][0],read_only=read_only),ensure_ascii=False),'application/json')
                 except (OSError,ValueError,KeyError,TypeError):self.send_body(503,'{"error":"뉴스·공시 연결 대기"}','application/json')
                 return
-            if urlsplit(self.path).path=='/company-view':
+            if urlsplit(self.path).path in ('/company-view','/valuation-reference'):
                 with company_read_lock:
                     if restarting.is_set():
                         self.send_body(503,'{"error":"서버 다시 실행 중"}','application/json');return
@@ -191,6 +191,16 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                 try:self.send_body(200,json.dumps(recovery.view(),ensure_ascii=False),'application/json')
                 except (OSError,ValueError,TypeError):self.send_body(503,'{"error":"수집 상태 연결 대기"}','application/json')
                 return
+            if urlsplit(self.path).path=='/valuation-reference':
+                if not self.authorized():self.send_body(403,'{}','application/json');return
+                q=parse_qs(urlsplit(self.path).query)
+                if (set(q)!={'code','basis'} or len(q['code'])!=1 or len(q['basis'])!=1
+                        or not re.fullmatch(r'\d{6}',q['code'][0]) or q['basis'][0] not in ('CFS','OFS')):
+                    self.send_body(400,'{}','application/json');return
+                if read_only or valuation_references is None:
+                    self.send_body(200,'{"status":"unavailable","bands":{}}','application/json');return
+                value=valuation_references.lookup(q['code'][0],q['basis'][0])
+                self.send_body(200,json.dumps(value,ensure_ascii=False,allow_nan=False),'application/json');return
             if urlsplit(self.path).path=='/dashboard-section':
                 if not self.authorized():self.send_body(403,'{}','application/json');return
                 query=parse_qs(urlsplit(self.path).query)
@@ -255,6 +265,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                 merged=dict(discovered,**row);quote=cache.get('quotes',{}).get('quotes',{}).get(code)
                 if quote and (quote.get('name'),quote.get('market'))==(row['name'],row['market']):merged['latest_quote']=quote
                 common=common_metrics(merged,table,detail)
+                model['latest_quote']=merged.get('latest_quote')
                 original=next((r for r in snapshot['companies'] if r['code']==code),None)
                 if original:
                     from .valuation import enrich_valuation
@@ -537,7 +548,8 @@ def serve(root, *, port=8767, saved_only=False, read_only=False):
     monitor=FinancialMonitor(root,financial,track_completion=True)
     from .report_inbox import ReportInbox
     inbox=ReportInbox(root)
-    with ThreadingHTTPServer(('127.0.0.1', port), handler_for(root,holdings=holdings,quotes=quotes,daily=daily,latest=latest,financial=financial,financial_monitor=monitor,report_inbox=inbox,refresh=configured_data if saved_only else ensure_data)) as server:
+    from .naver_bands import NaverBands
+    with ThreadingHTTPServer(('127.0.0.1', port), handler_for(root,holdings=holdings,quotes=quotes,daily=daily,latest=latest,financial=financial,financial_monitor=monitor,report_inbox=inbox,valuation_references=NaverBands(),refresh=configured_data if saved_only else ensure_data)) as server:
         print(f'INVESTMENT live dashboard: http://127.0.0.1:{server.server_port}/', flush=True)
         inbox.start()
         try:server.serve_forever()

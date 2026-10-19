@@ -3,6 +3,7 @@ import json
 import re
 import threading
 import unittest
+from unittest.mock import patch
 from http.server import HTTPServer
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -28,6 +29,24 @@ class FakeRefresh:
 
 
 class LiveDashboardTests(unittest.TestCase):
+    def test_company_detail_transmits_its_validated_quote(self):
+        row=self.provider.snapshot['companies'][0]
+        quote=dict(name=row['name'],market=row['market'],price=100,market_cap_eok=10,retrieved_at='2026-10-19T10:00:00+09:00')
+        cache={'quotes':{'quotes':{row['code']:quote}}}
+        with patch('investment.live_dashboard.load_market_cache',return_value=cache):
+            with urlopen(Request(self.base+'/company-view?code='+row['code'],headers={'X-Dashboard-Token':'test-token'})) as response:
+                self.assertEqual(json.load(response)['model']['latest_quote'],quote)
+
+    def test_valuation_reference_auth_and_query_validation(self):
+        path=self.base+'/valuation-reference?code=000660&basis=CFS'
+        with self.assertRaises(HTTPError) as caught:urlopen(path)
+        self.assertEqual(caught.exception.code,403)
+        with urlopen(Request(path,headers={'X-Dashboard-Token':'test-token'})) as response:
+            self.assertEqual(json.load(response)['status'],'unavailable')
+        for suffix in ('&basis=OFS','&unexpected=1'):
+            with self.assertRaises(HTTPError) as caught:urlopen(Request(path+suffix,headers={'X-Dashboard-Token':'test-token'}))
+            self.assertEqual(caught.exception.code,400)
+
     def test_company_view_authentication_identity_and_no_collection(self):
         code=self.provider.snapshot['companies'][0]['code']
         path=self.base+'/company-view?code='+code
