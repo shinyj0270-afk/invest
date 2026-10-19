@@ -18,7 +18,7 @@ SCHEMA = 'investment-dashboard-result-1'
 REPOSITORY = 'shinyj0270-afk/invest-results-private'
 MAX_HTML = 180 * 1024 * 1024
 MAX_GZIP = 100 * 1024 * 1024
-MAX_RESULT_EXPANDED = 1024 * 1024 * 1024
+MAX_RESULT_EXPANDED = 512 * 1024 * 1024 - 1024
 BLOCKED = {'holdings', 'account_number', 'password', 'api_key', 'appkey', 'secretkey',
            'access_token', 'refresh_token', 'authorization', 'cookies', 'channel_registry',
            'telegram', 'investment_notes', 'user_policy_evidence'}
@@ -26,8 +26,12 @@ BLOCKED = {'holdings', 'account_number', 'password', 'api_key', 'appkey', 'secre
 
 def encode_result_payload(payload):
     """Keep the complete offline result within transport limits without dropping data."""
+    from .workspace_export import share_live_text
+    payload=deepcopy(payload)
+    share_live_text(payload,marker='$t',minimum_bytes=40)
+    if 'wire_text' in payload:payload['wire_format']='result-text-v1'
     raw=json.dumps(payload,ensure_ascii=False,separators=(',',':'),allow_nan=False).encode('utf-8')
-    if len(raw)>MAX_RESULT_EXPANDED:raise ValueError('회사 결과 복원 크기 제한 초과')
+    if len(raw)>MAX_RESULT_EXPANDED:raise ValueError(f'회사 결과 복원 크기 제한 초과 ({len(raw)} bytes)')
     compressed=gzip.compress(raw,mtime=0)
     if len(compressed)>MAX_GZIP:raise ValueError('회사 결과 압축 크기 제한 초과')
     return dict(wire_format='result-gzip-v1',wire_bytes=len(raw),
@@ -47,6 +51,21 @@ def restore_result_payload(wire):
     except (OSError,EOFError,ValueError,zlib.error) as exc:
         raise ValueError('회사 결과 압축·복원 길이 확인 필요') from exc
     if not isinstance(result,dict):raise ValueError('회사 결과 본문 확인 필요')
+    if result.get('wire_format')=='result-text-v1':
+        texts=result.pop('wire_text',None);marker='$t'
+        if not isinstance(texts,list) or not all(isinstance(value,str) for value in texts):raise ValueError('회사 결과 출처 설명 확인 필요')
+        public_data(texts)
+        def restore(value):
+            if isinstance(value,dict):
+                if set(value)=={marker}:
+                    index=value[marker]
+                    if type(index) is not int or not 0<=index<len(texts):raise ValueError('회사 결과 출처 참조 확인 필요')
+                    return texts[index]
+                for key,item in value.items():value[key]=restore(item)
+            elif isinstance(value,list):
+                for index,item in enumerate(value):value[index]=restore(item)
+            return value
+        restore(result);result.pop('wire_format',None)
     return result
 
 

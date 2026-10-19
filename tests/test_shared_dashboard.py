@@ -116,5 +116,14 @@ class SharedDashboardTests(unittest.TestCase):
         with self.assertRaises(ValueError):ResultRepository('shinyj0270-afk/invest')
         self.assertEqual(run.call_count,1)
 
+    def test_unused_compressed_source_text_cannot_hide_local_metadata(self):
+        import base64
+        value=json.JSONDecoder().raw_decode(result_html().split('const WORKSPACE_DATA=',1)[1])[0]
+        value.update(wire_format='result-text-v1',wire_text=['C:/synthetic/private-input'])
+        raw=json.dumps(value).encode('utf-8')
+        wire=dict(wire_format='result-gzip-v1',wire_bytes=len(raw),wire_gzip=base64.b64encode(gzip.compress(raw)).decode('ascii'))
+        content='<script>const INVESTMENT_LIVE=null;const WORKSPACE_DATA='+json.dumps(wire)+';</script>'
+        with self.assertRaises(ValueError):pack(content,source_build='0'*64)
+
 
 if __name__=='__main__':unittest.main()

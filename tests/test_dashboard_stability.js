@@ -18,6 +18,7 @@ assert.equal(row2.valuation_details.per.source,description);assert.equal(row2.co
 trend2.technical.price_health.status='pending';assert.equal(coded.discovery.research.rows['900000'].technical.price_health.status,'ready');
 assert.throws(()=>S.restoreWire({wire_format:'live-v2',wire_text:[description],bad:{[marker]:999}}),/복원/);
 const reserved={wire_format:'live-v2',analysis_snapshot:{},custom:{[marker]:3}};S.restoreWire(reserved);assert.equal(reserved.custom[marker],3);
+assert.throws(()=>S.restoreWire({wire_format:'result-text-v1'}),/확인/);
 console.log('PASS lossless source text, valuation/completeness sharing, independent technical copies, invalid references and reserved namespace');
 (async()=>{
  const value={a:{source:'공식 원문 <script>',values:[0,null,-1,true]},b:{source:'공식 원문 <script>',values:[0,null,-1,true]}};
@@ -25,5 +26,8 @@ console.log('PASS lossless source text, valuation/completeness sharing, independ
  const wire={wire_format:'result-gzip-v1',wire_bytes:raw.length,wire_gzip:compressed};
  const restored={...wire};await S.restoreWire(restored);assert.deepEqual(restored,value);restored.a.values[0]=99;assert.equal(restored.b.values[0],0);
  for(const bad of [{...wire,wire_bytes:1},{...wire,wire_bytes:2**40},{...wire,wire_gzip:'invalid'},{...wire,wire_bytes:true}])await assert.rejects(()=>S.restoreWire(bad));
+ const dictionary={wire_format:'result-text-v1',wire_text:[description],snapshot:{original:true},analysis_snapshot:{different:true},source:{$t:0}};
+ const textRaw=Buffer.from(JSON.stringify(dictionary)),textWire={wire_format:'result-gzip-v1',wire_bytes:textRaw.length,wire_gzip:require('node:zlib').gzipSync(textRaw).toString('base64')};
+ await S.restoreWire(textWire);assert.equal(textWire.source,description);assert.equal(textWire.snapshot.original,true);assert.ok(!('wire_text' in textWire));
  console.log('PASS complete offline gzip restoration, independent values, corruption/length and expansion bounds');
 })().catch(error=>{console.error(error);process.exitCode=1;});

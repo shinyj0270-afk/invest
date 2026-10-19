@@ -127,10 +127,9 @@ def compact_live_payload(payload):
     share_live_text(payload)
 
 
-def share_live_text(payload):
+def share_live_text(payload, *, marker='__investment_wire_text__', minimum_bytes=80):
     """Losslessly share repeated source descriptions; reserve no input namespace."""
     from collections import Counter
-    marker='__investment_wire_text__'
     counts=Counter();stack=[payload]
     while stack:
         value=stack.pop()
@@ -139,7 +138,7 @@ def share_live_text(payload):
             if marker in value or 'wire_text' in value:return
             stack.extend(value.values())
         elif isinstance(value,list):stack.extend(value)
-        elif isinstance(value,str) and len(value.encode('utf-8'))>=80:counts[value]+=1
+        elif isinstance(value,str) and len(value.encode('utf-8'))>=minimum_bytes:counts[value]+=1
     texts=[value for value,count in counts.items() if count>1 and (len(value.encode('utf-8'))-40)*count>len(value.encode('utf-8'))+4]
     if not texts:return
     lookup={value:i for i,value in enumerate(texts)}

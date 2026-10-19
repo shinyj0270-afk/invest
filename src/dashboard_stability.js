@@ -15,7 +15,7 @@ const DashboardStability=(()=>{
  function restoreWire(data){
   if(data.wire_format==='result-gzip-v1')return (async()=>{
    const size=data.wire_bytes,encoded=data.wire_gzip;
-   if(!Number.isInteger(size)||size<=0||size>1024*1024*1024||typeof encoded!=='string'||encoded.length>100*1024*1024*4/3+4)throw Error('회사 결과 복원 크기 확인 필요');
+   if(!Number.isInteger(size)||size<=0||size>512*1024*1024-1024||typeof encoded!=='string'||encoded.length>100*1024*1024*4/3+4)throw Error('회사 결과 복원 크기 확인 필요');
    const binary=atob(encoded),bytes=new Uint8Array(binary.length);
    for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
    const reader=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip')).getReader();
@@ -26,11 +26,12 @@ const DashboardStability=(()=>{
    if(total!==size)throw Error('회사 결과 복원 길이 불일치');
    const restored=JSON.parse(text.join('')+decoder.decode());
    if(!restored||Array.isArray(restored)||typeof restored!=='object')throw Error('회사 결과 본문 확인 필요');
-   delete data.wire_bytes;delete data.wire_gzip;delete data.wire_format;Object.assign(data,restored);
+   delete data.wire_bytes;delete data.wire_gzip;delete data.wire_format;Object.assign(data,restored);return restoreWire(data);
   })();
-  if(data.wire_format!=='live-v2')return;
+  if(!['live-v2','result-text-v1'].includes(data.wire_format))return;
+  if(data.wire_format==='result-text-v1'&&!Array.isArray(data.wire_text))throw Error('회사 결과 출처 설명 확인 필요');
   if(Array.isArray(data.wire_text)){
-   const text=data.wire_text,marker='__investment_wire_text__';
+   const text=data.wire_text,marker=data.wire_format==='result-text-v1'?'$t':'__investment_wire_text__';
    const restore=value=>{
     if(value&&typeof value==='object'){
      if(!Array.isArray(value)&&Object.keys(value).length===1&&Object.hasOwn(value,marker)){
@@ -44,6 +45,7 @@ const DashboardStability=(()=>{
    for(const key of Object.keys(data))if(key!=='wire_text')data[key]=restore(data[key]);
    delete data.wire_text;
   }
+  if(data.wire_format==='result-text-v1'){delete data.wire_format;return;}
   data.snapshot=data.analysis_snapshot;
   const d=data.discovery;
   for(const row of d?.snapshot?.companies||[]){
