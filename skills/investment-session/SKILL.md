@@ -117,6 +117,10 @@ git rev-parse origin/main
 
 원본 main에서 `tools\research_drop.py status`를 실행한다(읽기와 폴더 생성만). 미처리 파일이 있으면 아래 "자료 확인 모드"의 2~3단계로 선택지를 준비해 START 보고에 포함한다. 실패하면 미확인으로 보고하고 START를 계속한다.
 
+### 4-2. 운영 방식 점검 시기 확인
+
+[docs/OPERATIONS_REVIEW.md](../../docs/OPERATIONS_REVIEW.md)의 "점검 기록"에 이번 달(KST, `date`로 확인) 기록이 없으면 START 보고에 "운영 점검 시기"라고 한 줄 알린다. 점검은 사용자가 원할 때 진행하며 START에서 자동으로 수행하거나 설정을 바꾸지 않는다.
+
 ### 5. START 완료 보고
 
 사용자에게 짧게 다음만 보고한다.
@@ -129,6 +133,7 @@ git rev-parse origin/main
 - `CURRENT_HANDOFF.md`의 다음 작업 1개, 권장 실행 주체/모델/Reasoning 및 escalation 조건
 - 정리 후보로 발견한 중복이 있으면 목록
 - 자료 투입 폴더의 미처리 자료와 자료별 최종 선택지(있을 때)
+- 이번 달 운영 점검 기록이 없으면 "운영 점검 시기" 알림
 
 사용자가 이미 구체적인 오늘 작업을 지정했다면 그 작업을 다음 작업으로 사용한다.
 

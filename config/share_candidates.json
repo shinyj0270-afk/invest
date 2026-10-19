@@ -335,6 +335,7 @@
     "docs/INDUSTRY_DASHBOARD.md": "docs/INDUSTRY_DASHBOARD.md",
     "docs/RESEARCH_DROP.md": "docs/RESEARCH_DROP.md",
     "docs/LEADER_STRATEGY.md": "docs/LEADER_STRATEGY.md",
+    "docs/OPERATIONS_REVIEW.md": "docs/OPERATIONS_REVIEW.md",
     "investment/research_drop.py": "investment/research_drop.py",
     "tools/research_drop.py": "tools/research_drop.py",
     "tests/test_research_drop.py": "tests/test_research_drop.py",

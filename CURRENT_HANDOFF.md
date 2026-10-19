@@ -1,8 +1,8 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-19T15:24:27+09:00
-Handoff version: 2026-10-19-industry-leader-telegram-private-inbox-close
-Last agent: Codex
+Updated: 2026-10-19T15:35:00+09:00
+Handoff version: 2026-10-19-operations-review-rule
+Last agent: Claude (아래 Codex CLOSE 내용 유지 + 운영 점검 규칙 추가)
 Last PC: company Primary/work (원본 profile=work 확인)
 Last task: 산업별 국면 확산·주도주 전략 구현 및 운영 반영, Telegram 기존 도구 복원·개인 비공개 채널 운영 방식 확정 후 CLOSE
 
@@ -16,11 +16,14 @@ Completed:
 - 사용자 결정(USER_DATA_DECISIONS.md 15번): 본인 소유 비공개 채널에 직접 고른 뉴스·기사·공시·자료·본인 메모를 모으고 수신 봇 활용을 점진 확장한다. 기존 세 방의 내보내기 장애는 사용자 확인상 콘텐츠 저장·전달 제한이다. 사용자 보고로 비공개 채널 생성·기사 링크 게시·본인 봇 생성 및 채널 관리자 추가 완료. API 연결·실제 수신 완료와 구분한다. 회사 PC 교체를 고려해 집 PC 수신을 기준으로 준비한다. 개인 채널명·봇 사용자명·토큰·채널 ID는 이 공개 Git 인계에 기록하지 않는다.
 - CLOSE 새 실행: 원본 pc-finish 점검 work·clean·진행 Git 작업0·추적 private0·예약 비활성, fetch 후 원격0/0, health build=source=378652d0dde961ee297b9581643f2176f313464765cb0409b6f7cd23b28eee74·restart_required=false. 코드 검사는 위 MERGE 단계의 같은 세션 실행 결과이며 CLOSE 재실행으로 표시하지 않는다. CLOSE 변경은 문서만 검증한다.
 
+- 사용자 결정(2026-10-19): Orca 기반 운영 방식을 월 1회 점검. docs/OPERATIONS_REVIEW.md(점검표·도입 당시 관찰·점검 기록), 스킬 START 4-2에서 이번 달 기록이 없으면 "운영 점검 시기" 알림. 예약 없음, 판단은 ChatGPT 주도·사용자 결정. 문서만 변경.
+
 Pending:
 - 집 PC용 수신 프로그램 구현·로컬 토큰 설정·봇/대상 채널 식별·새 기사 링크 실제 수신·중복/출처 확인은 미실행. 토큰은 이 채팅이나 Git으로 받지 않는다. 실제 Library 입력·자동 요약·외부 모델 전송·예약/자동 시작도 미실행이다.
 - 국면/전략 기준값 사용자 재검토, HRP 참고 비중·사후 성과 집계는 후속. 원문 URL 미확인 SK증권 보고서는 Library 미등록 유지. 관측값을 투자 판단·사람 curate 승인으로 표시하지 않는다.
 - 신규 국면·주도주 전략을 담은 회사 결과 재발행은 미실행. 원본 shared_dashboard.enabled 미설정으로 이번 CLOSE 자동 발행 대상이 아니다. home 최신 코드 수신·실행과 회사 결과 수신/열람·조회 모드 전환은 미확인이다.
 - 이전 세션의 회사 결과 식별자(SOURCE_RECORDED, 이번 재조회 아님): results-20261019T045455Z-627039e4a5b9, 가격2026-10-16, HTML SHA256 627039e4a5b92a30f901b6bc6139e90459df4c167b57a848213339b799db4174. 이 결과에는 이번 국면·주도주 전략이 포함되지 않는다.
+- 2026-10 첫 운영 점검 미실행(다음 START에서 알림 예정).
 - ROIC/WACC·마진 변화·수주 등 미확보, 월요일09:00 inbox 점검·ChatGPT→inbox 자동 수신 미연결 등 기존 후속 유지.
 
 Next task: 집 PC용 개인 비공개 채널 수신 프로그램 구현·연결 검증
