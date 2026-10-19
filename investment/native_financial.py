@@ -103,6 +103,7 @@ def financial_completeness(periods,cutoff,errors=()):
 
 
 def native_metrics(quarters,basis):
+    from .financial_metrics import operating_profit_comparison
     latest=quarters[-1];prior=prior_quarter(latest,quarters);four=quarters[-4:];complete=contiguous_quarters(four)
     profit='parent_net' if basis=='CFS' else 'net_income';book='parent_equity' if basis=='CFS' else 'equity'
     ttm={k:sum(c[k] for c in four) if complete and all(num(c.get(k)) for c in four) else None for k in ('revenue','operating_profit',profit,'ocf')}
@@ -115,7 +116,8 @@ def native_metrics(quarters,basis):
             observed_on=max([c['available_at'] for c in four]+([prior['available_at']] if prior else [])),reason=('검증된 환산 출처·날짜·손익 평균/기말 환율 방법 대기; KRW 시총과 원통화 금액을 나누지 않음' if latest['currency']=='USD' else '같은 날짜 가격·시총 및 TTM 귀속 손익·자본의 공통 가치평가 연결 대기; KRW 통화 환산 불필요') if k in ('per','pbr') else '동일 통화·회계기간 계정의 비율' if v is not None else '같은 회계분기·TTM 또는 귀속 계정 대기') for k,v in metrics.items()},
         amounts={k:latest[k]/1e8 if num(latest.get(k)) else None for k in REQUIRED} if latest['currency']=='KRW' else {},
         native_amounts={k:latest.get(k) for k in REQUIRED},amount_unit='억원' if latest['currency']=='KRW' else '백만 USD',amount_divisor=1e8 if latest['currency']=='KRW' else 1e6,
-        source_urls=sorted({c['source_url'] for c in four+([prior] if prior else [])}))
+        source_urls=sorted({c['source_url'] for c in four+([prior] if prior else [])}),
+        operating_profit_comparison=operating_profit_comparison(quarters,basis))
     used={'operating_margin_pct':[(latest,'revenue'),(latest,'operating_profit')],
         'revenue_growth_pct':[(c,'revenue') for c in [latest]+([prior] if prior else [])],
         'roe_pct':[(c,profit) for c in four]+[(c,book) for c in [latest]+([prior] if prior else [])],

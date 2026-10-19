@@ -28,6 +28,28 @@ def fiscal_report(fy=2026,month=3,q=2,currency='KRW',basis='CFS',multiple=1,avai
 
 
 class FiscalNativeTests(unittest.TestCase):
+    def test_native_profit_comparison_keeps_fiscal_period_and_currency(self):
+        old,_,_=fiscal_report(fy=2025,month=3,q=1,currency='USD',multiple=1,available='2024-08-13')
+        now,_,_=fiscal_report(fy=2026,month=3,q=1,currency='USD',multiple=2,available='2025-08-13')
+        pair=build_native_payload([old,now],'2026-10-19')['common_financial']['operating_profit_comparison']
+        self.assertEqual((pair['status'],pair['currency'],pair['current'],pair['previous']),('ready','USD',40,20))
+        self.assertEqual(pair['period_start'],'2025-04-01')
+        self.assertEqual(pair['previous_period_start'],'2024-04-01')
+        changed=copy.deepcopy(old);changed['calendar_segment']='changed-calendar'
+        missing=build_native_payload([changed,now],'2026-10-19')['common_financial']['operating_profit_comparison']
+        self.assertEqual(missing['status'],'missing')
+        cutoff=native_payload_at(build_native_payload([old,now],'2026-10-19'),'2025-01-01')
+        self.assertEqual(cutoff['common_financial']['operating_profit_comparison']['status'],'missing')
+
+    def test_profit_comparison_retains_both_ytd_sources_for_each_quarter(self):
+        reports=[fiscal_report(fy=fy,month=12,q=q,currency='USD',multiple=multiple,available=day)[0]
+            for fy,q,multiple,day in ((2025,1,1,'2025-05-15'),(2025,2,2,'2025-08-15'),
+                                      (2026,1,2,'2026-05-15'),(2026,2,4,'2026-08-15'))]
+        pair=build_native_payload(reports,'2026-10-19')['common_financial']['operating_profit_comparison']
+        self.assertEqual((pair['current'],pair['previous']),(40,20))
+        self.assertEqual(len(pair['filing_dependencies']),4)
+        self.assertEqual({d['receipt'] for d in pair['filing_dependencies']},{r['receipt'] for r in reports})
+
     def test_march_june_september_november_and_leap_bounds(self):
         for month in (3,6,9,11):
             r,_,_=fiscal_report(month=month,q=4,available='2027-03-01')

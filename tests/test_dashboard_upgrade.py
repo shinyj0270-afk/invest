@@ -32,6 +32,28 @@ class FinancialContractTests(unittest.TestCase):
         r=common_metrics(self.row,self.table,self.t)
         self.assertIsNone(r['metrics']['per']);self.assertIsNone(r['metrics']['roe_pct'])
 
+    def test_operating_profit_pair_keeps_negative_zero_and_source_dates(self):
+        self.q[0]['statement_values']['operating_profit']=-20
+        self.q[-1]['statement_values']['operating_profit']=-10
+        pair=common_metrics(self.row,self.table,self.t)['operating_profit_comparison']
+        self.assertEqual((pair['status'],pair['current'],pair['previous']),('ready',-10,-20))
+        self.assertEqual((pair['period'],pair['previous_period']),('2026-06-30','2025-06-30'))
+        self.assertEqual(pair['period_start'],'2026-04-01')
+        self.assertEqual(pair['amount_unit'],'억원')
+        self.assertEqual(len(pair['dependencies']),2)
+        self.q[0]['cell_notes']={'operating_profit':'원문 계정 차이 보존'}
+        self.assertEqual(common_metrics(self.row,self.table,self.t)['operating_profit_comparison']['source_notes'],['원문 계정 차이 보존'])
+        self.q[0]['statement_values']['operating_profit']=0
+        self.assertEqual(common_metrics(self.row,self.table,self.t)['operating_profit_comparison']['previous'],0)
+        self.q[0]['statement_values']['operating_profit']=None
+        self.assertEqual(common_metrics(self.row,self.table,self.t)['operating_profit_comparison']['status'],'missing')
+
+    def test_operating_profit_pair_never_substitutes_adjacent_quarter(self):
+        self.q.pop(0)
+        pair=common_metrics(self.row,self.table,self.t)['operating_profit_comparison']
+        self.assertEqual(pair['status'],'missing')
+        self.assertIsNone(pair['previous'])
+
     def test_tolerated_source_note_keeps_usable_value_and_propagates(self):
         self.q[-1]['cell_notes']={'parent_net':'원문 명시 계정 참고 사용 · 귀속 합계 잔차 1000000원'}
         r=common_metrics(self.row,self.table,self.t)

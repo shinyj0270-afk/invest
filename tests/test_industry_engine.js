@@ -54,6 +54,21 @@ const mix=E.groups(mixed,{rows:{}},null)[0].revenue;
 assert.deepEqual(mix,{count:1,eligible:3,pct:1/3*100,period:'2026-06-30',basis:'CFS',excluded:1,missing:1});
 const unknown=[row('U1','Unk',10)];unknown[0].metric_details={revenue_growth_pct:{period:'미확인',basis:'CFS'}};
 assert.deepEqual(E.groups(unknown,{rows:{}},null)[0].revenue,{count:0,eligible:0,pct:null,period:null,basis:null,excluded:1,missing:0});
+// Profit breadth compares amounts (not percentage growth) in one dated cohort.
+const profitRow=(code,current,previous,extra={})=>row(code,'Profit',10,{common_financial:{operating_profit_comparison:{
+  status:'ready',comparison:'single_quarter_yoy_amount',period:'2026-06-30',previous_period:'2025-06-30',
+  period_start:'2026-04-01',previous_period_start:'2025-04-01',basis:'CFS',currency:'KRW',current,previous,...extra}}});
+const profitMembers=[profitRow('P1',20,10),profitRow('P2',5,-5),profitRow('P3',-5,-10),
+  profitRow('P4',-10,-10),profitRow('P5',-20,-10),profitRow('P6',0,-10),profitRow('P7',5,0),
+  profitRow('P8',100,1,{basis:'OFS'}),profitRow('P9',100,1,{currency:'USD'}),row('P10','Profit',10)];
+const profit=E.groups(profitMembers,{},null)[0].profit;
+assert.equal(profit.count,5);assert.equal(profit.eligible,7);assert.equal(profit.pct,5/7*100);
+assert.deepEqual(profit.categories,{profit_growth:1,turnaround:1,loss_narrowing:1,breakeven:1,from_zero:1});
+assert.equal(profit.excluded,2);assert.equal(profit.missing,1);
+const profitMissing=E.groups([row('PM','Profit',10)],{},null)[0].profit;
+assert.equal(profitMissing.pct,null);assert.equal(profitMissing.eligible,0);
+const newer=profitRow('PN',10,5,{period:'2026-09-30',previous_period:'2025-09-30',period_start:'2026-07-01',previous_period_start:'2025-07-01'});
+assert.equal(E.groups([profitMembers[0],newer],{},null)[0].profit.period,'2026-09-30');
 // Ranking only where the existing RS percentile exists; thin groups are listed, never ranked.
 const view=E.overview(groups,{sort:'rs1m'});
 assert.deepEqual(view.ranked.map(g=>g.key),['KOSPI|Semis']);

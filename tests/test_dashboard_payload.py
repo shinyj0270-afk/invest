@@ -53,6 +53,10 @@ class DashboardPayloadTests(unittest.TestCase):
         self.assertEqual(len(payload['discovery']['snapshot']['companies']),1369)
         for row in payload['discovery']['snapshot']['companies']:
             self.assertTrue(row.get('common_financial'))
+            pair=row['common_financial']['operating_profit_comparison']
+            self.assertEqual(pair['status'],'ready')
+            self.assertEqual((pair['current'],pair['previous']),(100,100))
+            self.assertEqual(pair['previous_period'],'2025-06-30')
             self.assertNotIn('prices',row);self.assertNotIn('trend_prices',row)
         self.assertTrue(all(not facts['technical']['series'] for facts in payload['discovery']['research']['rows'].values()))
         self.assertEqual(snapshot,before)

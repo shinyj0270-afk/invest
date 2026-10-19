@@ -35,6 +35,49 @@ def contiguous(columns):
         months.append(d.year*12+d.month)
     return all(b-a==3 for a,b in zip(months,months[1:]))
 
+
+def operating_profit_comparison(quarters, basis):
+    """A dated single-quarter YoY amount pair; never divide by a loss or zero."""
+    from datetime import timedelta
+    from .native_financial import prior_quarter
+    from .fiscal_contract import shift_month
+    latest=quarters[-1];prior=prior_quarter(latest,quarters)
+    def amount(c):
+        return (c.get('statement_values',c)).get('operating_profit') if c else None
+    def start(c):
+        if not c or not valid_day(c.get('period_end')):return None
+        end=date.fromisoformat(c['period_end']);value=c.get('period_start')
+        if value is None and not c.get('calendar_segment') and end.month in (3,6,9,12):
+            value=date(end.year,end.month-2,1).isoformat()
+        if not valid_day(value):return None
+        day=date.fromisoformat(value)
+        return value if shift_month(day,3)-timedelta(days=1)==end else None
+    current,previous=amount(latest),amount(prior)
+    current_start,previous_start=start(latest),start(prior)
+    comparable=prior is not None and all(latest.get(k,default)==prior.get(k,default) for k,default in (
+        ('basis',basis),('currency','KRW'),('calendar_segment',None),('year_end_month',None)))
+    ready=comparable and current_start is not None and previous_start is not None and num(current) and num(previous)
+    used=[(c,'operating_profit') for c in (latest,prior) if c]
+    result=dict(status='ready' if ready else 'missing',comparison='single_quarter_yoy_amount',
+        period=latest['period_end'],previous_period=prior['period_end'] if prior else None,
+        period_start=current_start,previous_period_start=previous_start,basis=basis,currency=latest.get('currency','KRW'),
+        amount_unit='억원' if 'statement_values' in latest else latest.get('currency','KRW'),
+        current=current if num(current) else None,previous=previous if num(previous) else None,
+        source_notes=sorted({c.get('cell_notes',{}).get('operating_profit') for c in (latest,prior) if c and c.get('cell_notes',{}).get('operating_profit')}),
+        reason='단독분기 전년동기 영업이익 금액 비교 · 흑자 증가·흑자 전환·적자 축소 포함' if ready else '같은 기간·회계기준·통화의 전년동기 단독분기 영업이익 미확보')
+    result.update(metric_provenance(used))
+    filings={}
+    for column,_ in used:
+        cell=column.get('cell_provenance',{}).get('operating_profit',{})
+        dependencies=list(column.get('dependencies') or [cell or column])
+        if cell:dependencies.extend(cell.get('dependencies') or [cell])
+        for dependency in dependencies:
+            item=dict(source_url=dependency.get('source_url') or dependency.get('url'),receipt=dependency.get('receipt'),
+                sha256=dependency.get('sha256'),available_at=dependency.get('available_at'))
+            filings[tuple(item.values())]=item
+    result['filing_dependencies']=list(filings.values())
+    return result
+
 def common_metrics(row, table, technical=None, basis='CFS'):
     qs=next((g['columns'] for g in table.get('groups',[]) if g['basis']==basis and g['cadence']=='quarter'),[])
     if not qs and basis=='CFS':
@@ -89,7 +132,7 @@ def common_metrics(row, table, technical=None, basis='CFS'):
     amounts={k:v.get(k) for k in ('revenue','operating_profit','net_income','total_borrowings','balance_debt')}
     return dict(basis=basis,period=end,currency=latest.get('currency','KRW'),
         **{k:latest[k] for k in ('fiscal_year','fiscal_quarter','year_end_month','calendar_segment') if k in latest},
-        metrics=metrics,metric_details=details,amounts=amounts,ttm_complete=complete,ttm_ocf=ttm['ocf'],financial_completeness=table.get('financial_completeness'),source_urls=sorted(set(c.get('source_url') for c in four+[latest]+([prior] if prior else []) if c.get('source_url'))))
+        metrics=metrics,metric_details=details,amounts=amounts,operating_profit_comparison=operating_profit_comparison(qs,basis),ttm_complete=complete,ttm_ocf=ttm['ocf'],financial_completeness=table.get('financial_completeness'),source_urls=sorted(set(c.get('source_url') for c in four+[latest]+([prior] if prior else []) if c.get('source_url'))))
 
 def apply_common(row, facts, common):
     """Official-first common metrics win; reviewed provider values only fill gaps at the exact basis/date."""

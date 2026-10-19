@@ -20,6 +20,11 @@ for i,row in enumerate(companies):
     t.update(close=close,sma={'50':100,'150':100,'200':101},as_of=payload['snapshot']['meta']['price_date'],price_health={'status':'ready' if close else 'missing'},
              short_rs={k:dict(return_pct=(i-2)*1.5 if close else None,score=50+i if close else None) for k in ('1m','3m','6m')})
 payload['discovery']=discovery
+for i,(current_profit,previous_profit) in enumerate(((20,10),(5,-5),(-5,-10),(-10,-10),(None,1))):
+    companies[i]['common_financial']={'operating_profit_comparison':dict(
+        status='ready' if current_profit is not None else 'missing',comparison='single_quarter_yoy_amount',
+        period='2026-06-30',previous_period='2025-06-30',period_start='2026-04-01',previous_period_start='2025-04-01',
+        basis='CFS',currency='KRW',current=current_profit,previous=previous_profit)}
 semis=companies[0]['industry']
 payload['industry_sector_map']=dict(status='ready',decided_on='2026-10-19',decided_by='user',sectors={'반도체':[semis]})
 payload['market_insights']={'definition':'합성 업종 정의','markets':[],'sectors':[
@@ -62,7 +67,11 @@ with sync_playwright() as p:
     expect(view.locator('.ind-facts').first).to_contain_text('200일선 위 기업60%3/5개')
     expect(view).to_contain_text('연구 중 · 검증 전')
     expect(view).to_contain_text('매출 증가 기업 비중')
-    expect(view).to_contain_text('영업이익 증가 기업 비중미확보')
+    expect(view.locator('[data-profit-summary]')).to_contain_text('75%')
+    expect(view.locator('[data-profit-summary]')).to_contain_text('3/4개')
+    expect(view.locator('[data-profit-summary]')).to_contain_text('미확보 2개')
+    for label in ('흑자 증가 1개','흑자 전환 1개','적자 축소 1개'):
+        expect(view.locator('[data-profit-summary]')).to_contain_text(label)
     expect(view).to_contain_text('사용자 확정 산업 대응표 연결')
     expect(view).to_contain_text('구성기업 직접 연결')
     expect(view).to_contain_text('원문 발행 2026-10-01')

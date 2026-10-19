@@ -52,9 +52,29 @@ const IndustryEngine=(()=>{
     return [...map.values()].sort((a,b)=>a.key.localeCompare(b.key)).map(g=>{
       const sector=stored.get(g.key),fin=DiscoveryEngine.sectors(g.members,research||{})[0];
       return {...g,count:g.members.length,rs:sector?sector.short_rs:null,rs_count:sector?.count??null,
-        breadth:breadth(g.members,research),revenue:revenue(g.members,research),concentration:concentration(g.members),spread:spread(g.members,research),
+        breadth:breadth(g.members,research),revenue:revenue(g.members,research),profit:profitBreadth(g.members),concentration:concentration(g.members),spread:spread(g.members,research),
         financial:fin?.metrics||{},priced_count:g.members.filter(r=>priced(tech(research,r))).length};
     });
+  }
+  function profitBreadth(members){
+    const pairs=members.map(r=>r.common_financial?.operating_profit_comparison);
+    const valid=pairs.filter(p=>p?.status==='ready'&&p.comparison==='single_quarter_yoy_amount'&&num(p.current)&&num(p.previous)
+      &&['CFS','OFS'].includes(p.basis)&&['KRW','USD'].includes(p.currency)
+      &&[p.period,p.previous_period,p.period_start,p.previous_period_start].every(DiscoveryEngine.known));
+    const cohorts=new Map();
+    for(const p of valid){const key=[p.period,p.period_start,p.previous_period,p.previous_period_start,p.basis,p.currency].join('|');
+      if(!cohorts.has(key))cohorts.set(key,[]);cohorts.get(key).push(p);}
+    const cohort=[...cohorts].sort((a,b)=>b[1].length-a[1].length||b[0].localeCompare(a[0]))[0]?.[1]||[];
+    const categories={profit_growth:0,turnaround:0,loss_narrowing:0,breakeven:0,from_zero:0};
+    for(const p of cohort){if(p.current<=p.previous)continue;
+      const category=p.previous>0?'profit_growth':p.current<0?'loss_narrowing':p.current===0?'breakeven':p.previous===0?'from_zero':'turnaround';
+      categories[category]++;}
+    const count=Object.values(categories).reduce((a,b)=>a+b,0),first=cohort[0];
+    return {...share(count,cohort.length),categories,period:first?.period??null,previous_period:first?.previous_period??null,
+      period_start:first?.period_start??null,previous_period_start:first?.previous_period_start??null,basis:first?.basis??null,currency:first?.currency??null,
+      excluded:valid.length-cohort.length,missing:members.length-valid.length,
+      qualified:cohort.filter(p=>p.source_notes?.length).length,
+      unknown_publication:cohort.filter(p=>p.publication_status==='unknown').length};
   }
   function rankValue(g,sort){
     if(sort==='breadth')return g.breadth.above200.eligible>=MIN_MEMBERS?g.breadth.above200.pct:null;
