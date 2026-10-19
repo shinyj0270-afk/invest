@@ -1,3 +1,10 @@
+# 회사 결과 재발행 · 자료 투입 폴더 · 2026-10-19
+
+- 회사 조회 결과를 산업 연구·영업이익 증가 비중 포함 코드로 재발행: tag results-20261019T045455Z-627039e4a5b9, 자료기준2026-10-16, source_build 8d6cfcc3…, HTML SHA256 627039e4…4174. 비공개·latest·asset 해시·오프라인 열람(연구 제외·외부요청0) 검증. 첫 시도는 운영 자동 종가 갱신과 겹쳐 보호 중단 후 재실행. home 수신은 미실행.
+- 사용자 결정: 자료 투입 폴더 `다운로드/INVESTMENT 자료`(회사·집 공통 규칙). START와 `자료 확인` 때 AI가 미처리 파일을 읽고 대시보드 반영 선택지(report/library/thesis/archive)를 제시하며 선택 후에만 등록. PC별 처리 기록·원본 보존·예약 없음(docs/RESEARCH_DROP.md). 구현 d5e1458, 단위78 OK·격리 portable 394 경고0, /restart 후 build/source 일치·push 확인. 다음 실행은 CURRENT_HANDOFF.md.
+
+---
+
 # 산업 G4 검토 후 수정·영업이익 증가 비중 운영 반영 · 2026-10-19
 
 - company Primary/work, Codex. 시작 원본 main·재사용 invest·원격 89861721409475d8c91e9db87b00bdc64fb4193f clean·0/0. Claude 구현 e5ae081..42b7a98의 지정 파일을 독립 검토했고 P2 2건(최대기업 가격 미확보 시 다른 기업 오제외, 시장 혼합 순위), P3 1건(대응표 승인 정보 형식 검증)을 보고했다. 검토 단계에는 파일·DB·운영을 변경하지 않았다. 투자 판단·사람 curate 승인은 아니다.
