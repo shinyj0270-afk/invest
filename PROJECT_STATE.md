@@ -1,3 +1,13 @@
+# 산업 연구 후속: 매출 확산·확정 산업 대응표·G4 검토 준비 · 2026-10-19
+
+- 같은 Claude 세션 후속(사용자 지정 순서). 시작 6ff5a59 clean·원격0/0.
+- 매출 증가 기업 비중 추가: 기존 저장 매출성장률을 쓰고 산업 내 최다 기간·회계기준 묶음만 분모, 다른 기준·미확보 수 표시. 영업이익 증가 비중·ROIC/WACC는 계속 미확보.
+- 사용자 결정(2026-10-19): 연구 산업 태그→네이버 업종 대응을 config/industry_sector_map.json으로 고정(반도체→반도체와반도체장비, 전력기기→전기장비, 조선→조선, 화학→화학; 전기제품·복합 태그·금리 민감 업종은 대응 없음). 문자열 포함 규칙은 제거했고 파일 형식 오류 시 종목 직접 연결만 표시한다.
+- 이번 새 검증: 엔진 node·화면 Playwright·대응표 unittest PASS, 관련 unittest 100개 OK(skip2), 격리 공유390 경고0·portable/AppTest·합성UI19명령 PASS. 재시작 후 실제 운영 화면(쓰기·보유 연결 차단)에서 전기장비←전력기기 연구 연결, 전기제품 미연결, 매출 증가 7/7(미확보4 표시), JS오류0·1440/390/320px 넘침0, Library DB 42행·해시 동일.
+- 구현 42b7a98255cee9d6edb604fbece7885934f76a22 ff 반영·/restart 202·build/source 일치·restart_required=false 후 push 확인. G4는 Codex 검토용 프롬프트만 작성(Git 제외 validation/industry-dev)했고 검토는 미실행이다.
+
+---
+
 # 주도산업 중심 산업 연구 화면 · 2026-10-19
 
 - 담당 Claude(사용자 지정, 이번 작업 한정). work Primary, 시작 원본 main·Orca invest e5ae0812061f1f40c133f29c1aa39c00f3dd9144 clean·원격0/0. 기존 Orca 작업본에서 개발하고 원본 main에 ff-only 반영했다.
