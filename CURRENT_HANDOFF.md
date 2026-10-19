@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-19T16:50:42+09:00
+Updated: 2026-10-19T16:51:27+09:00
 Handoff version: 2026-10-19-company-financial-history-close
 Last agent: Codex
 Last PC: company Primary/work (원본 profile=work 확인)
@@ -14,7 +14,7 @@ Completed:
 - 원본 main ff-only 반영·안전 재시작 HTTP202, build=source=b465935216b833d5125e168de13f39ccfc5de8a3c0156a3f33c2a4aca835d556·restart_required=false. CLOSE 새 점검: work·clean·진행 Git 작업0·추적 private0·예약 비활성. 인계 문서만 바뀌므로 추가 재시작 불필요.
 
 Pending:
-- 이 CLOSE 문서/구현의 원격 전송 검증은 아래 Remote status를 따른다. 이전 push는 명시 승인 부족으로 자동 승인 검토에서 거부됐으며, 현재 사용자의 INVESTMENT CLOSE는 기존 계약상 검증된 공유 변경의 commit/push를 포함한다.
+- 이 CLOSE 구현·초기 인계 문서는 962bfe1c9f99e722d93ff3935aeb34a2af067f70에서 전송·실제 원격 일치를 확인했다. 이전 명시승인 부족 거부는 사용자의 INVESTMENT CLOSE 요청에 따른 전송으로 해소됐다. 아래 증거 기록 commit 자체는 최종 보고/다음 START의 실제 Git 조회로 확인한다.
 - NICE 미평가·명칭 식별 실패·자료 미제공 기업은 기존 자료만 표시한다. 재작성 비교재무 차이와 공시일 미확인을 표시하며, 공시가 없는 과거 부채/자본을 추정하지 않는다. 비12월/공식추출 기업의 명시 원문 목록 범위를 임의 확장하지 않는다.
 - 회사 결과 자동발행 설정은 false. 이번 기업 상세 개선 및 앞선 국면/주도주 전략을 담은 회사 결과 재발행은 미실행, home 최신 코드·결과 수신/열람은 미확인. 이전 결과(SOURCE_RECORDED): results-20261019T045455Z-627039e4a5b9, 자료2026-10-16, HTML SHA256 627039e4a5b92a30f901b6bc6139e90459df4c167b57a848213339b799db4174.
 - 기존 다음 작업 유지: 집 PC 개인 채널 수신 프로그램·토큰 로컬 설정·새 기사 링크 실제 수신/중복/출처 검증 미실행. Library 자동 등록·외부 모델 전송·예약/자동 시작도 미실행.
@@ -31,7 +31,7 @@ Recommended reasoning: Medium; 인증/채널·기간/중복·PC 경계 충돌은
 Escalation condition: 동시 쓰기·원격 divergence·예상 밖 변경·기업/채널 식별 불일치·인증/개인자료 노출 우려가 있으면 보존 후 해당 작업 보류
 Branch: shinyj0270-afk/invest (재사용 Orca); main (work 원본 운영)
 Commit: c9198cca9354a8deb1d7904b8ffd7b345c535b4e (이미 생성·운영 반영한 최종 구현 SHA; CLOSE 문서의 자기 SHA 아님)
-Remote status: refs/heads/main=26320f31a50dfe75e24d0c05ff3cfb5e353b2676 (이번 CLOSE fetch 확인); 구현 c9198cca9354a8deb1d7904b8ffd7b345c535b4e 및 문서 전송 verification pending. 성공 선기록 없음.
+Remote status: refs/heads/main=962bfe1c9f99e722d93ff3935aeb34a2af067f70 pushed (verified, 이번 CLOSE HEAD=origin/main=실제 remote main 일치). 구현 c9198cca9354a8deb1d7904b8ffd7b345c535b4e를 포함한다. 이 전송 증거만 갱신하는 후속 기록 commit 자체의 전송은 최종 보고 및 다음 START의 실제 Git 조회로 확인한다.
 
 Notes:
 - 작업 워크트리는 삭제하지 않고 다음 세션에 재사용한다. 검증자료 validation/current(bands-live, financial-live, history-live)와 원본 공개자료 캐시·설정·DB는 로컬에 보존하며 Git 제외다.
