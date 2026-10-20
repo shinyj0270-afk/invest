@@ -180,6 +180,6 @@ const CompanyDetailUI=(()=>{
     }
     return {render,state:()=>({...state})};
   }
-  function metricCards(row,model,research,meta,rows=[]){return readingGuide(row,model,research,meta,rows)+`<article class="panel below brief-financial"><h3>주요 재무지표</h3><div class="brief-metrics">${E.summary(row,model,research,meta).map(([k,l,v,u,n])=>`<div class="sd-stat" data-brief-metric="${k}"><span>${esc(l)}</span><b>${u==='억원'?money(v):unit(v,u,2)}</b><small>${esc(n||'자료 미확보')}</small></div>`).join('')}</div><p class="psub">손익은 최신 단독분기 · 각 지표의 기간·출처를 확인하세요.</p></article>`+financialReading(row,model,meta);}
+  function metricCards(row,model,research,meta,rows=[]){return `<article class="panel below brief-financial"><h3>주요 재무지표</h3><div class="brief-metrics">${E.summary(row,model,research,meta).map(([k,l,v,u,n])=>`<div class="sd-stat" data-brief-metric="${k}"><span>${esc(l)}</span><b>${u==='억원'?money(v):unit(v,u,2)}</b><small>${esc(n||'자료 미확보')}</small></div>`).join('')}</div><p class="psub">손익은 최신 단독분기 · 각 지표의 기간·출처를 확인하세요.</p></article>`+financialReading(row,model,meta);}
   return {create,metricCards};
 })();
