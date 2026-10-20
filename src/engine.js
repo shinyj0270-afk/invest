@@ -100,7 +100,7 @@ function validateSnapshot(data){
       for(const h of row.history){if(!Number.isInteger(h.year)||h.year<2000||h.year>2100||ys.has(h.year))throw new Error('history 연도는 중복 없는 정수여야 합니다.');ys.add(h.year);for(const k of ['revenue_eok','operating_profit_eok'])if(h[k]!=null&&!isNum(h[k]))throw new Error(`history.${k}는 숫자 또는 null입니다.`);}
     }
     if(row.sources!=null&&!Array.isArray(row.sources))throw new Error('sources는 배열입니다.');
-    if(row.sources?.length>50)throw new Error('종목당 출처는 50개까지 가능합니다.');
+    // The shared snapshot contract permits accumulated sources; validate every entry without truncation.
     for(const s of row.sources||[]){
       const local=s&&(s.url==null||s.url==='')&&typeof s.file==='string'&&s.file.length>0&&typeof s.sha256==='string'&&/^[a-f0-9]{64}$/i.test(s.sha256);
       if(!s||typeof s.label!=='string'||(!local&&(typeof s.url!=='string'||!/^https?:\/\//i.test(s.url))))throw new Error('출처에는 label과 http(s) URL 또는 해시가 있는 로컬 파일이 필요합니다.');

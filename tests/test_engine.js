@@ -41,6 +41,23 @@ test('수치 문자열 차단',()=>assert.throws(()=>E.validateSnapshot({...base
 test('금융업 일반 스크리너 제외',()=>assert.equal(E.eligible([{...base.companies[0],analysis_profile:'financial'}]).length,0));
 test('업종 비교는 전체 입력 모집단 기준',()=>assert.equal(E.peerRows([...base.companies,{...base.companies[0],code:'000002',metrics:{operating_margin_pct:-3}}],'테스트 업종').length,2));
 test('악성 출처 URL 차단',()=>assert.throws(()=>E.validateSnapshot({...base,companies:[{...base.companies[0],sources:[{label:'x',url:'javascript:alert(1)'}]}]})));
+test('공통 스냅샷 계약대로 누적 출처를 자르지 않고 검증',()=>{
+  for(const count of [50,51,75,200]){
+    const sources=Array.from({length:count},(_,i)=>({label:`합성 출처 ${i+1}`,url:`https://example.invalid/reports/${i+1}`}));
+    const snapshot={...base,companies:[{...base.companies[0],sources}]};
+    const before=JSON.stringify(snapshot);
+    assert.equal(E.validateSnapshot(snapshot).companies[0].sources.length,count);
+    assert.equal(JSON.stringify(snapshot),before);
+  }
+});
+test('50개 이후 출처도 URL과 로컬 파일 해시 검사를 유지',()=>{
+  const sources=Array.from({length:74},(_,i)=>({label:`합성 출처 ${i+1}`,url:`https://example.invalid/reports/${i+1}`}));
+  const snapshot=source=>({...base,companies:[{...base.companies[0],sources:[...sources,source]}]});
+  assert.throws(()=>E.validateSnapshot(snapshot({label:'악성',url:'javascript:alert(1)'})),/출처에는/);
+  assert.throws(()=>E.validateSnapshot(snapshot({label:'로컬',file:'synthetic.xlsx',sha256:'invalid'})),/출처에는/);
+  assert.equal(E.validateSnapshot(snapshot({label:'로컬',file:'synthetic.xlsx',sha256:'a'.repeat(64)})).companies[0].sources.length,75);
+  assert.throws(()=>E.validateSnapshot({...base,companies:[{...base.companies[0],sources:{}}]}),/sources는 배열/);
+});
 test('모집단 수 역전 차단',()=>assert.throws(()=>E.validateSnapshot({...base,meta:{...base.meta,universe_total:0}})));
 test('PER PBR 선택 지표와 결측 사유 허용',()=>{
   const snapshot={...base,companies:[{...base.companies[0],metrics:{per:10,pbr:null,eps_ttm:1000,bps:5000,price:10000},metric_missing_reasons:{pbr:'분모 확인 대기'}}]};
