@@ -43,7 +43,7 @@ tracked_private_paths는 경로 기반 경고일 뿐 비밀 탐지 인증이 아
 
 두 폴더를 구분한다.
 
-- **원본(바탕화면 실제 폴더)**: 회사 PC는 `바탕화면\신영재\한국\INVESTMENT`. Git의 메인 워크트리(`main`)이며 운영 서버(127.0.0.1:8767)가 이 코드로 돈다. `config/local.json`·`.venv`·`data/`가 여기 있다. 여기서 파일을 고치면 즉시 `restart_required`가 켜지고 작업 중인 코드가 운영에 노출되므로 직접 고치지 않는다.
+- **원본(바탕화면 실제 폴더)**: 회사 PC는 `바탕화면\INVESTMENT`. Git의 메인 워크트리(`main`)이며 운영 서버(127.0.0.1:8767)가 이 코드로 돈다. `config/local.json`·`.venv`·`data/`가 여기 있다. 여기서 파일을 고치면 즉시 `restart_required`가 켜지고 작업 중인 코드가 운영에 노출되므로 직접 고치지 않는다.
 - **작업 워크트리(Orca 폴더)**: Orca가 같은 저장소에서 만들어 관리하는 폴더(예: `C:\Users\<사용자>\orca\workspaces\INVESTMENT\invest-rev`). 개발·검증은 여기서 한다. 하나를 계속 재사용하고 설정·`.venv`·데이터는 없다.
 - **세션**: 작업 워크트리 안에서 여는 AI 대화. 폴더와 별개이며 사용량은 세션 길이에 따라 늘어난다. 작업 단위마다 새로 열고 CLOSE 후 닫는다. 이어 갈 내용은 CURRENT_HANDOFF.md가 넘긴다.
 

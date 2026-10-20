@@ -23,7 +23,7 @@ description: INVESTMENT START/시작, 합쳐줘/MERGE, CLOSE/마감 요청에서
 
 ## 용어
 
-- **원본 main**: 바탕화면의 실제 프로젝트 폴더(회사 PC: `바탕화면\신영재\한국\INVESTMENT`)에 있는 `main`. 운영 서버(127.0.0.1:8767)가 이 폴더의 코드로 돌고 `config/local.json`·`.venv`·`data/`도 여기 있다. `git worktree list`에서 `[main]`인 경로다. 여기서 코드를 직접 고치지 않는다.
+- **원본 main**: 바탕화면의 실제 프로젝트 폴더(회사 PC: `바탕화면\INVESTMENT`)에 있는 `main`. 운영 서버(127.0.0.1:8767)가 이 폴더의 코드로 돌고 `config/local.json`·`.venv`·`data/`도 여기 있다. `git worktree list`에서 `[main]`인 경로다. 여기서 코드를 직접 고치지 않는다.
 - **작업 워크트리**: Orca가 원본 main 저장소에서 만들어 관리하는 작업 폴더(예: `C:\Users\<사용자>\orca\workspaces\INVESTMENT\invest-rev`)와 그 브랜치. 개발·검증은 여기서 한다. 하나를 계속 재사용하며 동시에 하나만 둔다. 설정·`.venv`·데이터는 없다.
 - **세션**: 작업 워크트리 안에서 여는 AI 대화 한 묶음. 워크트리와 별개다. 작업 단위(보통 START~CLOSE)마다 새로 열고 CLOSE 후 닫는다. 대화가 길어지면 MERGE나 CLOSE로 정리한 뒤 새 세션에서 START로 이어 간다. 이어 갈 내용은 `CURRENT_HANDOFF.md`가 넘긴다.
 
