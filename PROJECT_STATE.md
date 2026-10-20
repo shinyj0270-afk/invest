@@ -1,3 +1,12 @@
+# 보유 화면 누적 출처 검증 호환 수정 · 2026-10-20
+
+- work Primary, Codex. 시작 main/Orca invest/원격cd010d3 clean·0/0. 사용자 요청으로 공통 snapshot.schema.json/Python 계약에는 없는 src/engine.js의 종목당 출처50개 제한을 제거했다. sources 배열 형식과 모든 항목의 label·http(s) URL 또는 로컬 파일/해시 검사는 유지하며, 출처 삭제·절삭·중복정리·원자료 수정은 하지 않았다. 기존 JSON30MB/종목10,000개 등 다른 경계는 그대로다. 배포 HTML도 재생성해 src와 일치시켰다.
+- 회귀 RED→GREEN: 출처51/75/200개 입력의 보존·불변성,75번째 악성 URL/잘못된 파일 해시 거부를 포함한 엔진30검사 PASS. 실제 export_holdings_frame 호출 경로의 합성75개 출처 초기화 회귀도 RED→GREEN. 실제 저장자료75개 입력에 후보 엔진만 치환한 읽기 전용 비교에서 초기화·JS오류0 확인. 전체 격리 공유425개 경고0·portable/빈 실제모드/합성UI24명령 PASS.
+- 07be449c855ed69fb5e8f5fea81b66be46b0c904 원본 main ff-only 반영·/restart202·실행/소스 build fc90b7c23d77de5ef84acafd43919aa4873af25bf1ce4c431e523a54ff93f4cb 일치·restart_required=false. 실제 보유 HTML 단독 검사는 검사시점 출처 최대78개·초기화·JS오류0 PASS. 실제 운영 주식·보유 iframe·CREDIT 전환/복귀·1440/390/320px·JS오류0·바깥 넘침0 PASS(보유 데이터 연결/쓰기 요청은 차단하고 보유 HTML 자체는 포함). 재시작 직후 별도 검사10초 요청 제한 초과는 초기 로딩 후 재검사 PASS와 구분한다.
+- HEAD=origin/main=실제 remote main의 07be449c855ed69fb5e8f5fea81b66be46b0c904 일치 확인. 동일 세션의 기존 사용자 입력 보관·재시작 확인을 적용했다. 격리 계정 프로세스 생성 오류1909는 허용된 실행 경로로 재시작/검증해 해결했다. 회사 결과 재발행·CREDIT 코드/예약 변경·Telegram 실수신은 실행하지 않았다. 다음 실행·후속 기록 전송은 CURRENT_HANDOFF.md 및 실제 Git 조회를 따른다.
+
+---
+
 # 상단 로고 주식·크레딧 화면 전환 · 2026-10-20
 
 - work Primary, Codex. 시작 main/Orca invest/원격4cc434c clean·0/0. 사용자 요청대로 상단 INVESTMENT를 선택 버튼으로 바꾸고 주식·채권 크레딧을 같은 화면 안에서 전환한다. 각 화면 DOM/iframe을 유지해 입력·선택을 다시 만들지 않는다. 기존 CREDIT의 loopback4580 서버 식별자를 명시 클릭 때 읽기 전용으로 확인한 뒤 iframe을 연결한다. 서버 미실행/잘못된 응답은 안내·재시도로 처리한다. CREDIT 코드·Excel·예약·빌드를 변경하거나 실행하지 않았다. 오프라인 회사 결과 및 읽기 전용 서버는 로컬 CREDIT에 연결하지 않는다.
