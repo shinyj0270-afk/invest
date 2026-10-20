@@ -1,38 +1,38 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-20T14:36:36+09:00
-Handoff version: 2026-10-20-package-case-close
+Updated: 2026-10-21T08:33:17+09:00
+Handoff version: 2026-10-21-company-css-ready
 Last agent: Codex
-Last PC: work Primary (이번 pc_check 확인)
-Last task: 바탕화면 실행 오류의 내부 패키지 폴더명 복구 및 단일 Orca 작업본 확인
+Last PC: work Primary (회사 PC와 local profile=work 확인)
+Last task: 회사 이전 전 미커밋 CREDIT 화면 CSS의 보존·격리 검증
 
 Completed:
-- 사용자 요청으로 원본 내부 패키지 폴더명을 소문자 investment로 변경. import investment 및 dashboard_build 성공. Git 추적 이름/코드 내용 변경 없음.
-- 사용자 inv-2 삭제 후 폴더·Git 워크트리 등록·브랜치 제거 확인. 남은 Orca invest clean·시작 main과 같은 커밋 확인.
-- 기존 원본 경로 설명 수정 2개(docs/DUAL_PC_WORKFLOW.md, skills/investment-session/SKILL.md)를 보존해 작업 워크트리로 옮겼다.
-- 이번 새 검증: CLOSE pc_check work·진행 Git 작업0·추적 private 경로0·예약 비활성, 자료함 pending0/decided5. 운영 health build_id=source_build_id=48d92450bc70a725821d1381bf7070f9acedc4dcaa10d562d19b6c65c1bc90ea, restart_required=false.
-- 이전 기업 간단 분석 첫 가격 패널·출처 개수 제한 제거·주식/CREDIT 전환 완료 이력은 PROJECT_STATE에 유지하며 이번 새 기능 검사로 표시하지 않는다.
+- 원본 main의 기존 CSS 3줄(상단 여백/toolbar 간격/frame 높이)을 동일 바이트로 재사용 Orca invest 작업본에 준비했다. 원본 CSS를 수정·되돌리지 않았으며 변경본/작업본 기준 CSS/diff를 validation/current/company-migration-css-20261021에 보존했다.
+- 이번 실행: CREDIT 연결 unittest 2개 PASS. 공유 후보425개 검사 경고0, 격리 portable·빈 실제모드·합성 UI 등24명령 PASS. 테스트는 실제 회사 DB·입력 없이 격리 사본에서 수행했으며 회사 운영 화면 확인이 아니다.
+- diff/공유 범위 검토: src/soft_ui.css의 기존 3줄과 이 인계만 대상. 설정·DB·인증·원자료·CREDIT 데일리·예약은 변경/전송하지 않는다.
+- 합성 Git 저장소에서 변경 파일을 되돌리지 않고 동일 내용을 stage한 뒤 ff-only가 가능한지 확인: 파일 바이트 불변, HEAD 일치, clean. 운영 원본에서는 아직 실행하지 않았다.
 
 Pending:
-- home 최신 코드·회사 결과 수신/열람 미확인. Telegram 채널 확인·소량 실수신·3단계 연구 연결 미실행.
-- 2026-10 운영 점검 대기. 기존 ROIC/WACC·마진/수주·국면/전략 기준값·HRP/사후성과·ChatGPT→inbox 자동수신 pending 유지.
-- 바로 가기 실행 후 실제 브라우저 사용 성공은 이번 세션 미확인(모듈 import·운영 health만 직접 검증).
+- 운영 main 반영·안전 재시작·원격 전송 전, 사용자에게 열린 INVESTMENT 탭의 작성 중 입력 보관 확인이 필요하다(investment-session MERGE 3단계).
+- 회사 /health는 app=investment-holdings-sync v2, 실행/소스 build 지문 불일치와 restart_required=true를 확인했다. 원인 전체 진단이나 운영 화면 검증은 하지 않았으며 강제 종료/재시작 없음.
+- home 최신 코드·회사 결과 수신/열람, Telegram 채널 확인·소량 실수신·3단계 연구 연결은 미확인/미실행. 기존 ROIC/WACC·마진/수주·국면/전략 기준값·HRP/사후성과·ChatGPT→inbox 자동수신 및10월 운영 점검도 유지.
+- 10/31 회사 의존 제거 목표와 기존 회사 계산/집 조회 제한은 담당 세션의 별도 운영안·검증 사항이다. 이 CSS 정리가 집 역할 전환이나 계산 권한 변경을 뜻하지 않는다.
 
-Next task: 집 PC에서 회사 결과 수신·열람 및 Telegram 채널 확인·소량 실수신 (새 사용자 지시 우선)
+Next task: 입력 보관 확인 후 동일 CSS를 원본 main에 안전 ff-only 반영·기존 /restart 절차·검증·일반 push
 Next action:
-1. 다음 개발은 남은 Orca invest에서 새 세션으로 INVESTMENT START. PC·Git·최신 인계를 확인하고 원본 설정·DB·원자료·인증을 보존한다.
-2. 집에서는 docs/SHARED_DASHBOARD.md에 따라 기존 회사 결과의 수신·해시·열람만 확인한다. 마지막 기록 tag results-20261019T230634Z-efa2efff53d7, 자료기준2026-10-16. 새 UI 코드와 기존 결과 HTML 버전을 구분하며 같은 수집·계산을 반복하지 않는다.
-3. docs/TELEGRAM_COLLECTION.md에 따라 집에서 토큰 직접 설정→discover로 채널 확인→expected_id 잠금→poll 소량 검증. 실제 연결 전 연구 연결·예약은 시작하지 않는다.
-Recommended next agent: 사용자 (집 토큰·채널 확인), Codex 또는 Claude (검증 지원)
-Recommended model: 기존 사용자 설정 유지; 자동 전환 없음
+1. 현재 main/작업본/원격과 보존 CSS 해시를 다시 대조한다. 파일·기준이 달라졌으면 자동 통합하지 않는다.
+2. 입력 보관 확인 후, 검증된 동일 CSS만 원본 index에 stage해 기존 파일을 되돌리지 않고 ff-only 반영한다. 적용 직전 두 작업본 CSS와 커밋의 정규화 내용 일치·진행 Git 작업 부재를 확인한다. 다른 파일이나 변경은 stage하지 않는다.
+3. /restart 화면의 입력 보관 확인과 기존 안전 재시작 경로만 사용한다. 수집·동기화·기업 조회 진행 시409를 존중하고 강제 종료하지 않는다. health build/source 일치·restart_required=false와 운영 화면을 확인한 뒤 원격 재확인·일반 push·SHA를 확인한다.
+4. 집 결과 수신/Telegram 실연결 및 회사 의존 없는 운영안은 기존 관련 문서를 따라 별도 진행한다. shared_dashboard 현재 설정이나 PC profile·예약은 바꾸지 않는다.
+Recommended next agent: 사용자 (입력 보관 확인), Codex (반영·검증)
+Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: Medium
-Escalation condition: divergence·동시쓰기·결과 해시 불일치·예상 밖 채널·인증 경계 충돌 시 보존·중단하고 High 검토
+Escalation condition: 입력 미보관·동시 쓰기·보존 해시 변경·분기·수집 중409·운영 검증 실패 시 보존하고 중단
 Branch: shinyj0270-afk/invest (재사용 Orca); main (work 원본)
-Commit: 76661756ad0a4d6647a17299a74e245b460e6731 (이번 복구·CLOSE 문서 반영 후 실제 원격 일치를 확인한 커밋; 후속 기록 commit 자기 SHA 아님)
-Remote status: refs/heads/main=76661756ad0a4d6647a17299a74e245b460e6731 pushed (verified, 이번 CLOSE에서 HEAD=origin/main=실제 remote main 확인). 이 전송 증거를 적는 후속 기록 commit 자체의 전송은 최종 보고 및 다음 START 실제 Git 조회로 검증한다.
+Commit: f10fdd4aa19ed032be5836dcbea11260630cd209 (이번 작업 시작 시 main·작업본·실제 remote main 일치 기준; 이 문서/새 CSS 커밋 SHA 아님)
+Remote status: 이번 CSS 변경은 원격 전송 전. 실제 전송 성공을 선기록하지 않으며 후속 응답/다음 START의 실제 Git 조회로 확인한다.
 
 Notes:
-- 기존 문서 수정 2개와 Orca 커밋 내용을 대조해 보존을 확인한 뒤 원본 main을 정돈하고 ff-only 반영·push했다. 원본과 Orca 모두 clean·원격 0/0 확인. 이 후속 기록 commit의 최종 상태는 실제 Git 조회를 기준으로 한다.
-- 이번 공유 변경은 문서뿐이다. 패키지 폴더 대소문자 복구는 로컬 파일시스템 수정이며 재시작하지 않았다. 운영 health는 정상, 실제 화면 검사는 미실행이다.
-- shared_dashboard.enabled 설정은 없음(기본 비활성). 회사 결과 발행·home 수신·Telegram 실연결·개인 입력/DB·예약·중앙 Wiki·전체 세션 공유는 실행하지 않았다.
-- 작업 워크트리는 삭제하지 않고 재사용한다. Git 제외 검증 기록과 로컬 자료는 그대로 보존한다.
+- 회사 원본 CSS는 보존한 바이트 그대로다. 이전 바탕화면 패키지 소문자 복구·재사용 단일 작업본 이력은 PROJECT_STATE와 Git 이력에 남아 있다.
+- 실제 회사 원자료/DB/인증/설정은 작업본으로 복사하지 않았다. 공유 검사 경고0은 전체 비밀 탐지 인증이 아니다.
+- 안전 재시작과 역할 전환은 별개이며 회사 예약·CREDIT 집 이전·중앙 Wiki 수정은 실행하지 않는다.
