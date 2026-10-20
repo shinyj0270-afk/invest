@@ -1,3 +1,12 @@
+# 상단 로고 주식·크레딧 화면 전환 · 2026-10-20
+
+- work Primary, Codex. 시작 main/Orca invest/원격4cc434c clean·0/0. 사용자 요청대로 상단 INVESTMENT를 선택 버튼으로 바꾸고 주식·채권 크레딧을 같은 화면 안에서 전환한다. 각 화면 DOM/iframe을 유지해 입력·선택을 다시 만들지 않는다. 기존 CREDIT의 loopback4580 서버 식별자를 명시 클릭 때 읽기 전용으로 확인한 뒤 iframe을 연결한다. 서버 미실행/잘못된 응답은 안내·재시도로 처리한다. CREDIT 코드·Excel·예약·빌드를 변경하거나 실행하지 않았다. 오프라인 회사 결과 및 읽기 전용 서버는 로컬 CREDIT에 연결하지 않는다.
+- 새 검증: 관련 unittest17개 PASS, 전환 UI(키보드·연결 대기·잘못된 URL·양 화면 입력 유지·재로드 없음·결과 화면 격리·1440/390/320px) PASS. 공유425개 경고0·portable/빈 실제모드/합성UI24명령 PASS. 합성 주식+실제 CREDIT 서버, 이후 실제 운영 주식+실제 CREDIT 서버의 전환·복귀·3개 폭·JS오류0·바깥 넘침0 확인. 검증 브라우저의 보유·개인 연결/쓰기 요청은 차단했다.
+- 앞서 받은 동일 세션 입력 보관·재시작 확인을 적용해 2f8bdaf2fdf7c2553877a05805374ac780d0be9f를 원본 main에 ff-only 반영·/restart HTTP202. 실행/소스 build ac87a34de66e88ab9abd6ae6dca46f2ad2782807eb963eb7a22c6c024b4315ee 일치·restart_required=false. 반영 직전 fetch가 Git 메타데이터 권한 제한으로 실패한 뒤 다음 명령이 이어진 절차 오류가 있었으며, 허용된 실행으로 즉시 fetch를 재실행해 원격4cc434c·로컬1/0을 재확인한 뒤 운영 검증·정상 push를 완료했다. HEAD=origin/main=실제 remote main 일치 확인. 회사 결과는 재발행하지 않았다.
+- 운영 검증 중 별도 기존 오류 발견: 보유 iframe의 실제 입력은 종목당 출처 최대75개인데 src/engine.js의 validateSnapshot은50개 제한이다. 전환 모듈이 없는 보유 HTML만 단독으로 열어도 같은 오류를 재현했다. 이번 기능과 분리해 미해결로 남겼다. 출처를 자르거나 검증을 우회하지 않았고 개인 입력·DB도 변경하지 않았다. 다음 실행과 이 후속 기록의 전송은 CURRENT_HANDOFF.md 및 실제 Git 조회를 따른다.
+
+---
+
 # 배포 HTML 소스 일치 복원·회사 결과 재발행 · 2026-10-20
 
 - work Primary, Codex. 시작 원본 main·재사용 Orca invest·실제 remote main은 831638a06bec7d35563f08f0e9d790f66b963c1c, clean·0/0. 배포 HTML과 src 조립 결과의 차이를 격리 재빌드로 재현했다. 과거 f061e14의 평가 보류 사유와 5a8bace의 시장자료/인포맥스 기준일 표시가 소스에만 반영되어 있었다. 소스·계산을 변경하지 않고 `INVESTMENT_Dashboard.html`을 재생성해 일치 검사 PASS, 구현 commit 6a8e8de. 운영/공유 결과는 원래 src를 직접 조립하므로 이 차이의 직접 영향은 별도 배포 HTML이다.
