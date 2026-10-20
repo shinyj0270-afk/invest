@@ -1,3 +1,11 @@
+# 기업 간단 분석 첫 화면을 완료 종가·가격 추세로 변경 · 2026-10-20
+
+- work Primary, Codex. 시작 main/Orca invest/원격af817e9 clean·0/0. 사용자 요청대로 기업 간단 분석의 기업분석 한눈에 카드를 제거하고, 기존 완료 종가와 가격 추세 패널을 기업 선택/스탁이지 링크 바로 다음으로 이동했다. 중복 차트 없이 주요 재무지표는 차트 아래에 유지한다. 기업 상세 분석의 요약·재무 탭은 유지하며 가격/재무 계산·수집·원자료는 변경하지 않았다.
+- 이번 검증: 기존 추세 차트 UI에 카드 제거·첫 article 배치·재무지표보다 앞선 순서 검사를 추가해 통과. 기존 차트 조작·기간·상태 복원·모바일 및 기업 상세4탭 UI PASS. 전체 격리 공유425개 경고0·portable/빈 실제모드/합성UI24명령 PASS. 실제 운영 SK하이닉스000660의 첫 가격 패널·요약 카드 없음·차트1개·1440/390/320px·JS오류0·넘침0을 입력/개인 연결·쓰기 차단 브라우저에서 확인했다.
+- 0b94cbf42fde3595c326457a411993534ef1a0f1 원본 main ff-only 반영·/restart HTTP202·실행/소스 build 48d92450bc70a725821d1381bf7070f9acedc4dcaa10d562d19b6c65c1bc90ea 일치·restart_required=false·push·실제 remote main SHA 일치 확인. 이전 동일 세션의 사용자 입력 보관·재시작 확인을 적용했다. 회사 결과 재발행·CREDIT 변경·Telegram 실수신은 실행하지 않았다. 다음 실행과 이 후속 기록 전송은 CURRENT_HANDOFF.md 및 실제 Git 조회를 따른다.
+
+---
+
 # 보유 화면 누적 출처 검증 호환 수정 · 2026-10-20
 
 - work Primary, Codex. 시작 main/Orca invest/원격cd010d3 clean·0/0. 사용자 요청으로 공통 snapshot.schema.json/Python 계약에는 없는 src/engine.js의 종목당 출처50개 제한을 제거했다. sources 배열 형식과 모든 항목의 label·http(s) URL 또는 로컬 파일/해시 검사는 유지하며, 출처 삭제·절삭·중복정리·원자료 수정은 하지 않았다. 기존 JSON30MB/종목10,000개 등 다른 경계는 그대로다. 배포 HTML도 재생성해 src와 일치시켰다.
