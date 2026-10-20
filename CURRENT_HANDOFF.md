@@ -1,12 +1,13 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-20T13:42:04+09:00
-Handoff version: 2026-10-20-work-session-close
-Last agent: Codex
-Last PC: work Primary (기존 profile 유지)
-Last task: SESSION CLOSE · 기업 분석 첫 화면/누적 출처 검증/주식·크레딧 전환 반영 후 마감
+Updated: 2026-10-20T13:46:00+09:00
+Handoff version: 2026-10-20-start-only-close
+Last agent: Claude
+Last PC: work Primary (config/local.json profile=work 확인)
+Last task: INVESTMENT START 점검만 수행하고 CLOSE (코드·자료·설정 변경 없음, 직전 Codex 인계 내용 유지)
 
 Completed:
+- 이번 Claude 세션(2026-10-20): START 점검과 CLOSE 점검만 실행. 원본 main·Orca invest·origin/main=fd706fa clean·0/0, 진행 Git 작업0·추적 private 경로0·예약 비활성, health restart_required=false. 자료 투입 폴더 미처리0(처리 기록5건). 2026-10 운영 점검(docs/OPERATIONS_REVIEW.md)은 사용자가 시작하지 않아 미실행. 아래 항목은 직전 Codex CLOSE 기록 그대로이며 이번 세션 새 실행이 아니다.
 - 이번 CLOSE 새 점검: work Primary, 원본 main·Orca 작업본 clean, 진행 Git 작업0·추적 private 경로0·예약 비활성. fetch 및 실제 remote main 조회에서9cd81fc의 HEAD=origin/main=실제 원격 일치 확인. /health 실행/소스 build48d92450… 일치·restart_required=false. 코드 변경 이후 새 변경은 없으며 PROJECT_STATE는 기존 기록을 유지한다.
 - 기업 간단 분석에서 기업분석 한눈에 카드 제거. 기존 완료 종가와 가격 추세 패널을 기업 선택/외부 링크 바로 다음으로 이동, 주요 재무지표는 그 아래 유지. 차트는1개이며 기존 가격 기준일·이동평균·거래량·기간/모드/상태 복원 기능을 유지한다. 기업 상세 분석의 요약/재무 탭은 유지한다.
 - 같은 세션의 MERGE 검증 결과(이번 CLOSE 재실행 아님): 추세 차트 UI(첫 패널/순서/카드 제거 및 기존 조작·모바일), 기업 상세4탭 UI PASS. 격리 공유425개 경고0·portable/빈 실제모드/합성UI24명령 PASS. 실제 SK하이닉스000660 첫 가격 패널·카드 없음·차트1개·1440/390/320px·JS오류0·넘침0 PASS(입력/개인 연결·쓰기 차단 브라우저). 증거는 validation/current/brief-price-first-*.png, check_brief_price_first.py, share-candidate-review.json.
