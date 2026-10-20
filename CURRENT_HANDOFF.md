@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-20T14:34:34+09:00
+Updated: 2026-10-20T14:36:36+09:00
 Handoff version: 2026-10-20-package-case-close
 Last agent: Codex
 Last PC: work Primary (이번 pc_check 확인)
@@ -28,11 +28,11 @@ Recommended model: 기존 사용자 설정 유지; 자동 전환 없음
 Recommended reasoning: Medium
 Escalation condition: divergence·동시쓰기·결과 해시 불일치·예상 밖 채널·인증 경계 충돌 시 보존·중단하고 High 검토
 Branch: shinyj0270-afk/invest (재사용 Orca); main (work 원본)
-Commit: 19252216fcb7b568075a8b11a60c44312e6aa433 (이번 START/CLOSE 시작 기준 SHA; 이 문서의 자기 SHA 아님)
-Remote status: refs/heads/main=19252216fcb7b568075a8b11a60c44312e6aa433 이번 START 실제 조회 및 CLOSE fetch 기준 일치. 이번 CLOSE 문서 commit/push는 verification pending이며 최종 보고와 다음 START 실제 Git 조회로 검증한다.
+Commit: 76661756ad0a4d6647a17299a74e245b460e6731 (이번 복구·CLOSE 문서 반영 후 실제 원격 일치를 확인한 커밋; 후속 기록 commit 자기 SHA 아님)
+Remote status: refs/heads/main=76661756ad0a4d6647a17299a74e245b460e6731 pushed (verified, 이번 CLOSE에서 HEAD=origin/main=실제 remote main 확인). 이 전송 증거를 적는 후속 기록 commit 자체의 전송은 최종 보고 및 다음 START 실제 Git 조회로 검증한다.
 
 Notes:
-- 원본에 있던 문서 변경은 내용 대조 후 작업 워크트리 commit으로 보존하고 원본 main에 ff-only 반영한다. 이 기록은 반영 전 작성되었으며 실제 성공은 최종 Git 조회를 기준으로 한다.
+- 기존 문서 수정 2개와 Orca 커밋 내용을 대조해 보존을 확인한 뒤 원본 main을 정돈하고 ff-only 반영·push했다. 원본과 Orca 모두 clean·원격 0/0 확인. 이 후속 기록 commit의 최종 상태는 실제 Git 조회를 기준으로 한다.
 - 이번 공유 변경은 문서뿐이다. 패키지 폴더 대소문자 복구는 로컬 파일시스템 수정이며 재시작하지 않았다. 운영 health는 정상, 실제 화면 검사는 미실행이다.
 - shared_dashboard.enabled 설정은 없음(기본 비활성). 회사 결과 발행·home 수신·Telegram 실연결·개인 입력/DB·예약·중앙 Wiki·전체 세션 공유는 실행하지 않았다.
 - 작업 워크트리는 삭제하지 않고 재사용한다. Git 제외 검증 기록과 로컬 자료는 그대로 보존한다.
