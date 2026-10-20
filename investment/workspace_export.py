@@ -247,6 +247,7 @@ def export_workspace(snapshot, *, live=None, events=None, references=None, marke
                          ('/*DISCOVERY_ENGINE*/', 'discovery_engine.js'), ('/*EBITDA_INPUTS*/', 'ebitda_inputs.js'), ('/*EBITDA_EDITOR*/', 'ebitda_editor.js'), ('/*FINANCIAL_TABLE_UI*/', 'financial_table_ui.js'), ('/*ADVANCED_VISUALS*/', 'advanced_visuals.js'), ('/*TREND_CHART_UI*/', 'trend_chart_ui.js'), ('/*DASHBOARD_UPGRADE_UI*/', 'dashboard_upgrade_ui.js'), ('/*COMPANY_REPORTS_UI*/', 'company_reports_ui.js'), ('/*RESEARCH_UI*/', 'research_ui.js'),
                          ('/*ENGINE*/', 'engine.js'), ('/*PORTFOLIO_ENGINE*/', 'portfolio_engine.js')]:
         html = html.replace(marker, (src / name).read_text(encoding='utf-8'))
+    html = html.replace('/*DASHBOARD_SWITCHER*/', (src / 'dashboard_switcher.js').read_text(encoding='utf-8'))
     html = html.replace('/*LIVE_CONFIG*/', script_json(live))
     trend_data = trend_following_data or build_trend_following(discovery['snapshot'] if discovery else analysis,discovery['research'] if discovery else research,market_cache)
     if trend_checkpoint_directory is not None:

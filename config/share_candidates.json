@@ -422,6 +422,10 @@
     "docs/TELEGRAM_COLLECTION.md": "docs/TELEGRAM_COLLECTION.md",
     "investment/telegram_listen.py": "investment/telegram_listen.py",
     "tools/telegram_listen.py": "tools/telegram_listen.py",
-    "tests/test_telegram_listen.py": "tests/test_telegram_listen.py"
+    "tests/test_telegram_listen.py": "tests/test_telegram_listen.py",
+    "investment/credit_connection.py": "investment/credit_connection.py",
+    "src/dashboard_switcher.js": "src/dashboard_switcher.js",
+    "tests/test_credit_connection.py": "tests/test_credit_connection.py",
+    "tests/test_dashboard_switcher_ui.py": "tests/test_dashboard_switcher_ui.py"
   }
 }

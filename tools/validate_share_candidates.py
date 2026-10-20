@@ -107,7 +107,7 @@ def main(*, ui=False):
             ]
             if ui:
                 commands += [[sys.executable, 'tests/' + name] for name in (
-                    'test_financial_stability_ui.py', 'test_naver_bands_ui.py', 'test_shared_dashboard_ui.py', 'test_workspace_ui.py', 'test_dashboard_home_ui.py', 'test_dashboard_connection_ui.py', 'test_dashboard_journey_ui.py', 'test_dashboard_upgrade_ui.py', 'test_data_recovery_ui.py',
+                    'test_dashboard_switcher_ui.py', 'test_financial_stability_ui.py', 'test_naver_bands_ui.py', 'test_shared_dashboard_ui.py', 'test_workspace_ui.py', 'test_dashboard_home_ui.py', 'test_dashboard_connection_ui.py', 'test_dashboard_journey_ui.py', 'test_dashboard_upgrade_ui.py', 'test_data_recovery_ui.py',
                     'test_trend_diagnostics_ui.py', 'test_trend_chart_ui.py', 'test_portfolio_risk_ui.py', 'test_trend_following_ui.py', 'test_dashboard_stability_ui.py', 'test_market_trend_changes_ui.py', 'test_upgrade_panels_ui.py', 'test_research_library_ui.py', 'test_industry_ui.py', 'test_strategy_views_ui.py', 'test_layout_polish_ui.py', 'test_holdings_market_date_ui.py')]
             results = []
             for command in commands:

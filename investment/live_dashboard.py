@@ -183,6 +183,10 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
             if current_build_id!=loaded_build_id:
                 self.send_body(503,restart_page(token) if self.path in ('/','/dashboard') else '{"error":"서버 다시 실행 필요"}',
                     'text/html' if self.path in ('/','/dashboard') else 'application/json');return
+            if self.path=='/credit-status':
+                if not self.authorized():self.send_body(403,'{}','application/json');return
+                from .credit_connection import status
+                self.send_body(200,json.dumps(status(read_only=read_only)),'application/json');return
             if self.path=='/report-inbox':
                 if not self.authorized():self.send_body(403,'{}','application/json');return
                 self.send_body(200,json.dumps(report_inbox.view(),ensure_ascii=False),'application/json');return

@@ -29,6 +29,16 @@ class FakeRefresh:
 
 
 class LiveDashboardTests(unittest.TestCase):
+    def test_credit_status_requires_token_and_does_not_refresh_or_build(self):
+        with patch('investment.credit_connection.status',return_value={'available':False}) as probe:
+            with self.assertRaises(HTTPError) as caught:urlopen(self.base+'/credit-status')
+            self.assertEqual(caught.exception.code,403)
+            probe.assert_not_called()
+            with urlopen(Request(self.base+'/credit-status',headers={'X-Dashboard-Token':'test-token'})) as response:
+                self.assertEqual(json.load(response),{'available':False})
+            probe.assert_called_once_with(read_only=False)
+        self.assertEqual(self.provider.calls,[])
+
     def test_company_detail_transmits_its_validated_quote(self):
         row=self.provider.snapshot['companies'][0]
         quote=dict(name=row['name'],market=row['market'],price=100,market_cap_eok=10,retrieved_at='2026-10-19T10:00:00+09:00')

@@ -185,3 +185,17 @@ body.soft-legacy button.primary{background:var(--btn);color:var(--on-btn);border
 @media(min-width:851px){.workspace-bar{float:right;margin:0 0 0 12px}.workspace-status-content,#contextNavigation{clear:both}}
 @media(max-width:720px){.mast .asof{grid-row:2;grid-column:1/-1;justify-self:end;gap:8px}.mast .asof-date{display:none}.mast .asof button{font-size:11px;padding:8px 12px}.workspace-bar{margin-bottom:8px}}
 @media print{#workspaceStatus{display:none!important}}
+.dashboard-switcher{position:relative;grid-row:1;grid-column:1;justify-self:start;min-width:0}
+#dashboardSwitch{display:flex;align-items:center;gap:10px;padding:0;background:transparent;box-shadow:none;font:inherit;letter-spacing:inherit;text-align:left}
+#dashboardCurrent{font-size:10px;padding:3px 7px;border-radius:7px;background:var(--band);color:var(--link)}
+.dashboard-choices{position:absolute;top:calc(100% + 16px);left:0;width:270px;max-width:calc(100vw - 32px);padding:10px;border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:var(--raised);z-index:30}
+.dashboard-choices button{display:block;width:100%;text-align:left;margin:4px 0;padding:12px;box-shadow:none}
+.dashboard-choices button[aria-pressed=true]{background:var(--band);color:var(--link)}
+.dashboard-choices small{display:block;margin-top:3px;font-size:11px;font-weight:400;color:var(--muted)}
+.dashboard-choices p{font-size:11px;padding:8px;color:var(--muted);white-space:normal}
+.credit-dashboard{max-width:1920px;margin:auto;padding:24px;min-width:0}
+.credit-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.credit-toolbar h2{font-size:22px}.credit-toolbar p{font-size:12px;color:var(--muted);margin-top:5px}
+#creditConnection{display:flex;align-items:center;justify-content:space-between;gap:16px}
+#creditDashboardFrame{display:block;width:100%;height:calc(100dvh - 190px);min-height:600px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+body[data-dashboard=credit] .mast #navigation,body[data-dashboard=credit] .mast #homeSearch,body[data-dashboard=credit] .mast .asof{display:none!important}
+@media(max-width:720px){.mast h1 #dashboardCurrent{display:inline}.credit-dashboard{padding:16px}.credit-toolbar{align-items:flex-start;flex-wrap:wrap}.credit-toolbar h2{font-size:20px}#creditConnection{align-items:flex-start;flex-direction:column}}

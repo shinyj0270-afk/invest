@@ -373,5 +373,6 @@ let savedPage=null;try{savedPage=sessionStorage.getItem('investment-current-page
 recommendationUI.load();
 if(INVESTMENT_LIVE&&typeof InvestmentDataRecovery!=='undefined')InvestmentDataRecovery.create($('dataRecoveryContent'),INVESTMENT_LIVE).render();else $('dataRecovery').hidden=true;
 go(handoff?.page||(pages.some(p=>p[1]===savedPage)?savedPage:restoreAdvanced?'advanced':'home'));
+InvestmentDashboardSwitcher.create(INVESTMENT_LIVE,!!WORKSPACE_DATA.result_view);
 } catch { window.INVESTMENT_SHOW_INIT_ERROR?.(); }
 })();
