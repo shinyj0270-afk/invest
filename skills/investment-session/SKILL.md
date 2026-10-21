@@ -125,10 +125,10 @@ git rev-parse origin/main
 
 사용자에게 짧게 다음만 보고한다.
 
-- profile: work/home/unknown 및 Primary/Secondary
-- 원본 main HEAD short SHA, origin/main short SHA, clean 여부
+- profile: work/home/unknown 및 Primary/Secondary 개발 역할, config/result_publisher.json의 단일 결과 발행 PC
+- 원본 main HEAD short SHA, origin/main short SHA, clean 여부; 운영 서버의 실행/소스 일치·restart_required 또는 미확인 상태
 - 작업 워크트리 경로·브랜치 (새로 만들었는지, 이어 쓰는지)
-- `PROJECT_STATE.md`의 최신 완료 작업
+- 코드 수신·운영 실행·결과 발행·상대 PC 수신/실행을 각각 실제 확인한 단계로 구분하고, `PROJECT_STATE.md`의 최신 완료 작업을 간단히 보고
 - 미해결 1~3개
 - `CURRENT_HANDOFF.md`의 다음 작업 1개, 권장 실행 주체/모델/Reasoning 및 escalation 조건
 - 정리 후보로 발견한 중복이 있으면 목록
@@ -154,6 +154,9 @@ git rev-parse origin/main
 ## MERGE 모드 (합쳐줘)
 
 세션을 끝내지 않고 작업 워크트리의 검증된 변경을 원본 main에 반영·전송한다. 작업 워크트리는 남겨 두고 계속 쓴다.
+
+반영 단위(사용자 채택 2026-10-22): 사용자가 중간 반영을 요청하지 않은 같은 목표의 연속 변경은 작업 워크트리에서 변경별 관련 검증을 끝내고 한 번의 MERGE/CLOSE로 묶어 반영한다. 명시한 MERGE/CLOSE 요청은 그 시점에 실행한다. 입력 보관 확인·필수 검증·안전 재시작·원격 충돌 점검은 기존 절차대로 수행한다.
+
 
 ### 1. 상태 점검 (읽기 전용)
 
@@ -257,7 +260,7 @@ MERGE 2단계의 검증 기준을 그대로 적용한다. 이미 MERGE로 반영
 
 `CURRENT_HANDOFF.md`는 무변경 세션도 항상 갱신한다. SYNC_CONTRACT.md의 필수 필드에 따라 다음 작업자가 바로 실행할 Next action, 권장 실행 주체·모델·Reasoning, escalation 조건을 작성한다. commit/push 전에는 pending으로 기록하고 성공을 선기록하지 않는다. 작업 워크트리를 정리할 예정이면 그 사실과 남긴 것을 Notes에 적는다.
 
-갱신 후 `git diff`와 새 파일 내용도 검토한다.
+SYNC_CONTRACT.md의 인계 분량·운영 점검 근거 기준을 적용해 이번 완료·현재 미완료·다음 한 작업으로 교체한다. 갱신 후 `git diff`와 새 파일 내용도 검토한다.
 
 ### 4. 반영과 전송
 
