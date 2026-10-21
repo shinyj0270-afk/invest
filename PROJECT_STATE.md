@@ -4,6 +4,8 @@
 - 사용자 “개선안 채택해줘”에 따라 Orca·기존 AI 분담을 유지하면서 인계 축약·관련 변경 묶음 반영·개발/발행PC 및 코드/실행/전달 구분·기존 문서 내 최소 운영 기록을 규칙에 연결했다(USER_DATA_DECISIONS.md18번). SYNC_CONTRACT의 필수 필드·검증·공유 경계는 유지하며 CURRENT_HANDOFF도 이번 완료/현재 pending/다음 한 작업으로 교체했다.
 - 문서만 변경. 서버 재시작·예약·모델·PC 설정·자료 갱신·결과 발행은 실행하지 않았다. 점검/채택 문서 내용 대조·공유 manifest 포함 여부·git diff --check로 검증하며 실제 반영/전송은 CURRENT_HANDOFF와 최종 Git 조회를 따른다. 절감 효과 검증은 후속 관측 대상이다.
 
+- 후속 실제 반영: 60e1543317855691e195aa57f89b42e50efd4ce4 main ff-only·push·실제 remote 일치 확인. 사용자 재시작 지시로 /restart HTTP202·실행/소스 build b68ad688c9bdc1da26b5ec9871cb147e7363c456ae2f5251c2e198990e730e50 일치·restart_required=false. CLOSE 새 오프라인 점검 clean·진행Git작업0·추적private0·예약false, health 정상. 실제 화면 검사는 미실행이며 마감 기록 전송/다음 작업은 CURRENT_HANDOFF를 따른다.
+
 ---
 
 # 집 기본 실행기·통합 앱 실제 실행 검증 완료 · 2026-10-21
