@@ -1,8 +1,8 @@
-# 집 자료 갱신·단일 발행 전환 검증 중 · 2026-10-21
+# 집 자료 갱신·계산·단일 발행 실제 완료 · 2026-10-21
 
-- 사용자 “집 최신 자료 갱신·계산·발행1번부터” 승인. PC profile=home 및 개발 Primary/Secondary 식별은 유지하고 공통 config/result_publisher.json으로 home을 단일 발행 PC로 지정했다. manifest 실제 생성PC, 구버전 발행 PC 수신 거부와 자료일 회귀 방지를 추가하고 과거 회사 결과의 열람/보존은 유지한다. 코드/발행의 실제 완료는 CURRENT_HANDOFF 및 다음 Git 조회를 따른다.
+- 사용자 “집 최신 자료 갱신·계산·발행1번부터” 승인. PC profile=home 및 개발 Primary/Secondary 식별은 유지하고 공통 config/result_publisher.json으로 home을 단일 발행 PC로 지정했다. manifest 실제 생성PC, 구버전 발행 PC 수신 거부와 자료일 회귀 방지를 추가하고 과거 회사 결과의 열람/보존은 유지한다. 구현 d78d49794f95cd58f5e7dcdad2ce4cc690db8be1 원본 main ff-only·push·실제 원격 일치 확인. 서버 미실행으로 재시작 대상 없었고 임의 서버 시작 없음. 최종 인계 기록 전송은 CURRENT_HANDOFF 및 실제 Git 조회를 따른다.
 - 집 DB SQLite 일관 백업·무결성과 기존 시장 캐시 보관 후 기존 네이버 검토3종목 갱신 성공: 가격기준2026-10-20·관측1107·추가/변경18·실패0·stale/fallback=false. 전체시장2452개 대상 기존 daily 경로로2449개 갱신·3개 달력/날짜 불일치 보류, 기준2026-10-21. 보류 종목은 이전 관측과 미확보 표시를 보존한다. 재무/수급의 별도 기준일을 가격 갱신으로 바꾸지 않았다.
-- 최종 검사에서 저장시각 동률 시 이전 스냅샷을 반환하는 기존 문제를 결정적으로 RED 재현해 Store/refresh/읽기전용 dashboard3조회에 rowid DESC 동률 정렬만 추가했다. 원자료/수치 계산/스키마를 바꾸지 않았다. 관련85검사 PASS, 최종 격리 공유434개 경고0·portable/빈 실제모드/합성UI24명령 PASS. DART 실연결·CREDIT·보유복구·기본 실행기 전환은 이번 범위 밖 후속이다.
+- 최종 검사에서 저장시각 동률 시 이전 스냅샷을 반환하는 기존 문제를 결정적으로 RED 재현해 Store/refresh/읽기전용 dashboard3조회에 rowid DESC 동률 정렬만 추가했다. 원자료/수치 계산/스키마를 바꾸지 않았다. 관련85검사 PASS, 최종 격리 공유434개 경고0·portable/빈 실제모드/합성UI24명령 PASS. 집 실제 결과 source_profile=home·전체시장기준2026-10-21 생성, 공개자료 제외/해시 검증 후 오프라인 삼성전자 재무·1440/390/320px·JS0·HTTP0·보유프레임 제외 PASS. 비공개 latest 발행 results-20261021T121558Z-b14b234244ed 및 원격 manifest/gzip 해시 일치 확인. DART 실연결·CREDIT·보유복구·기본 실행기 전환과 회사 최신 코드 수신은 별도 후속이다.
 
 ---
 

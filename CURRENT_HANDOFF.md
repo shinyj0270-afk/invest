@@ -1,15 +1,17 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-21T21:10:19+09:00
-Handoff version: 2026-10-21-home-batch-research
+Updated: 2026-10-21T21:21:28+09:00
+Handoff version: 2026-10-21-home-publisher-verified
 Last agent: Codex
 Last PC: home Secondary (기존 사용자 확인 및 local profile=home 대조)
-Last task: 회사 의존 제거1번 — 집 실제 시장 갱신·계산·지정 발행 PC 전환
+Last task: 회사 의존 제거1번 완료 — 집 실제 갱신·계산·비공개 발행·오프라인 열람
 
 Completed:
+- 구현 d78d49794f95cd58f5e7dcdad2ce4cc690db8be1 원본 main ff-only 반영 및 push·HEAD=origin/main=실제 remote main 일치 확인. 역할 전환은 사용자1번 승인 및 같은 세션의 반영 승인 범위에서 수행했고 서버8767 미실행으로 재시작 대상 없음.
+- 집 실제 결과 results-20261021T121558Z-b14b234244ed 발행. source_profile=home, 전체시장자료2026-10-21, HTML SHA256 b14b234244ed6c57578eb72c92e7a05edc750875ecccd5e699fcb228d34391fc, source_build fdd4fe8aa46af71b9faa2a7d06f91ad6d59ffa7d8dd70457f67f790105b4caf5. HTML110855180바이트·gzip83521955바이트. pack/install 해시·길이·모드/개인자료 제외 검증, 실제 오프라인 삼성전자 재무 상세·집 생성 안내·1440/390/320px·JS0·HTTP0·보유프레임 제외 PASS. 전용 저장소 private/write 검증 후 latest·manifest/gzip 원격 해시 일치 확인, 사용자 브라우저에 열었다. 검토3종목 가격2026-10-20과 전체시장2026-10-21, 재무/수급 기존 기준일을 구분한다.
 - 최신 사용자 승인1번으로 집 갱신/계산/발행 허용. home profile 유지, 공통 config/result_publisher.json=home 단일 발행 정책 및 실제 source_profile 기록·구버전 생성PC 수신 거부·시장자료일 회귀 방지 구현. 기존 회사 구버전의 발행 중단/코드 수신은 별도 미확인.
 - 집 DB 일관 백업·무결성·시장 캐시 보관 후 검토3종목 가격2026-10-20 갱신 성공(관측1107·추가/변경18·실패0·stale/fallback=false). 전체시장2452개 중2449개 성공·3개 완료 거래일/날짜 불일치 보류, 목표2026-10-21. 기존 관측/재무·수급 기준일 보존. 백업/실제 영수증은 .local/home-independent 및 Git 제외 validation/current.
-- 검사 중 저장시각 동률의 최신 스냅샷 오선택을 결정적 RED로 확인,3조회에 rowid 동률 정렬 추가 후 관련85 PASS. 최종 격리 공유434개 경고0·portable/빈 실제모드/합성UI24명령 PASS. 결과 생성·개인자료 제외·실제 UI·비공개 발행·main 반영은 완료 전까지 PENDING.
+- 검사 중 저장시각 동률의 최신 스냅샷 오선택을 결정적 RED로 확인,3조회에 rowid 동률 정렬 추가 후 관련85 PASS. 최종 격리 공유434개 경고0·portable/빈 실제모드/합성UI24명령 PASS. 결과 생성·개인자료 제외·실제 UI·비공개 발행·main 반영 완료. 검증 로그는 validation/current의 home-* 및 check_home_published_result.*에 보존하며 Git 제외.
 - 사용자 운영 main 반영 명시 승인 후 검증15파일만 commit cd3e105ea11a8e9a5bbee1e1357da971a7c47753 생성, 원본 clean·원격0/0 확인 후 ff-only 반영·원본 CLI status/지식검색/수신기 help PASS. 운영 서버8767 미실행으로 안전 재시작 대상 없음, 임의 서버 시작/강제종료 없음. 구현 HEAD=origin/main=실제 remote main 동일 SHA 확인. 이 증거 문서 commit 자체의 전송은 최종 응답/다음 START의 실제 Git 조회로 확인한다.
 - main/재사용 작업본657dc4a 수신, 실제 원격 일치 확인으로 시작. 집 마지막 회사 결과 실제 수신·해시 및 오프라인 삼성전자 화면/복구 PASS. 결과 기준2026-10-16이며 새 자료 갱신 성공으로 표시하지 않는다.
 - Telegram 사용자 로컬 숨김 토큰 입력·채널 본인 확인 후 실제 수신·재수신0 확인. 미검토 원문 참조1건 Library 등록, 백업·복사본 선검증·중복0·읽기 전용 projection PASS. 첫 자료 원문 서지 정정은 immutable 새 source+이전 excluded로 보존했다. 개인 자료는 .local에만 저장한다.
@@ -22,22 +24,22 @@ Completed:
 Pending:
 - 묶음 연구·watch 운영 main 반영·구현 push는 완료. 서버 실행·foreground watch 실연결2회 완주·상대 회사 PC 수신/실행은 별도 미확인이다.
 - foreground watch 실검증은2회 완주 전 PENDING. 수신기만으로 AI 연구가 세션 밖에서 실행되지 않는다. 토큰은 사용자 로컬 입력, 영구 저장 없음.
-- 집 계산·발행 역할 전환은 이번 진행 범위이며 실제 결과 발행 전 PENDING. 이후 DART 인증/실연결, CREDIT 복구, 보유 복구/충돌 확인이 남았다. 공유조회 기본flag=false·runtime설정파일없음·CREDIT4580미실행·개인저장소private/readable. 설정/profile/예약은 유지한다.
+- 집 갱신·계산·발행은 완료. 이후2번 DART 인증/실연결,3번 CREDIT 복구,4번 보유 복구/충돌 확인,5번 기본 실행기 확정이 남았다. 공유조회 기본flag=false·runtime설정파일없음·CREDIT4580미실행·개인저장소private/readable. 설정/profile/예약은 유지한다.
 - 기존 ROIC/WACC·HRP/사후성과·ChatGPT→inbox 자동수신·10월 운영 점검은 이번 작업과 별개로 유지.
 
-Next task: 최종 검사→집 역할 코드 main 반영→실제 결과 생성/오프라인 화면/비공개 발행 확인. 이후2번 DART 실연결.
+Next task: 사용자 요청 순서의2번 DART 집 인증·실연결 확인. 토큰/키는 값을 출력하지 않고 사용자 로컬 입력/기존 설정을 확인한다.
 Next action:
-1. 다음 START에서 실제 Git/인계 확인. 구현 main 반영·push·원본CLI 검증은 완료됐으므로 같은 검사를 이유 없이 반복하지 않는다. 연구 지식/토큰/DB는 각 PC 로컬에 유지한다.
-2. 앞으로 “투자연구함 정리해”에서 skills/investment-research/SKILL.md 실행. 기존 지식을 먼저 검색하고 신규만 연구한다. 접근 실패는 reopen의 사유 있는 재검토만 수행한다.
-3. watch 실제 점검은 validation/current/receive_two_cycles_home.py. 새 링크가 없어도 기존 offset에서2회 확인 가능. 실패 후 사용자 Enter 직접 재시도, q 종료. 성공요약/실제URL/재수신/lock해제를 대조한다.
-4. 회사 의존 점검은 validation/current/HOME_DEPENDENCY_REVIEW_20261021.md와 audit JSON. 집 역할을 work로 위장하거나 DB/인증 복사로 우회하지 않는다.
+1. 최신 Git/인계 확인 후 DART 집 설정/환경변수의 존재만 점검한다. 기존 집 cached 재무9410개 JSON과 실제 API 연결 성공을 구분한다. 회사 인증·DB를 복사하지 않는다.
+2. 다음은 CREDIT 집 실행/입력 Excel·기준일·복구, 보유 캐시/비공개저장소 복원·충돌 확인, 기본 실행기 전환 순서. 이번1번 완료만으로 전체 운영 전환 완료라 하지 않는다.
+3. 회사 다음 START는 최신 코드 수신 후 home 발행 정책을 확인하고 회사 구버전 발행을 중단한다. 실제 회사 수신/실행은 미확인이다. 집 결과 발행은 tools/shared_dashboard.py publish, 전체 시장 가격은 기존 data 갱신 경로, 검토3종목은 tools/refresh_infomax.py를 사용한다. 대상·기준일·부분 실패를 인계한다.
+4. Telegram watch 제한2회 실검증과 묶음 연구는 별도 진행. 자동AI/예약/토큰 영구 저장을 추가하지 않는다. 연구 지식/DB/개인 자료는 home 로컬에 유지한다.
 Recommended next agent: Codex
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: Medium; 역할·데이터 계약 변경은 High
 Escalation condition: 입력 미보관·동시 쓰기·분기·stale packet·자료/DB 식별 충돌이면 보존하고 해당 반영 중단
 Branch: shinyj0270-afk/invest (재사용 home Orca); main (home 운영 원본)
-Commit: cd3e105ea11a8e9a5bbee1e1357da971a7c47753 (운영 main ff-only 반영·원본 CLI 확인·push 실제 원격 검증된 구현)
-Remote status: refs/heads/main=cd3e105ea11a8e9a5bbee1e1357da971a7c47753 pushed (verified, home MERGE). 후속 증거 문서 commit의 전송은 최종 응답/다음 START의 실제 Git 조회로 확인한다. 상대 PC 수신/실행은 별도 미확인이다.
+Commit: d78d49794f95cd58f5e7dcdad2ce4cc690db8be1 (저장 순서 수정38fe873 포함, 운영 main/실제 원격 일치 확인한 구현)
+Remote status: refs/heads/main=d78d49794f95cd58f5e7dcdad2ce4cc690db8be1 pushed (verified). 이번 증거 기록 commit의 전송은 최종 응답과 다음 START의 Git 조회로 검증한다. 집 결과 latest·원격 첨부 해시 확인 완료; 회사 최신 코드 수신은 별도 미확인.
 Notes:
 - .local/개인 채널/DB/자료/보유/토큰/검증 로그/지식노트는 stage하지 않는다. 공개 코드·합성검사·공통 운영 지침만 공유한다.
 - 회사 세션의 기존 CSS/운영 검증은 과거 SOURCE_RECORDED이며 이번 home 재실행 결과가 아니다. 중앙 Wiki·전체 세션 수집 없음.
