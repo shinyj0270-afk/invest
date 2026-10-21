@@ -157,7 +157,7 @@ def refresh(root, *, provider=None):
             # Snapshot and receipt commit together; SQLite is the app's authoritative store.
             with store.connect() as db:
                 db.execute('BEGIN IMMEDIATE')
-                current = db.execute("SELECT payload FROM snapshots WHERE status='complete' ORDER BY created DESC LIMIT 1").fetchone()
+                current = db.execute("SELECT payload FROM snapshots WHERE status='complete' ORDER BY created DESC, rowid DESC LIMIT 1").fetchone()
                 if current and digest(json.loads(current[0])) != digest(previous):
                     raise ValueError('갱신 중 저장자료가 변경되었습니다. 다시 시도하세요')
                 db.execute('INSERT OR IGNORE INTO snapshots VALUES(?,?,?,?)',

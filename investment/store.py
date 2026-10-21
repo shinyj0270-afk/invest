@@ -29,7 +29,7 @@ class Store:
             db.execute('INSERT OR IGNORE INTO snapshots VALUES(?,?,?,?)',(sid,datetime.now(timezone.utc).isoformat(),'complete' if complete else 'staging',json.dumps(snapshot,ensure_ascii=False)))
         return sid
     def latest(self):
-        with self.connect() as db: r=db.execute("SELECT payload FROM snapshots WHERE status='complete' ORDER BY created DESC LIMIT 1").fetchone()
+        with self.connect() as db: r=db.execute("SELECT payload FROM snapshots WHERE status='complete' ORDER BY created DESC, rowid DESC LIMIT 1").fetchone()
         return json.loads(r[0]) if r else None
     def save_setting(self,name,value):
         with self.connect() as db: db.execute('INSERT OR REPLACE INTO settings VALUES(?,?)',(name,json.dumps(value,ensure_ascii=False)))

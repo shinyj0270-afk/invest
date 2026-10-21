@@ -44,6 +44,14 @@ class RefreshTests(unittest.TestCase):
     def write_config(self):
         (self.root/'config/local.json').write_text(json.dumps(self.config), encoding='utf-8')
 
+    def test_same_timestamp_uses_last_complete_snapshot(self):
+        newer = copy.deepcopy(self.previous)
+        newer['companies'][0]['metrics']['roe_pct'] = 42
+        self.store.save_snapshot(newer)
+        with self.store.connect() as db:
+            db.execute("UPDATE snapshots SET created='2026-09-28T00:00:00+00:00'")
+        self.assertEqual(self.store.latest(), newer)
+
     def test_end_to_end_preserves_financials_and_builds_lists(self):
         self.daily['companies'][0]['metrics']['price'] = 200
         result = refresh(self.root)

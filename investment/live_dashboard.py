@@ -85,7 +85,7 @@ def saved_data(root, *, force=False):
     snapshot=None
     if db.exists():
         with sqlite3.connect(db.as_uri()+'?mode=ro',uri=True) as conn:
-            row=conn.execute("SELECT payload FROM snapshots WHERE status='complete' ORDER BY created DESC LIMIT 1").fetchone()
+            row=conn.execute("SELECT payload FROM snapshots WHERE status='complete' ORDER BY created DESC, rowid DESC LIMIT 1").fetchone()
         if row:snapshot=json.loads(row[0]);validate_snapshot(snapshot)
     return dict(snapshot=snapshot,receipt=dict(status='cached',success=bool(snapshot),checked_at=datetime.now(ZoneInfo('Asia/Seoul')).isoformat(),
         data_as_of=snapshot['meta']['price_date'] if snapshot else None,stale=True,error=None))
