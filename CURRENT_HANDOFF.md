@@ -1,12 +1,13 @@
 # CURRENT HANDOFF
 
 Updated: 2026-10-21T21:30:00+09:00
-Handoff version: 2026-10-21-home-dart-verified
+Handoff version: 2026-10-21-home-credit-installed-data-pending
 Last agent: Codex
 Last PC: home Secondary (기존 사용자 확인 및 local profile=home 대조)
-Last task: 2번 집 DART 인증·대시보드 공시 수집 연결 완료
+Last task: 3번 CREDIT 집 코드·환경 복원 완료, 실제 입력 Excel 전달 대기
 
 Completed:
+- 3번 사용자 요청 후 비공개 shinyj0270-afk/credit 원격 main6a7f4258cfa851d8aa436dcb3b90f196d33a02e8을 사용자가 만든 빈 바탕화면 credit 폴더에 clone. CREDIT AGENTS/SYNC/상태/인계·설치 스크립트 확인 후 기존 setup_pc.py로 독립 .venv(openpyxl3.1.5) 및 home-secondary/scheduledJobsEnabled=false 설정. pc_check PASS·고정 품질검사25개 PASS·CREDIT Git clean. 회사 키/DB/원자료 복사·새 예약 없음. 기존 scripts/test_operations.py는 실제 생성로그 credit_build_status.json이 없어 DeliveryTests 준비 실패(실행된 앞선1검사 PASS)이며 전체 통과로 기록하지 않는다.
 - 이번 공시 연결 후 기존 tests.test_market_events 11개 PASS. 개인 로컬 설정 작업이며 제품 코드 변경 없음. RSS 실패는 숨기지 않고 별도 partial 영수증 보존.
 - 2번 실제 완료: 사용자 숨김 입력 후 집 사용자 환경변수로 DART 인증, 삼성전자 공시14·2025CFS재무229항목, 후속 SK하이닉스230·현대차312항목 법인번호 검증 PASS. 키/키포함URL 출력 없음. 로컬 설정·runtime·SQLite 일관 백업 후 home 유지·dart 권한·3사 법인번호 연결. 기존 운영 refresh_events로 공시14/4/3건 수신·21건 신규 저장. 삼성 뉴스룸RSS ValueError 별도 실패로 통합partial, DART3출처 모두complete. 검증용 재무 응답으로 기존 재무 수치/발행 결과를 변경하지 않았다. 영수증 validation/current/dart-home-{connection,dashboard}.json과 백업 .local/home-independent/dart-*는 로컬 전용. 새 터미널/앱은 사용자 환경변수 상속이 필요하다.
 - 구현 d78d49794f95cd58f5e7dcdad2ce4cc690db8be1 원본 main ff-only 반영 및 push·HEAD=origin/main=실제 remote main 일치 확인. 역할 전환은 사용자1번 승인 및 같은 세션의 반영 승인 범위에서 수행했고 서버8767 미실행으로 재시작 대상 없음.
@@ -29,8 +30,9 @@ Pending:
 - 집 갱신·계산·발행 및2번 DART 인증/실연결·공시 수집 설정 완료. 3번 CREDIT 복구,4번 보유 복구/충돌 확인,5번 기본 실행기 확정이 남았다. 공유조회 기본flag=false·runtime DART home설정 완료·CREDIT4580미실행·개인저장소private/readable. 예약 변경 없음. 삼성 뉴스룸 RSS ValueError는 별도 미해결이다.
 - 기존 ROIC/WACC·HRP/사후성과·ChatGPT→inbox 자동수신·10월 운영 점검은 이번 작업과 별개로 유지.
 
-Next task: 사용자 요청 순서의3번 CREDIT 집 복구·실행 환경 확인. DART2번 완료, 뉴스룸 RSS 오류는 별도 보존.
+Next task: 3번 CREDIT 실제 Excel 전달 후 빌드·4580·INVESTMENT 연결 검증. 환경만 완료, 실제 대시보드 복구는 자료 대기. DART2번 완료.
 Next action:
+0. 사용자가 CREDIT Excel은 아직 안 옮겼다고 확인. 최신 credit_daily_YYMMDD.xlsx를 집 바탕화면 credit 루트에 전달하면 전용 .venv로 기존 launch_latest/build → verify_delivery →4580 marker 및 실제 화면/기준일 확인. 현재 workbooks0·생성로그없음·4580미실행. 과거 Git fixture를 최신 시장 대시보드로 표시하지 않는다. CREDIT 코드·일일 역할·예약은 변경하지 않았다. 4번 보유/5번 실행기와 RSS 오류는 별도다.
 1. 2번 DART 완료. 새 실행 프로세스에 집 사용자 환경변수가 상속되는지 값 없이 확인한다. 필요 시 앱/터미널 재시작, 키 복사/출력 금지. 기존9410재무 캐시·API 실제 검증·공시DB21건 저장을 구분한다. 이번 검증은 API 인증/설정/수집 경로이며 실제 브라우저 서버 시작·재발행은 하지 않았다.
 2. 다음은 CREDIT 집 실행/입력 Excel·기준일·복구, 보유 캐시/비공개저장소 복원·충돌 확인, 기본 실행기 전환 순서. 이번1번 완료만으로 전체 운영 전환 완료라 하지 않는다.
 3. 회사 다음 START는 최신 코드 수신 후 home 발행 정책을 확인하고 회사 구버전 발행을 중단한다. 실제 회사 수신/실행은 미확인이다. 집 결과 발행은 tools/shared_dashboard.py publish, 전체 시장 가격은 기존 data 갱신 경로, 검토3종목은 tools/refresh_infomax.py를 사용한다. 대상·기준일·부분 실패를 인계한다.
