@@ -1,12 +1,13 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-21T21:30:00+09:00
-Handoff version: 2026-10-21-home-default-launcher-verified
+Updated: 2026-10-21T21:43:23+09:00 (SESSION CLOSE)
+Handoff version: 2026-10-21-home-session-closed
 Last agent: Codex
 Last PC: home Secondary (기존 사용자 확인 및 local profile=home 대조)
-Last task: 5번 집 기본 바로가기·실제 통합 앱 실행 검증 완료
+Last task: INVESTMENT CLOSE — 1/2/4/5완료, CREDIT 실제자료 내일 전달 대기
 
 Completed:
+- SESSION CLOSE: 원본 pc-finish.ps1 오프라인 점검 PASS(home, main, clean, ahead0/behind0, 진행Git작업0, 추적인증/개인경로0, 예약false). 실제 fetch 후 작업본/main/원격d626765 일치0/0, 작업본diff --check PASS. 현재8767 main 실행 build/source fdd4fe8aa46af71b9faa2a7d06f91ad6d59ffa7d8dd70457f67f790105b4caf5 일치·restart_required=false. 이번 마감은 문서만 변경하므로 서버 재시작/종료·결과재발행 없음(shared_dashboard.enabled 비활성). GLOBAL_WORKFLOW 원격v1.3의 PC인계/ignored자산 경계 확인. 이번 CLOSE에서 기존 검사 재실행은 하지 않고 같은 세션의 실제 검증 기록을 인계한다: DART공시11·보유10·CREDIT품질25·실제 통합앱3폭 UI PASS, CREDIT 운영검사는 입력/로그없음으로 실패/대기. 코드최신과 개인자료 복구·상대회사PC실행은 별개다.
 - 5번 사용자 승인으로 집 바탕화면 '투자 대시보드.lnk' → 운영 main scripts/open-investment.cmd/작업폴더main 연결. 기존 shared_dashboard 조회전용flag 비활성 확인·그대로 유지, 제품코드/예약/부팅설정 변경 없음. 기존 실행기로127.0.0.1:8767 통합 앱 시작·사용자 브라우저 열기 성공. DART 사용자 환경변수를 실행 프로세스에 상속했고 Windows 환경변경 알림 성공. 실제 main health/build 일치·restart_required=false, 실제 화면 CREDIT 미실행 대기·주식복귀·1440/390/320px 넘침0·JS오류0 PASS(브라우저검사 입력변경 요청 차단). 초기 로딩 중5초health 시간초과는 로딩 후60초 검사 PASS와 구분. 영수증 validation/current/check_home_launcher.json 로컬전용. CREDIT은Excel 전달 전까지 연결대기다.
 - 4번 사용자 승인: 집 보유 캐시와 private/write 확인한 전용 원격 입력을 .local/home-independent/holdings-*에 각각 보존 후 실제 contract validate/3-way merge 검사. 집=원격·충돌0·전송대기false·원격쓰기불필요 확인. 기존 HoldingsService.poll 복구 후 새 서비스 재읽기와 원격 재조회로 state/revision 일치·영속저장 PASS. tests.test_holdings_sync10개 PASS. 실제 보유값/백업/영수증은 공개Git에 넣지 않았다. 이번 검증은 실제 보유 동기화 서비스·저장 경로이며 브라우저 미반영 입력·현재 가격/시장 판단을 검증한 것은 아니다. 서버·기본 실행기는 이번 단계에서 변경하지 않았다.
 - 3번 사용자 요청 후 비공개 shinyj0270-afk/credit 원격 main6a7f4258cfa851d8aa436dcb3b90f196d33a02e8을 사용자가 만든 빈 바탕화면 credit 폴더에 clone. CREDIT AGENTS/SYNC/상태/인계·설치 스크립트 확인 후 기존 setup_pc.py로 독립 .venv(openpyxl3.1.5) 및 home-secondary/scheduledJobsEnabled=false 설정. pc_check PASS·고정 품질검사25개 PASS·CREDIT Git clean. 회사 키/DB/원자료 복사·새 예약 없음. 기존 scripts/test_operations.py는 실제 생성로그 credit_build_status.json이 없어 DeliveryTests 준비 실패(실행된 앞선1검사 PASS)이며 전체 통과로 기록하지 않는다.
@@ -44,8 +45,10 @@ Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: Medium; 역할·데이터 계약 변경은 High
 Escalation condition: 입력 미보관·동시 쓰기·분기·stale packet·자료/DB 식별 충돌이면 보존하고 해당 반영 중단
 Branch: shinyj0270-afk/invest (재사용 home Orca); main (home 운영 원본)
-Commit: d78d49794f95cd58f5e7dcdad2ce4cc690db8be1 (저장 순서 수정38fe873 포함, 운영 main/실제 원격 일치 확인한 구현)
-Remote status: refs/heads/main=d78d49794f95cd58f5e7dcdad2ce4cc690db8be1 pushed (verified). 이번 증거 기록 commit의 전송은 최종 응답과 다음 START의 Git 조회로 검증한다. 집 결과 latest·원격 첨부 해시 확인 완료; 회사 최신 코드 수신은 별도 미확인.
+Commit: d626765e7a5f625a9710e15535c2d978fccb5233 (이번 CLOSE 직전 운영 main/작업본/실제 원격 일치 확인)
+Remote status: refs/heads/main=d626765e7a5f625a9710e15535c2d978fccb5233 verified at CLOSE inspection. 이번 마감 인계 commit은 작성 시점 pending이며 실제 commit/push·원격 SHA는 최종 응답과 다음 START의 Git 조회로 확인한다. 결과latest는 results-20261021T121558Z-b14b234244ed 그대로 보존. 회사 수신/실행은 미확인.
 Notes:
+- 기존 로컬 backup/home-notes-20260929-175333, shinyj0270-afk/research-library, shinyj0270-afk/telegram-intake 브랜치는 목록 확인만 했으며 이번 마감에서 삭제하지 않았다.
+- 재사용 Orca 작업본을 삭제하지 않고 clean/원격0/0 확인 후 세션 종료한다. 로컬 validation/current 검증도우미/영수증, 운영 main .local/home-independent의 일관DB·설정·보유/원격입력 백업과 기존 자료는 보존한다. 개인자산 자동복사/중앙Wiki직접수정/전체세션수집 없음. 기본 사용은 집 바탕화면 '투자 대시보드'. 내일 CREDIT credit_daily_YYMMDD.xlsx를 집 바탕화면 credit에 넣은 뒤 새 세션 START로 실제 생성/기준일·verify_delivery·4580연결을 확인한다. 회사 데일리 예약은 기존 그대로이며 집에 중복예약 없음. 서버8767은 사용자 사용을 위해 실행 유지한다.
 - .local/개인 채널/DB/자료/보유/토큰/검증 로그/지식노트는 stage하지 않는다. 공개 코드·합성검사·공통 운영 지침만 공유한다.
 - 회사 세션의 기존 CSS/운영 검증은 과거 SOURCE_RECORDED이며 이번 home 재실행 결과가 아니다. 중앙 Wiki·전체 세션 수집 없음.
