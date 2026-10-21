@@ -1,12 +1,14 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-21T21:21:28+09:00
-Handoff version: 2026-10-21-home-publisher-verified
+Updated: 2026-10-21T21:30:00+09:00
+Handoff version: 2026-10-21-home-dart-verified
 Last agent: Codex
 Last PC: home Secondary (기존 사용자 확인 및 local profile=home 대조)
-Last task: 회사 의존 제거1번 완료 — 집 실제 갱신·계산·비공개 발행·오프라인 열람
+Last task: 2번 집 DART 인증·대시보드 공시 수집 연결 완료
 
 Completed:
+- 이번 공시 연결 후 기존 tests.test_market_events 11개 PASS. 개인 로컬 설정 작업이며 제품 코드 변경 없음. RSS 실패는 숨기지 않고 별도 partial 영수증 보존.
+- 2번 실제 완료: 사용자 숨김 입력 후 집 사용자 환경변수로 DART 인증, 삼성전자 공시14·2025CFS재무229항목, 후속 SK하이닉스230·현대차312항목 법인번호 검증 PASS. 키/키포함URL 출력 없음. 로컬 설정·runtime·SQLite 일관 백업 후 home 유지·dart 권한·3사 법인번호 연결. 기존 운영 refresh_events로 공시14/4/3건 수신·21건 신규 저장. 삼성 뉴스룸RSS ValueError 별도 실패로 통합partial, DART3출처 모두complete. 검증용 재무 응답으로 기존 재무 수치/발행 결과를 변경하지 않았다. 영수증 validation/current/dart-home-{connection,dashboard}.json과 백업 .local/home-independent/dart-*는 로컬 전용. 새 터미널/앱은 사용자 환경변수 상속이 필요하다.
 - 구현 d78d49794f95cd58f5e7dcdad2ce4cc690db8be1 원본 main ff-only 반영 및 push·HEAD=origin/main=실제 remote main 일치 확인. 역할 전환은 사용자1번 승인 및 같은 세션의 반영 승인 범위에서 수행했고 서버8767 미실행으로 재시작 대상 없음.
 - 집 실제 결과 results-20261021T121558Z-b14b234244ed 발행. source_profile=home, 전체시장자료2026-10-21, HTML SHA256 b14b234244ed6c57578eb72c92e7a05edc750875ecccd5e699fcb228d34391fc, source_build fdd4fe8aa46af71b9faa2a7d06f91ad6d59ffa7d8dd70457f67f790105b4caf5. HTML110855180바이트·gzip83521955바이트. pack/install 해시·길이·모드/개인자료 제외 검증, 실제 오프라인 삼성전자 재무 상세·집 생성 안내·1440/390/320px·JS0·HTTP0·보유프레임 제외 PASS. 전용 저장소 private/write 검증 후 latest·manifest/gzip 원격 해시 일치 확인, 사용자 브라우저에 열었다. 검토3종목 가격2026-10-20과 전체시장2026-10-21, 재무/수급 기존 기준일을 구분한다.
 - 최신 사용자 승인1번으로 집 갱신/계산/발행 허용. home profile 유지, 공통 config/result_publisher.json=home 단일 발행 정책 및 실제 source_profile 기록·구버전 생성PC 수신 거부·시장자료일 회귀 방지 구현. 기존 회사 구버전의 발행 중단/코드 수신은 별도 미확인.
@@ -24,12 +26,12 @@ Completed:
 Pending:
 - 묶음 연구·watch 운영 main 반영·구현 push는 완료. 서버 실행·foreground watch 실연결2회 완주·상대 회사 PC 수신/실행은 별도 미확인이다.
 - foreground watch 실검증은2회 완주 전 PENDING. 수신기만으로 AI 연구가 세션 밖에서 실행되지 않는다. 토큰은 사용자 로컬 입력, 영구 저장 없음.
-- 집 갱신·계산·발행은 완료. 이후2번 DART 인증/실연결,3번 CREDIT 복구,4번 보유 복구/충돌 확인,5번 기본 실행기 확정이 남았다. 공유조회 기본flag=false·runtime설정파일없음·CREDIT4580미실행·개인저장소private/readable. 설정/profile/예약은 유지한다.
+- 집 갱신·계산·발행 및2번 DART 인증/실연결·공시 수집 설정 완료. 3번 CREDIT 복구,4번 보유 복구/충돌 확인,5번 기본 실행기 확정이 남았다. 공유조회 기본flag=false·runtime DART home설정 완료·CREDIT4580미실행·개인저장소private/readable. 예약 변경 없음. 삼성 뉴스룸 RSS ValueError는 별도 미해결이다.
 - 기존 ROIC/WACC·HRP/사후성과·ChatGPT→inbox 자동수신·10월 운영 점검은 이번 작업과 별개로 유지.
 
-Next task: 사용자 요청 순서의2번 DART 집 인증·실연결 확인. 토큰/키는 값을 출력하지 않고 사용자 로컬 입력/기존 설정을 확인한다.
+Next task: 사용자 요청 순서의3번 CREDIT 집 복구·실행 환경 확인. DART2번 완료, 뉴스룸 RSS 오류는 별도 보존.
 Next action:
-1. 최신 Git/인계 확인 후 DART 집 설정/환경변수의 존재만 점검한다. 기존 집 cached 재무9410개 JSON과 실제 API 연결 성공을 구분한다. 회사 인증·DB를 복사하지 않는다.
+1. 2번 DART 완료. 새 실행 프로세스에 집 사용자 환경변수가 상속되는지 값 없이 확인한다. 필요 시 앱/터미널 재시작, 키 복사/출력 금지. 기존9410재무 캐시·API 실제 검증·공시DB21건 저장을 구분한다. 이번 검증은 API 인증/설정/수집 경로이며 실제 브라우저 서버 시작·재발행은 하지 않았다.
 2. 다음은 CREDIT 집 실행/입력 Excel·기준일·복구, 보유 캐시/비공개저장소 복원·충돌 확인, 기본 실행기 전환 순서. 이번1번 완료만으로 전체 운영 전환 완료라 하지 않는다.
 3. 회사 다음 START는 최신 코드 수신 후 home 발행 정책을 확인하고 회사 구버전 발행을 중단한다. 실제 회사 수신/실행은 미확인이다. 집 결과 발행은 tools/shared_dashboard.py publish, 전체 시장 가격은 기존 data 갱신 경로, 검토3종목은 tools/refresh_infomax.py를 사용한다. 대상·기준일·부분 실패를 인계한다.
 4. Telegram watch 제한2회 실검증과 묶음 연구는 별도 진행. 자동AI/예약/토큰 영구 저장을 추가하지 않는다. 연구 지식/DB/개인 자료는 home 로컬에 유지한다.
