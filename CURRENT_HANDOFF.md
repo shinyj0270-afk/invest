@@ -1,12 +1,13 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-21T20:28:16+09:00
+Updated: 2026-10-21T20:32:22+09:00
 Handoff version: 2026-10-21-home-batch-research
 Last agent: Codex
 Last PC: home Secondary (기존 사용자 확인 및 local profile=home 대조)
-Last task: 사용자 승인한 투자연구함 묶음 연구·검색·지식 누적 구현 및 첫 실제 실행
+Last task: 사용자 명시 승인으로 묶음 연구·watch 운영 main ff-only 반영 및 push
 
 Completed:
+- 사용자 운영 main 반영 명시 승인 후 검증15파일만 commit cd3e105ea11a8e9a5bbee1e1357da971a7c47753 생성, 원본 clean·원격0/0 확인 후 ff-only 반영·원본 CLI status/지식검색/수신기 help PASS. 운영 서버8767 미실행으로 안전 재시작 대상 없음, 임의 서버 시작/강제종료 없음. 구현 HEAD=origin/main=실제 remote main 동일 SHA 확인. 이 증거 문서 commit 자체의 전송은 최종 응답/다음 START의 실제 Git 조회로 확인한다.
 - main/재사용 작업본657dc4a 수신, 실제 원격 일치 확인으로 시작. 집 마지막 회사 결과 실제 수신·해시 및 오프라인 삼성전자 화면/복구 PASS. 결과 기준2026-10-16이며 새 자료 갱신 성공으로 표시하지 않는다.
 - Telegram 사용자 로컬 숨김 토큰 입력·채널 본인 확인 후 실제 수신·재수신0 확인. 미검토 원문 참조1건 Library 등록, 백업·복사본 선검증·중복0·읽기 전용 projection PASS. 첫 자료 원문 서지 정정은 immutable 새 source+이전 excluded로 보존했다. 개인 자료는 .local에만 저장한다.
 - foreground watch 준비: 숫자 채널 잠금·home 경계·lock·Ctrl+C·실패즉시종료·토큰 비저장·Library/AI/예약 쓰기 없음. 실제 제한2회 검증은 첫 수신1 후 두 번째 ConnectionError. receipt 보존·lock 해제·이후 토큰 없는 호스트HTTP200 확인, 원인 미확정. 검증 도우미는 사용자 Enter 직접 재시도 지원. 자동 재시도 설정 변경 없음.
@@ -16,14 +17,14 @@ Completed:
 - 관련 unittest29개 PASS, skill quick_validate PASS(호스트 Python UTF-8, 프로젝트 전역 환경 변경 없음). 최종 상태/민감URL 보강 후 관련29 PASS, 격리 공유433개 경고0·portable 및 빈 실제모드 AppTest PASS. 기능 UI/운영 서버 소스 변경은 없고 full UI 검사는 이번 범위에 실행하지 않았다.
 
 Pending:
-- 사용자가 운영 main 반영을 명시 승인했다. 반영 전 원본 clean·main/작업본/실제 원격657dc4a·0/0 확인.8767 health 연결 불가라 재시작 대상 없음. 명시 stage/commit→ff-only→원본 CLI 확인→일반 push 예정이며 완료를 선기록하지 않는다. 강제종료·임의 서버 시작 없음.
+- 묶음 연구·watch 운영 main 반영·구현 push는 완료. 서버 실행·foreground watch 실연결2회 완주·상대 회사 PC 수신/실행은 별도 미확인이다.
 - foreground watch 실검증은2회 완주 전 PENDING. 수신기만으로 AI 연구가 세션 밖에서 실행되지 않는다. 토큰은 사용자 로컬 입력, 영구 저장 없음.
 - 완전한 회사 의존 제거는 최신 자료의 집 계산·발행 역할, DART 인증/실연결, CREDIT 복구, 보유 복구/충돌 확인이 남았다. 공유조회 기본flag=false·runtime설정파일없음·CREDIT4580미실행·개인저장소private/readable. 설정/profile/예약은 유지한다.
 - 기존 ROIC/WACC·HRP/사후성과·ChatGPT→inbox 자동수신·10월 운영 점검은 이번 작업과 별개로 유지.
 
-Next task: 이번 승인 범위 MERGE/전송 확인 후 watch 제한2회 실제 검증과 새 자료 묶음 연구.
+Next task: watch 제한2회 실제 검증 재개 또는 “투자연구함 정리해”로 새 자료 묶음 연구.
 Next action:
-1. 코드 diff와 공유 제외를 확인해 명시 stage/commit, 원본 main ff-only·필요한 안전 재시작·원격 확인/push. 분기나 동시 변경은 보존·중단한다.
+1. 다음 START에서 실제 Git/인계 확인. 구현 main 반영·push·원본CLI 검증은 완료됐으므로 같은 검사를 이유 없이 반복하지 않는다. 연구 지식/토큰/DB는 각 PC 로컬에 유지한다.
 2. 앞으로 “투자연구함 정리해”에서 skills/investment-research/SKILL.md 실행. 기존 지식을 먼저 검색하고 신규만 연구한다. 접근 실패는 reopen의 사유 있는 재검토만 수행한다.
 3. watch 실제 점검은 validation/current/receive_two_cycles_home.py. 새 링크가 없어도 기존 offset에서2회 확인 가능. 실패 후 사용자 Enter 직접 재시도, q 종료. 성공요약/실제URL/재수신/lock해제를 대조한다.
 4. 회사 의존 점검은 validation/current/HOME_DEPENDENCY_REVIEW_20261021.md와 audit JSON. 집 역할을 work로 위장하거나 DB/인증 복사로 우회하지 않는다.
@@ -32,8 +33,8 @@ Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: Medium; 역할·데이터 계약 변경은 High
 Escalation condition: 입력 미보관·동시 쓰기·분기·stale packet·자료/DB 식별 충돌이면 보존하고 해당 반영 중단
 Branch: shinyj0270-afk/invest (재사용 home Orca); main (home 운영 원본)
-Commit: 657dc4a2c4b82a6c7a87b22d2e25fada463f9d89 (home START 수신 기준; 이번 구현은 미커밋)
-Remote status: START에서 실제 remote main657dc4a 일치 확인. 이번 묶음 연구/watch 구현 및 기록은 미전송이다. 상대 PC 수신/실행은 별도 확인한다.
+Commit: cd3e105ea11a8e9a5bbee1e1357da971a7c47753 (운영 main ff-only 반영·원본 CLI 확인·push 실제 원격 검증된 구현)
+Remote status: refs/heads/main=cd3e105ea11a8e9a5bbee1e1357da971a7c47753 pushed (verified, home MERGE). 후속 증거 문서 commit의 전송은 최종 응답/다음 START의 실제 Git 조회로 확인한다. 상대 PC 수신/실행은 별도 미확인이다.
 Notes:
 - .local/개인 채널/DB/자료/보유/토큰/검증 로그/지식노트는 stage하지 않는다. 공개 코드·합성검사·공통 운영 지침만 공유한다.
 - 회사 세션의 기존 CSS/운영 검증은 과거 SOURCE_RECORDED이며 이번 home 재실행 결과가 아니다. 중앙 Wiki·전체 세션 수집 없음.
