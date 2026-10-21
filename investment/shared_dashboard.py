@@ -117,13 +117,27 @@ def payload_from_html(content):
     return value
 
 
-def pack(content, *, source_build, generated_at=None):
+def publisher_profile(root):
+    """One active publisher shared through code; local PC identity stays unchanged."""
+    path = Path(root)/'config/result_publisher.json'
+    if not path.exists():
+        return 'work'  # Legacy checkout compatibility; current code tracks the policy.
+    policy = json.loads(path.read_text(encoding='utf-8-sig'))
+    if (set(policy) != {'version', 'profile'} or type(policy['version']) is not int
+            or policy['version'] != 1 or policy['profile'] not in ('work', 'home')):
+        raise ValueError('결과 발행 PC 정책 확인 필요')
+    return policy['profile']
+
+
+def pack(content, *, source_build, generated_at=None, source_profile='work'):
+    if source_profile not in ('work', 'home'):
+        raise ValueError('확인된 결과 생성 PC 필요')
     raw = content.encode('utf-8')
     if len(raw) > MAX_HTML:
         raise ValueError('결과 크기 제한 초과')
     payload = payload_from_html(content)
     meta = (payload.get('discovery') or {}).get('snapshot', {}).get('meta') or payload['analysis_snapshot']['meta']
-    manifest = dict(schema=SCHEMA, source_profile='work', generated_at=generated_at or now(),
+    manifest = dict(schema=SCHEMA, source_profile=source_profile, generated_at=generated_at or now(),
                     market_as_of=meta['price_date'], data_mode=meta['data_mode'],
                     source_build=source_build, sha256=hashlib.sha256(raw).hexdigest(), bytes=len(raw))
     compressed = gzip.compress(raw, mtime=0)
@@ -133,7 +147,7 @@ def pack(content, *, source_build, generated_at=None):
 
 
 def unpack(manifest, compressed):
-    if (manifest.get('schema') != SCHEMA or manifest.get('source_profile') != 'work'
+    if (manifest.get('schema') != SCHEMA or manifest.get('source_profile') not in ('work', 'home')
             or manifest.get('data_mode') not in ('user_input', 'live')
             or not re.fullmatch('[a-f0-9]{64}', str(manifest.get('sha256')))
             or type(manifest.get('bytes')) is not int or not 0 < manifest['bytes'] <= MAX_HTML
@@ -183,16 +197,19 @@ def install(root, manifest, compressed):
         old = None
     if old and datetime.fromisoformat(old['generated_at']) > datetime.fromisoformat(manifest['generated_at']):
         raise ValueError('원격 결과가 이전 버전입니다. 최신 정상 결과를 유지합니다.')
+    if old and manifest['market_as_of'] < old['market_as_of']:
+        raise ValueError('원격 결과 자료 기준일이 이전입니다. 최신 정상 결과를 유지합니다.')
     if old and old['sha256'] == manifest['sha256'] and (cache_root(root)/old['sha256']/'viewer.html').is_file():
         return cached(root)[1] / 'viewer.html'
     base = cache_root(root)
     base.mkdir(parents=True, exist_ok=True)
     target = base / manifest['sha256']
     received = now()
+    location = '회사' if manifest['source_profile'] == 'work' else '집'
     banner = ('<aside id="companyResultStatus" role="status" style="padding:14px;background:#fff3cd;color:#302900">'
-              '회사에서 계산한 저장 결과 · 자료 기준 ' + html.escape(manifest['market_as_of']) +
+              + location + '에서 계산한 저장 결과 · 자료 기준 ' + html.escape(manifest['market_as_of']) +
               ' · 생성 ' + html.escape(manifest['generated_at']) + ' · 이 PC 수신 ' + html.escape(received) +
-              '<br>조회 전용 · 회사 PC가 꺼져 있어도 이 결과를 봅니다. 수신 실패 시 이전 정상 결과를 유지합니다.'
+              '<br>조회 전용 · 생성 PC가 꺼져 있어도 이 결과를 봅니다. 수신 실패 시 이전 정상 결과를 유지합니다.'
               ' 보유 입력·로컬 연구·새 수집은 이 결과에 포함하지 않습니다.</aside>'
               '<style>[data-page="holdings"],[data-page="portfolio"],[data-page="waterfall"],'
               '[data-page="recommendations"],[data-page="data"],[data-page="research-library"]{display:none!important}</style>')
@@ -249,8 +266,10 @@ class ResultRepository:
             folder = Path(temp)
             if (folder/'manifest.json').stat().st_size > 8192 or (folder/'dashboard.html.gz').stat().st_size > MAX_GZIP:
                 raise ValueError('원격 결과 크기 제한 초과')
-            return install(root, json.loads((folder/'manifest.json').read_text(encoding='utf-8')),
-                           (folder/'dashboard.html.gz').read_bytes())
+            manifest = json.loads((folder/'manifest.json').read_text(encoding='utf-8'))
+            if manifest.get('source_profile') != publisher_profile(root):
+                raise ValueError('현재 지정 발행 PC의 결과가 아닙니다. 이전 정상 결과를 유지합니다.')
+            return install(root, manifest, (folder/'dashboard.html.gz').read_bytes())
 
     def publish(self, manifest, compressed):
         unpack(manifest, compressed)
@@ -263,7 +282,7 @@ class ResultRepository:
             # Draft assets first. Only a complete release becomes latest; no clobber/force.
             self.command('release', 'create', tag, '--repo', self.repository, '--draft',
                          '--title', 'Dashboard results ' + manifest['market_as_of'],
-                         '--notes', 'Company-generated offline results; no raw DB, credentials or holdings.',
+                         '--notes', 'Designated-PC offline results; no raw DB, credentials or holdings.',
                          str(folder/'manifest.json'), str(folder/'dashboard.html.gz'))
             self.command('release', 'edit', tag, '--repo', self.repository, '--draft=false', '--latest')
         return tag
@@ -271,8 +290,10 @@ class ResultRepository:
 
 def export_company(root):
     from .local_config import load_local, require_profile
-    if require_profile(load_local(root)) != 'work':
-        raise ValueError('결과 계산·발행은 work Primary에서만 합니다.')
+    profile = require_profile(load_local(root))
+    publisher = publisher_profile(root)
+    if profile != publisher:
+        raise ValueError('결과 계산·발행은 지정한 '+publisher+' 발행 PC에서만 합니다.')
     from .live_dashboard import saved_data
     from .market_discovery import read_market_cache
     from .company_financials import load_cached
@@ -293,9 +314,10 @@ def export_company(root):
                                 load_cached(root, snapshot, list(rows.values())),
                                 as_of=datetime.now().date().isoformat())
     content = export_workspace(snapshot, market_cache=cache, financials=finances, result_view=True)
-    if before_build!=source_fingerprint(root) or before_data!=dashboard_input_version(root):
+    if (before_build!=source_fingerprint(root) or before_data!=dashboard_input_version(root)
+            or publisher_profile(root)!=profile):
         raise ValueError('결과 생성 중 코드·자료가 바뀌었습니다. 이전 결과를 유지하고 수집 완료 후 다시 발행하세요.')
-    return pack(content, source_build=before_build)
+    return pack(content, source_build=before_build, source_profile=profile)
 
 
 def open_home(root, *, repository=None, browser=None):

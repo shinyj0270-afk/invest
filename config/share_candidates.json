@@ -433,6 +433,7 @@
     "tools/research_inbox.py": "tools/research_inbox.py",
     "tests/test_research_inbox.py": "tests/test_research_inbox.py",
     "skills/investment-research/SKILL.md": "skills/investment-research/SKILL.md",
-    "docs/RESEARCH_INBOX.md": "docs/RESEARCH_INBOX.md"
+    "docs/RESEARCH_INBOX.md": "docs/RESEARCH_INBOX.md",
+    "config/result_publisher.json": "config/result_publisher.json"
   }
 }

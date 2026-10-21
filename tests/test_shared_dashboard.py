@@ -20,6 +20,49 @@ def result_html():
 
 
 class SharedDashboardTests(unittest.TestCase):
+    def test_home_source_is_truthful_and_legacy_company_source_remains_readable(self):
+        manifest, blob = pack(result_html(), source_build='0'*64, source_profile='home')
+        self.assertEqual(manifest['source_profile'], 'home')
+        self.assertEqual(unpack(manifest, blob), result_html())
+        with tempfile.TemporaryDirectory() as tmp:
+            path = install(Path(tmp), manifest, blob)
+            self.assertIn('집에서 계산한 저장 결과', path.read_text(encoding='utf-8'))
+        with self.assertRaises(ValueError):
+            unpack(dict(manifest, source_profile='unknown'), blob)
+
+    def test_single_publisher_policy_preserves_actual_pc_identity(self):
+        from investment.shared_dashboard import publisher_profile
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp);self.home(root)
+            self.assertEqual(publisher_profile(root), 'work')
+            (root/'config/result_publisher.json').write_text(json.dumps({'version':1,'profile':'home'}))
+            self.assertEqual(publisher_profile(root), 'home')
+            (root/'config/local.json').write_text(json.dumps({'profile':'work'}))
+            with self.assertRaisesRegex(ValueError, 'home 발행 PC'):
+                export_company(root)  # Must gate before any saved-data calculation.
+            for policy in ({'version':True,'profile':'home'}, {'version':1,'profile':'unknown'}):
+                (root/'config/result_publisher.json').write_text(json.dumps(policy))
+                with self.assertRaises(ValueError):publisher_profile(root)
+
+    def test_receive_rejects_wrong_publisher_and_preserves_previous_cache(self):
+        manifest,blob=self.bundle()
+        def command(*args,**kwargs):
+            if args[:2]==('release','view'):
+                return {'tagName':'results-20261021T000000Z-'+manifest['sha256'][:12],
+                        'isDraft':False,'isPrerelease':False}
+            folder=Path(args[args.index('--dir')+1])
+            (folder/'manifest.json').write_text(json.dumps(manifest),encoding='utf-8')
+            (folder/'dashboard.html.gz').write_bytes(blob)
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);self.home(root)
+            install(root,manifest,blob)
+            before=(root/'.local/shared-dashboard/current.json').read_bytes()
+            (root/'config/result_publisher.json').write_text(json.dumps({'version':1,'profile':'home'}))
+            repo=ResultRepository();repo.verify_private=Mock();repo.command=command
+            with self.assertRaisesRegex(ValueError,'지정 발행 PC'):
+                repo.receive(root)
+            self.assertEqual((root/'.local/shared-dashboard/current.json').read_bytes(),before)
+
     def test_official_https_sources_are_not_mistaken_for_windows_drive_paths(self):
         from investment.shared_dashboard import public_data
         public_data({'source_url':'https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000001',
@@ -74,13 +117,23 @@ class SharedDashboardTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);self.home(root);repo=Mock();repo.receive.side_effect=ValueError('offline')
             with self.assertRaisesRegex(ValueError,'첫 결과 발행 대기'):open_home(root,repository=repo)
-            with self.assertRaisesRegex(ValueError,'work Primary'):export_company(root)
+            with self.assertRaisesRegex(ValueError,'work 발행 PC'):export_company(root)
 
     def test_old_remote_result_cannot_roll_back_newer_cached_result(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);current,blob=self.bundle();install(root,current,blob)
             old=dict(current,generated_at=(datetime.fromisoformat(current['generated_at'])-timedelta(seconds=1)).isoformat())
             with self.assertRaisesRegex(ValueError,'이전 버전'):install(root,old,blob)
+            self.assertEqual(cached(root)[0],current)
+
+    def test_later_generated_result_with_older_market_data_does_not_replace_cache(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            current,blob=self.bundle(generated_at=(datetime.now().astimezone()-timedelta(minutes=10)).isoformat())
+            install(root,current,blob)
+            old,old_blob=pack(result_html().replace('2026-09-23','2026-09-22'),source_build='0'*64)
+            with self.assertRaisesRegex(ValueError,'자료 기준일이 이전'):
+                install(root,old,old_blob)
             self.assertEqual(cached(root)[0],current)
 
     def test_fixture_or_live_token_cannot_be_accepted_as_company_result(self):

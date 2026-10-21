@@ -25,6 +25,7 @@
 <!-- END DUAL-PC -->
 
 - 회사 계산·집 조회(사용자 승인 2026-10-16): 결과 발행/수신 및 해당 모드의 START/CLOSE는 [docs/SHARED_DASHBOARD.md](docs/SHARED_DASHBOARD.md)를 읽는다. 검증된 공개 기업 조회 결과만 전용 비공개 저장소로 전달하는 예외이며, DB·원자료·인증·보유·Telegram 제외와 기존 보유 동기화는 유지한다.
+- 후속 승인(2026-10-21): 집의 최신 자료 갱신·계산·결과 발행을 허용하고 공통 `config/result_publisher.json`으로 단일 발행 PC를 지정한다. 현재 home이 발행하며 work는 새 코드에서 발행을 중단한다. 기존 work/home PC 식별과 Primary/Secondary 개발 역할은 유지한다. 과거 home 조회 전용 제한보다 이번 범위의 승인이 우선하며 중복 수집·AI 조사 및 PC별 DB/인증 자동 복사 금지는 유지한다(USER_DATA_DECISIONS.md 17번).
 
 ## GLOBAL WORKFLOW 상속
 
