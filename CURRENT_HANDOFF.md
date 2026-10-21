@@ -1,38 +1,39 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-21T08:43:07+09:00
-Handoff version: 2026-10-21-company-css-verified
+Updated: 2026-10-21T20:28:16+09:00
+Handoff version: 2026-10-21-home-batch-research
 Last agent: Codex
-Last PC: work Primary (회사 PC와 local profile=work 확인)
-Last task: 기존 CREDIT 화면 CSS 보존·main 반영·안전 재시작·운영 화면 검증
+Last PC: home Secondary (기존 사용자 확인 및 local profile=home 대조)
+Last task: 사용자 승인한 투자연구함 묶음 연구·검색·지식 누적 구현 및 첫 실제 실행
 
 Completed:
-- 원본 main의 기존 CSS 3줄(상단 여백/toolbar 간격/frame 높이)을 동일 바이트로 재사용 Orca invest 작업본에 준비했다. 원본 CSS를 수정·되돌리지 않았으며 변경본/작업본 기준 CSS/diff를 validation/current/company-migration-css-20261021에 보존했다.
-- 이번 실행: CREDIT 연결 unittest 2개 PASS. 공유 후보425개 검사 경고0, 격리 portable·빈 실제모드·합성 UI 등24명령 PASS. 테스트는 실제 회사 DB·입력 없이 격리 사본에서 수행했으며 회사 운영 화면 확인이 아니다.
-- diff/공유 범위 검토: src/soft_ui.css의 기존 3줄과 이 인계만 대상. 설정·DB·인증·원자료·CREDIT 데일리·예약은 변경/전송하지 않는다.
-- 합성 Git 저장소에서 변경 파일을 되돌리지 않고 동일 내용을 stage한 뒤 ff-only가 가능한지 확인: 파일 바이트 불변, HEAD 일치, clean. 운영 main에서도 같은 절차로 ff-only 반영했고 원래 CSS 바이트 불변과 clean을 확인했다.
-
-- 사용자 입력 보관 확인 후 기존 안전 /restart API가202로 수락했다. 재시작 후 health의 build_id와 source_build_id가99c9820f06d061cf0eb2d2f1a054663a6e01b58eea1adbdd07be326f4e53d2f7로 일치하고 restart_required=false를 확인했다. 강제 종료 없음.
-- 실제 운영 화면을 새 headless 브라우저에서 확인했다. 입력 저장·보유 동기화·외부 요청을 차단한 상태로 HTTP200, 변경 CSS 적용, 메뉴 열기/닫기와1440/390/320px 가로 넘침 없음, JavaScript 오류0을 확인했다. CREDIT 별도 서비스·실제 입력 저장·데이터 정확성 검증은 아니다.
+- main/재사용 작업본657dc4a 수신, 실제 원격 일치 확인으로 시작. 집 마지막 회사 결과 실제 수신·해시 및 오프라인 삼성전자 화면/복구 PASS. 결과 기준2026-10-16이며 새 자료 갱신 성공으로 표시하지 않는다.
+- Telegram 사용자 로컬 숨김 토큰 입력·채널 본인 확인 후 실제 수신·재수신0 확인. 미검토 원문 참조1건 Library 등록, 백업·복사본 선검증·중복0·읽기 전용 projection PASS. 첫 자료 원문 서지 정정은 immutable 새 source+이전 excluded로 보존했다. 개인 자료는 .local에만 저장한다.
+- foreground watch 준비: 숫자 채널 잠금·home 경계·lock·Ctrl+C·실패즉시종료·토큰 비저장·Library/AI/예약 쓰기 없음. 실제 제한2회 검증은 첫 수신1 후 두 번째 ConnectionError. receipt 보존·lock 해제·이후 토큰 없는 호스트HTTP200 확인, 원인 미확정. 검증 도우미는 사용자 Enter 직접 재시도 지원. 자동 재시도 설정 변경 없음.
+- 사용자 새 승인: “투자연구함 정리해”로 현재 세션이 새 자료 묶음 읽기·필요한 공개 원문 조사·관측/해석/반증·기존 연구 연결·로컬 AI 초안 저장. 일반 항목별 등록 재승인 없음. 추가 유료 API/다른 에이전트 자동호출/무인연구/예약/회사 공유는 활성화하지 않는다.
+- research_inbox 모듈/CLI(prepare,finish,search,reopen,status), 연구 스킬·AGENTS 진입점·사용법·사용자 결정16번 구현. URL/파일해시 중복·출처별 provenance·처리 상태·immutable 지식노트·개정 이력·stale packet 거부·민감 URL 차단. 기존 Library와 사람검토 노트는 보존한다.
+- 실제 첫 묶음4항목: 원문 연구2건, 접근 차단1건, 링크만 있고 본문 미확보1건. 관련 공식 IR/규제 문서 대조를 자체 관측/해석과 구분해 저장. 재저장 추가0(중복4), 다음묶음 새항목0, 지식검색 PASS. home .local/research-inbox/KNOWLEDGE.md로 재조회 가능. blocked/metadata_only를 읽기 완료로 표시하지 않는다.
+- 관련 unittest29개 PASS, skill quick_validate PASS(호스트 Python UTF-8, 프로젝트 전역 환경 변경 없음). 최종 상태/민감URL 보강 후 관련29 PASS, 격리 공유433개 경고0·portable 및 빈 실제모드 AppTest PASS. 기능 UI/운영 서버 소스 변경은 없고 full UI 검사는 이번 범위에 실행하지 않았다.
 
 Pending:
-- home 최신 코드·회사 결과 수신/열람, Telegram 채널 확인·소량 실수신·3단계 연구 연결은 미확인/미실행. 기존 ROIC/WACC·마진/수주·국면/전략 기준값·HRP/사후성과·ChatGPT→inbox 자동수신 및10월 운영 점검도 유지.
-- 10/31 회사 의존 제거 목표와 기존 회사 계산/집 조회 제한은 담당 세션의 별도 운영안·검증 사항이다. 이 CSS 정리가 집 역할 전환이나 계산 권한 변경을 뜻하지 않는다.
+- 사용자가 운영 main 반영을 명시 승인했다. 반영 전 원본 clean·main/작업본/실제 원격657dc4a·0/0 확인.8767 health 연결 불가라 재시작 대상 없음. 명시 stage/commit→ff-only→원본 CLI 확인→일반 push 예정이며 완료를 선기록하지 않는다. 강제종료·임의 서버 시작 없음.
+- foreground watch 실검증은2회 완주 전 PENDING. 수신기만으로 AI 연구가 세션 밖에서 실행되지 않는다. 토큰은 사용자 로컬 입력, 영구 저장 없음.
+- 완전한 회사 의존 제거는 최신 자료의 집 계산·발행 역할, DART 인증/실연결, CREDIT 복구, 보유 복구/충돌 확인이 남았다. 공유조회 기본flag=false·runtime설정파일없음·CREDIT4580미실행·개인저장소private/readable. 설정/profile/예약은 유지한다.
+- 기존 ROIC/WACC·HRP/사후성과·ChatGPT→inbox 자동수신·10월 운영 점검은 이번 작업과 별개로 유지.
 
-Next task: 원격 재확인 후 일반 push, 집 최신 코드 수신과 회사 의존 제거 검증
+Next task: 이번 승인 범위 MERGE/전송 확인 후 watch 제한2회 실제 검증과 새 자료 묶음 연구.
 Next action:
-1. 코드 반영 커밋1084e63과 이 검증 인계만 일반 push한다. 원격 분기나 새 변경 발생 시 자동 통합하지 않는다.
-2. 집에서 최신 main을 안전 수신하고 기존 집 지침에 따른 허용 범위 실행을 검증한다.
-3. 집 결과 수신/Telegram 실연결 및 회사 의존 없는 운영안은 기존 관련 문서를 따라 별도 진행한다. shared_dashboard 현재 설정이나 PC profile·예약은 바꾸지 않는다.
-Recommended next agent: Codex (전송 확인·집 검증), 사용자 (집 실행 결과)
+1. 코드 diff와 공유 제외를 확인해 명시 stage/commit, 원본 main ff-only·필요한 안전 재시작·원격 확인/push. 분기나 동시 변경은 보존·중단한다.
+2. 앞으로 “투자연구함 정리해”에서 skills/investment-research/SKILL.md 실행. 기존 지식을 먼저 검색하고 신규만 연구한다. 접근 실패는 reopen의 사유 있는 재검토만 수행한다.
+3. watch 실제 점검은 validation/current/receive_two_cycles_home.py. 새 링크가 없어도 기존 offset에서2회 확인 가능. 실패 후 사용자 Enter 직접 재시도, q 종료. 성공요약/실제URL/재수신/lock해제를 대조한다.
+4. 회사 의존 점검은 validation/current/HOME_DEPENDENCY_REVIEW_20261021.md와 audit JSON. 집 역할을 work로 위장하거나 DB/인증 복사로 우회하지 않는다.
+Recommended next agent: Codex
 Recommended model: 기존 사용자 설정 유지
-Recommended reasoning: Medium
-Escalation condition: 입력 미보관·동시 쓰기·보존 해시 변경·분기·수집 중409·운영 검증 실패 시 보존하고 중단
-Branch: shinyj0270-afk/invest (재사용 Orca); main (work 원본)
-Commit: 1084e63e71e0c18d4140bcab28d7407828851374 (검증한 CSS·운영 main 기준; 이 후속 인계 커밋 SHA 아님)
-Remote status: 이 인계 작성 시 전송 전. 일반 push 후 실제 원격 SHA는 후속 응답/다음 START의 Git 조회로 확인한다.
-
+Recommended reasoning: Medium; 역할·데이터 계약 변경은 High
+Escalation condition: 입력 미보관·동시 쓰기·분기·stale packet·자료/DB 식별 충돌이면 보존하고 해당 반영 중단
+Branch: shinyj0270-afk/invest (재사용 home Orca); main (home 운영 원본)
+Commit: 657dc4a2c4b82a6c7a87b22d2e25fada463f9d89 (home START 수신 기준; 이번 구현은 미커밋)
+Remote status: START에서 실제 remote main657dc4a 일치 확인. 이번 묶음 연구/watch 구현 및 기록은 미전송이다. 상대 PC 수신/실행은 별도 확인한다.
 Notes:
-- 회사 원본 CSS는 보존한 바이트 그대로다. 이전 바탕화면 패키지 소문자 복구·재사용 단일 작업본 이력은 PROJECT_STATE와 Git 이력에 남아 있다.
-- 실제 회사 원자료/DB/인증/설정은 작업본으로 복사하지 않았다. 공유 검사 경고0은 전체 비밀 탐지 인증이 아니다.
-- 안전 재시작과 역할 전환은 별개이며 회사 예약·CREDIT 집 이전·중앙 Wiki 수정은 실행하지 않는다.
+- .local/개인 채널/DB/자료/보유/토큰/검증 로그/지식노트는 stage하지 않는다. 공개 코드·합성검사·공통 운영 지침만 공유한다.
+- 회사 세션의 기존 CSS/운영 검증은 과거 SOURCE_RECORDED이며 이번 home 재실행 결과가 아니다. 중앙 Wiki·전체 세션 수집 없음.

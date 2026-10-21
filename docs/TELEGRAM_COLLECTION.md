@@ -91,6 +91,28 @@ python tools/telegram_listen.py poll --channels .local/telegram-research/channel
 실제 봇 연결·실제 채널 잠금·실제 소량 수신 검증은 집 PC에서 사용자가 토큰을 직접 입력한 뒤
 진행한다. 이 구현만으로 실제 연결 완료로 보고하지 않는다.
 
+## 창을 열어둔 동안 자동 수신 · 2026-10-21 준비
+
+사용자가 수동으로 시작한 창에서 60초마다 잠금된 개인 채널의 새 메타데이터를 받는다.
+`Ctrl+C`로 중지하며 창을 닫거나 PC가 꺼지면 멈춘다. 작업 스케줄러·로그인 자동 시작·서비스를
+등록하지 않는다. 토큰은 환경변수 또는 숨김 입력으로 메모리에서만 사용한다.
+
+```powershell
+.\.venv\Scripts\python.exe tools\telegram_watch.py --channel personal-live
+```
+
+최초 연결에서 만든 `.local/telegram-research/channels.json`의 실제 key를 사용한다.
+짧은 실연결 점검은 `--cycles 2 --interval 15`로 두 번만 받는다. 채널은 이미 사용자 확인으로
+숫자 ID가 잠겨 있어야 한다. 새 잠금·권한을 자동으로 만들지 않는다. 다른 poll/discover 창은
+동시에 실행하지 않는다. 이 실행기끼리는 `receiver.lock`으로 중복 실행을 거절한다.
+비정상 종료 후 잠금이 남으면 실제 실행 프로세스를 확인한 뒤 수동으로 정리하며 자동 삭제하지 않는다.
+
+오류가 나면 재시도 루프 없이 종료하고 기존 영수증과 마지막 성공 offset을 보존한다.
+원문 본문·첨부·발신자·토큰은 출력하지 않고 수신/중복 건수만 표시한다. 결과는 기존
+`.local/telegram-research/live/<key>`에 저장한다. 원문 검토·Library 등록은 별도 사용자 선택이며
+이 실행기가 AI 요약·외부 전송·DB 자동 입력을 하지 않는다. 합성 검사와 실제 신규 링크 수신은
+각각 확인해야 하며, 준비 코드 저장만으로 자동 수신 운영 완료를 선언하지 않는다.
+
 ## 기존 보조 방식: home JSON 입력 준비 (2026-10-13 구현)
 
 Telegram Desktop의 채널별 **Export chat history → JSON**을 사람이 실행하고,

@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 env = dict(os.environ, PYTHONIOENCODING='utf-8')
 commands = [
     [sys.executable, '-m', 'unittest', 'tests.test_naver_bands', 'tests.test_nice_financial', 'tests.test_credit_connection'],
-    [sys.executable, '-m', 'unittest', 'tests.test_telegram_export'],
+    [sys.executable, '-m', 'unittest', 'tests.test_telegram_export', 'tests.test_telegram_listen', 'tests.test_telegram_watch', 'tests.test_research_inbox'],
     [sys.executable, '-m', 'unittest', 'tests.test_official_statements', 'tests.test_data_recovery', 'tests.test_dashboard_delivery'],
     [sys.executable, '-m', 'unittest', 'tests.test_research_sessions', 'tests.test_research_agents', 'tests.test_research_library', 'tests.test_research_library_view', 'tests.test_research_catalog'],
     [sys.executable, '-m', 'unittest', 'tests.test_portability', 'tests.test_shared_dashboard'],

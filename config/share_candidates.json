@@ -5,7 +5,6 @@
     "tests/test_nice_financial.py": "tests/test_nice_financial.py",
     "tests/test_financial_stability.js": "tests/test_financial_stability.js",
     "tests/test_financial_stability_ui.py": "tests/test_financial_stability_ui.py",
-
     "investment/naver_bands.py": "investment/naver_bands.py",
     "tests/test_naver_bands.py": "tests/test_naver_bands.py",
     "tests/test_naver_bands_ui.py": "tests/test_naver_bands_ui.py",
@@ -426,6 +425,14 @@
     "investment/credit_connection.py": "investment/credit_connection.py",
     "src/dashboard_switcher.js": "src/dashboard_switcher.js",
     "tests/test_credit_connection.py": "tests/test_credit_connection.py",
-    "tests/test_dashboard_switcher_ui.py": "tests/test_dashboard_switcher_ui.py"
+    "tests/test_dashboard_switcher_ui.py": "tests/test_dashboard_switcher_ui.py",
+    "investment/telegram_watch.py": "investment/telegram_watch.py",
+    "tools/telegram_watch.py": "tools/telegram_watch.py",
+    "tests/test_telegram_watch.py": "tests/test_telegram_watch.py",
+    "investment/research_inbox.py": "investment/research_inbox.py",
+    "tools/research_inbox.py": "tools/research_inbox.py",
+    "tests/test_research_inbox.py": "tests/test_research_inbox.py",
+    "skills/investment-research/SKILL.md": "skills/investment-research/SKILL.md",
+    "docs/RESEARCH_INBOX.md": "docs/RESEARCH_INBOX.md"
   }
 }
