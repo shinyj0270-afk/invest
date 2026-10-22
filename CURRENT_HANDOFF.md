@@ -1,12 +1,13 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-22T23:40:36+09:00
-Handoff version: 2026-10-22-home-credit-live-verified
+Updated: 2026-10-22T23:42:54+09:00 (SESSION CLOSE)
+Handoff version: 2026-10-22-home-credit-closed
 Last agent: Codex
 Last PC: home Secondary (사용자 기존 확인·실제local profile=home)
-Last task: 사용자 전달 CREDIT Excel로 집 실제 생성·통합 연결 검증 완료
+Last task: INVESTMENT CLOSE — 집 CREDIT 실제 생성·통합 연결 완료 인계
 
 Completed:
+- CLOSE 새 점검: home main/작업본 clean·진행Git작업0·추적개인경로0·예약false, fetch/실제remote523a8c3일치0/0.8767실행/소스build0e0f1552ce1e2b4e944c8360a18203ffe6d20516dc90e42ee4330a73009002a1일치·restart_required=false,4580정상marker확인. 아래 생성/화면검사는 같은세션의 완료기록이며 CLOSE에서 반복하지 않았다. 문서만변경·서버재시작/종료없음, shared_dashboard.enabled비활성으로 결과재발행없음.
 - 집 START에서 INVESTMENT main/재사용Orca/실제remote bbf5e0f clean·0/0 확인. 최신10월운영개선안·회사인계 확인, 집자료함미처리0.
 - CREDIT private clean main5e8698a ff-only 수신, 사용자 전달 credit_daily_261021.xlsx로 기존 .venv/launch_latest 실제 생성·4580 실행. 기준일2026-10-21·3,002일·indexUpdated=true·status=success. verify_delivery 원본/HTML/18소스/실행로그 PASS·원본해시불변, 운영검사5개·layout·보유계산20시나리오 PASS. 상세 해시/생성근거는 PROJECT_STATE 및 집 Git제외 로그 참조.
 - 실제 INVESTMENT8767 실행본/소스일치·restart_required=false. CREDIT iframe의 실제원본/기준일·상대가치탐색·주식전환/복귀·1440/390/320px 양화면넘침0·JS오류0 PASS. 검사중 입력변경요청 차단. 영수증 validation/current/check_credit_home_live.json, 두서버 사용을 위해 실행유지.
@@ -25,9 +26,10 @@ Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: Medium; 자료/역할/계약충돌 시 High
 Escalation condition: 입력미보관·동시쓰기·divergence·자료식별/기준일충돌 시 보존하고 해당반영중단
 Branch: shinyj0270-afk/invest (home Orca); main (home 원본)
-Commit: bbf5e0f11e9b7bc4888391ddc3ef6dff4692de3c (이번작업 시작·실행검증 기준)
-Remote status: 시작시 main/Orca/실제remote bbf5e0f일치. 이번완료문서 반영/전송은 작성시점pending, 최종응답/다음START 실제SHA로 확인. CREDIT main5e8698a clean·원격일치, 코드수정/전송없음.
+Commit: 523a8c320473fe52509c910569dc89aa3148c056 (CREDIT완료 인계 main/실제remote반영 확인)
+Remote status: CLOSE시 main/Orca/실제remote523a8c3일치0/0. 이마감기록commit은 작성시점pending이며 최종응답/다음START 실제SHA로 확인. CREDIT main5e8698a clean·원격일치, 코드수정/전송없음.
 
 Notes:
+- 재사용작업본과 Git제외 검증/로컬자료 보존. 최종push후 clean/원격0/0 확인하고 대화세션 종료, 다음은 같은작업본의 새세션START. 양서버는 사용자사용을 위해 유지한다. 기존다른브랜치는 삭제하지 않는다.
 - 제품코드변경0·예약등록0·회사인증/DB복사0·사용량교대0. 실제생성1회, 별도INVESTMENT안전재시작0(기존실행기로준비). Git fixture를 최신자료로 표시하지 않았다.
 - 개인원자료·HTML·로그·.local·.venv·영수증은 각PC보존/코드공유제외. 결과Release재발행·중앙Wiki/전체세션수집없음. 이전인계는Git이력/PROJECT_STATE에 보존.
