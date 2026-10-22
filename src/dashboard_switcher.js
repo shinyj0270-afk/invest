@@ -35,7 +35,6 @@ const InvestmentDashboardSwitcher = (() => {
       const kind=button.dataset.dashboardChoice;select(kind);if(kind==='credit'&&!connected)connect();
     };
     $('creditRetry').onclick=connect;
-    $('creditBack').onclick=()=>select('stock');
     $('creditChoice').disabled=!local;$('creditLocalHint').hidden=local;
   }
   return {create};
