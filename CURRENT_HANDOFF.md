@@ -1,34 +1,33 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-22T08:24:01+09:00 (SESSION CLOSE)
-Handoff version: 2026-10-22-operations-closed
+Updated: 2026-10-22T23:40:36+09:00
+Handoff version: 2026-10-22-home-credit-live-verified
 Last agent: Codex
-Last PC: work Primary (이번 CLOSE pc_check 확인)
-Last task: 10월 운영 개선안 반영·원격 전송·회사 안전 재시작 후 마감
+Last PC: home Secondary (사용자 기존 확인·실제local profile=home)
+Last task: 사용자 전달 CREDIT Excel로 집 실제 생성·통합 연결 검증 완료
 
 Completed:
-- 10월 운영 점검·사용자 개선안 채택 문서6개를60e1543으로 main ff-only 반영·push하고 HEAD=origin/main=실제 remote main 일치 확인. 상세 PROJECT_STATE 및 docs/OPERATIONS_REVIEW.md 참조.
-- 사용자 재시작 지시에 따라 기존 /restart 안전 경로 HTTP202, 실행/소스 build b68ad688c9bdc1da26b5ec9871cb147e7363c456ae2f5251c2e198990e730e50 일치·restart_required=false 확인. 이번 CLOSE health에서도 유지 확인, 브라우저 실화면 검사는 미실행.
-- 이번 CLOSE 새 오프라인 점검: work·clean·진행 Git 작업0·추적 private 경로0·예약false. fetch 및 실제remote 조회0/0, 문서 diff/내용/공유 범위 확인. 이전 MERGE 문서 검증을 새 코드/전체UI 검사로 표시하지 않는다.
+- 집 START에서 INVESTMENT main/재사용Orca/실제remote bbf5e0f clean·0/0 확인. 최신10월운영개선안·회사인계 확인, 집자료함미처리0.
+- CREDIT private clean main5e8698a ff-only 수신, 사용자 전달 credit_daily_261021.xlsx로 기존 .venv/launch_latest 실제 생성·4580 실행. 기준일2026-10-21·3,002일·indexUpdated=true·status=success. verify_delivery 원본/HTML/18소스/실행로그 PASS·원본해시불변, 운영검사5개·layout·보유계산20시나리오 PASS. 상세 해시/생성근거는 PROJECT_STATE 및 집 Git제외 로그 참조.
+- 실제 INVESTMENT8767 실행본/소스일치·restart_required=false. CREDIT iframe의 실제원본/기준일·상대가치탐색·주식전환/복귀·1440/390/320px 양화면넘침0·JS오류0 PASS. 검사중 입력변경요청 차단. 영수증 validation/current/check_credit_home_live.json, 두서버 사용을 위해 실행유지.
 
 Pending:
-- home 최신 운영 개선안 코드 수신 미확인. home CREDIT 실제Excel 전달·빌드·4580연결 대기.
-- home watch 제한2회 완주·삼성 뉴스룸RSS ValueError 미해결(집 인계 기록). 기타 장기 미완료는 PROJECT_STATE 참조.
+- 집1/2/3/4/5번 검증완료. CREDIT 저장Excel 기반이며 새자료는 사용자전달/기존회사입력·데일리예약 경로유지. 실제Claude예약실행 근거는 schedulerVerified=false.
+- home Telegram watch 제한2회완주·삼성뉴스룸RSS ValueError 별도 미해결. 기타장기작업은 PROJECT_STATE 참조.
 
-Next task: home CREDIT 최신 Excel 전달 후 실제 빌드·통합 화면 연결 검증 (새 사용자 지시 우선)
+Next task: 사용자 다음 작업 지정. 이번 CREDIT 생성·통합연결 완료, 반복빌드/검사 불필요.
 Next action:
-1. 집에서 새 세션 INVESTMENT START로 최신 코드·인계를 받고 최신 credit_daily_YYMMDD.xlsx의 집 credit 루트 전달 여부를 확인한다.
-2. CREDIT 지침·전용 .venv의 기존 launch_latest/build→verify_delivery로 실제 생성·자료 기준일을 검증한다. Excel 미전달이면 자료 대기로 유지한다.
-3. 4580 marker와 INVESTMENT CREDIT 연결·주식 복귀를 확인하고 입력/빌드/실화면 검증을 구분해 기록한다. PC별 원자료·인증·설정을 자동 복사하지 않는다.
-Recommended next agent: Codex (사용자 자료 전달 후 검증)
+1. 집 바탕화면 '투자 대시보드' → 상단 INVESTMENT → 채권·크레딧. 재부팅 등으로4580이 꺼지면 바탕화면 credit/통합대시보드_열기.cmd 실행 후 같은메뉴로 연결.
+2. 새Excel 전달시 파일명·내부기준일·기존자료 보존을 확인하고 기존 launch_latest/build→verify_delivery 실행. 원본재계산·원천시세자동수집·예약복제는 이번범위에 미포함.
+3. RSS/watch는 사용자지시시 해당범위만 진단. 운영개선안의 관련변경 묶음반영·짧은인계를 유지한다.
+Recommended next agent: Codex (새 사용자 지정 작업)
 Recommended model: 기존 사용자 설정 유지
-Recommended reasoning: Medium; 역할·데이터 계약 충돌은 High
-Escalation condition: 입력 미보관·동시쓰기·divergence·자료 식별/기준일 충돌 시 보존하고 해당 반영 중단
-Branch: shinyj0270-afk/invest (work Orca); main (work 원본)
-Commit: 60e1543317855691e195aa57f89b42e50efd4ce4 (이번 개선안 반영·실제 원격 일치 검증 커밋; CLOSE 기록 자기 SHA 아님)
-Remote status: refs/heads/main=60e1543317855691e195aa57f89b42e50efd4ce4 pushed (verified, 이번 CLOSE fetch/실제조회 일치). 이 후속 CLOSE 기록 commit의 전송은 작성 시점 verification pending이며 최종 보고와 다음 START 실제 Git 조회로 검증한다.
+Recommended reasoning: Medium; 자료/역할/계약충돌 시 High
+Escalation condition: 입력미보관·동시쓰기·divergence·자료식별/기준일충돌 시 보존하고 해당반영중단
+Branch: shinyj0270-afk/invest (home Orca); main (home 원본)
+Commit: bbf5e0f11e9b7bc4888391ddc3ef6dff4692de3c (이번작업 시작·실행검증 기준)
+Remote status: 시작시 main/Orca/실제remote bbf5e0f일치. 이번완료문서 반영/전송은 작성시점pending, 최종응답/다음START 실제SHA로 확인. CREDIT main5e8698a clean·원격일치, 코드수정/전송없음.
 
 Notes:
-- 기능/정책 원본 반영1·안전 재시작1, 이 CLOSE 문서 반영은 별도 기록. 사용량 교대없음, 인계 누락 재질문/재작업 횟수·토큰/비용은 미집계. 새 실행기/설정/예약 변경 없음.
-- 개발 work Primary/home Secondary·단일 결과 발행home 유지. 이번 work에서 결과 재발행·home 수신·Telegram 실연결·자료 갱신은 실행하지 않았다. 자료함 pending0/decided5는 이번 START 확인 기록이다.
-- 재사용 Orca invest와 Git 제외 검증/로컬 자료는 보존한다. 서버는 사용을 위해 실행 유지하며 문서 마감 때문에 추가 재시작하지 않는다. 다음 작업은 새 세션 START로 진행한다.
+- 제품코드변경0·예약등록0·회사인증/DB복사0·사용량교대0. 실제생성1회, 별도INVESTMENT안전재시작0(기존실행기로준비). Git fixture를 최신자료로 표시하지 않았다.
+- 개인원자료·HTML·로그·.local·.venv·영수증은 각PC보존/코드공유제외. 결과Release재발행·중앙Wiki/전체세션수집없음. 이전인계는Git이력/PROJECT_STATE에 보존.

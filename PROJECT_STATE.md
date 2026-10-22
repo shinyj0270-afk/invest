@@ -1,3 +1,12 @@
+# 집 CREDIT 실제 생성·통합 연결 검증 완료 · 2026-10-22
+
+- home Secondary, Codex. INVESTMENT bbf5e0f clean/실제원격일치에서 시작. CREDIT private clean main6a7f425→5e8698a 문서1커밋 ff-only 수신 후 사용자 전달 credit_daily_261021.xlsx(20,345,808바이트)로 기존 전용 .venv/launch_latest 실행. 원본 SHA256 2bb8cbcfe499c5e56ce27bb9adc95358b3a38d590e2f8f581baafbb314bfe228 생성전후 불변.
+- credit_dashboard_261021.html 실제 생성(2,655,974바이트), 기준일2026-10-21·3,002일(2011-06-27부터), indexUpdated=true·status=success. verify_delivery 원본/결과/18필수소스·실행별로그 일치 PASS(runId e033a9d76255406794576d6bf2e989b7). 운영검사5개·layout구성·보유계산20시나리오 PASS. schedulerVerified=false, 새 예약 없음.
+- loopback4580 marker와 실제 INVESTMENT8767 CREDIT iframe의 원본명/기준일·상대가치탐색·주식전환/복귀 확인. 1440/390/320px 양화면 넘침0·JS오류0·실행본/소스일치 PASS. 검증 입력변경/외부요청 차단. CREDIT 코드·회사예약·Excel수식 변경 없이 저장값으로 생성, 새 시장판단/실시간조회 성공을 의미하지 않는다. 개인원자료/HTML/로그/영수증은 Git 제외.
+- 집1/2/3/4/5번 실제 검증 완료. 향후 CREDIT 자료는 사용자 최신Excel 전달·기존생성 경로를 사용하며 회사입력/데일리예약 의존까지 제거한 것은 아니다. Telegram2회완주·삼성RSS오류 별도 미해결. 다음작업/전송상태는 CURRENT_HANDOFF 참조.
+
+---
+
 # 10월 운영 점검·개선안 채택 · 2026-10-22
 
 - work Primary, Codex. 시작 main/재사용 Orca invest/원격3580f58059338c54f82bf5a02d04c403052e6f8a. 사용자 요청으로 19~21일 도달 가능한 Git57커밋(문서만32·기타25), 현재 인계와 로컬 검증 목록을 점검했다. 커밋 수는 세션/기능 수·낭비율이 아니며 사용량/비용은 미확인이다. 상세 docs/OPERATIONS_REVIEW.md.
