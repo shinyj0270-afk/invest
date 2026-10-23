@@ -1,35 +1,31 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-22T23:42:54+09:00 (SESSION CLOSE)
-Handoff version: 2026-10-22-home-credit-closed
+Updated: 2026-10-23T16:35:10+09:00 (SESSION CLOSE)
+Handoff version: 2026-10-23-work-start-only-closed
 Last agent: Codex
-Last PC: home Secondary (사용자 기존 확인·실제local profile=home)
-Last task: INVESTMENT CLOSE — 집 CREDIT 실제 생성·통합 연결 완료 인계
+Last PC: work Primary (이번 pc_check 확인)
+Last task: START 최신 인계 수신·점검 후 무변경 CLOSE
 
 Completed:
-- CLOSE 새 점검: home main/작업본 clean·진행Git작업0·추적개인경로0·예약false, fetch/실제remote523a8c3일치0/0.8767실행/소스build0e0f1552ce1e2b4e944c8360a18203ffe6d20516dc90e42ee4330a73009002a1일치·restart_required=false,4580정상marker확인. 아래 생성/화면검사는 같은세션의 완료기록이며 CLOSE에서 반복하지 않았다. 문서만변경·서버재시작/종료없음, shared_dashboard.enabled비활성으로 결과재발행없음.
-- 집 START에서 INVESTMENT main/재사용Orca/실제remote bbf5e0f clean·0/0 확인. 최신10월운영개선안·회사인계 확인, 집자료함미처리0.
-- CREDIT private clean main5e8698a ff-only 수신, 사용자 전달 credit_daily_261021.xlsx로 기존 .venv/launch_latest 실제 생성·4580 실행. 기준일2026-10-21·3,002일·indexUpdated=true·status=success. verify_delivery 원본/HTML/18소스/실행로그 PASS·원본해시불변, 운영검사5개·layout·보유계산20시나리오 PASS. 상세 해시/생성근거는 PROJECT_STATE 및 집 Git제외 로그 참조.
-- 실제 INVESTMENT8767 실행본/소스일치·restart_required=false. CREDIT iframe의 실제원본/기준일·상대가치탐색·주식전환/복귀·1440/390/320px 양화면넘침0·JS오류0 PASS. 검사중 입력변경요청 차단. 영수증 validation/current/check_credit_home_live.json, 두서버 사용을 위해 실행유지.
+- 회사 main/Orca invest에 집 CREDIT 완료 인계2커밋을 ff-only 수신. 이번 CLOSE fetch·실제 remote 조회에서4937bb6 일치0/0 확인.
+- 새 CLOSE 점검: work·clean·진행Git작업0·추적private경로0·예약false. health 실행/소스 build34815c0fdfa23a6f3117dc2f72cba194d42eb34ce5f9d9bacf02d77e93bfba3d 일치·restart_required=false. 문서 diff/내용/공유 범위 검토.
+- 제품코드·설정·자료 변경 없음. 집 CREDIT 생성/통합연결 완료는 수신한 PROJECT_STATE의 기록이며 이번 회사 재실행 결과가 아니다. PROJECT_STATE는 기존 완료 상태를 유지한다.
 
 Pending:
-- 집1/2/3/4/5번 검증완료. CREDIT 저장Excel 기반이며 새자료는 사용자전달/기존회사입력·데일리예약 경로유지. 실제Claude예약실행 근거는 schedulerVerified=false.
-- home Telegram watch 제한2회완주·삼성뉴스룸RSS ValueError 별도 미해결. 기타장기작업은 PROJECT_STATE 참조.
+- home Telegram watch 제한2회 완주·삼성 뉴스룸RSS ValueError 미해결(집 인계 기록). CREDIT 새자료는 사용자 최신Excel 전달/기존 회사입력 경로를 사용하며 예약실행검증은 schedulerVerified=false다.
+- 그 밖의 장기 미완료는 PROJECT_STATE 참조. 완료된 CREDIT 빌드/연결을 반복 작업으로 요청하지 않는다.
 
-Next task: 사용자 다음 작업 지정. 이번 CREDIT 생성·통합연결 완료, 반복빌드/검사 불필요.
-Next action:
-1. 집 바탕화면 '투자 대시보드' → 상단 INVESTMENT → 채권·크레딧. 재부팅 등으로4580이 꺼지면 바탕화면 credit/통합대시보드_열기.cmd 실행 후 같은메뉴로 연결.
-2. 새Excel 전달시 파일명·내부기준일·기존자료 보존을 확인하고 기존 launch_latest/build→verify_delivery 실행. 원본재계산·원천시세자동수집·예약복제는 이번범위에 미포함.
-3. RSS/watch는 사용자지시시 해당범위만 진단. 운영개선안의 관련변경 묶음반영·짧은인계를 유지한다.
-Recommended next agent: Codex (새 사용자 지정 작업)
+Next task: 사용자 다음 작업 지정 (확정된 새 작업 없음)
+Next action: 새 세션에서 같은 Orca invest의 START로 PC·Git·최신 인계를 확인한 뒤 사용자 지정 범위를 진행한다. RSS/watch는 요청 시 해당 범위만 진단한다. 새 CREDIT Excel 전달 시 CREDIT 지침의 기존 생성·verify_delivery 경로로 기준일/원본 보존/4580연결을 확인한다.
+Recommended next agent: Codex
 Recommended model: 기존 사용자 설정 유지
-Recommended reasoning: Medium; 자료/역할/계약충돌 시 High
-Escalation condition: 입력미보관·동시쓰기·divergence·자료식별/기준일충돌 시 보존하고 해당반영중단
-Branch: shinyj0270-afk/invest (home Orca); main (home 원본)
-Commit: 523a8c320473fe52509c910569dc89aa3148c056 (CREDIT완료 인계 main/실제remote반영 확인)
-Remote status: CLOSE시 main/Orca/실제remote523a8c3일치0/0. 이마감기록commit은 작성시점pending이며 최종응답/다음START 실제SHA로 확인. CREDIT main5e8698a clean·원격일치, 코드수정/전송없음.
+Recommended reasoning: Medium; 자료·역할·계약 충돌은 High
+Escalation condition: 동시쓰기·divergence·입력 미보관·자료 식별/기준일 충돌 시 보존하고 해당 반영 중단
+Branch: shinyj0270-afk/invest (work Orca); main (work 원본)
+Commit: 4937bb62d6e7b3e2ca3bcba7313fa7c9c739191d (이번 CLOSE 시작 기준·실제 원격 일치 확인 SHA; 이 문서 자기 SHA 아님)
+Remote status: refs/heads/main=4937bb62d6e7b3e2ca3bcba7313fa7c9c739191d verified at CLOSE inspection. 이 마감 기록 commit의 생성/전송은 작성 시점 verification pending이며 최종 보고와 다음 START 실제 Git 조회로 확인한다.
 
 Notes:
-- 재사용작업본과 Git제외 검증/로컬자료 보존. 최종push후 clean/원격0/0 확인하고 대화세션 종료, 다음은 같은작업본의 새세션START. 양서버는 사용자사용을 위해 유지한다. 기존다른브랜치는 삭제하지 않는다.
-- 제품코드변경0·예약등록0·회사인증/DB복사0·사용량교대0. 실제생성1회, 별도INVESTMENT안전재시작0(기존실행기로준비). Git fixture를 최신자료로 표시하지 않았다.
-- 개인원자료·HTML·로그·.local·.venv·영수증은 각PC보존/코드공유제외. 결과Release재발행·중앙Wiki/전체세션수집없음. 이전인계는Git이력/PROJECT_STATE에 보존.
+- 이번 세션은 코드 반영0·서버 재시작0·사용량 교대0. 인계 누락 재질문/재작업 및 토큰·비용은 미집계. 마감 문서만 반영하므로 서버 재시작/종료 없이 실행 유지한다.
+- 개발 work Primary/home Secondary, 단일 결과 발행home 유지. 이번 결과 발행·Telegram 연결·자료 갱신·예약·DB/인증 복사·중앙 Wiki·전체 세션 공유 없음. 자료함 pending0/decided5 및10월 운영점검 완료는 이번 START 확인 결과다.
+- Orca invest와 Git 제외 로컬자료·검증 기록은 보존하며 원격전송 후 clean/0/0 확인해 다음 새 세션에서 재사용한다.
