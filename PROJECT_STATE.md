@@ -1,3 +1,11 @@
+# 2026-10-26 주간 연구노트 검증·정식 등록 완료
+
+- work Primary, Codex. 시작 main/Orca invest/실제 원격 a91068d 일치·clean·진행 Git 작업0. 사용자 다른 세션 수정 없음 확인. 원본 연구노트를 공개 공식 출처와 대조하고 IBD 공개 미리보기/발행일·상세규칙 미확인을 보존했다. 자체 검증본은 docs/research/INVESTMENT_MASTERS_WEEKLY_2026-10-26.md.
+- 기존 import_weekly_research 검증→SQLite backup→단일 트랜잭션 apply: 신규16(출처8·카드4·가설2·context2), 기존 출처3 재사용. 연구 레코드37→53, weekly2→3, catalog9→25. 동일 묶음 실제 재실행 inserted0·동일 catalog 재입력0·기존 모든 행/revision 보존·중복 URL0·무결성ok PASS. THESIS-20261026-01/02의 인물/전략/후보섹터·선행 가설 연결 및 읽기 전용 projection 확인.
+- 실증/현재 산업순위/사람curate 미실행. 첨부 원본·manifest·DB/백업·상세영수증·유료본문·인증은 코드Git 제외; 다른 PC DB 자동 복사/결과 발행 없음. 공유는 사용자 지정 자체 Markdown만 명시 stage하며 신규 검증노트 추가를 위해 JSON 공유목록은 변경하지 않는다. 운영 HTTP 확인·실제 Git 전송 상태와 다음 작업은 CURRENT_HANDOFF 및 최종 보고를 따른다.
+
+---
+
 # 집 CREDIT 실제 생성·통합 연결 검증 완료 · 2026-10-22
 
 - home Secondary, Codex. INVESTMENT bbf5e0f clean/실제원격일치에서 시작. CREDIT private clean main6a7f425→5e8698a 문서1커밋 ff-only 수신 후 사용자 전달 credit_daily_261021.xlsx(20,345,808바이트)로 기존 전용 .venv/launch_latest 실행. 원본 SHA256 2bb8cbcfe499c5e56ce27bb9adc95358b3a38d590e2f8f581baafbb314bfe228 생성전후 불변.
