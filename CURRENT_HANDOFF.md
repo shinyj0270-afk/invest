@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-26T10:07:43+09:00
+Updated: 2026-10-26T10:11:05+09:00
 Handoff version: 2026-10-26-work-quant-extensions
 Last agent: Codex
 Last PC: work Primary (pc_check 확인)
@@ -22,10 +22,10 @@ Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: Medium; 데이터계약/역사적 후보/기간 충돌은 High
 Escalation condition: 동시쓰기·divergence·입력미보관·가설digest/고정후보 충돌 시 해당 반영 중단
 Branch: shinyj0270-afk/invest (Orca); main (원본)
-Commit: 4787fa2bea2381116b9ff35f6d8534e7d511992f (이번 시작 기준, 문서 자기SHA 아님)
-Remote status: 시작 refs/heads/main=4787fa2bea2381116b9ff35f6d8534e7d511992f 일치. 이번 구현 commit/push verification pending. 최종 보고와 다음 START 실제Git 조회로 확인한다.
+Commit: 3e10a67d2b98a1dfaebae136c859a01845877040 (검증된 구현 commit; 문서 자기SHA 아님)
+Remote status: 구현 3e10a67d2b98a1dfaebae136c859a01845877040 pushed (verified): HEAD=origin/main=실제 refs/heads/main, 2026-10-26T10:11:05+09:00. 이 후속 인계기록 commit의 전송은 최종 보고와 다음 START 실제Git 조회로 확인한다.
 
 Notes:
 - 구현과 검증은 기존 Orca 작업본. 공유는 명시한 코드/검사/공통문서/공유목록만; DB·원자료·유료본문·개인정보·인증·실제고정후보·검증영수증은 Git 제외.
-- 원본 반영·서버 안전재시작은 작성시pending; 최종 보고 및 실제 health로 확인. 검증은 과거결과 재사용 아님. 이번 비용/토큰/인계누락재작업 미집계, 사용량교대0.
+- 이번 원본 코드 반영1회·안전 /restart HTTP202 1회. 실행/소스 build e08fa5fb11ecfdd7f69333cfd9e1e81783dae2e4da153e2f9f3341108aa12074 일치·restart_required=false. 실제 소스/저장자료를 별도 읽기전용 브라우저에서 이동차트·산업분해·관찰후보103/20 대기 및1440/390/320px 넘침0·JS오류0 확인. 개인frame/입력쓰기는 차단. 비용/토큰/인계누락재작업 미집계, 사용량교대0.
 - 단일 발행home 유지. 새 예약·자료수집·회사결과발행·PC설정/DB복사·중앙Wiki·전체세션공유 없음. 원격push와 다른PC수신/실행은 별도다.
