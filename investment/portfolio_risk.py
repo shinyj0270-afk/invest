@@ -68,6 +68,35 @@ def path_metrics(dates, returns, benchmark_returns=None):
         observations=len(returns),start_date=dates[0],as_of=dates[-1])
 
 
+def rolling_relationship(dates, returns, benchmark_returns):
+    """Full windows only; callers supply already validated, identical sessions."""
+    if len(dates) != len(returns)+1 or len(returns) != len(benchmark_returns):
+        raise ValueError('이동 통계 공통 관측 구간 확인 필요')
+    windows = {}
+    for size in (63, 126):
+        points = []
+        for end in range(1, len(dates)):
+            beta = correlation = None
+            if end >= size:
+                x, y = returns[end-size:end], benchmark_returns[end-size:end]
+                mx, my = mean(x), mean(y)
+                vx = sum((v-mx)**2 for v in x)
+                vy = sum((v-my)**2 for v in y)
+                cov = sum((a-mx)*(b-my) for a,b in zip(x,y))
+                beta = cov/vy if vy > 0 else None
+                correlation = max(-1., min(1., cov/sqrt(vx*vy))) if vx > 0 and vy > 0 else None
+            points.append(dict(date=dates[end], beta=beta, correlation=correlation))
+        latest = points[-1] if points else dict(date=dates[-1], beta=None, correlation=None)
+        previous = points[-1-size] if len(points) > size else {}
+        windows[str(size)] = dict(days=size, observations=min(size,len(returns)),
+            status='ready' if numeric(latest['beta']) or numeric(latest['correlation']) else 'pending',
+            latest=latest, previous=previous,
+            beta_change=latest['beta']-previous['beta'] if numeric(latest['beta']) and numeric(previous.get('beta')) else None,
+            correlation_change=latest['correlation']-previous['correlation'] if numeric(latest['correlation']) and numeric(previous.get('correlation')) else None,
+            series=points)
+    return dict(windows=windows, definition='단순 일별 수익률 · 63/126개 완전 관측창 · 베타=공분산/비교지수 분산 · 상관계수 -1~1 · 분산0/이력부족은 —. 변화는 직전 비중첩 관측창 대비; 과거 동행성, 매매 신호 아님.')
+
+
 def time_series(prices, benchmark, cutoff):
     """Compare price returns on exact source index dates; do not bridge gaps."""
     try:
@@ -88,6 +117,7 @@ def time_series(prices, benchmark, cutoff):
         returns=[b/a-1 for a,b in zip(values,values[1:])]
         breturns=[bp[b]/bp[a]-1 for a,b in zip(dates,dates[1:])]
         return dict(status='ready',state='SOURCE_RECORDED',definition=PRICE_NOTE,
+                    rolling=rolling_relationship(dates,returns,breturns),
                     **path_metrics(dates,returns,breturns))
     except (ValueError,TypeError,KeyError,OverflowError) as exc:
         return dict(status='pending',state='PENDING',reason=str(exc),definition=PRICE_NOTE)
@@ -170,6 +200,11 @@ def portfolio_risk(targets, cash_pct, cache, cutoff, *, observation_dates=None):
             for i,(a,b) in enumerate(zip(dates,dates[1:])):
                 breturns[i]+=weight*(bp[b]/bp[a]-1)
         result.update(status='ready',state='SOURCE_RECORDED',
+            rolling=rolling_relationship(dates,daily,breturns),
+            rolling_pairs=[dict(codes=[targets[i]['code'], targets[j]['code']],
+                names=[targets[i]['name'], targets[j]['name']],
+                rolling=rolling_relationship(dates,values[i],values[j]))
+                for i in range(len(targets)) for j in range(i+1,len(targets))],
             **path_metrics(dates,daily,breturns),codes=[t['code'] for t in targets],
             names=[t['name'] for t in targets],correlations=correlations,
             risk_contributions=contribution,calendar_basis=calendar['calendar_basis'],

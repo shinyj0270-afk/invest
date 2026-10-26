@@ -434,6 +434,15 @@
     "tests/test_research_inbox.py": "tests/test_research_inbox.py",
     "skills/investment-research/SKILL.md": "skills/investment-research/SKILL.md",
     "docs/RESEARCH_INBOX.md": "docs/RESEARCH_INBOX.md",
-    "config/result_publisher.json": "config/result_publisher.json"
+    "config/result_publisher.json": "config/result_publisher.json",
+    "investment/research_followup.py": "investment/research_followup.py",
+    "tools/research_followup.py": "tools/research_followup.py",
+    "tests/test_research_followup.py": "tests/test_research_followup.py",
+    "tests/test_rolling_relationship.py": "tests/test_rolling_relationship.py",
+    "tests/test_sector_weighting.py": "tests/test_sector_weighting.py",
+    "tests/test_quant_extensions_ui.py": "tests/test_quant_extensions_ui.py",
+    "docs/QUANT_EXTENSIONS.md": "docs/QUANT_EXTENSIONS.md",
+    "docs/research/GS_QUANT_REVIEW_2026-10-26.md": "docs/research/GS_QUANT_REVIEW_2026-10-26.md",
+    "docs/research/INVESTMENT_MASTERS_WEEKLY_2026-10-26.md": "docs/research/INVESTMENT_MASTERS_WEEKLY_2026-10-26.md"
   }
 }

@@ -28,7 +28,7 @@ for i,(current_profit,previous_profit) in enumerate(((20,10),(5,-5),(-5,-10),(-1
 semis=companies[0]['industry']
 payload['industry_sector_map']=dict(status='ready',decided_on='2026-10-19',decided_by='user',sectors={'반도체':[semis]})
 payload['market_insights']={'definition':'합성 업종 정의','markets':[],'sectors':[
-    {'market':'KOSPI','industry':semis,'count':5,'short_rs':{k:{'return_pct':4.2,'score':88.5,'count':5,'cap_eok':6000} for k in ('1m','3m','6m')}},
+    {'market':'KOSPI','industry':semis,'count':5,'short_rs':{k:{'return_pct':4.2,'score':88.5,'count':5,'cap_eok':6000,'equal_weight_return_pct':2.5,'median_return_pct':1.2,'positive_count':3,'excluded':1,'top3_contribution_pp':3.5,'top3_absolute_share_pct':70} for k in ('1m','3m','6m')}},
     {'market':'KOSPI','industry':'화학','count':2,'short_rs':{k:{'return_pct':1.0,'score':None,'count':2,'cap_eok':3200} for k in ('1m','3m','6m')}}]}
 src=lambda sid,title,url,published:dict(id=sid,revision=1,kind='source',stage='raw',value=dict(title=title,url=url,published_on=published,accessed_on='2026-10-19',locator='p.1',origin='independent',access='public'))
 library=dict(status='ready',profile='work',masters=[dict(id='oneil',name="William O'Neil")],sources=[src('s1','Official source','https://example.invalid/a','2026-10-01')],notes=[],stories=[],
@@ -62,6 +62,7 @@ with sync_playwright() as p:
     expect(view).to_contain_text('ROIC · WACC(자본비용) · 미확보')
     expect(view.locator('table').first).to_contain_text('1 가설 · 1 카드')
     view.locator('[data-industry]').first.click()
+    expect(view.locator('[data-sector-weighting]')).to_contain_text('동일가중 평균')
     expect(view).to_contain_text('추세의 지속 · 약화 확인')
     expect(view).to_contain_text('구성기업으로의 확산')
     expect(view.locator('.ind-facts').first).to_contain_text('200일선 위 기업60%3/5개')

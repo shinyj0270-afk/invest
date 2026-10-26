@@ -1,32 +1,31 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-26T08:45:00+09:00
-Handoff version: 2026-10-26-work-weekly-research-import
+Updated: 2026-10-26T10:07:43+09:00
+Handoff version: 2026-10-26-work-quant-extensions
 Last agent: Codex
-Last PC: work Primary (pc_check 직접 확인)
-Last task: 2026-10-26 첨부 주간 연구노트 출처 검증·정식 등록·공유 Markdown 전송
+Last PC: work Primary (pc_check 확인)
+Last task: GS Quant 검토의 이동위험·업종분해·가설후속관찰 적용
 
 Completed:
-- 정식 import_weekly_research validation/backup/apply로 연구37→53건. 신규16(출처8·card4·thesis2·context2), 기존출처3 재사용. weekly2→3/catalog9→25.
-- THESIS-20261026-01/02와 MASTER-20261026-01~04·CTX-20261026-01/02, 선행 THESIS-20261019-01/02·인물/전략/섹터 연결. 주간 링크74는 탐색용이다.
-- 동일 입력 재apply inserted0/skipped19/duplicate=true, catalog 동일값 재검사 신규0, 기존 전행/revision 보존·URL중복0·integrity ok. 상세는 Git 제외 로컬 inbox/2026-10-26.
+- 이동 베타·상관63/126일과 종목쌍/시장 동행성, 산업 동일가중·현재시총가중·중앙값·상위3기여·50일확산, 가설별63/126/252일 관찰 구현. GS패키지/API/주문 없음. docs/QUANT_EXTENSIONS.md 참조.
+- 새 독립/경계13검사·기존 관련검사·격리443파일 경고0·portable/빈실제모드/합성UI25명령 PASS. 실제 저장가격3종목 NumPy 및 업종312기간코호트 대조 PASS.
+- THESIS-20261026-01/02의 사용자확정 매핑 관찰후보103/20개를 work .local에 고정, 재실행추가0. DB/기존revision/원자료 변경 없음. 지금은 미래기간 미도래이며 성과수치 미생성.
 
 Pending:
-- IBD S04~S07 공개 제목/미리보기만. 신규 발행일null·상세규칙 미검증. 모든 가설 실증전·human_reviewed=false.
-- home Telegram watch 제한2회 완주·삼성RSS ValueError는 기존 미해결 기록. 이번 재진단 없음. 다른 PC DB 수신/등록 미확인.
+- 고정일 다음 완료 종가 및63/126/252거래일 후속 자료 대기. 가격 관찰은 확산·CAP의 독립 설명력/인과 검증이 아니다. 당시 ROIC/WACC·분류/시총·교란요인 자료는 별도 필요.
+- home Telegram watch2회·삼성RSS ValueError·다른PC 코드수신/실행/연구DB/관찰계획은 미확인. 기존 IBD 일부 상세규칙 미검증 유지.
 
-Next task: 사용자 다음 작업 지정 (확정된 새 작업 없음)
-Next action: 같은 Orca invest에서 START하여 실제 Git/PC/최신 인계를 확인한다. 이번 검증노트를 참조하고 같은 원본은 기존ID로 검색한다. 추가 실증/UI 설계는 사용자 지정 범위로 진행한다.
+Next task: 기존 관찰계획 유지하며 사용자 다음 작업 지정
+Next action: 같은 Orca invest에서 START 후 새 요청 범위를 진행한다. 자료가 갱신되면 Research Library의 연구 목록 다시 확인으로 고정계획 후속 상태를 읽는다. 원래 후보·평가일을 소급 변경하지 않는다. 정책 변경은 기존 계획을 보존하고 새 가설revision으로 별도 검토한다.
 Recommended next agent: Codex
 Recommended model: 기존 사용자 설정 유지
-Recommended reasoning: Medium; 출처·역할·계약 충돌은 High
-Escalation condition: 동시쓰기·divergence·원본hash/ID/URL충돌 시 보존하고 해당 반영 중단
+Recommended reasoning: Medium; 데이터계약/역사적 후보/기간 충돌은 High
+Escalation condition: 동시쓰기·divergence·입력미보관·가설digest/고정후보 충돌 시 해당 반영 중단
 Branch: shinyj0270-afk/invest (Orca); main (원본)
-Commit: a91068d73ca3bc8de1899c68168e5198c68aa5f4 (이번 시작 기준; 문서 자기SHA 아님)
-Remote status: 시작시 refs/heads/main=a91068d73ca3bc8de1899c68168e5198c68aa5f4 일치 확인. 이번 Markdown commit/push verification pending; 최종 보고와 다음 START 실제Git 조회로 확인한다.
+Commit: 4787fa2bea2381116b9ff35f6d8534e7d511992f (이번 시작 기준, 문서 자기SHA 아님)
+Remote status: 시작 refs/heads/main=4787fa2bea2381116b9ff35f6d8534e7d511992f 일치. 이번 구현 commit/push verification pending. 최종 보고와 다음 START 실제Git 조회로 확인한다.
 
 Notes:
-- 기존 investment-session/SYNC_CONTRACT 유지. work Primary/home Secondary·단일 결과발행home. 사용자 다른 세션 수정 없음 확인.
-- DB/backup/원본/manifest/개인정보/인증/유료본문은 Git 제외. 공유는 이번 명시한 자체 Markdown만; JSON 공유목록·제품코드 변경 없음.
-- 이번 코드반영0·서버재시작0·사용량교대0. 비용/토큰·인계누락 재작업은 미집계. 중앙Wiki/전체세션공유/예약/다른PC DB복사/결과발행 없음.
-- 운영 GET /research-library HTTP200: source23/card12/thesis9, 새 가설2·연결카드/인물/섹터/context 확인. build/source일치·restart_required=false. 브라우저 연결 없어 시각검사 미실행, 전체 /dashboard45초시간초과. 연구 목록 다시 확인 버튼으로 새 DB를 조회한다. 이번 새 layout/제품코드 변경 없음.
+- 구현과 검증은 기존 Orca 작업본. 공유는 명시한 코드/검사/공통문서/공유목록만; DB·원자료·유료본문·개인정보·인증·실제고정후보·검증영수증은 Git 제외.
+- 원본 반영·서버 안전재시작은 작성시pending; 최종 보고 및 실제 health로 확인. 검증은 과거결과 재사용 아님. 이번 비용/토큰/인계누락재작업 미집계, 사용량교대0.
+- 단일 발행home 유지. 새 예약·자료수집·회사결과발행·PC설정/DB복사·중앙Wiki·전체세션공유 없음. 원격push와 다른PC수신/실행은 별도다.

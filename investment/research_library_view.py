@@ -163,5 +163,13 @@ def view(root):
         except (ValueError,KeyError,TypeError,IndexError):
             continue
     result['status'] = 'ready'
+    # Read-only follow-up is attached only after provenance/lifecycle filtering.
+    from .research_followup import project, plan_path
+    cache = None
+    if any(plan_path(root,profile,r['id'],r['revision']).exists() for r in result['theses']):
+        from .market_discovery import load_market_cache
+        cache = load_market_cache(root,{'meta':{'data_mode':'user_input'}}) or {}
+    for record in result['theses']:
+        record['followup'] = project(root,profile,record,cache)
     result['stories'] = recent_stories(result)
     return result

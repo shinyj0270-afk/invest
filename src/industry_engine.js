@@ -13,9 +13,10 @@ const IndustryEngine=(()=>{
 
   function breadth(members,research){
     const ts=members.map(r=>tech(research,r));
+    const short=ts.filter(t=>priced(t)&&num(t.sma?.['50']));
     const above=ts.filter(t=>priced(t)&&num(t.sma?.['200']));
     const r3=ts.filter(t=>priced(t)&&num(t.short_rs?.['3m']?.return_pct));
-    return {above200:share(above.filter(t=>t.close>t.sma['200']).length,above.length),
+    return {above50:share(short.filter(t=>t.close>t.sma['50']).length,short.length),above200:share(above.filter(t=>t.close>t.sma['200']).length,above.length),
       positive3m:share(r3.filter(t=>t.short_rs['3m'].return_pct>0).length,r3.length)};
   }
   function concentration(members){

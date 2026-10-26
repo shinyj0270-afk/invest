@@ -1,6 +1,7 @@
 """Same-date observed market breadth, short RS and explicit price reconciliation."""
 from bisect import bisect_left,bisect_right
 from collections import defaultdict
+from statistics import median
 from .core import num
 
 WINDOWS={'1m':21,'3m':63,'6m':126}
@@ -55,7 +56,18 @@ def enrich_market(discovery, cache):
             ms=[r for r in members if num(facts[r['code']]['technical']['short_rs'][key]['return_pct']) and num(r['metrics'].get('market_cap_eok')) and r['metrics']['market_cap_eok']>0]
             weight=sum(r['metrics']['market_cap_eok'] for r in ms)
             value=sum(r['metrics']['market_cap_eok']*facts[r['code']]['technical']['short_rs'][key]['return_pct'] for r in ms)/weight if weight else None
-            shorts[key]=dict(return_pct=value,score=percentile(value,pools.get((market,key),[])) if len(ms)>=5 else None,count=len(ms),cap_eok=weight)
+            returns=[facts[r['code']]['technical']['short_rs'][key]['return_pct'] for r in ms]
+            contributions=sorted([dict(code=r['code'],name=r.get('name',r['code']),cap_eok=r['metrics']['market_cap_eok'],
+                contribution_pp=r['metrics']['market_cap_eok']/weight*facts[r['code']]['technical']['short_rs'][key]['return_pct'])
+                for r in ms],key=lambda x:(-x['cap_eok'],x['code'])) if weight else []
+            absolute=sum(abs(r['contribution_pp']) for r in contributions)
+            shorts[key]=dict(return_pct=value,score=percentile(value,pools.get((market,key),[])) if len(ms)>=5 else None,count=len(ms),cap_eok=weight,
+                equal_weight_return_pct=sum(returns)/len(returns) if returns else None,
+                median_return_pct=median(returns) if returns else None,
+                positive_count=sum(v>0 for v in returns),excluded=len(members)-len(ms),
+                top3_contribution_pp=sum(r['contribution_pp'] for r in contributions[:3]) if contributions else None,
+                top3_absolute_share_pct=sum(abs(r['contribution_pp']) for r in contributions[:3])/absolute*100 if absolute else None,
+                top3=contributions[:3],weight_basis='현재 구성·현재 시총 가중 관측 분해; 당시 구성/시총·투자수익률 검증 아님')
         sectors.append(dict(market=market,industry=industry,count=len(members),short_rs=shorts))
     return dict(markets=markets,sectors=sectors,definition='21/63/126 완료 거래일 수익률의 같은 거래소 저장 유효 기업 내 백분위. 업종은 시총1,500억원 초과 유효기업의 현재 시총 가중 수익률을 같은 분포에 대조; 5개 미만 업종 순위 대기. 투자 가능한 업종지수·총수익률 아님')
 
