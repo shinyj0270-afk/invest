@@ -191,14 +191,35 @@ def refresh_events(root, store, codes, providers=None, now=None):
     for name, fetch in providers.items():
         try:
             items = fetch()
+            deferred = 0
+            if name == 'samsung_news':
+                # The public feed can advertise scheduled posts. Validate the
+                # whole response first, but do not ingest a future publication.
+                if not isinstance(items, list) or len(items) > 5000:
+                    raise ValueError('이벤트 배열/건수 제한')
+                eligible = []
+                for item in items:
+                    stamp = datetime.fromisoformat(item['published_at'])
+                    if stamp.tzinfo is None:
+                        raise ValueError('뉴스 발표 시간대 필요')
+                    normalize(item, codes, max(now, stamp))
+                    if stamp > now:
+                        deferred += 1
+                    else:
+                        eligible.append(item)
+                received = len(items)
+                items = eligible
             added = events.ingest(items, codes, now)
             receipt['added'] += added
-            receipt['sources'][name] = dict(status='complete',received=len(items),added=added)
+            receipt['sources'][name] = dict(status='partial' if deferred else 'complete',
+                received=received if name == 'samsung_news' else len(items),added=added)
+            if name == 'samsung_news':
+                receipt['sources'][name].update(eligible=len(items),deferred_future=deferred)
         except Exception as error:
             receipt['sources'][name] = dict(status='setup_pending' if isinstance(error,SetupPending) else 'failed',
                                              error=type(error).__name__)
     statuses = [s['status'] for s in receipt['sources'].values()]
-    receipt['status'] = 'complete' if statuses and all(s=='complete' for s in statuses) else 'partial' if 'complete' in statuses else 'unavailable'
+    receipt['status'] = 'complete' if statuses and all(s=='complete' for s in statuses) else 'partial' if any(s in ('complete','partial') for s in statuses) else 'unavailable'
     store.save_setting('market_events_refresh',receipt)
     return receipt
 

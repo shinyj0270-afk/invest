@@ -113,6 +113,38 @@ class MarketEventTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 samsung_items(bad)
 
+    def test_scheduled_rss_posts_wait_without_blocking_published_posts(self):
+        published = dict(ITEM, published_at=NOW.isoformat(), published_on='2026-09-30')
+        future = dict(published, url='https://example.invalid/scheduled',
+                      published_at=(NOW+timedelta(hours=4)).isoformat())
+        tomorrow = dict(published, url='https://example.invalid/tomorrow',
+                        published_on='2026-10-01', published_at=(NOW+timedelta(days=1)).isoformat())
+        providers = {'samsung_news':lambda:[published,future,tomorrow]}
+        result = refresh_events(ROOT,self.store,['005930'],providers,NOW)
+        self.assertEqual(result['status'],'partial')
+        self.assertEqual(result['sources']['samsung_news'],dict(
+            status='partial',received=3,added=1,eligible=1,deferred_future=2))
+        self.assertEqual(len(self.events.list('005930','2026-09-30')),1)
+        self.assertEqual(refresh_events(ROOT,self.store,['005930'],providers,NOW)['added'],0)
+        later = refresh_events(ROOT,self.store,['005930'],providers,NOW+timedelta(days=1))
+        self.assertEqual(later['status'],'complete')
+        self.assertEqual(later['added'],2)
+        self.assertEqual(later['sources']['samsung_news']['deferred_future'],0)
+
+    def test_all_scheduled_rss_is_partial_and_malformed_post_still_rejects_batch(self):
+        future = dict(ITEM,published_on='2026-09-30',published_at=(NOW+timedelta(hours=1)).isoformat())
+        result = refresh_events(ROOT,self.store,['005930'],{'samsung_news':lambda:[future]},NOW)
+        self.assertEqual(result['status'],'partial')
+        self.assertEqual(result['added'],0)
+        published = dict(ITEM,published_on='2026-09-30',published_at=NOW.isoformat())
+        for bad in (dict(future,published_on='2026-09-29'),
+                    dict(future,published_at='2026-09-30T12:00:00'),dict(future,url='javascript:bad')):
+            with self.subTest(bad=bad):
+                result = refresh_events(ROOT,self.store,['005930'],
+                    {'samsung_news':lambda:[published,bad]},NOW)
+                self.assertEqual(result['status'],'unavailable')
+                self.assertEqual(self.events.list('005930','2026-09-30'),[])
+
     def test_manual_import_does_not_trust_review_or_opinion_flags(self):
         payload = dict(schema_version='market-events-0.1',data_mode='user_input',
                        items=[dict(ITEM, reviewed=True, needs_review=False, opinion='BUY')])

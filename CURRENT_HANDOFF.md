@@ -1,31 +1,31 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-26T10:23:54+09:00 (SESSION CLOSE)
-Handoff version: 2026-10-26-work-weekly-quant-closed
+Updated: 2026-10-28T13:34:30+09:00 (잔여 항목 진행; MERGE 전)
+Handoff version: 2026-10-28-work-pending-followup
 Last agent: Codex
-Last PC: work Primary (이번 CLOSE pc_check 확인)
-Last task: 주간 연구 정식등록·이동위험/업종분해/가설후속관찰 반영 후 CLOSE
+Last PC: work Primary
+Last task: 가설 후속 관찰·IBD 출처·삼성 RSS·home Telegram 잔여 항목 점검
 
 Completed:
-- 이번 세션 주간 연구 신규16·기존출처3재사용·동일재실행0 등록, GS Quant 조사와 이동베타/상관·업종 가중분해·가설 후속관찰 구현/운영반영 완료. 세부는 PROJECT_STATE와 docs/QUANT_EXTENSIONS.md.
-- 구현3e10a67·배포기록d8e93cd 전송 완료. 같은 세션의 독립경계13검사·격리443파일 경고0/portable·합성UI25명령·실가격3종목/업종312기간 대조·별도읽기전용 실화면1440/390/320px JS0 검증은 반영 때 수행했으며 CLOSE에서 재실행하지 않았다.
-- 새 CLOSE 점검: main/Orca clean·진행Git작업0·추적private0·예약false. fetch/실제 remote에서d8e93cd 일치0/0. health build/source일치·restart_required=false. 이번 변경은 이 마감 인계문서뿐이며 PROJECT_STATE는 기존 완료 상태 유지.
+- RSS의 미래 발표2건이 응답20건 전체를 거절하게 하는 현재 오류를 재현하고 Orca에서 수정했다. 공시뉴스13+Telegram watch5검사 PASS, 격리 공유443파일 경고0/portable·빈실제모드2명령 PASS. 실RSS/임시DB: 수신20·신규18·미래보류2·동일재실행0.
+- IBD 공식 공개 교육자료/SEC 제출본으로 일부 정의를 검증해 기존 자체 연구노트 후속 절에 보완했다. 기존 Library source/발행일/revision/건수는 유지했다.
+- THESIS-20261026-01/02 실제 저장자료 재조회: 후보103/20·기준10월23일·진입없음·관측0. 전후 DB/고정계획 해시 불변 확인. 실데이터/검증 영수증은 원본 .local에 보존.
 
 Pending:
-- THESIS-20261026-01/02 고정후보103/20기업의 다음 완료 종가와63/126/252거래일 후속 자료 대기. 현재 미래성과 미생성. 가격 관찰은 확산/CAP의 독립 설명력·인과 검증이 아니며 당시 ROIC/WACC 등은 별도 필요.
-- 기존 IBD 일부 상세규칙/발행일 미검증, home Telegram watch2회·삼성RSS 오류 유지. 다른PC 코드수신/실행·연구DB/관찰계획은 미확인.
+- RSS 수정은 Orca 미커밋 상태이며 운영 main 반영·재시작·push 미수행. 과거 home 오류와 동일 원인인지도 미확정. 운영은 기존 e08fa5fb build 유지.
+- home Telegram watch2회 실수신·최신코드 수신/실행 확인: 원격도구 등록PC offline. 사용자 집 PC 점검 연기 확정. 토큰/DB/수신자료 복사 없이 home 전용 환경에서 재개한다.
+- 가설 후속 자료/관측기간 미도래, 일부 IBD 기사발행일·정확한 독점산식·최신FTD/distribution 규칙 미검증 유지.
 
-Next task: 사용자 다음 작업 지정 (확정된 새 작업 없음)
-Next action: 같은 Orca invest에서 새 세션을 열어 START한다. 자료 갱신 후 Research Library의 연구 목록 다시 확인으로 고정계획 상태를 읽는다. 후보·진입일을 소급 변경하거나 완료된 등록/검증을 반복하지 않는다.
+Next task: 입력 보관 확인 후 RSS 수정 운영 반영
+Next action: 사용자 입력 보관/반영 확인을 받은 뒤 기존 MERGE 절차로 관련 diff 검토·명시 stage·commit·main ff-only·안전 재시작·health 일치·원격 재확인/push를 진행한다. home Telegram은 사용자 요청으로 나중에 진행하며 재개 때 home profile·단독 receiver·기존 채널잠금/인증 확인 후 기존 watch --cycles 2 --interval 15로 검증한다.
 Recommended next agent: Codex
 Recommended model: 기존 사용자 설정 유지
-Recommended reasoning: Medium; 자료/계약/역사적 후보 충돌은 High
-Escalation condition: 동시쓰기·divergence·가설digest/고정후보/거래일 충돌이면 보존하고 해당 반영 중단
-Branch: shinyj0270-afk/invest (work Orca); main (work 원본)
-Commit: d8e93cd67bfe43312958b4b003bc1bae2b737c68 (이번 CLOSE 시작 기준·실제 원격 일치 확인; 문서 자기SHA 아님)
-Remote status: refs/heads/main=d8e93cd67bfe43312958b4b003bc1bae2b737c68 verified at 2026-10-26T10:23:54+09:00. 이번 마감 기록 commit/push는 작성시 verification pending이며 최종 보고와 다음 START 실제Git 조회로 확인한다.
+Recommended reasoning: Medium; 자료/계약/동시쓰기 충돌은 High
+Escalation condition: divergence·다른 쓰기 세션·home 프로필/채널 잠금/인증 불일치면 보존 후 해당 작업 중단
+Branch: shinyj0270-afk/invest (기존 Orca 작업본); main (운영 원본)
+Commit: 80e82827b2e7e09c8abfc891e49d954019be2251 (이번 작업 시작 기준)
+Remote status: START fetch에서 origin/main=80e82827b2e7e09c8abfc891e49d954019be2251 일치 확인. 이번 변경 미커밋·미전송.
 
 Notes:
-- 세션 전체 코드반영1·안전restart1·사용량교대0. 이번 CLOSE 추가 코드반영/재시작0. 사용량/비용·인계누락재작업 미집계. 실행 build e08fa5fb11ecfdd7f69333cfd9e1e81783dae2e4da153e2f9f3341108aa12074 확인.
-- work Primary/home Secondary·단일 발행home 유지. 이번 CLOSE 결과발행/자료수집/예약/다른PC DB복사/중앙Wiki/전체세션공유 없음. DB·원자료·유료본문·인증·실제고정후보·영수증은 Git 제외 로컬에 보존한다.
-- Orca invest는 지우지 않고 재사용한다. 검증기록은 Git 제외 validation/current와 원본 .local에 보존하며 전송 후 clean/원격일치는 최종조회로 확인한다.
+- 이번 코드반영0·재시작0·결과발행0. DB/인증/원자료/채널정보/유료본문/실제후보는 공유 제외. home 단일발행·work Primary/home Secondary 유지.
+- 관련 검증은 이번 실행 결과다. UI 변경이 없어 전체 UI 검사는 재실행하지 않았다. 사용량/비용은 미집계. 기존 Orca 작업본을 재사용하며 중앙Wiki 변경/전체세션 공유/예약 추가 없음.
