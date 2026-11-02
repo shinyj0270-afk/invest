@@ -30,7 +30,7 @@
 
 두 AI 모두 기존 [investment-session 스킬](skills/investment-session/SKILL.md)을 실행한다. 새로운 병렬 시작/마감 시스템을 만들지 않는다.
 
-START는 PC → Git status/branch/HEAD/진행 작업/remote 관계 → 안전한 경우 fetch 및 ff-only 수신 → Orca 작업 워크트리 확인·main까지 따라잡기(하나를 재사용, 원본은 바탕화면 폴더) → PROJECT_STATE → CURRENT_HANDOFF → AGENTS → SYNC_CONTRACT → Claude 추가 규칙 → 다음 action 순서다. 지침은 사전 점검에도 적용하며 수신 후 변경된 문서를 다시 읽는다. 원격 URL 확인 시 인증정보는 노출하지 않는다.
+START는 PC → Git status/branch/HEAD/진행 작업/remote 관계 → 안전한 경우 fetch 및 ff-only 수신 → 작업 워크트리 확인·main까지 따라잡기(하나를 재사용, 원본은 바탕화면 폴더) → PROJECT_STATE → CURRENT_HANDOFF → AGENTS → SYNC_CONTRACT → Claude 추가 규칙 → 다음 action 순서다. 지침은 사전 점검에도 적용하며 수신 후 변경된 문서를 다시 읽는다. 원격 URL 확인 시 인증정보는 노출하지 않는다.
 
 미커밋 변경·진행 Git 작업·다른 쓰기 세션·divergence·예상 밖 branch·detached HEAD·upstream 부재·로컬 ahead이면 자동 수신을 보류한다. 자동 stash/reset/merge/rebase, force push, git clean, 충돌 덮어쓰기는 하지 않는다. fetch 실패는 최신 확인 실패이지 0/0이 아니다.
 
