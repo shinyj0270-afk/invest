@@ -1,34 +1,36 @@
 # CURRENT HANDOFF
 
-Updated: 2026-10-28T13:54:38+09:00 (SESSION CLOSE)
-Handoff version: 2026-10-28-work-rss-closed
-Last agent: Codex
-Last PC: work Primary
-Last task: RSS 운영 반영·출처 보완·후속 관찰 점검 후 CLOSE
+Updated: 2026-11-03T07:57:49+09:00 (SESSION CLOSE 작성; 전송 검증 pending)
+Last agent: Codex — 사용자 명시 요청의 독립 방법론 검토
+Last PC: work Primary (기존 config/local.json profile 확인; 변경 없음)
+Last task: 투자 방법론 레드팀·검증 시나리오·Deep Research 질문 작성
 
 Completed:
-- RSS의 미래 발표2건이 응답20건 전체를 거절하게 하는 현재 오류를 재현하고 Orca에서 수정했다. 공시뉴스13+Telegram watch5검사 PASS, 격리 공유443파일 경고0/portable·빈실제모드2명령 PASS. 실RSS/임시DB: 수신20·신규18·미래보류2·동일재실행0.
-- IBD 공식 공개 교육자료/SEC 제출본으로 일부 정의를 검증해 기존 자체 연구노트 후속 절에 보완했다. 기존 Library source/발행일/revision/건수는 유지했다.
-- THESIS-20261026-01/02 실제 저장자료 재조회: 후보103/20·기준10월23일·진입없음·관측0. 전후 DB/고정계획 해시 불변 확인. 실데이터/검증 영수증은 원본 .local에 보존.
+- docs/review/redteam_2026-11-03.md: 코드/문서 파일:줄 근거의 현재 로직, 위험15개, 사실·시스템 산출값·AI 해석·가설 구분.
+- docs/review/test_scenarios.md: S20개/H4개 검증 설계 및 문서 내 합성 fixture 초안. 기존 계약과 아직 미채택 강화 제안 구분.
+- docs/review/research_questions.md: 외부 근거 질문10개. 기존 코드·투자 규칙·원자료·개인 보유·DB 변경 없음.
+- 사용자 후속 답변으로 CLOSE용 인계·공유 목록 수정 및 계약상 commit/push 허용. 새 문서3개만 config/share_candidates.json에 추가.
 
 Pending:
-- 과거 home RSS 오류와 동일 원인 여부는 당시 로그/실행 접근 전까지 미확정이다. 현재 work에서 재현한 오류는 수정·운영 반영 완료.
-- home Telegram watch2회 실수신·최신코드 수신/실행 확인: 원격도구 등록PC offline. 사용자 집 PC 점검 연기 확정. 토큰/DB/수신자료 복사 없이 home 전용 환경에서 재개한다.
-- 가설 후속 자료/관측기간 미도래, 일부 IBD 기사발행일·정확한 독점산식·최신FTD/distribution 규칙 미검증 유지.
+- 공개일 미확인/미래 주식수 사용 경로는 코드 근거의 위험 가설이며 운영 누수 재현은 미수행. PIT 강화계약 채택 여부는 별도 결정.
+- 새 시나리오 구현·실데이터 국면 백테스트·외부 Research는 미실행. 과거 home Telegram·후속 관찰 자료 대기는 이전 인계/PROJECT_STATE 기준으로 유지하고 이번에는 실행하지 않음.
 
-Next task: 작업 워크트리(`C:\Users\<사용자>\worktrees\INVESTMENT\invest`)의 새 Claude Code 세션 START; 자료 갱신 후 가설 후속 관찰 재조회
-Next action: 작업 워크트리 invest에서 새 Claude Code 세션을 열어 START한다. 지정 home에서 기존 경로로 완료가격이 갱신된 뒤 해당 PC의 실제 DB/고정계획 존재 여부부터 확인한다. 기존 후보/진입규칙을 바꾸지 않고 Library 관찰 상태를 읽어 기준일·관측일수를 확인한다. PC별 DB/계획은 자동 복사하지 않는다. home Telegram은 사용자 요청으로 나중에 진행하며 재개 때 home profile·단독 receiver·기존 채널잠금/인증 확인 후 기존 watch --cycles 2 --interval 15로 검증한다.
-Recommended next agent: Claude Code — 구현·검증·인수인계 담당. Codex 교차 검토는 승인된 기존 검토 계약에 따른다.
+Next task: Deep Research 질문 조사 결과를 받아 검증 우선순위와 PIT 계약 확정
+Next action: ChatGPT Deep Research에서 docs/review/research_questions.md를 사용해 원문 근거·반대 근거·가용 데이터/제약을 정리한다. Claude Code는 세 문서를 읽고 S01~S09의 기존 회귀와 신규 강화계약을 분리해 구현 계획을 제시한다. 사용자 채택 전 투자 규칙/공급자/예약을 바꾸지 않는다. 완료 판정은 질문별 출처·미확인·대응 테스트 연결이다.
+Recommended next agent: ChatGPT Deep Research (외부 조사), 이후 Claude Code (채택된 테스트 구현)
 Recommended model: 기존 사용자 설정 유지
-Recommended reasoning: Medium; 자료/계약/동시쓰기 충돌은 High
-Escalation condition: divergence·다른 쓰기 세션·home 프로필/채널 잠금/인증 불일치면 보존 후 해당 작업 중단
-Branch: shinyj0270-afk/invest (작업 워크트리; 2026-11-02까지는 Orca 작업본); main (운영 원본)
-Commit: a6d21591de304bbf87f8aad77172d66349dea8f2 (이번 CLOSE 시작 기준·운영 반영 기록까지 전송 완료한 SHA)
-Remote status: CLOSE fetch/실제 remote main에서 a6d21591de304bbf87f8aad77172d66349dea8f2 일치0/0 확인. 이번 마감 인계문서 commit/push는 작성 시 pending이며 최종 보고/다음 START 실제Git 조회로 확인한다.
+Recommended reasoning: High (PIT·편향·자료 계약), 단순 문서 정리는 Medium
+Escalation condition: 과거자료 부재·정정 vintage/상폐 정산 미확보·동시쓰기/divergence 또는 지표 변경 필요 시 근거를 보존하고 해당 단계 보류
+Branch: shinyj0270-afk/invest (재사용 작업 워크트리); main (운영 원본)
+Commit: de85832c8462889adc5ab839f768649cba397286 (이번 검토 시작 기준)
+Remote status: START fetch 후 main/작업본/origin main 시작SHA 일치0/0 확인. 이번 검토 변경 commit/push는 작성 시 verification pending. 최종 보고 및 다음 START 실제 Git로 전송 commit을 확인한다.
 
 Notes:
-- 사용자 입력 보관/반영 확인 후 main ff-only1·안전restart HTTP202 1회·build/source cd6a2c2c1a09a13d1e9e3b01ef635263079434ee2c21b4f58d0f02895d676625 일치·restart_required=false 확인. UI/운영DB 변경 없음. 결과발행0. DB/인증/원자료/채널정보/유료본문/실제후보는 공유 제외. home 단일발행·work Primary/home Secondary 유지.
-- 이번 CLOSE 새 점검: main/Orca clean·진행Git작업0·추적private0·예약false·실행/source 일치·restart_required=false. 변경은 인계문서뿐이며 diff/내용을 검토했다. 앞선 관련18검사·portable 성공은 반영 때의 결과로 유지하고 CLOSE에서 재실행하지 않았다. 추가 코드반영/재시작 없음. 사용량/비용은 미집계. 기존 Orca 작업본을 재사용하며 중앙Wiki 변경/전체세션 공유/예약 추가 없음.
+- 실제 실행: 프로젝트 .venv Python -B, 기존 tests.test_portfolio_risk/test_risk_review/test_leader_strategy/test_research_followup/test_rolling_relationship/test_sector_weighting 총45개, 1.495초, OK(실패0/오류0). 전체 테스트·실자료 성과·신규 시나리오는 실행하지 않음.
+- 문서3개 UTF-8·행 참조 존재/범위·JSON 초안·위험/시나리오/질문 ID·공유목록·Git 제외 여부 검사 통과. git diff --check 및 최종 staged 내용 검토 후 전송한다.
+- START main/작업본 clean·진행작업0·자료함 미처리0. work Primary·발행home 유지. health build/source 일치·restart_required=false 확인. 문서 변경으로 재시작 필요 없음; 결과 발행0·DB/원자료 읽기/복사0·주문0.
+- 중앙 Wiki는 읽기만 수행: GLOBAL_WORKFLOW v1.5, 로컬/실제 원격7a0e1d989a0c7279544c179536864327cf924ae6 일치. 수정·Wiki sync 없음. 11월 운영 점검 시기 알림만 제공, 점검/설정변경 없음.
+- 원본 반영은 최종 CLOSE ff-only 예정1회, 재시작0회. 사용량 교대0·비용 미집계. 원본 수정은 인계/공유목록 예외만 사용자 확인1회; 다른 PC 수신/실행 미확인. PROJECT_STATE는 구현/전체 진행 단계가 바뀌지 않아 유지한다.
 
 ---
 

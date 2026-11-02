@@ -1,6 +1,9 @@
 {
   "purpose": "Single-source, explicit Git handoff list for the existing INVESTMENT workspace",
   "files": {
+    "docs/review/redteam_2026-11-03.md": "docs/review/redteam_2026-11-03.md",
+    "docs/review/test_scenarios.md": "docs/review/test_scenarios.md",
+    "docs/review/research_questions.md": "docs/review/research_questions.md",
     "investment/nice_financial.py": "investment/nice_financial.py",
     "tests/test_nice_financial.py": "tests/test_nice_financial.py",
     "tests/test_financial_stability.js": "tests/test_financial_stability.js",
