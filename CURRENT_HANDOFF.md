@@ -18,7 +18,7 @@ Pending:
 
 Next task: 작업 워크트리(`C:\Users\<사용자>\worktrees\INVESTMENT\invest`)의 새 Claude Code 세션 START; 자료 갱신 후 가설 후속 관찰 재조회
 Next action: 작업 워크트리 invest에서 새 Claude Code 세션을 열어 START한다. 지정 home에서 기존 경로로 완료가격이 갱신된 뒤 해당 PC의 실제 DB/고정계획 존재 여부부터 확인한다. 기존 후보/진입규칙을 바꾸지 않고 Library 관찰 상태를 읽어 기준일·관측일수를 확인한다. PC별 DB/계획은 자동 복사하지 않는다. home Telegram은 사용자 요청으로 나중에 진행하며 재개 때 home profile·단독 receiver·기존 채널잠금/인증 확인 후 기존 watch --cycles 2 --interval 15로 검증한다.
-Recommended next agent: Claude (Claude Code); Codex는 교차 검토(개정 승인 후)
+Recommended next agent: Claude Code — 구현·검증·인수인계 담당. Codex 교차 검토는 승인된 기존 검토 계약에 따른다.
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: Medium; 자료/계약/동시쓰기 충돌은 High
 Escalation condition: divergence·다른 쓰기 세션·home 프로필/채널 잠금/인증 불일치면 보존 후 해당 작업 중단

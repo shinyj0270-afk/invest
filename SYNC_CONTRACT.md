@@ -28,7 +28,7 @@
 
 ## SESSION START / SESSION CLOSE
 
-두 AI 모두 기존 [investment-session 스킬](skills/investment-session/SKILL.md)을 실행한다. 새로운 병렬 시작/마감 시스템을 만들지 않는다.
+구현·검증·인수인계 담당 Claude Code가 기존 [investment-session 스킬](skills/investment-session/SKILL.md)을 실행한다. 독립 검토 세션은 검토 의견만 전달하며 새로운 병렬 시작/마감 시스템을 만들지 않는다.
 
 START는 PC → Git status/branch/HEAD/진행 작업/remote 관계 → 안전한 경우 fetch 및 ff-only 수신 → 작업 워크트리 확인·main까지 따라잡기(하나를 재사용, 원본은 바탕화면 폴더) → PROJECT_STATE → CURRENT_HANDOFF → AGENTS → SYNC_CONTRACT → Claude 추가 규칙 → 다음 action 순서다. 지침은 사전 점검에도 적용하며 수신 후 변경된 문서를 다시 읽는다. 원격 URL 확인 시 인증정보는 노출하지 않는다.
 
