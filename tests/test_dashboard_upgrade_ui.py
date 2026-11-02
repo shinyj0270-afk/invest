@@ -15,7 +15,7 @@ second['performance']=first['performance']
 records=[first];requests=[]
 with sync_playwright() as p:
     browser=p.chromium.launch(headless=True,**chromium_options())
-    page=browser.new_page(viewport={'width':1440,'height':1000});errors=[]
+    page=browser.new_page(viewport={'width':1440,'height':1000});errors=[];page.clock.install(time='2026-10-08T12:00:00+09:00')  # fixture records are dated 2026-10-07
     page.on('pageerror',lambda e:errors.append(str(e)))
     html=export_workspace(make_fixture(),live={'token':'synthetic','daily_prices':True})
     def routes(route):

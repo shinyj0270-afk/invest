@@ -35,7 +35,7 @@ base=f'http://127.0.0.1:{server.server_port}'
 try:
     with sync_playwright() as p:
         browser=p.chromium.launch(headless=True,**chromium_options())
-        page=browser.new_page(viewport={'width':1440,'height':1050});errors=[];requests=[]
+        page=browser.new_page(viewport={'width':1440,'height':1050});errors=[];requests=[];page.clock.install(time='2026-10-07T12:00:00+09:00')  # pin new Date() too, not only Date.now
         page.on('pageerror',lambda e:errors.append(str(e)))
         page.on('request',lambda request:requests.append(request.url))
         page.on('response',lambda r:root_reads.append(r.status) if r.url==base+'/' else None)
