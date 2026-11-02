@@ -16,13 +16,13 @@ Pending:
 - home Telegram watch2회 실수신·최신코드 수신/실행 확인: 원격도구 등록PC offline. 사용자 집 PC 점검 연기 확정. 토큰/DB/수신자료 복사 없이 home 전용 환경에서 재개한다.
 - 가설 후속 자료/관측기간 미도래, 일부 IBD 기사발행일·정확한 독점산식·최신FTD/distribution 규칙 미검증 유지.
 
-Next task: 같은 Orca 작업본의 새 세션 START; 자료 갱신 후 가설 후속 관찰 재조회
-Next action: 같은 Orca invest에서 새 세션을 열어 START한다. 지정 home에서 기존 경로로 완료가격이 갱신된 뒤 해당 PC의 실제 DB/고정계획 존재 여부부터 확인한다. 기존 후보/진입규칙을 바꾸지 않고 Library 관찰 상태를 읽어 기준일·관측일수를 확인한다. PC별 DB/계획은 자동 복사하지 않는다. home Telegram은 사용자 요청으로 나중에 진행하며 재개 때 home profile·단독 receiver·기존 채널잠금/인증 확인 후 기존 watch --cycles 2 --interval 15로 검증한다.
-Recommended next agent: Codex
+Next task: 작업 워크트리(`C:\Users\<사용자>\worktrees\INVESTMENT\invest`)의 새 Claude Code 세션 START; 자료 갱신 후 가설 후속 관찰 재조회
+Next action: 작업 워크트리 invest에서 새 Claude Code 세션을 열어 START한다. 지정 home에서 기존 경로로 완료가격이 갱신된 뒤 해당 PC의 실제 DB/고정계획 존재 여부부터 확인한다. 기존 후보/진입규칙을 바꾸지 않고 Library 관찰 상태를 읽어 기준일·관측일수를 확인한다. PC별 DB/계획은 자동 복사하지 않는다. home Telegram은 사용자 요청으로 나중에 진행하며 재개 때 home profile·단독 receiver·기존 채널잠금/인증 확인 후 기존 watch --cycles 2 --interval 15로 검증한다.
+Recommended next agent: Claude (Claude Code); Codex는 교차 검토(개정 승인 후)
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: Medium; 자료/계약/동시쓰기 충돌은 High
 Escalation condition: divergence·다른 쓰기 세션·home 프로필/채널 잠금/인증 불일치면 보존 후 해당 작업 중단
-Branch: shinyj0270-afk/invest (기존 Orca 작업본); main (운영 원본)
+Branch: shinyj0270-afk/invest (작업 워크트리; 2026-11-02까지는 Orca 작업본); main (운영 원본)
 Commit: a6d21591de304bbf87f8aad77172d66349dea8f2 (이번 CLOSE 시작 기준·운영 반영 기록까지 전송 완료한 SHA)
 Remote status: CLOSE fetch/실제 remote main에서 a6d21591de304bbf87f8aad77172d66349dea8f2 일치0/0 확인. 이번 마감 인계문서 commit/push는 작성 시 pending이며 최종 보고/다음 START 실제Git 조회로 확인한다.
 
