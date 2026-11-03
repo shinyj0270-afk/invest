@@ -1,3 +1,14 @@
+# Python 환경 전환·역할 전환·방법론 외부 근거 조사 Q01~Q10 · 2026-11-03
+
+- work Primary, Claude Code. 시작 main/작업 워크트리/origin main dd47f78 일치·clean(조사 문서 반영 직전은 3ac6b2c). 상세 재개 지점은 CURRENT_HANDOFF.md.
+- 환경: 프로젝트 `.venv`를 Codex 런타임 Python 3.12.14에서 `C:\Python314` 3.14.7로 교체하고 `requirements.lock.txt`와 동일하게 설치(2026-11-02). 비UI 84개 모듈은 옛/새 환경에서 모듈별 동일 결과, 공식 UI 23개는 날짜 의존 2건(upgrade·stability) 시계 고정(`80e3391`) 후 PASS.
+- 역할: Claude Code 구현·검증·인수인계, Codex 독립 교차 검토(`de85832`). Codex 검토 관문(G1~G5)은 폐지하지 않음.
+- 조사: ChatGPT Deep Research 결과는 검색0·인용0으로 무효. Claude Code가 공식 페이지를 직접 읽어 Q01~Q10을 `docs/review/research_Q01~Q10_*.md`에 정리(`dd47f78`). 논문은 초록 수준, 확인 불가 항목 명시. 지표·비용·배분·임계값 변경 없음.
+- 핵심 결론: ①시점별 상장·상폐·업종·공시 빈티지 자료 경로 미확정, ②시도 로그·겹침 보정 추론·시기별 비용 버전·국면 보고 분모 표시 부재. 코드·설정·투자 규칙·운영 DB는 바뀌지 않았다.
+- 미해결: 위 두 가지와 키 신청 등 사용자 행위, 비공식 UI 테스트 8개·`test_auto_refresh` 5건 원인 미조사, `research_sessions.py` Claude 중심 재설계 미착수.
+
+---
+
 # 잔여 항목 후속 점검·RSS 예약 게시물 처리 · 2026-10-28
 
 - work Primary, Codex. 시작 main/Orca invest/origin main 80e8282 일치·clean. 사용자 잔여 항목 진행 요청으로 고정 가설·출처·Telegram/RSS를 점검했다. 세부 재개 지점은 CURRENT_HANDOFF.md.

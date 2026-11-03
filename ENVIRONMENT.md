@@ -13,7 +13,7 @@ config/local.json은 work와 이 작업본의 실제 project_root, data_dir=data
 # 실행 환경 · 2026-09-28
 
 - 사용자 지정 프로필: 회사 PC `work`. 대표 폴더: 현재 INVESTMENT. 다른 PC를 탐색하거나 자동 연결하지 않음.
-- 프로젝트 `.venv`: Python 3.12.14, Streamlit 1.64.0, pandas 3.0.6, NumPy 2.5.3. 전체 버전은 requirements.lock.txt.
+- 프로젝트 `.venv`: Python 3.14.7(`C:\Python314` 기반, 2026-11-02 Codex 런타임 3.12.14에서 교체), Streamlit 1.64.0, pandas 3.0.6, NumPy 2.5.3. 전체 버전은 requirements.lock.txt.
 - 기존 Node 24.19.0과 Microsoft Edge 사용. 전역 Python/LLM Wiki 환경 변경 없음.
 - 인포맥스 회사 PC 1333 저장파일은 이전 작업에서 확보. 집 PC 로그인 가능은 사용자 확인 사실. 집 PC 설치·연동·동시접속/외부 저장 권한은 검증하지 않음.
 - `config/local.json`은 앱 저장소 프로필. 조회 권한 강제는 별도 `config/runtime.local.json`과 Reader에서 적용. 기본 예시는 unknown 및 모두 false.
