@@ -94,4 +94,16 @@ class DelistedCommandTests(CliTests):
                     code, _, _ = self.run_cli([command] + args);self.assertEqual(code, 2)
 
 
+class FetchDocumentCommandTests(CliTests):
+    def test_fetch_document_refuses_without_confirmation_root_key_or_a_valid_receipt_and_makes_no_request(self):
+        from unittest.mock import patch
+        with patch('requests.Session', side_effect=AssertionError('no network')), patch.dict('os.environ', {}, clear=True):
+            for flags, message in [(['--root', 'unused', '--rcept-no', '20240314001093'], '--confirm-first-call'),
+                                   (['--confirm-first-call', '--rcept-no', '20240314001093'], '--root'),
+                                   (['--root', 'unused', '--confirm-first-call', '--rcept-no', '20240314001093'], 'OPENDART_API_KEY'),
+                                   (['--root', 'unused', '--confirm-first-call', '--rcept-no', '2024'], '--rcept-no'),
+                                   (['--root', 'unused', '--confirm-first-call'], '--rcept-no')]:
+                code, _, err = self.run_cli(['fetch-document'] + flags);self.assertEqual(code, 2, flags);self.assertIn(message, err)
+
+
 if __name__ == '__main__':unittest.main()

@@ -86,9 +86,33 @@ def run_delisted(args):
     return 0 if summary['status'] == 'completed' else 3
 
 
+def fetch_document(args):
+    """Gated: one original annual report document (at most one request); the receipt must be listed in a stored list page."""
+    if not args.confirm_first_call or args.root is None:
+        print('Error: --root and --confirm-first-call are required.', file=sys.stderr);return 2
+    if not (args.rcept_no and re.fullmatch(r'[0-9]{14}', args.rcept_no)):
+        print('Error: --rcept-no must be a 14-digit receipt number.', file=sys.stderr);return 2
+    import time
+    import requests
+    from investment.pit_acquire import Budget
+    from investment.pit_artifacts import ArtifactStore
+    from investment.pit_first_call import run_fetch_document
+    from investment.pit_live import OpenDart, key_from_env
+    try:key = key_from_env()
+    except ValueError as exc:
+        print(f'Error: {exc}', file=sys.stderr);return 2
+    budget = Budget(max_requests=1, min_interval=1.0, clock=time.monotonic, sleep=time.sleep)
+    with requests.Session() as session:
+        summary = run_fetch_document(client=OpenDart(key, session=session, budget=budget), store=ArtifactStore(Path(args.root) / '.local/pit-pilot/artifacts'),
+            budget=budget, rcept_no=args.rcept_no)
+    print(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0 if summary['status'] == 'completed' else 3
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument('command', choices=('project', 'verify', 'plan-first', 'run-first', 'plan-delisted', 'run-delisted'))
+    parser.add_argument('command', choices=('project', 'verify', 'plan-first', 'run-first', 'plan-delisted', 'run-delisted', 'fetch-document'))
+    parser.add_argument('--rcept-no')
     parser.add_argument('--input', type=Path)
     parser.add_argument('--root', type=Path, help='run-first: INVESTMENT 작업 폴더(.local/pit-pilot에 저장)')
     parser.add_argument('--confirm-first-call', action='store_true', help='run-first: 실제 호출을 하겠다는 명시적 확인')
@@ -99,6 +123,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.live:
         print('오류: --live는 쓰지 않습니다. 첫 호출은 run-first --confirm-first-call로만 실행하며, 이 옵션은 구현되지 않았습니다.', file=sys.stderr);return 2
+    if args.command == 'fetch-document':return fetch_document(args)
     if args.command in ('plan-delisted', 'run-delisted'):
         if not args.name or not args.name.strip() or not all(isinstance(d, str) and re.fullmatch(r'[0-9]{8}', d) for d in (args.bgn, args.end)):
             print('Error: --name must be non-empty; --bgn and --end must be YYYYMMDD.', file=sys.stderr);return 2

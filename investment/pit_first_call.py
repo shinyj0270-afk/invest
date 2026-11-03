@@ -6,12 +6,13 @@ its corp code is unique. Every response is stored as a hash-addressed artifact u
 or any unexpected response ends the run at once, with what was collected kept and nothing retried. `client`, `store`, `budget` and
 `calendar_fetch` are injected, so tests run on fakes; this module itself reads no key and prints nothing.
 """
+import hashlib
 import json
 import re
 from datetime import datetime, timedelta
 from pathlib import Path
 from .pit_acquire import BudgetExceeded
-from .pit_inventory import assemble, parse_page
+from .pit_inventory import assemble, classify_title, parse_page
 from .pit_live import QuotaStop, corp_candidates
 
 TARGET = dict(name='효성중공업', stock_code='298040', bgn='20230101')
@@ -181,4 +182,44 @@ def run_delisted_list(*, client, store, budget, root, name, bgn, end):
         return stop('response_rejected', str(exc))
     except ValueError as exc:
         return stop('provider_error', str(exc))
+    return finish()
+
+
+def _listed_annual_original(store, rcept_no):
+    """True when a stored list page reports this receipt as an original (uncorrected) December annual report."""
+    for entry in store.entries():
+        if not entry['document_id'].startswith('list-') or not entry.get('sha256') or entry['status'] == 'resolved':continue
+        try:raw = json.loads(store.read(entry).decode('utf-8'))
+        except (ValueError, OSError):continue
+        for item in raw.get('list', []) if isinstance(raw, dict) else []:
+            if isinstance(item, dict) and item.get('rcept_no') == rcept_no:
+                kind = classify_title(item.get('report_nm'))
+                return kind['kind'] == 'annual' and kind['correction'] == 'none' and (kind['title_period'] or '').endswith('-12')
+    return False
+
+
+def run_fetch_document(*, client, store, budget, rcept_no):
+    """Fetch ONE original annual report document (at most one request); only receipts a stored list page reports are allowed."""
+    if not (isinstance(rcept_no, str) and re.fullmatch(r'\d{14}', rcept_no)):raise ValueError('접수번호 형식 오류')
+    summary = dict(status='completed', stop_reason=None, rcept_no=rcept_no, sha256=None, size=None, reused=False, requests_used=0)
+
+    def finish(reason=None):
+        summary['requests_used'] = budget.count
+        if reason:summary.update(status='stopped', stop_reason=reason)
+        return summary
+
+    if not _listed_annual_original(store, rcept_no):return finish('not_a_listed_annual_original')
+    try:
+        data = store.latest(rcept_no, 'document-zip')
+        summary['reused'] = data is not None
+        if data is None:
+            data = client.document_zip(rcept_no)
+            store.put(rcept_no, 'document-zip', data, observed_at=_now(), source_url='opendart:document.xml')
+        summary.update(sha256=hashlib.sha256(data).hexdigest(), size=len(data))
+    except BudgetExceeded:
+        return finish('budget')
+    except QuotaStop:
+        return finish('quota')
+    except ValueError:
+        return finish('provider_error')
     return finish()
