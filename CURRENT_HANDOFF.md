@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-11-03T20:10:00+09:00 (SESSION CLOSE 재작성; 전송 검증 pending)
+Updated: 2026-11-03T21:00:00+09:00 (SESSION CLOSE 재작성; 전송 검증 pending)
 Last agent: Claude Code (Opus/Sonnet 5.5 세션) — Claude 중심 전환 후 첫 INVESTMENT 작업
 Last PC: work Primary (config/local.json profile=work, pc_check finish 확인; 변경 없음)
 Last task: .venv Codex 런타임 의존 제거 후 UI 테스트 점검, 역할 문구 전환, 방법론 질문 Q01~Q10 직접 조사와 승인 후 첫 구현 3건
@@ -12,9 +12,11 @@ Completed:
 - ChatGPT Deep Research에 질문을 두 번 보냈으나 검색0·인용0·Q01만 답해 **결과 무효**, 어떤 문서에도 반영하지 않음. 대신 Claude Code가 공식 페이지를 직접 열어 Q01~Q10을 조사해 `docs/review/research_Q01~Q10_*.md` 10개 작성(`dd47f78`, 원본 main 반영·push 완료). 논문은 초록 수준, 확인 불가 항목을 문서마다 명시.
 - 문서 정정: `ENVIRONMENT.md`의 `.venv` Python 버전(3.12.14 → 3.14.7).
 - 사용자 승인(2026-11-03 "바꿀 건 바꾸고, 전송할 건 전송하자") 후 첫 구현 3건. **신규 파일만 추가했고 기존 코드·설정·투자 규칙·DB는 바뀌지 않았다.**
-  - 시도 로그(Q06 T1): `investment/trial_log.py`(append-only·해시 연쇄 JSONL, `.local/trial-log/<profile>.jsonl`, Git 제외)와 `tools/trial_log.py`(record/summary). 아직 어떤 탐색에도 연결·사용되지 않았다.
+  - 시도 로그(Q06 T1): `investment/trial_log.py`(append-only·해시 연쇄 JSONL, `.local/trial-log/<profile>.jsonl`, Git 제외)와 `tools/trial_log.py`(record/summary). S10 민감도 진단 두 도구(`threshold_sensitivity_report`, `trend_sensitivity_report`)가 평가 전 기록에 사용했고 그 밖의 탐색에는 연결되지 않았다.
   - 겹침 포함률 모의 실험(Q07 T1): `tools/overlap_coverage_sim.py`와 결과 `docs/review/result_Q07_overlap_coverage_sim_2026-11-03.md`(합성 자료). 겹침을 무시한 구간의 실제 포함률은 지평 63/126/252일에서 각각 0.71~0.81/0.55~0.61/0.36~0.45였다.
   - Codex 순서 의존·변이 점검(1번, `gpt-6.1-sol`/high): 순서 의존 0건(단독 93모듈 전부 통과, 전체·역순·무작위 동일 904 통과), 변이 212개 중 138개 생존. 추천 필터 경계·정렬 방향과 시도 로그 연쇄 검증 7건은 직접 재현해 테스트 추가(`tests/test_codex_sweep_survivors.py`, 변이별 검출 확인), 나머지 약 131개는 `docs/review/mutation_sweep_2026-11-03/`에 목록만 보존.
+  - Codex 문서-코드 일치 점검(`gpt-6-astra`/medium, 읽기 전용): 지적 11건 중 직접 확인한 것을 정정함 — 추천 필터 통과 5개는 배분 단계 이전의 진단 통과 수이고 편입 상한(5)과 같음(이전 서술 "상한을 못 채움·전부 들어감"은 오류), 겹침 모의는 종목 구성을 모형화하지 않음, 단독 차단 합 9는 상한이 아님, 시도 로그·잠금 파일 쓰기가 있음에도 "파일 쓰기 없음"이라 적은 곳, 낡은 인계 문장들. 실행 수치(로그 31회·파일 124,883개 등)는 당시 실행 보고값이며 재검증에는 로컬 시도 로그와 입력 스냅샷이 필요하다.
+  - Codex 버그 유형 점검(5번, `gpt-6-astra`/medium, 읽기 전용): 7건 발견(2건 메모리 재현), 제품 코드는 수정하지 않음. 지수 추세 이동평균 비교의 부동소수 불일치(`trend_following.py`)와 보유 시세 갱신 실패 시 후퇴(`holding_market.py`)는 코드 읽기로 직접 확인. 상세 `docs/review/review_codex_bug_class_hunt_2026-11-03.md`. 수정은 사용자 승인 후 별도.
   - 실패 테스트 원인(Codex 위임은 읽기 전용 제한으로 실행 불가해 Claude Code가 임시 복사본에서 직접 진단): `test_auto_refresh` 5건 = 테스트 순서 의존(대시보드 AppTest가 `load_local` 패치 중 `batch` 등을 처음 import해 가짜 객체가 남음), 테스트에 import 정리 추가로 21개 통과(제품 코드 문제 아님). 비공식 UI 8건: `test_daily_ui`·`test_viewer_ui`는 포트 8501 서버 필요, 나머지 6건(`holdings_entry`·`discovery_financial`·`financial_table`·`live_dashboard`·`market_refresh`·`workspace_audit`)은 **2026-10-20 커밋(`2f8bdaf`)에서도 동일하게 실패** — 오늘 작업의 회귀가 아니라 이전부터의 문제. Codex(gpt-6.1-sol)가 원인을 규명하고 Claude Code가 임시 복사본에서 독립 재실행해 6건 모두 종료코드 0 확인: 전부 **테스트만의 취약점**(제품 변경 불필요) — 바뀐 문구(`holdings_entry`), SVG 2개로 바뀐 재무 그림(`discovery_financial`), 접힌 증거 표(`financial_table`), 제거된 `#overviewTable`·닫힌 `<details>` 안의 scatter 버튼(`live_dashboard`·`market_refresh`), 검토 모델이 상세 버튼을 켜는 픽스처(`workspace_audit`). 해당 테스트 6개를 수정(이 커밋). 남은 비공식 UI 실패는 포트 8501 서버가 필요한 `test_daily_ui`·`test_viewer_ui` 2개. 임시 복사본은 삭제함.
   - Codex PIT 설계 교차 검토 요약: `docs/review/review_codex_PIT_path_2026-11-03.md` (제안, 미구현, 사용자 승인 전 구현 금지).
   - Codex 독립 재점검(승인 "3개 다 진행"의 일부, 오늘 신규 코드 대상, 읽기 전용) 지적 중 재현된 것을 수정: (1) 추세 상수 진단의 SMA 합산 방식이 `technical()`과 달라 부동소수 경계에서 기준 판정이 어긋남 → 누적합 방식으로 통일, 기준 불일치가 있으면 종료코드 4로 결과 사용 금지; (2) 시도 로그 동시 쓰기 시 같은 index가 두 번 기록될 수 있음 → 교차 프로세스 잠금(.lock, 고아 잠금은 수동 정리); (3) 마지막 줄 개행 없는 로그에 이어 쓰면 손상 → 거부; (4) `top_n` 0/음수 거부; (5) 변이에 살아남던 테스트(부트스트랩 분산, 동순위 평균순위, RS=70 경계) 보강, 평가 전 기록 순서 테스트 추가(`tests/test_codex_review_fixes.py`, 변이 5종 검출). 미수정·보고만: 겹침 모의의 Bartlett/블록 길이 고정에 따른 지속 편향(Q07 문서에 명시), SQLite `mode=ro` 비보장 주장(운영 DB는 롤백 저널 모드로 확인, WAL이면 사이드카 파일 가능), `manifest()`는 메타데이터 비교이며 증명이 아님.
@@ -28,7 +30,7 @@ Pending:
 - **자료 경로 미확정(Q01~Q03)**: 시점별 상장·상폐·상장주식수, DART 공개 시각·정정 빈티지, 조정계수·정산가 공식 경로 미확인. 2008 일별 시총·주식수는 KRX OPEN API(2010~) 범위 밖. 접수시간 개정(2024-04-25, hwp)과 KRX 총수익지수 방법서 미열람.
 - **구조 공백**: 시도 로그는 S10 민감도 진단 31회(필터 13 + 추세 상수 18)에만 쓰였고 그 밖의 탐색에는 연결되지 않음(앞으로의 임계값 변형은 모두 기록 후 평가). 겹침 보정 추론은 합성 모의 실험까지만이고 앱·보고에는 반영하지 않음. 시기별 비용 버전표(Q04)와 계획·코호트 간 집계의 분모 표시(Q10) 없음. 장기 점수 S_long은 실제 자료로 계산되지 않음(위 결과). 추천 초안 점수 진단은 실행했고 통과 5개뿐이라 점수 가중치가 후보 구성에 영향을 주지 않음(하드 필터 임계값이 실질 결정 규칙).
 - 사용자 행위 필요: KRX OPEN API 키 신청·약관 동의, OpenDART 키, 법령 시행일별 조문(2008 증권거래세율)·농특세 별표 확인.
-- 비공식 UI 테스트 8개 실패 원인 미조사(2개는 8501 Streamlit 필요, 6개는 시계 고정에도 실패), `tests.test_auto_refresh` 5건 실패(옛 `.venv`에서도 동일) 미조사.
+- 비공식 UI 테스트 8개 중 6개는 테스트 취약점으로 규명·수정했고 2개(`test_daily_ui`, `test_viewer_ui`)는 8501 Streamlit 서버가 필요하다. `tests.test_auto_refresh` 5건은 테스트 순서 의존으로 수정했다.
 - `research_sessions.py`는 agent를 Codex/Claude로만 허용하고 작성자≠검토자를 강제한다. Claude 중심 전환: agent 라벨과 model ID가 모순되면(Codex+claude 계열, Claude+gpt/codex/o 계열) 가져오기를 거부하는 검사 추가(`label_matches_model`, 테스트·변이 3종 검출). 역할 고정(저자=Claude, 검토자=Codex 강제)은 하지 않음 — 기존 유연성 유지, 사용자 결정 필요 시 별도.
 - 주간 연구노트 등록 Codex 자동화(월 09:00, 옛 경로 `신영재\한국\INVESTMENT`)의 Claude 재구성 미착수. 예약 경로가 새 `.venv`로 동작하는지 미확인.
 - 유지: home Telegram watch 2회 실수신·최신 코드 수신·과거 home RSS 원인 확인은 이전 인계 기준 미실행. `.venv-codex-backup` 삭제는 며칠 정상 운영 후 사용자 확인. ChatGPT Pro 종료 전 대화 내보내기 여부 미확인.
@@ -48,8 +50,8 @@ Notes:
 - 검증(앞선 CLOSE 실행): 문서 10개의 상대 링크 존재 확인, `tests.test_dual_pc` 13개·`tests.test_research_sessions` 4개 OK, `git diff --check` 0, `tools/pc_check.py --phase finish` clean(ahead/behind 0, 진행 Git 작업 0, 추적 private 경로 0, 예약 false). 공식 UI 23개 PASS는 `80e3391` 시점 실행 결과이며, 이후 신규 도구·테스트, `app.py`/`report.py` 문구, `research_sessions` 라벨 검사, `trial_log` 보강이 있었고 공식 UI 검증기는 그 이후 재실행하지 않았다.
 - 한계: Q01~Q10은 조사 기록이며 지표·비용·배분·임계값 도입 승인이 아니다. 논문 본문 미열람, 네이버 증권·WICS·SSRN은 접근 제한으로 못 열었고 우회하지 않았다. 검색 결과 중 삽입 지시문이 섞인 페이지(cavac.at)는 열지 않았다.
 - 원본 반영: 오늘 9회(`80e3391`, `de85832`, `dd47f78`, `c8d8302`, `61fe566`, `d63ef9f`, `3c8e46f`, `c79e8d5`, `f86a632`)+이번 문구 보강 1회 예정(앱 코드 변경이라 안전 재시작 필요). 재시작 1회(`61fe566`의 신규 모듈로 `restart_required=true` → 사용자 입력 보관 확인 후 안전 재시작 HTTP 202, build/source 일치·`restart_required=false` 확인). 신규 모듈·도구는 앱이 import하지 않아 동작 변화 없음. 이후 `3c8e46f`·`c79e8d5` 반영 때도 같은 방식으로 안전 재시작(HTTP 202, build/source 일치). 어제 `.venv` 교체 시 서버 재시작 1회. 사용량 교대 0·비용 미집계. ChatGPT Deep Research 2회 실행(구독 한도 소모, 결과 무효).
-- `config/share_candidates.json`에는 Codex 검토 문서 3개만 있고 Q01~Q10 문서는 등록하지 않았다(공유 후보 여부는 별도 결정). 중앙 Wiki 수정 없음. 결과 발행·DB/원자료 접근·주문 0.
-- 다른 PC(home) 수신·실행 미확인. 집에서는 `fetch` 후 `pull --ff-only`로 문서만 받으면 된다. 내장 브라우저의 ChatGPT 로그인은 사용자가 직접 한 세션이며 계정·설정은 바꾸지 않았다.
+- `config/share_candidates.json`에는 Codex 검토 문서 3개만 있고 Q01~Q10 문서는 등록하지 않았다(공유 후보 여부는 별도 결정). 중앙 Wiki 수정 없음. 결과 발행·주문 0. 진단 실행을 위해 저장 DB·시장 캐시·재무자료·저장 일봉을 읽기 전용으로 읽었다(쓰기 없음, 실행 전후 파일 목록·해시 동일).
+- 다른 PC(home) 수신·실행 미확인. 집에서는 `fetch` 후 `pull --ff-only`로 받는다. 이번 변경에는 문서뿐 아니라 코드·테스트(진단 도구, 화면 문구, research_sessions 라벨 검사, trial_log 잠금 등)가 들어 있으므로 받은 뒤 해당 테스트와 실행 환경을 별도로 확인해야 한다. 내장 브라우저의 ChatGPT 로그인은 사용자가 직접 한 세션이며 계정·설정은 바꾸지 않았다.
 - PROJECT_STATE에 이번 전환·조사 항목을 추가했다. 이전 인계(Codex 11-03 검토 블록)는 Git 이력(`3ac6b2c`)에 보존된다.
 
 ---
