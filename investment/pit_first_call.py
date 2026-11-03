@@ -7,6 +7,7 @@ or any unexpected response ends the run at once, with what was collected kept an
 `calendar_fetch` are injected, so tests run on fakes; this module itself reads no key and prints nothing.
 """
 import json
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 from .pit_acquire import BudgetExceeded
@@ -126,6 +127,52 @@ def _after_corp(client, store, budget, summary, zip_bytes, now, yesterday, finis
                     else:
                         summary['reused'].append('document-zip');artifact = store.versions(latest['rcept_no'], 'document-zip')[-1]
                     entry['document'] = dict(rcept_no=latest['rcept_no'], sha256=artifact['sha256'], size=artifact['size'])
+    except BudgetExceeded:
+        return stop('budget')
+    except QuotaStop:
+        return stop('quota')
+    except ResponseRejected as exc:
+        return stop('response_rejected', str(exc))
+    except ValueError as exc:
+        return stop('provider_error', str(exc))
+    return finish()
+
+
+def run_delisted_list(*, client, store, budget, root, name, bgn, end):
+    """Annual list for one exact name, using only the locally stored corp-code file."""
+    now = _now()
+    summary = dict(status='completed', stop_reason=None, stop_detail=None, name=name, corp_code=None, requests_used=0, reused=[],
+        receipts=[], excluded=0, uncertain=[], fiscal_year_ends=[], december_only=False, consecutive_december_years=0)
+    out_dir = Path(root) / '.local/pit-pilot'
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    def finish():
+        summary['requests_used'] = budget.count
+        (out_dir / ('delisted-' + re.sub(r'[\\/:*?"<>|\s]', '_', name) + '.json')).write_text(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True), encoding='utf-8')
+        return summary
+
+    def stop(reason, detail=None):
+        summary.update(status='stopped', stop_reason=reason, stop_detail=detail);return finish()
+
+    try:
+        zip_bytes = store.latest('00000000000000', 'corpcode-zip')
+        if zip_bytes is None:return stop('corp_code_file_missing')
+        candidates = corp_candidates(zip_bytes, name=name)
+        if len(candidates) != 1:return stop('corp_code_not_unique')
+        corp = candidates[0];summary['corp_code'] = corp['corp_code']
+        result = _collect(client, store, corp, _yyyymmdd(bgn), _yyyymmdd(end), corp['stock_code'] or None, name, now, summary['reused'])
+        summary.update(status='too_many_pages' if result['status'] == 'too_many_pages' else 'completed',
+            receipts=[dict(rcept_no=r['rcept_no'], rcept_dt=r['rcept_dt'], report_nm=r['report_nm'], correction=r['correction'], title_period=r['title_period']) for r in result['receipts']],
+            excluded=len(result['excluded']), uncertain=[dict(rcept_no=r['rcept_no'], report_nm=r['report_nm']) for r in result['uncertain']])
+        periods = sorted({r['title_period'] for r in result['receipts'] if r['title_period']})
+        summary['fiscal_year_ends'] = periods
+        summary['december_only'] = bool(periods) and all(p.endswith('-12') for p in periods)
+        years = sorted({int(p[:4]) for p in periods if p.endswith('-12')})
+        longest, run, previous = 0, 0, None
+        for year in years:
+            run = run + 1 if previous is not None and year == previous + 1 else 1
+            longest = max(longest, run);previous = year
+        summary['consecutive_december_years'] = longest
     except BudgetExceeded:
         return stop('budget')
     except QuotaStop:

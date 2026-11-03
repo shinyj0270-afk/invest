@@ -63,16 +63,48 @@ def run_first(args):
     return 0 if summary['status'] == 'completed' else 3
 
 
+def run_delisted(args):
+    """Explicitly gated list-only live command; the corp-code file must already exist."""
+    if not args.confirm_first_call or args.root is None:
+        print('Error: --root and --confirm-first-call are required (see plan-delisted).', file=sys.stderr);return 2
+    import time
+    import requests
+    from investment.pit_acquire import Budget
+    from investment.pit_artifacts import ArtifactStore
+    from investment.pit_first_call import run_delisted_list
+    from investment.pit_live import OpenDart, key_from_env
+    try:key = key_from_env()
+    except ValueError as exc:
+        print(f'Error: {exc}', file=sys.stderr);return 2
+    budget = Budget(max_requests=3, min_interval=1.0, clock=time.monotonic, sleep=time.sleep)
+    with requests.Session() as session:
+        summary = run_delisted_list(client=OpenDart(key, session=session, budget=budget),
+            store=ArtifactStore(Path(args.root) / '.local/pit-pilot/artifacts'), budget=budget, root=args.root,
+            name=args.name, bgn=args.bgn, end=args.end)
+    brief = dict(summary, receipts=len(summary['receipts']), uncertain=len(summary['uncertain']))
+    print(json.dumps(brief, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0 if summary['status'] == 'completed' else 3
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument('command', choices=('project', 'verify', 'plan-first', 'run-first'))
+    parser.add_argument('command', choices=('project', 'verify', 'plan-first', 'run-first', 'plan-delisted', 'run-delisted'))
     parser.add_argument('--input', type=Path)
     parser.add_argument('--root', type=Path, help='run-first: INVESTMENT 작업 폴더(.local/pit-pilot에 저장)')
     parser.add_argument('--confirm-first-call', action='store_true', help='run-first: 실제 호출을 하겠다는 명시적 확인')
     parser.add_argument('--live', action='store_true', help='refused: use run-first --confirm-first-call')
+    parser.add_argument('--name')
+    parser.add_argument('--bgn')
+    parser.add_argument('--end')
     args = parser.parse_args(argv)
     if args.live:
         print('오류: --live는 쓰지 않습니다. 첫 호출은 run-first --confirm-first-call로만 실행하며, 이 옵션은 구현되지 않았습니다.', file=sys.stderr);return 2
+    if args.command in ('plan-delisted', 'run-delisted'):
+        if not args.name or not args.name.strip() or not all(isinstance(d, str) and re.fullmatch(r'[0-9]{8}', d) for d in (args.bgn, args.end)):
+            print('Error: --name must be non-empty; --bgn and --end must be YYYYMMDD.', file=sys.stderr);return 2
+        if args.command == 'run-delisted':return run_delisted(args)
+        from investment.pit_live import plan_delisted_list
+        print(json.dumps(plan_delisted_list(name=args.name, bgn=args.bgn, end=args.end), ensure_ascii=False, indent=2));return 0
     if args.command == 'plan-first':
         from investment.pit_live import plan_first_call
         print(json.dumps(plan_first_call(today=date.today().isoformat()), ensure_ascii=False, indent=2));return 0

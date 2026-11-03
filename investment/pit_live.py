@@ -134,3 +134,13 @@ def plan_first_call(*, today):
         stop_conditions=['응답 상태 020 또는 HTTP 429(요청 제한)', '접속 제한·차단 신호', '요청 12회 도달', '점검·서버 오류(재시도 없이 중단)',
                          '고유번호가 0개이거나 2개 이상(추측하지 않음)'],
         notes=['키는 환경 변수에서만 읽고 출력하지 않음', '공개 DART 뷰어 페이지는 호출하지 않음'])
+
+
+def plan_delisted_list(*, name, bgn, end):
+    """List only: reuse the local corp-code zip and request at most two pages."""
+    return dict(max_requests=3, min_interval_seconds=1.0,
+        requests=[dict(kind='list', host='opendart.fss.or.kr', what=f'{name} annual reports {bgn}~{end}, page {n}') for n in (1, 2)],
+        viewer_scraping=False, storage='<root>/.local/pit-pilot/ (local artifacts, excluded from Git)',
+        stop_conditions=['corp-code file missing or name not unique', 'quota (020 or HTTP 429)', 'request budget exhausted',
+                         'provider error or rejected response; no retry', 'more than two pages'],
+        notes=['Reuse the stored corp-code zip; never download it', 'Read the key only from the environment; never print it', 'No viewer scraping'])

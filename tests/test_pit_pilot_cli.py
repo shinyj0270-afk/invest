@@ -69,4 +69,29 @@ class FirstCallCommandTests(CliTests):
         code, _, err = self.run_cli(['verify']);self.assertEqual(code, 2)                                       # --input missing
 
 
+class DelistedCommandTests(CliTests):
+    args = ['--name', 'Example', '--bgn', '20190101', '--end', '20241231']
+
+    def test_plan_delisted_without_network_or_key(self):
+        from unittest.mock import patch
+        with patch('requests.Session', side_effect=AssertionError('no network')), patch.dict('os.environ', {}, clear=True):
+            code, out, _ = self.run_cli(['plan-delisted'] + self.args)
+        plan = json.loads(out);self.assertEqual(code, 0);self.assertEqual(len(plan['requests']), 2);self.assertFalse(plan['viewer_scraping'])
+
+    def test_run_delisted_refuses_without_confirmation_root_or_key(self):
+        from unittest.mock import patch
+        with patch('requests.Session', side_effect=AssertionError('no network')), patch.dict('os.environ', {}, clear=True):
+            for flags, message in [(['--root', 'unused'], '--confirm-first-call'), (['--confirm-first-call'], '--root'),
+                                   (['--root', 'unused', '--confirm-first-call'], 'OPENDART_API_KEY')]:
+                code, _, err = self.run_cli(['run-delisted'] + self.args + flags);self.assertEqual(code, 2);self.assertIn(message, err)
+
+    def test_delisted_bad_arguments_are_refused_before_network(self):
+        from unittest.mock import patch
+        with patch('requests.Session', side_effect=AssertionError('no network')):
+            for command in ('plan-delisted', 'run-delisted'):
+                for args in ([], ['--name', ' ', '--bgn', '20190101', '--end', '20241231'],
+                             self.args + ['--bgn', '2019-01-01'], self.args + ['--end', '2024123']):
+                    code, _, _ = self.run_cli([command] + args);self.assertEqual(code, 2)
+
+
 if __name__ == '__main__':unittest.main()
