@@ -2,6 +2,7 @@
 
 작성일: 2026-11-03. 조사 주체: Claude Code(직접 조사). 질문은 [research_questions.md](research_questions.md) Q07. 선행: [Q01](research_Q01_krx_pit_2026-11-03.md)~[Q06](research_Q06_snooping_control_2026-11-03.md).
 이 문서는 조사 기록이며 통계 절차·지표 변경의 승인이 아니다.
+후속: 합성 모의 실험으로 Q7-a·Q7-b·Q7-c를 일부 확인했다([result_Q07_overlap_coverage_sim_2026-11-03.md](result_Q07_overlap_coverage_sim_2026-11-03.md)). 실제 자료 결과가 아니다.
 
 ## 조사 방법과 증거 등급
 

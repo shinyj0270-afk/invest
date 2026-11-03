@@ -1,9 +1,9 @@
 # CURRENT HANDOFF
 
-Updated: 2026-11-03T10:40:00+09:00 (SESSION CLOSE 작성; 전송 검증 pending)
+Updated: 2026-11-03T11:30:00+09:00 (SESSION CLOSE 재작성; 전송 검증 pending)
 Last agent: Claude Code (Opus/Sonnet 5.5 세션) — Claude 중심 전환 후 첫 INVESTMENT 작업
 Last PC: work Primary (config/local.json profile=work, pc_check finish 확인; 변경 없음)
-Last task: .venv Codex 런타임 의존 제거 후 UI 테스트 점검, 역할 문구 전환, 방법론 질문 Q01~Q10 직접 조사
+Last task: .venv Codex 런타임 의존 제거 후 UI 테스트 점검, 역할 문구 전환, 방법론 질문 Q01~Q10 직접 조사와 승인 후 첫 구현 3건
 
 Completed:
 - 2026-11-02 `.venv`를 Codex 런타임(Python 3.12.14)에서 시스템 `C:\Python314`(3.14.7)로 교체. `requirements.lock.txt`와 동일 설치, 옛 환경은 `.venv-codex-backup`(Git 제외)에 보존, 운영 서버 재시작 후 build/source 일치.
@@ -11,30 +11,35 @@ Completed:
 - 역할 문구: Claude Code 구현·검증·인수인계, Codex 독립 교차 검토로 INVESTMENT 문서 6개 개정(`de85832`). 다른 프로젝트(credit·PIANO-BLOG·BOND-BLOG·YOUNG-PIANIST·novel)는 각 저장소에 push, STUDIO는 Git 밖 파일 한 줄만 수정.
 - ChatGPT Deep Research에 질문을 두 번 보냈으나 검색0·인용0·Q01만 답해 **결과 무효**, 어떤 문서에도 반영하지 않음. 대신 Claude Code가 공식 페이지를 직접 열어 Q01~Q10을 조사해 `docs/review/research_Q01~Q10_*.md` 10개 작성(`dd47f78`, 원본 main 반영·push 완료). 논문은 초록 수준, 확인 불가 항목을 문서마다 명시.
 - 문서 정정: `ENVIRONMENT.md`의 `.venv` Python 버전(3.12.14 → 3.14.7).
+- 사용자 승인(2026-11-03 "바꿀 건 바꾸고, 전송할 건 전송하자") 후 첫 구현 3건. **신규 파일만 추가했고 기존 코드·설정·투자 규칙·DB는 바뀌지 않았다.**
+  - 시도 로그(Q06 T1): `investment/trial_log.py`(append-only·해시 연쇄 JSONL, `.local/trial-log/<profile>.jsonl`, Git 제외)와 `tools/trial_log.py`(record/summary). 아직 어떤 탐색에도 연결·사용되지 않았다.
+  - 겹침 포함률 모의 실험(Q07 T1): `tools/overlap_coverage_sim.py`와 결과 `docs/review/result_Q07_overlap_coverage_sim_2026-11-03.md`(합성 자료). 겹침을 무시한 구간의 실제 포함률은 지평 63/126/252일에서 각각 0.71~0.81/0.55~0.61/0.36~0.45였다.
+  - 요인 중복 진단(Q09 T1): `tools/factor_overlap_report.py`(요인 간 순위 상관·한 요인 제거 시 상위 N 겹침·점수 미계산 사유). **합성 fixture로만 실행**했고 실제 스냅샷에는 실행하지 않았다.
 
 Pending:
 - **자료 경로 미확정(Q01~Q03)**: 시점별 상장·상폐·상장주식수, DART 공개 시각·정정 빈티지, 조정계수·정산가 공식 경로 미확인. 2008 일별 시총·주식수는 KRX OPEN API(2010~) 범위 밖. 접수시간 개정(2024-04-25, hwp)과 KRX 총수익지수 방법서 미열람.
-- **구조 공백**: 시도 로그(Q06), 겹침 보정 추론(Q07), 시기별 비용 버전표(Q04), 계획·코호트 간 집계의 분모 표시(Q10) 없음. 요인 간 상관·한계 기여·ROIC 정의 민감도 미측정(Q09, 현재 자료로 읽기 전용 진단 가능).
+- **구조 공백**: 시도 로그 모듈은 생겼으나 실제 탐색에 연결되지 않음. 겹침 보정 추론은 합성 모의 실험까지만이고 앱·보고에는 반영하지 않음. 시기별 비용 버전표(Q04)와 계획·코호트 간 집계의 분모 표시(Q10) 없음. 요인 진단은 실제 분석 스냅샷에 아직 실행하지 않음(사용자 승인 필요, Q09).
 - 사용자 행위 필요: KRX OPEN API 키 신청·약관 동의, OpenDART 키, 법령 시행일별 조문(2008 증권거래세율)·농특세 별표 확인.
 - 비공식 UI 테스트 8개 실패 원인 미조사(2개는 8501 Streamlit 필요, 6개는 시계 고정에도 실패), `tests.test_auto_refresh` 5건 실패(옛 `.venv`에서도 동일) 미조사.
 - `research_sessions.py`는 agent를 Codex/Claude로만 허용하고 작성자≠검토자를 강제한다. Claude 중심 전환용 재설계 미착수(Claude 산출을 Codex로 표기 금지).
 - 주간 연구노트 등록 Codex 자동화(월 09:00, 옛 경로 `신영재\한국\INVESTMENT`)의 Claude 재구성 미착수. 예약 경로가 새 `.venv`로 동작하는지 미확인.
 - 유지: home Telegram watch 2회 실수신·최신 코드 수신·과거 home RSS 원인 확인은 이전 인계 기준 미실행. `.venv-codex-backup` 삭제는 며칠 정상 운영 후 사용자 확인. ChatGPT Pro 종료 전 대화 내보내기 여부 미확인.
 
-Next task: Q01~Q10 후속 우선순위를 사용자와 확정하고 첫 구현 한 건을 정한다.
-Next action: work Primary의 작업 워크트리에서 `docs/review/research_Q01~Q10_*.md`의 "확인 불가 목록"과 "채택 전 최소 데이터·테스트"를 읽는다. 사용자 승인 없이 키 신청·결제·외부 전송·코드 변경은 하지 않는다. 승인 시 현재 자료만으로 가능한 것부터 — 시도 로그 스키마(Q06 T1)와 읽기 전용 진단(Q09 T1 요인 상관·ablation, Q07 T1 겹침 모의 실험) — 구현 범위를 합의하고 규칙·임계값 변경은 시도 로그가 생기기 전에는 하지 않는다. 완료 판정: 합의한 우선순위 한 목록과 첫 구현 범위가 이 파일의 Next action으로 교체됨.
+Next task: 요인 중복 진단(Q09 T1)을 실제 분석 스냅샷에 읽기 전용으로 실행해 결과를 기록한다.
+Next action: 사용자가 실제 스냅샷 읽기를 승인하면 work Primary의 작업 워크트리에서 `tools/factor_overlap_report.py --snapshot <분석 스냅샷 JSON>`을 실행한다. 스냅샷은 복사·커밋하지 않고 결과 표만 `docs/review/`에 새 문서로 기록한다(DB·원자료 수정 0). 완료 판정: 요인 간 상관 행렬·한 요인 제거 겹침·점수 미계산 사유 표가 기록되고 가중치·정의는 바뀌지 않음. 이후 모든 규칙·임계값 탐색은 `tools/trial_log.py record`로 먼저 기록하고 기록 없이 값 변경을 제안하지 않는다. 사용자 행위가 필요한 항목(KRX/OpenDART 키·약관·법령 조문 확인)은 대신하지 않는다.
 Recommended next agent: Claude Code — 구현·검증·인수인계. Codex 교차 검토는 Q01~Q10 문서의 사실 대조(초록 수준 한계 포함)에 한정하며 승인된 기존 검토 계약에 따른다.
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: High (PIT·편향·자료 계약), 단순 문서 정리는 Medium
 Escalation condition: 과거자료 부재·정정 vintage/상폐 정산 미확보·동시쓰기/divergence·지표 변경 필요·약관상 보존/재배포 제한 해석(KRX OPEN API) 필요 시 근거를 보존하고 해당 단계 보류
 Branch: shinyj0270-afk/invest (재사용 작업 워크트리); main (운영 원본)
-Commit: dd47f78bbd59544d2bea5c4268de55dad7d6aa5c (이번 CLOSE 시작 기준, 오늘 push 완료한 SHA)
-Remote status: CLOSE 시작 시 원본 main·작업본·origin main 모두 dd47f78 일치(0/0). 이번 CLOSE 문서 commit/push는 작성 시 verification pending. 최종 보고 및 다음 START 실제 Git로 전송 commit을 확인한다.
+Commit: c8d8302cc7f083a8460ae1878aece11fa2c374d8 (구현 반영 직전 기준, 앞선 CLOSE 인계를 push 완료한 SHA)
+Remote status: 구현 반영 직전 원본 main·작업본·origin main 모두 c8d8302 일치(0/0). 이번 구현·인계 commit/push는 작성 시 verification pending. 최종 보고 및 다음 START 실제 Git로 전송 commit을 확인한다.
 
 Notes:
-- 검증(이번 CLOSE 실행): 문서 10개의 상대 링크 존재 확인, `tests.test_dual_pc` 13개·`tests.test_research_sessions` 4개 OK, `git diff --check` 0, `tools/pc_check.py --phase finish` clean(ahead/behind 0, 진행 Git 작업 0, 추적 private 경로 0, 예약 false). 공식 UI 23개 PASS는 `80e3391` 시점 실행 결과이며 이후 코드 변경 없음(문서만).
+- 검증(구현): 신규 테스트 `tests.test_trial_log` 5·`test_trial_log_cli` 2·`test_overlap_coverage_sim` 7·`test_factor_overlap_report` 7개 OK. 방향·래그 의존 로직은 일부러 깨뜨려 테스트가 실패하는 것을 확인한 뒤 복원. 관련 기존 `test_dual_pc` 13·`test_research_sessions` 4·`test_research_followup` 8·`test_leader_strategy` 7·`test_portfolio_risk` 14개 OK. `validate_share_candidates.py`(UI 제외) PASS·경고 0. 작업 워크트리에서 `tools/verify_portable.py`를 단독 실행하면 `config/local.json`이 없어 `Explicit matching PC profile required`로 실패하는 것은 기존 동작이며 공식 검증기의 같은 항목은 PASS.
+- 검증(앞선 CLOSE 실행): 문서 10개의 상대 링크 존재 확인, `tests.test_dual_pc` 13개·`tests.test_research_sessions` 4개 OK, `git diff --check` 0, `tools/pc_check.py --phase finish` clean(ahead/behind 0, 진행 Git 작업 0, 추적 private 경로 0, 예약 false). 공식 UI 23개 PASS는 `80e3391` 시점 실행 결과이며 이후 코드 변경 없음(문서만).
 - 한계: Q01~Q10은 조사 기록이며 지표·비용·배분·임계값 도입 승인이 아니다. 논문 본문 미열람, 네이버 증권·WICS·SSRN은 접근 제한으로 못 열었고 우회하지 않았다. 검색 결과 중 삽입 지시문이 섞인 페이지(cavac.at)는 열지 않았다.
-- 원본 반영: 오늘 3회(`80e3391`, `de85832`, `dd47f78`)+CLOSE 1회 예정, 재시작 0회(문서·테스트만). 어제 `.venv` 교체 시 서버 재시작 1회. 사용량 교대 0·비용 미집계. ChatGPT Deep Research 2회 실행(구독 한도 소모, 결과 무효).
+- 원본 반영: 오늘 4회(`80e3391`, `de85832`, `dd47f78`, `c8d8302`)+이번 구현 1회 예정, 재시작 0회(신규 모듈·도구·문서·테스트만, 앱 코드 경로 미변경). 어제 `.venv` 교체 시 서버 재시작 1회. 사용량 교대 0·비용 미집계. ChatGPT Deep Research 2회 실행(구독 한도 소모, 결과 무효).
 - `config/share_candidates.json`에는 Codex 검토 문서 3개만 있고 Q01~Q10 문서는 등록하지 않았다(공유 후보 여부는 별도 결정). 중앙 Wiki 수정 없음. 결과 발행·DB/원자료 접근·주문 0.
 - 다른 PC(home) 수신·실행 미확인. 집에서는 `fetch` 후 `pull --ff-only`로 문서만 받으면 된다. 내장 브라우저의 ChatGPT 로그인은 사용자가 직접 한 세션이며 계정·설정은 바꾸지 않았다.
 - PROJECT_STATE에 이번 전환·조사 항목을 추가했다. 이전 인계(Codex 11-03 검토 블록)는 Git 이력(`3ac6b2c`)에 보존된다.
