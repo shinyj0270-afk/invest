@@ -287,6 +287,27 @@ class SurvivorTests(unittest.TestCase):
             pit_xml.MAX_MEMBER_BYTES = original
 
 
+class OperatingLossTests(unittest.TestCase):
+    def values(self, row):
+        rows = [['Ⅰ. 매출', '', '5,968', '4,894'], row]
+        return pit_xml.parse_statements(doc(balance(), income(rows=rows), cash()), year=2025)['values']
+
+    def test_an_operating_loss_row_shown_as_a_negative_amount_is_the_operating_profit(self):
+        self.assertEqual(self.values(['IV. 영업손실', '3', '(943)', '(914)'])['operating_profit'], -943)
+        self.assertEqual(self.values(['영업 손실', '', '(5)', '(1)'])['operating_profit'], -5)
+        self.assertEqual(self.values(['영업손실', '', '-', '-'])['operating_profit'], 0)
+
+    def test_an_operating_loss_row_with_a_positive_amount_is_ambiguous_and_refused(self):
+        for row in (['IV. 영업손실', '', '943', '(914)'], ['IV. 영업손실', '', '(943)', '914'], ['영업손실', '', '1', '1']):
+            with self.subTest(row=row), self.assertRaises(ValueError):
+                self.values(row)
+
+    def test_an_operating_profit_and_an_operating_loss_row_together_are_refused(self):
+        rows = [['Ⅰ. 매출', '', '5', '4'], ['Ⅵ. 영업이익', '', '6', '3'], ['IV. 영업손실', '', '(1)', '(1)']]
+        with self.assertRaises(ValueError):
+            pit_xml.parse_statements(doc(balance(), income(rows=rows), cash()), year=2025)
+
+
 def balance_rows_not_a_table_marker():
     return ''
 

@@ -9,13 +9,14 @@ import zipfile
 PARSER_VERSION = 'pit-xml-1'
 MAX_MEMBERS = 50
 MAX_MEMBER_BYTES = 64 * 1024 * 1024
+LOSS_LABELS = ('영업손실',)       # shown as a negative amount, this IS the operating profit; a positive amount has an unclear sign
 TITLES = {'연결재무상태표': 'balance', '연결손익계산서': 'income',
           '연결포괄손익계산서': 'income', '연결현금흐름표': 'cash'}
 ALIASES = {
     'balance': {'equity': ('자본총계',), 'cash': ('현금및현금성자산',)},
     'income': {'revenue': ('매출액', '수익', '영업수익', '수익(매출액)', '매출액(수익)', '매출',
                            '매출액(영업수익)', '영업수익(매출액)'),
-               'operating_profit': ('영업이익', '영업이익(손실)', '영업손익', '영업이익(영업손실)')},
+               'operating_profit': ('영업이익', '영업이익(손실)', '영업손익', '영업이익(영업손실)', '영업손실')},
     'cash': {'ocf': ('영업활동현금흐름', '영업활동으로인한현금흐름', '영업활동으로인한순현금흐름',
                      '영업활동순현금흐름', '영업활동으로인한현금유출입', '영업활동으로인한현금흐름(유출)')}}
 
@@ -122,6 +123,7 @@ def _statement(table, kind, unit):
         if not amounts:continue
         if len(amounts) != 2:raise ValueError('계정 금액 개수 오류')
         current, prior=(_amount(cell, unit) for cell in amounts)
+        if _label(row[0]) in LOSS_LABELS and (current > 0 or prior > 0):raise ValueError('영업손실 금액 부호 불명확')
         values={**values, field: current}
     return values
 
