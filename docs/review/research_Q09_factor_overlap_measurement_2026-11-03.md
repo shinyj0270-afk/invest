@@ -2,7 +2,7 @@
 
 작성일: 2026-11-03. 조사 주체: Claude Code(직접 조사). 질문은 [research_questions.md](research_questions.md) Q09. 선행: [Q01](research_Q01_krx_pit_2026-11-03.md)~[Q08](research_Q08_industry_breadth_pit_2026-11-03.md).
 이 문서는 조사 기록이며 점수 구성·가중치·지표 정의 변경의 승인이 아니다.
-**후속(2026-11-03)**: 저장 스냅샷에 진단을 실행한 결과 장기 점수 S_long은 현재 실제 자료로는 계산되지 않았다(요인 Q·G·C·V가 3개 기업 모두 결측, 계산된 점수 0개). 아래 Y1~Y2·중복 노출 지도의 S_long 분석은 코드 정의 기준이다. 자세한 내용은 [result_Q09_factor_overlap_real_snapshot_2026-11-03.md](result_Q09_factor_overlap_real_snapshot_2026-11-03.md).
+**후속(2026-11-03)**: 저장 스냅샷에 진단을 실행한 결과 장기 점수 S_long은 현재 실제 자료로는 계산되지 않았다(요인 Q·G·C·V가 3개 기업 모두 결측, 계산된 점수 0개). 아래 Y1~Y2·중복 노출 지도의 S_long 분석은 코드 정의 기준이다. 자세한 내용은 [result_Q09_factor_overlap_real_snapshot_2026-11-03.md](result_Q09_factor_overlap_real_snapshot_2026-11-03.md). 추천 초안 점수는 실제 시장 모집단 2,428개 중 5개만 필터를 통과해 점수 가중치가 후보 구성에 영향을 주지 않는 상태였다([result_Q09_recommendation_score_real_pool_2026-11-03.md](result_Q09_recommendation_score_real_pool_2026-11-03.md)).
 
 ## 조사 방법과 증거 등급
 
