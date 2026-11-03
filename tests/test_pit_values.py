@@ -31,7 +31,7 @@ class MappingTests(unittest.TestCase):
         self.assertEqual({k: receipt[k] for k in ('company', 'period_end', 'basis', 'report_kind', 'rcept_no', 'rcept_dt')},
             dict(company='298040', period_end='2025-12-31', basis='CFS', report_kind='annual', rcept_no=RECEIPT, rcept_dt='2026-03-10'))
         self.assertEqual(receipt['values'], dict(revenue=1000.0, op=100.0, ocf=120.0, equity=800.0, cash=50.0))
-        self.assertEqual((provenance['mapping_version'], provenance['rcept_no'], provenance['parser_version'], provenance['document_sha256']),
+        self.assertEqual((provenance['mapping_version'], provenance['rcept_no'], provenance['parser_version'], provenance['contract_sha256']),
             (MAPPING_VERSION, RECEIPT, 'parser-x', 'a' * 64))
         self.assertEqual(provenance['source_keys'], dict(revenue='revenue', op='operating_profit', ocf='ocf', equity='equity', cash='cash'))
 
@@ -54,7 +54,7 @@ class MappingTests(unittest.TestCase):
         with self.assertRaises(ValueError):map_record(record(), company='', rcept_dt='2026-03-10')
 
     def test_non_numeric_values_and_an_empty_mapping_are_rejected(self):
-        for key, val in (('revenue', 'x'), ('revenue', True), ('ocf', float('nan'))):
+        for key, val in (('revenue', 'x'), ('revenue', True), ('ocf', float('nan')), ('revenue', float('inf')), ('operating_profit', float('-inf')), ('revenue', 10 ** 400)):
             r = record();r['values'][key] = val
             with self.subTest(key=key), self.assertRaises(ValueError):map_record(r, company='298040', rcept_dt='2026-03-10')
         r = record();r['values'] = dict(assets=1.0, liabilities=1.0)

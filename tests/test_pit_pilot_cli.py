@@ -42,7 +42,8 @@ class CliTests(unittest.TestCase):
     def test_live_is_refused_and_bad_input_returns_an_error_without_a_traceback(self):
         path = self.write(dict(receipts=[], sessions=sessions()))
         code, _, err = self.run_cli(['verify', '--input', str(path), '--live']);self.assertEqual(code, 2);self.assertIn('구현되지 않았습니다', err)
-        for payload in ({}, dict(receipts='x', sessions=[])):
+        for payload in ({}, dict(receipts='x', sessions=[]), dict(receipts=[1], sessions=[]), dict(receipts=[], sessions=[1]),
+                        dict(receipts=[], sessions=sessions(), inventory=[None]), dict(receipts=[], sessions=sessions(), inventory=[dict(rcept_no=1)]), [1, 2]):
             code, _, err = self.run_cli(['verify', '--input', str(self.write(payload))]);self.assertEqual(code, 2);self.assertIn('오류', err)
         code, _, err = self.run_cli(['verify', '--input', 'Z:/definitely/not/here.json']);self.assertEqual(code, 2)
 

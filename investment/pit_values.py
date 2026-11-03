@@ -16,7 +16,9 @@ DEBT = ('debt', 'balance_debt')
 
 
 def _number(value):
-    return isinstance(value, (int, float)) and not isinstance(value, bool) and isfinite(value)
+    if not isinstance(value, (int, float)) or isinstance(value, bool):return False
+    try:return isfinite(value)
+    except OverflowError:return False            # an int too large for a float is not a usable amount
 
 
 def map_record(record, *, company, rcept_dt, include_debt=False):
@@ -43,4 +45,4 @@ def map_record(record, *, company, rcept_dt, include_debt=False):
     if not mapped:raise ValueError('매핑 가능한 값이 없습니다')
     return (dict(company=company, period_end=end, basis=record['basis'], report_kind='annual', rcept_no=receipt, rcept_dt=rcept_dt, values=mapped),
         dict(rcept_no=receipt, mapping_version=MAPPING_VERSION, parser_version=record.get('parser_version'), source_keys=keys,
-            source_url=record.get('url'), document_sha256=(contract.get('source') or {}).get('sha256'), include_debt=bool(include_debt)))
+            source_url=record.get('url'), contract_sha256=(contract.get('source') or {}).get('sha256'), include_debt=bool(include_debt)))

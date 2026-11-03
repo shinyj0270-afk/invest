@@ -1,10 +1,12 @@
-"""Acquisition flow for one receipt: choose the statements document, fetch it, keep the bytes, parse, map (design: docs/review/design_PIT_collection_adapter_2026-11-03.md).
+"""Acquisition flow for one receipt: choose the statements document, fetch it, keep the bytes, parse, bind identity, map (design: docs/review/design_PIT_collection_adapter_2026-11-03.md).
 
-Every network and parsing step is INJECTED (`discover`, `fetch`, `parse`), so this module is tested with fakes and performs no
-request itself. How a real receipt tree is discovered and how the fiscal contract is built from a real viewer are NOT
-implemented here: they need one real specimen and are part of the gated first live step. A receipt with zero or several
-qualifying documents is blocked before any request. Downloaded bytes are always stored before parsing, failures are recorded,
-and changed bytes are reported instead of reused.
+Every network and parsing step is INJECTED (`discover(number, spend)`, `fetch(url)`, `parse(data, node, entry)`), so this module is
+tested with fakes and performs no request itself. `discover` and `fetch` must call/receive the shared budget (`spend()` before every
+request they make). How a real receipt tree is discovered and how the fiscal contract is built from a real viewer are NOT
+implemented here: they need one real specimen and belong to the gated first live step.
+Rules: a receipt with zero or several qualifying documents is blocked before any fetch; downloaded bytes are stored before parsing;
+a document with an UNRESOLVED version (bytes changed or hash mismatch, until a human pins the accepted hash) is never reported ok, however
+often it is re-fetched; the parsed record must carry the requested receipt number, company code and basis.
 """
 from .pit_values import map_record
 
@@ -27,30 +29,48 @@ class Budget:
         self.last = self.clock();self.count += 1
 
 
+def _detail(exc):
+    return (str(exc) or type(exc).__name__)[:200]
+
+
 def acquire_receipt(*, entry, company, basis, discover, fetch, parse, store, now, budget=None, include_debt=False):
-    """-> dict(status, rcept_no, reason?, receipt?, provenance?, artifact?). status: ok | blocked | failed | changed_bytes."""
+    """-> dict(status, rcept_no, reason?, detail?, receipt?, provenance?, artifact?). status: ok | blocked | failed | changed_bytes."""
     number = entry['rcept_no']
-    nodes = [n for n in discover(number) if n.get('basis') == basis]
+    spend = budget.spend if budget else (lambda: None)
+    try:
+        nodes = [n for n in discover(number, spend) if n.get('basis') == basis]
+    except BudgetExceeded:
+        raise
+    except Exception as exc:
+        return dict(status='failed', rcept_no=number, reason='discovery_failed', detail=_detail(exc))
     if not nodes:return dict(status='blocked', rcept_no=number, reason='no_candidate')
     if len(nodes) > 1:return dict(status='blocked', rcept_no=number, reason='multiple_candidates')
     chosen = nodes[0]
     try:
-        if budget:budget.spend()
+        spend()
         data = fetch(chosen['url'])
     except BudgetExceeded:
         raise
     except Exception as exc:
-        failure = store.record_failure(number, chosen['document_id'], reason=str(exc) or type(exc).__name__, observed_at=now)
-        return dict(status='failed', rcept_no=number, reason='fetch_failed', artifact=failure)
-    artifact = store.put(number, chosen['document_id'], data, observed_at=now, source_url=chosen['url'])
-    if artifact['status'] == 'changed':
-        return dict(status='changed_bytes', rcept_no=number, reason='bytes_changed_since_last_observation', artifact=artifact)
+        failure = store.record_failure(number, chosen['document_id'], reason=_detail(exc), observed_at=now)
+        return dict(status='failed', rcept_no=number, reason='fetch_failed', detail=_detail(exc), artifact=failure)
+    try:
+        artifact = store.put(number, chosen['document_id'], data, observed_at=now, source_url=chosen['url'])
+    except ValueError as exc:
+        return dict(status='failed', rcept_no=number, reason='artifact_store_error', detail=_detail(exc))
+    state = store.state(number, chosen['document_id'])
+    if state['unresolved'] and state['pinned_sha256'] != artifact['sha256']:
+        return dict(status='changed_bytes', rcept_no=number, reason='unresolved_artifact_version', artifact=artifact)
     try:
         record = parse(data, chosen, entry)
-    except Exception:
-        return dict(status='failed', rcept_no=number, reason='parse_failed', artifact=artifact)
+    except Exception as exc:
+        return dict(status='failed', rcept_no=number, reason='parse_failed', detail=_detail(exc), artifact=artifact)
+    if not isinstance(record, dict) or (record.get('receipt'), record.get('code'), record.get('basis')) != (number, company, basis):
+        return dict(status='failed', rcept_no=number, reason='identity_mismatch', artifact=artifact)
     try:
         receipt, provenance = map_record(record, company=company, rcept_dt=entry['rcept_dt'], include_debt=include_debt)
-    except ValueError:
-        return dict(status='failed', rcept_no=number, reason='mapping_failed', artifact=artifact)
+    except ValueError as exc:
+        return dict(status='failed', rcept_no=number, reason='mapping_failed', detail=_detail(exc), artifact=artifact)
+    provenance['artifact_sha256'] = artifact['sha256']            # raw downloaded bytes; `contract_sha256` is the parser's own (decoded text) hash
+    provenance['artifact_document_id'] = chosen['document_id']
     return dict(status='ok', rcept_no=number, receipt=receipt, provenance=provenance, artifact=artifact)
