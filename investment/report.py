@@ -48,7 +48,7 @@ def onepager(snapshot,row,research):
     <h1>{e(row['name'])} · {e(row['code'])}</h1><div class="badge">{'가상 테스트' if m['data_mode']=='fixture' else '실제 저장자료 · 부분 모집단'} · 가격 {e(m['price_date'])} · 재무 {e(m['financial_period'])} / {e(m['financial_basis'])}</div>{history_summary}
     <p>{e(row['market'])} / {e(row['industry'])} · 사업 설명 미입력 · 조회·연구 전용</p><p>{e(policy)}</p>
     <div class="cols"><section><h2>핵심 관측 지표 · 최대 16개 요약</h2><table>{metrics}</table></section>
-    <section><h2>최근 가격 관측</h2>{chart}<h2>연구 신호와 근거</h2><p>{e(paths)}</p><p>경로 문서 근거는 별도 검토 상태. 품질 점수: {quality}</p>
+    <section><h2>최근 가격 관측</h2>{chart}<h2>연구 신호와 근거</h2><p>{e(paths)}</p><p>경로 문서 근거는 별도 검토 상태. 품질 점수: {quality} (순위·후보 자격·추천에 쓰이지 않는 참고 표시)</p>
     <h2>상대가치 시나리오</h2><p>{e(scenario)}</p><p>대상 제외 피어 {val['peer_count']}개. 미래 확률·확정 목표가 아님.</p><h2>반대 근거·제한</h2><ul>{risks}</ul><p>확인 항목 {len(risk)}개 중 {len(summaries)}개 요약. 전체 근거·장문은 앱과 동일 스냅샷에서 확인.</p></section></div>
     <h2>출처</h2><ul>{sources or '<li>실제 원문 출처 없음 · 가상 데이터 또는 근거 미확보</li>'}</ul><p>출처 {len(source_rows)}개 중 최대 3개 요약. 100배 수익·성공 확률을 예측하지 않습니다.</p>
     <footer>스냅샷 {digest(snapshot)[:16]} · 모형 {e(research['model'])} · 사용자 기준 및 미확인 사항은 앱에 보존. 관측 부족을 0으로 대체하지 않음.</footer></html>'''

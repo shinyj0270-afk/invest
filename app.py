@@ -316,7 +316,7 @@ if view=='장기성장 연구':
     view=st.radio('연구 보기',['기존 품질','다섯 경로','주간 목록','성장 단계·지속성','자료·가설'],horizontal=True)
     if view=='기존 품질':
         st.dataframe(pd.DataFrame([dict(기업=r['name'],S_quality=r['quality_score'],부족=', '.join(r['quality_missing']),**r['factors']) for r in res]),hide_index=True)
-        st.caption('시장 적격 모집단의 중간순위 백분위. Q/G/C/V/B 가중치 30/25/20/15/10%. 결측 기업 가중치 재배분 없음.')
+        st.caption('시장 적격 모집단의 중간순위 백분위. Q/G/C/V/B 가중치 30/25/20/15/10%. 결측 기업 가중치 재배분 없음. 순위·후보 자격·추천에 쓰이지 않는 참고 표시이며, 시점별 연간 재무가 없으면 계산되지 않습니다(현재 실제 저장자료에는 적재되지 않아 비어 있을 수 있음).')
     elif view=='다섯 경로':
         st.dataframe(pd.DataFrame([dict(기업=r['name'],경로=research.NAMES[p],수치=STATUS[v['signal_status']],근거=v['evidence_status'],후보=v['eligible'],사유=v['reason']) for r in res for p,v in r['paths'].items()]),hide_index=True)
         st.json(by_code[selection]['signals'])
