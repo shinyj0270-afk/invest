@@ -75,7 +75,7 @@ class SessionRunner:
                 'agent (Codex or Claude), model (actual model ID, or unknown), value. '
                 'Do not approve on behalf of a human.\n\n' + prompt(job['prepared'], draft) + correction)
 
-    def save(self, job, expected_state=None):
+    def save(self, job, expected_state=None, expected_digest=None):
         if not re.fullmatch('[a-f0-9]{32}', job['id']): raise ValueError('Invalid run ID')
         folder = self.root / self.lib.profile / self.lib.mode / job['id']
         if expected_state is None:
@@ -89,6 +89,8 @@ class SessionRunner:
                 if expected_state is not None:
                     old = json.loads(path.read_text(encoding='utf-8'))
                     if old['state'] != expected_state: raise ValueError('Concurrent transition; reread')
+                    # A state label can repeat (review -> revise -> new draft); the digest of the job that was read cannot.
+                    if expected_digest is not None and digest(old) != expected_digest: raise ValueError('Concurrent transition; reread')
                 tmp = folder/'run.tmp'
                 tmp.write_text(json.dumps(job, ensure_ascii=False, indent=2), encoding='utf-8')
                 tmp.replace(path)

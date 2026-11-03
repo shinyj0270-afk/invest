@@ -8,7 +8,7 @@ from statistics import mean
 
 from .core import num
 from .local_config import load_local
-from .naver_universe import classify
+from .naver_universe import classify, USER_EXCLUSIONS
 from .listing_seasoning import apply_seasoning, read_listing_dates, today_kst
 from .market_history import benchmark_calendar, ADJUSTMENT_NOTE
 from .workspace_research import METRICS, RS_LABEL
@@ -74,9 +74,10 @@ class MarketCacheReader:
         if snapshot['meta']['data_mode']=='fixture':return None
         cfg=load_local(root);folder=cfg['data_dir']/cfg['profile']/'market-expansion'
         def version():
-            parts=[str(folder.resolve())]
-            for name in ('universe.json','histories.json','latest-quotes.json'):
-                path=folder/name
+            # Everything load_market_cache reads or depends on: three market files, the listing-date cache, the user exclusion file and today's KST date.
+            parts=[str(folder.resolve()),today_kst().isoformat()]
+            for path in (folder/'universe.json',folder/'histories.json',folder/'latest-quotes.json',folder/'listing-dates.json',USER_EXCLUSIONS):
+                name=path.name
                 try:
                     s=path.stat();parts.append((name,s.st_mtime_ns,s.st_size,s.st_ino))
                 except FileNotFoundError:parts.append((name,None))

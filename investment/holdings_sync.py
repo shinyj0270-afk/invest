@@ -106,6 +106,12 @@ class HoldingsService:
         contract(self.root,operation='validate',state=state)
         if base is not None:contract(self.root,operation='validate',state=base)
         with self.lock:
+            held=self.record if self.record and self.record.get('pending') and not self.record.get('conflict') else None
+            if held and held['state']!=state:   # an offline edit is still queued: merge into it instead of replacing it
+                combined=contract(self.root,operation='merge',base=base,local=state,remote=held['state'])
+                if combined['conflicts']:
+                    return dict(status='conflict',state=state,remote=held['state'],base=base,conflicts=combined['conflicts'],local_saved=True,queued_kept=True)
+                state=combined['state']
             self.save(dict(state=state,base=base,pending=True))
             try:
                 for _ in range(3):
@@ -113,6 +119,7 @@ class HoldingsService:
                     if remote is not None:contract(self.root,operation='validate',state=remote)
                     result=contract(self.root,operation='merge',base=base,local=state,remote=remote)
                     if result['conflicts']:
+                        self.save(dict(state=state,base=base,pending=True,conflict=True))
                         return dict(status='conflict',state=state,remote=remote,base=base,conflicts=result['conflicts'],local_saved=True)
                     merged=result['state']
                     if remote==merged:

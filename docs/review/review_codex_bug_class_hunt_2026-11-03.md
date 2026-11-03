@@ -1,6 +1,6 @@
 # Codex 점검 — 오늘 나온 버그 유형을 나머지 코드에서 찾기 (읽기 전용, 2026-11-03)
 
-검토자: Codex(`gpt-6-astra`, 추론 강도 medium, 읽기 전용). 대상: 작업본 `fe3f56f`의 `investment/*.py`, `tools/*.py`, `app.py`, `batch.py`. **131개 파일 전체는 구조·패턴 훑기만 했고 줄 단위로 전부 읽지는 않았다**(전부 읽은 파일 약 38개, 일부 구간만 읽은 8개). 이 문서는 모델 검토 기록이다. 사용자 승인("1. 수정")으로 ①과 ⑥만 수정했고 ②~⑤·⑦은 미수정이다.
+검토자: Codex(`gpt-6-astra`, 추론 강도 medium, 읽기 전용). 대상: 작업본 `fe3f56f`의 `investment/*.py`, `tools/*.py`, `app.py`, `batch.py`. **131개 파일 전체는 구조·패턴 훑기만 했고 줄 단위로 전부 읽지는 않았다**(전부 읽은 파일 약 38개, 일부 구간만 읽은 8개). 이 문서는 모델 검토 기록이다. 사용자 승인("1. 수정", "5번 나머지 고치기")으로 ①~⑦을 모두 수정했다.
 
 Claude Code가 코드를 직접 읽어 확인한 것: ①(`trend_following.py:16`의 누적합 이동평균과 `:38`의 직접 합 `prior200`을 한 비교식에서 섞어 쓰는 구조)와 ⑥(`holding_market.py:35`가 매번 원본 `self.index` 행으로 시작해 실패 시 앞서 성공한 시세를 버리는 구조). 나머지는 Codex의 추론이며 재현하지 않았다.
 
@@ -14,4 +14,17 @@ Claude Code가 코드를 직접 읽어 확인한 것: ①(`trend_following.py:16
 | 6 | 중간 | `investment/holding_market.py:35,50` | 성공한 시세 뒤 갱신이 실패하면 최근 성공값이 아니라 원본 카탈로그 시세로 후퇴 | Codex 메모리 재현 + 코드 읽기 확인 | 마지막 성공 행을 따로 보관해 실패 시 사용 |
 | 7 | 중간 | `investment/telegram_listen.py:206`, `research_inbox.py:86` | 영수증 파일 쓰기가 중단되면 불완전 JSON이 남아 이후 인박스 준비가 계속 실패 | 추론 | 임시 파일에 쓰고 원자적으로 게시 |
 
-①은 오늘 추세 진단 도구에서 고친 것과 같은 유형이다. **수정 완료**: ①은 판정용 평균 세 개를 모두 정확 평균(`statistics.mean`)으로 계산하게 했고(차트 이동평균은 표시용으로 유지), ⑥은 실패 시 직전에 성공한 시세 행으로 되돌아가게 했다. 회귀 테스트 `tests/test_codex_bug_class_fixes.py`는 수정 전 실패를 확인했다. ②~⑤·⑦은 미수정.
+①은 오늘 추세 진단 도구에서 고친 것과 같은 유형이다. **수정 완료**: ①은 판정용 평균 세 개를 모두 정확 평균(`statistics.mean`)으로 계산하게 했고(차트 이동평균은 표시용으로 유지), ⑥은 실패 시 직전에 성공한 시세 행으로 되돌아가게 했다. 회귀 테스트 `tests/test_codex_bug_class_fixes.py`는 수정 전 실패를 확인했다. ②~⑤·⑦도 이후 수정했다(아래).
+
+## 나머지 수정 (②~⑤·⑦)
+
+각 수정은 회귀 테스트를 먼저 쓰고 수정 전 실패(또는 구조 오류)를 확인했고, 핵심 분기를 일부러 지운 변이가 테스트에 잡힘을 확인했다. 아래는 모두 Codex의 추론이었고 Claude Code가 코드와 테스트로 재확인한 결과다.
+
+| # | 수정 | 테스트 |
+|---|---|---|
+| ② | `holdings_sync.py`: 오프라인에 대기 중인 수정이 있으면 새 제출을 3-way 병합해 둘 다 보존하고, 충돌하면 대기 수정을 유지한 채 `conflict`를 반환. 온라인 충돌 상태(`conflict` 표시)는 이 보호에서 제외해 해결 재제출이 막히지 않게 함 | `tests/test_holdings_sync_queue.py` |
+| ③ | `research_sessions.py`: `save(..., expected_digest=)`로 읽은 작업 전체의 해시를 잠금 아래에서 비교(상태 이름만으로는 검토→수정→새 초안 순환을 못 막음). `tools/research_sessions.py`가 읽은 직후 해시를 넘김. 기존 호출은 그대로 동작 | `tests/test_research_sessions_race.py` |
+| ④ | `market_discovery.py`: 캐시 버전 키에 `listing-dates.json`, 사용자 제외 파일(`USER_EXCLUSIONS`), KST 오늘 날짜를 추가 | `tests/test_market_cache_version.py` |
+| ⑤ | `tools/expand_market.py`: 대시보드 일일 갱신과 같은 `daily-refresh.lock`을 읽기 전부터 종료까지 보유(다른 갱신이 진행 중이면 중단, 실패해도 해제) | `tests/test_expand_market_lock.py` |
+| ⑦ | `telegram_listen.py`: 영수증을 인박스 glob에 안 잡히는 임시 이름에 쓰고 `fsync` 후 `os.replace`로 게시(강제 종료를 모형화한 테스트) | `tests/test_telegram_receipt_atomic.py` |
+

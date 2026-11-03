@@ -203,9 +203,18 @@ def poll(token, channel, state_path, output_dir, *, fetch=default_fetch, now=Non
         out_path = output_dir / f"receipt-{stamp_time.strftime('%Y%m%dT%H%M%S%f')}Z-{nonce}.json"
         if out_path.exists():
             raise ValueError('Receipt filename collision; retry')
-        with out_path.open('x', encoding='utf-8') as stream:
-            json.dump(receipt, stream, ensure_ascii=False, indent=2)
-            stream.write('\n')
+        # Write beside the target under a name the inbox glob (receipt-*.json) cannot match, then publish atomically.
+        temp_path = output_dir / ('.' + out_path.name + '.tmp')
+        try:
+            with temp_path.open('x', encoding='utf-8') as stream:
+                json.dump(receipt, stream, ensure_ascii=False, indent=2)
+                stream.write('\n')
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temp_path, out_path)
+        except BaseException:
+            temp_path.unlink(missing_ok=True)
+            raise
     save_state(state_path, dict(last_update_id=max_update_id, seen_message_ids=sorted(seen_ids)[-5000:]))
     return receipt
 

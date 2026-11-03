@@ -11,6 +11,7 @@ from investment.local_config import load_local, require_profile
 from investment.research_library import Library
 from investment.research_agents import approve
 from investment.research_sessions import SessionRunner
+from investment.core import digest
 from tools.research_agents import local_file, read
 
 
@@ -31,13 +32,14 @@ def main():
         if not args.run_id or not re.fullmatch('[a-f0-9]{32}', args.run_id): raise ValueError('Run ID required')
         job = read(local_file(f'.local/agents/session-runs/{profile}/user_input/{args.run_id}/run.json'))
         if job['id'] != args.run_id: raise ValueError('Run identity mismatch')
+        read_digest = digest(job)
         if args.action == 'packet':
             print(runner.packet(job)); return
         if args.action in ('draft', 'review', 'revise'):
             if not args.input: raise ValueError('Session result required')
             previous = job['state']
             job = runner.accept(job, {'draft':'research','review':'review','revise':'revision'}[args.action], read(local_file(args.input)))
-            runner.save(job, previous)
+            runner.save(job, previous, expected_digest=read_digest)
         if args.action == 'approve':
             if not args.input: raise ValueError('Human approval required')
             revision = approve(lib, job, read(local_file(args.input)))

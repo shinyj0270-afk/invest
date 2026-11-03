@@ -33,6 +33,16 @@ def collect_dates(folder, bundle):
     print('Listing dates:', json.dumps(dict(requested=len(codes), **{k: summary[k] for k in ('collected', 'failed', 'known')})), flush=True)
 
 
+def market_lock(folder):
+    """Hold the dashboard's daily-refresh lock: without it this CLI could replace histories.json with an older bundle."""
+    from investment.company_financials import acquire_lock
+    folder.mkdir(parents=True, exist_ok=True)
+    try:
+        return acquire_lock(folder/'daily-refresh.lock')
+    except ValueError:
+        raise SystemExit('다른 가격 갱신이 진행 중입니다. 기존 자료를 유지합니다.')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--reuse-listing', action='store_true')
@@ -44,6 +54,14 @@ def main():
     args = parser.parse_args()
     local = load_local(ROOT)
     folder = local['data_dir']/local['profile']/'market-expansion'
+    lease = market_lock(folder)
+    try:
+        collect(args, folder)
+    finally:
+        lease.close()
+
+
+def collect(args, folder):
     listing = folder/'universe.json'
     def progress(p):
         if p.get('page', 0) % 5 == 0 or p.get('completed', 0) % 10 == 0:
