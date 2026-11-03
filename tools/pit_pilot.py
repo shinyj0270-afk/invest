@@ -38,14 +38,48 @@ def check_shapes(data):
     return receipts, sessions, inventory
 
 
+def run_first(args):
+    """The only command that touches the network. Needs --confirm-first-call, --root and the OPENDART_API_KEY environment variable."""
+    if not args.confirm_first_call or args.root is None:
+        print('오류: 실제 호출에는 --root와 --confirm-first-call이 필요합니다(호출 계획은 plan-first로 확인).', file=sys.stderr);return 2
+    import time
+    import requests
+    from investment.market_history import fetch_history
+    from investment.pit_acquire import Budget
+    from investment.pit_artifacts import ArtifactStore
+    from investment.pit_first_call import run_first_call
+    from investment.pit_live import OpenDart, key_from_env
+    try:key = key_from_env()
+    except ValueError as exc:
+        print(f'오류: {exc}', file=sys.stderr);return 2
+    budget = Budget(max_requests=12, min_interval=1.0, clock=time.monotonic, sleep=time.sleep)
+    with requests.Session() as session:
+        client = OpenDart(key, session=session, budget=budget)
+        summary = run_first_call(client=client, store=ArtifactStore(Path(args.root) / '.local/pit-pilot/artifacts'), budget=budget, root=Path(args.root),
+            today=date.today().isoformat(), calendar_fetch=lambda symbol, **kw: fetch_history(symbol, session=session, **kw))
+    brief = dict(status=summary['status'], stop_reason=summary['stop_reason'], requests_used=summary['requests_used'],
+        companies={k: dict(status=v['status'], receipts=len(v.get('receipts', [])), document=bool(v.get('document'))) for k, v in summary['companies'].items()})
+    print(json.dumps(brief, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0 if summary['status'] == 'completed' else 3
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument('command', choices=('project', 'verify'))
-    parser.add_argument('--input', type=Path, required=True)
-    parser.add_argument('--live', action='store_true', help='not implemented; refused')
+    parser.add_argument('command', choices=('project', 'verify', 'plan-first', 'run-first'))
+    parser.add_argument('--input', type=Path)
+    parser.add_argument('--root', type=Path, help='run-first: INVESTMENT 작업 폴더(.local/pit-pilot에 저장)')
+    parser.add_argument('--confirm-first-call', action='store_true', help='run-first: 실제 호출을 하겠다는 명시적 확인')
+    parser.add_argument('--live', action='store_true', help='refused: use run-first --confirm-first-call')
     args = parser.parse_args(argv)
     if args.live:
-        print('오류: 실제 호출은 구현되지 않았습니다. 약관 확인과 첫 호출 승인 이후 단계입니다.', file=sys.stderr);return 2
+        print('오류: --live는 쓰지 않습니다. 첫 호출은 run-first --confirm-first-call로만 실행하며, 이 옵션은 구현되지 않았습니다.', file=sys.stderr);return 2
+    if args.command == 'plan-first':
+        from investment.pit_live import plan_first_call
+        print(json.dumps(plan_first_call(today=date.today().isoformat()), ensure_ascii=False, indent=2));return 0
+    if args.command == 'run-first':
+        return run_first(args)
+    if args.input is None:
+        print('오류: --input이 필요합니다', file=sys.stderr);return 2
     try:
         data = json.loads(args.input.read_text(encoding='utf-8'))
         receipts, sessions, inventory = check_shapes(data)

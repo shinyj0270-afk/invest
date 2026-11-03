@@ -51,4 +51,22 @@ class CliTests(unittest.TestCase):
         code, _, err = self.run_cli(['verify', '--input', 'Z:/definitely/not/here.json']);self.assertEqual(code, 2)
 
 
+class FirstCallCommandTests(CliTests):
+    def test_plan_first_prints_the_plan_without_a_network_call_or_a_key(self):
+        from unittest.mock import patch
+        with patch('requests.Session', side_effect=AssertionError('no network')):
+            code, out, _ = self.run_cli(['plan-first'])
+        plan = json.loads(out);self.assertEqual(code, 0);self.assertFalse(plan['viewer_scraping']);self.assertLessEqual(len(plan['requests']), plan['max_requests'])
+
+    def test_run_first_refuses_without_the_explicit_confirmation_and_without_a_key_and_makes_no_request(self):
+        from unittest.mock import patch
+        with patch('requests.Session', side_effect=AssertionError('no network')):
+            code, _, err = self.run_cli(['run-first', '--root', 'Z:/x']);self.assertEqual(code, 2);self.assertIn('--confirm-first-call', err)
+            with patch.dict('os.environ', {}, clear=False):
+                import os
+                os.environ.pop('OPENDART_API_KEY', None)
+                code, _, err = self.run_cli(['run-first', '--root', 'Z:/x', '--confirm-first-call']);self.assertEqual(code, 2);self.assertIn('OPENDART_API_KEY', err)
+        code, _, err = self.run_cli(['verify']);self.assertEqual(code, 2)                                       # --input missing
+
+
 if __name__ == '__main__':unittest.main()
