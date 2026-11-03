@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-11-03T19:00:00+09:00 (SESSION CLOSE 재작성; 전송 검증 pending)
+Updated: 2026-11-03T20:10:00+09:00 (SESSION CLOSE 재작성; 전송 검증 pending)
 Last agent: Claude Code (Opus/Sonnet 5.5 세션) — Claude 중심 전환 후 첫 INVESTMENT 작업
 Last PC: work Primary (config/local.json profile=work, pc_check finish 확인; 변경 없음)
 Last task: .venv Codex 런타임 의존 제거 후 UI 테스트 점검, 역할 문구 전환, 방법론 질문 Q01~Q10 직접 조사와 승인 후 첫 구현 3건
@@ -14,6 +14,7 @@ Completed:
 - 사용자 승인(2026-11-03 "바꿀 건 바꾸고, 전송할 건 전송하자") 후 첫 구현 3건. **신규 파일만 추가했고 기존 코드·설정·투자 규칙·DB는 바뀌지 않았다.**
   - 시도 로그(Q06 T1): `investment/trial_log.py`(append-only·해시 연쇄 JSONL, `.local/trial-log/<profile>.jsonl`, Git 제외)와 `tools/trial_log.py`(record/summary). 아직 어떤 탐색에도 연결·사용되지 않았다.
   - 겹침 포함률 모의 실험(Q07 T1): `tools/overlap_coverage_sim.py`와 결과 `docs/review/result_Q07_overlap_coverage_sim_2026-11-03.md`(합성 자료). 겹침을 무시한 구간의 실제 포함률은 지평 63/126/252일에서 각각 0.71~0.81/0.55~0.61/0.36~0.45였다.
+  - Codex 순서 의존·변이 점검(1번, `gpt-6.1-sol`/high): 순서 의존 0건(단독 93모듈 전부 통과, 전체·역순·무작위 동일 904 통과), 변이 212개 중 138개 생존. 추천 필터 경계·정렬 방향과 시도 로그 연쇄 검증 7건은 직접 재현해 테스트 추가(`tests/test_codex_sweep_survivors.py`, 변이별 검출 확인), 나머지 약 131개는 `docs/review/mutation_sweep_2026-11-03/`에 목록만 보존.
   - 실패 테스트 원인(Codex 위임은 읽기 전용 제한으로 실행 불가해 Claude Code가 임시 복사본에서 직접 진단): `test_auto_refresh` 5건 = 테스트 순서 의존(대시보드 AppTest가 `load_local` 패치 중 `batch` 등을 처음 import해 가짜 객체가 남음), 테스트에 import 정리 추가로 21개 통과(제품 코드 문제 아님). 비공식 UI 8건: `test_daily_ui`·`test_viewer_ui`는 포트 8501 서버 필요, 나머지 6건(`holdings_entry`·`discovery_financial`·`financial_table`·`live_dashboard`·`market_refresh`·`workspace_audit`)은 **2026-10-20 커밋(`2f8bdaf`)에서도 동일하게 실패** — 오늘 작업의 회귀가 아니라 이전부터의 문제. Codex(gpt-6.1-sol)가 원인을 규명하고 Claude Code가 임시 복사본에서 독립 재실행해 6건 모두 종료코드 0 확인: 전부 **테스트만의 취약점**(제품 변경 불필요) — 바뀐 문구(`holdings_entry`), SVG 2개로 바뀐 재무 그림(`discovery_financial`), 접힌 증거 표(`financial_table`), 제거된 `#overviewTable`·닫힌 `<details>` 안의 scatter 버튼(`live_dashboard`·`market_refresh`), 검토 모델이 상세 버튼을 켜는 픽스처(`workspace_audit`). 해당 테스트 6개를 수정(이 커밋). 남은 비공식 UI 실패는 포트 8501 서버가 필요한 `test_daily_ui`·`test_viewer_ui` 2개. 임시 복사본은 삭제함.
   - Codex PIT 설계 교차 검토 요약: `docs/review/review_codex_PIT_path_2026-11-03.md` (제안, 미구현, 사용자 승인 전 구현 금지).
   - Codex 독립 재점검(승인 "3개 다 진행"의 일부, 오늘 신규 코드 대상, 읽기 전용) 지적 중 재현된 것을 수정: (1) 추세 상수 진단의 SMA 합산 방식이 `technical()`과 달라 부동소수 경계에서 기준 판정이 어긋남 → 누적합 방식으로 통일, 기준 불일치가 있으면 종료코드 4로 결과 사용 금지; (2) 시도 로그 동시 쓰기 시 같은 index가 두 번 기록될 수 있음 → 교차 프로세스 잠금(.lock, 고아 잠금은 수동 정리); (3) 마지막 줄 개행 없는 로그에 이어 쓰면 손상 → 거부; (4) `top_n` 0/음수 거부; (5) 변이에 살아남던 테스트(부트스트랩 분산, 동순위 평균순위, RS=70 경계) 보강, 평가 전 기록 순서 테스트 추가(`tests/test_codex_review_fixes.py`, 변이 5종 검출). 미수정·보고만: 겹침 모의의 Bartlett/블록 길이 고정에 따른 지속 편향(Q07 문서에 명시), SQLite `mode=ro` 비보장 주장(운영 DB는 롤백 저널 모드로 확인, WAL이면 사이드카 파일 가능), `manifest()`는 메타데이터 비교이며 증명이 아님.

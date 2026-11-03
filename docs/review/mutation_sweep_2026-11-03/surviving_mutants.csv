@@ -1,0 +1,398 @@
+﻿id,file,line,old,new,test_modules,existing_test_cases,assertion_status,setup,assertion
+M004,investment/recommendations.py,78,.days>7,.days>=7,tests.test_codex_review_fixes; tests.test_dashboard_journey; tests.test_dashboard_upgrade; tests.test_portfolio_risk; tests.test_recommendation_score_report; tests.test_risk_review,65,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M004_seven_day_snapshot(self):
+        c=one_candidate();c['snapshot']['meta']['price_date']='2026-09-25'
+        self.assertEqual(rec.propose(c,created_on='2026-10-02')['coverage']['qualified'],1)"
+M008,investment/recommendations.py,88,m['revenue_growth_pct']<10,m['revenue_growth_pct']<=10,tests.test_codex_review_fixes; tests.test_dashboard_journey; tests.test_dashboard_upgrade; tests.test_portfolio_risk; tests.test_recommendation_score_report; tests.test_risk_review,65,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M008_growth_10(self):
+        c=one_candidate();c['snapshot']['companies'][0]['common_financial']['metrics']['revenue_growth_pct']=10
+        self.assertEqual(rec.propose(c,created_on='2026-10-02')['coverage']['qualified'],1)"
+M009,investment/recommendations.py,88,m['debt_ratio_pct']>200,m['debt_ratio_pct']>=200,tests.test_codex_review_fixes; tests.test_dashboard_journey; tests.test_dashboard_upgrade; tests.test_portfolio_risk; tests.test_recommendation_score_report; tests.test_risk_review,65,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M009_debt_200(self):
+        c=one_candidate();c['snapshot']['companies'][0]['common_financial']['metrics']['debt_ratio_pct']=200
+        self.assertEqual(rec.propose(c,created_on='2026-10-02')['coverage']['qualified'],1)"
+M010,investment/recommendations.py,92,"key=lambda x:(-x[0],x[1]['code'])","key=lambda x:(x[0],x[1]['code'])",tests.test_codex_review_fixes; tests.test_dashboard_journey; tests.test_dashboard_upgrade; tests.test_portfolio_risk; tests.test_recommendation_score_report; tests.test_risk_review,65,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M010_highest_scores_selected(self):
+        value=rec.propose(recommendation_context(),created_on='2026-10-02')
+        self.assertEqual([r['code'] for r in value['targets']],[str(900000+i) for i in range(5)])"
+M011,investment/research.py,31,op1>op3,op1>=op3,tests.test_auto_refresh; tests.test_infomax_history; tests.test_quality_score_disclosure; tests.test_research_app,68,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M011_equal_current_margins(self):
+        self.assertFalse(research.financial_signals(quarters(),'2026-12-31')['cross_up'])"
+M013,investment/research.py,32,e4>0 and pe4<=0,e4>=0 and pe4<=0,tests.test_auto_refresh; tests.test_infomax_history; tests.test_quality_score_disclosure; tests.test_research_app,68,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M013_zero_profit(self):
+        self.assertFalse(research.financial_signals(quarters(0),'2026-12-31')['profit_turn'])"
+M014,investment/research.py,46,gs>=0 and gs<go<gd,gs>0 and gs<go<gd,tests.test_auto_refresh; tests.test_infomax_history; tests.test_quality_score_disclosure; tests.test_research_app,68,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M014_zero_sales_growth(self):
+        a=annual([100]*4,[10,20,30,40],[1,2,4,8])
+        self.assertTrue(research.annual_signals(a,'2026-12-31')['returns_signal'])"
+M015,investment/research.py,46,gs<go<gd,gs<=go<gd,tests.test_auto_refresh; tests.test_infomax_history; tests.test_quality_score_disclosure; tests.test_research_app,68,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M015_equal_growth(self):
+        a=annual([100,200,400,800],[10,20,40,80],[1,4,16,64])
+        self.assertFalse(research.annual_signals(a,'2026-12-31')['returns_signal'])"
+M016,investment/research.py,52,e[k]<=as_of,e[k]<as_of,tests.test_auto_refresh; tests.test_infomax_history; tests.test_quality_score_disclosure; tests.test_research_app,68,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M016_cutoff_evidence(self):
+        row={'evidence':[dict(path='technology',available_at='2026-10-02',first_seen_at='2026-10-02',reviewed_at='2026-10-02',
+                            review_status='confirmed',document='doc',location='p1',summary='synthetic')]}
+        self.assertEqual(research.evidence_status(row,'technology','2026-10-02'),'confirmed')"
+M017,investment/research.py,53,e['available_at']<=e['reviewed_at'],e['available_at']<e['reviewed_at'],tests.test_auto_refresh; tests.test_infomax_history; tests.test_quality_score_disclosure; tests.test_research_app,68,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M017_same_day_review(self):
+        row={'evidence':[dict(path='technology',available_at='2026-10-01',first_seen_at='2026-10-01',reviewed_at='2026-10-01',
+                            review_status='confirmed',document='doc',location='p1',summary='synthetic')]}
+        self.assertEqual(research.evidence_status(row,'technology','2026-10-02'),'confirmed')"
+M018,investment/research.py,68,0<=tax<=1,0<tax<=1,tests.test_auto_refresh; tests.test_infomax_history; tests.test_quality_score_disclosure; tests.test_research_app,68,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M018_zero_tax(self):
+        row={'annual':annual([100]*4,[10]*4,[1]*4),'metrics':{'eps_ttm':1,'price':10,'net_debt_equity_pct':0},'valuation_basis':'CFS'}
+        self.assertAlmostEqual(research.quality_factors(row,'2026-12-31')['Q'],.1)"
+M019,investment/research.py,78,eps>0 and row.get('valuation_basis'),eps>=0 and row.get('valuation_basis'),tests.test_auto_refresh; tests.test_infomax_history; tests.test_quality_score_disclosure; tests.test_research_app,68,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M019_zero_eps(self):
+        row={'annual':[],'metrics':{'eps_ttm':0,'price':10,'net_debt_equity_pct':0},'valuation_basis':'CFS'}
+        self.assertIsNone(research.quality_factors(row,'2026-12-31')['V'])"
+M020,investment/research.py,113,for _ in range(2):,for _ in range(1):,tests.test_auto_refresh; tests.test_infomax_history; tests.test_quality_score_disclosure; tests.test_research_app,68,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M020_both_balanced_rounds(self):
+        rows=[]
+        for i,path in enumerate(research.PATHS):
+            for j in range(2):
+                rows.append(dict(code=f'{i}{j}',name=f'{i}{j}',paths={p:dict(eligible=p==path,sort=(2-j,0)) for p in research.PATHS}))
+        chosen=research.balanced_list(rows)
+        self.assertEqual(len(chosen),10)
+        self.assertEqual(len({r['code'] for r in chosen}),10)"
+M023,investment/market_discovery.py,134,i+1 >= n,i+1 > n,tests.test_codex_review_fixes; tests.test_listing_seasoning; tests.test_market_discovery; tests.test_trend_sensitivity_report,37,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M023_first_complete_ma20(self):self.assertEqual(technical_case([100]*20)['series'][-1]['ma20'],100)"
+M024,investment/market_discovery.py,141,dates[0] <= lower,dates[0] < lower,tests.test_codex_review_fixes; tests.test_listing_seasoning; tests.test_market_discovery; tests.test_trend_sensitivity_report,37,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M024_exact_52_week_coverage(self):self.assertEqual(technical_case([100]*365)['high_52w_close'],100)"
+M025,investment/market_discovery.py,142,b['date'] > lower,b['date'] >= lower,tests.test_codex_review_fixes; tests.test_listing_seasoning; tests.test_market_discovery; tests.test_trend_sensitivity_report,37,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M025_exclusive_52_week_lower_edge(self):self.assertEqual(technical_case([1000]+[100]*364)['high_52w_close'],100)"
+M026,investment/market_discovery.py,163,closes[-1] > s['50'] > s['150'] > s['200'],closes[-1] >= s['50'] > s['150'] > s['200'],tests.test_codex_review_fixes; tests.test_listing_seasoning; tests.test_market_discovery; tests.test_trend_sensitivity_report,37,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M026_close_equals_sma50(self):self.assertEqual(technical_case([50]*200+[80]*150+[100]*50)['price_trend_status'],'fail')"
+M027,investment/market_discovery.py,164,s['200'] > mean(closes[-220:-20]),s['200'] >= mean(closes[-220:-20]),tests.test_codex_review_fixes; tests.test_listing_seasoning; tests.test_market_discovery; tests.test_trend_sensitivity_report,37,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M027_flat_sma200_slope(self):self.assertEqual(technical_case([100]*180+[200]*20+[100]*150+[180]*30+[200]*20)['price_trend_status'],'fail')"
+M028,investment/market_discovery.py,165,result['rs126_pct'] > 0,result['rs126_pct'] >= 0,tests.test_codex_review_fixes; tests.test_listing_seasoning; tests.test_market_discovery; tests.test_trend_sensitivity_report,37,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M028_zero_relative_return(self):
+        c=list(range(100,500));v=technical_case(c,c)
+        self.assertEqual(v['rs126_pct'],0);self.assertEqual(v['price_trend_status'],'fail')"
+M029,investment/market_discovery.py,238,len(scores) >= 5,len(scores) > 5,tests.test_codex_review_fixes; tests.test_listing_seasoning; tests.test_market_discovery; tests.test_trend_sensitivity_report,37,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M029_actual_rank_at_five(self):
+        v=five_discovery()
+        self.assertTrue(all(r['technical']['price_strength']['score'] is not None for r in v['research']['rows'].values()))"
+M030,investment/market_discovery.py,200,quote['price']>0,quote['price']>=0,tests.test_codex_review_fixes; tests.test_listing_seasoning; tests.test_market_discovery; tests.test_trend_sensitivity_report,37,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M030_zero_latest_quote(self):self.assertNotIn('latest_quote',five_discovery(True)['snapshot']['companies'][0])"
+M031,investment/financial_table.py,70,end>cutoff,end>=cutoff,tests.test_company_detail; tests.test_dashboard_delivery; tests.test_dashboard_payload; tests.test_dashboard_stability; tests.test_financial_table; tests.test_fiscal_native_financial; tests.test_official_statements,81,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M031_period_end_on_cutoff(self):self.assertEqual(len(table_for(financial_record(period_end='2026-06-30'))['groups']),1)"
+M032,investment/financial_table.py,72,available>cutoff,available>=cutoff,tests.test_company_detail; tests.test_dashboard_delivery; tests.test_dashboard_payload; tests.test_dashboard_stability; tests.test_financial_table; tests.test_fiscal_native_financial; tests.test_official_statements,81,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M032_published_on_cutoff(self):self.assertEqual(len(table_for(financial_record(available_at='2026-06-30'))['groups']),1)"
+M033,investment/financial_table.py,80,day>cutoff,day>=cutoff,tests.test_company_detail; tests.test_dashboard_delivery; tests.test_dashboard_payload; tests.test_dashboard_stability; tests.test_financial_table; tests.test_fiscal_native_financial; tests.test_official_statements,81,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M033_cell_on_cutoff(self):
+        r=financial_record(cell_provenance={'revenue':dict(source='synthetic',available_at='2026-06-30')})
+        self.assertEqual(table_for(r)['groups'][0]['columns'][0]['values']['revenue'],1)"
+M034,investment/financial_table.py,85,filing>cutoff,filing>=cutoff,tests.test_company_detail; tests.test_dashboard_delivery; tests.test_dashboard_payload; tests.test_dashboard_stability; tests.test_financial_table; tests.test_fiscal_native_financial; tests.test_official_statements,81,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M034_filing_on_cutoff(self):
+        r=financial_record(filing_available_at='2026-06-30',source_url='https://example.test/report',receipt='synthetic')
+        self.assertEqual(table_for(r)['groups'][0]['columns'][0]['filing_available_at'],'2026-06-30')"
+M038,investment/financial_table.py,236,period['period_end'] > as_of,period['period_end'] >= as_of,tests.test_company_detail; tests.test_dashboard_delivery; tests.test_dashboard_payload; tests.test_dashboard_stability; tests.test_financial_table; tests.test_fiscal_native_financial; tests.test_official_statements,81,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M038_merge_period_end_on_cutoff(self):
+        v=ft.merge_financials(bundle_for(financial_record(period_end='2026-06-30',available_at=None)),{},as_of='2026-06-30')
+        self.assertEqual(len(v['900000']['periods']),1)"
+M039,investment/financial_table.py,236,available > as_of,available >= as_of,tests.test_company_detail; tests.test_dashboard_delivery; tests.test_dashboard_payload; tests.test_dashboard_stability; tests.test_financial_table; tests.test_fiscal_native_financial; tests.test_official_statements,81,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M039_merge_publication_on_cutoff(self):
+        v=ft.merge_financials({},bundle_for(financial_record(available_at='2026-06-30')),as_of='2026-06-30')
+        self.assertEqual(len(v['900000']['periods']),1)"
+M040,investment/financial_table.py,300,abs(raw[field]-old) >= 1e8,abs(raw[field]-old) > 1e8,tests.test_company_detail; tests.test_dashboard_delivery; tests.test_dashboard_payload; tests.test_dashboard_stability; tests.test_financial_table; tests.test_fiscal_native_financial; tests.test_official_statements,81,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M040_exact_100m_difference(self):
+        v=ft.merge_financials(bundle_for(financial_record(revenue=2e8)),bundle_for(financial_record(revenue=1e8)))
+        self.assertIn('revenue',v['900000']['periods'][0]['cell_notes'])"
+M041,investment/company_financials.py,80,month<5,month<=5,tests.test_company_financials; tests.test_dashboard_delivery; tests.test_data_recovery; tests.test_market_refresh; tests.test_official_statements,55,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M041_may_report(self):self.assertIn((2026,1),history_targets('2026-05-01'))"
+M042,investment/company_financials.py,80,month<8,month<=8,tests.test_company_financials; tests.test_dashboard_delivery; tests.test_data_recovery; tests.test_market_refresh; tests.test_official_statements,55,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M042_august_report(self):self.assertIn((2026,2),history_targets('2026-08-01'))"
+M043,investment/company_financials.py,80,month<11,month<=11,tests.test_company_financials; tests.test_dashboard_delivery; tests.test_data_recovery; tests.test_market_refresh; tests.test_official_statements,55,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M043_november_report(self):self.assertIn((2026,3),history_targets('2026-11-01'))"
+M044,investment/company_financials.py,113,record['available_at']<=cutoff,record['available_at']<cutoff,tests.test_company_financials; tests.test_dashboard_delivery; tests.test_data_recovery; tests.test_market_refresh; tests.test_official_statements,55,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M044_cfs_publication_on_cutoff(self):
+        with tempfile.TemporaryDirectory() as t:
+            dest=Path(t);row=dict(code='900000',name='S',market='KOSPI')
+            def collect(*a,**kw):return dict(basis=a[2],year=a[3],quarter=a[4],available_at='2026-06-30',values={'revenue':1})
+            with patch('investment.company_financials.folder',return_value=dest), \
+                 patch('investment.company_financials.history_targets',return_value=[(2026,2)]), \
+                 patch('investment.company_financials.resolve_company',return_value=('12345678','S')), \
+                 patch('investment.company_financials.time.sleep'),patch('tools.company_statements.collect',side_effect=collect) as fetch:
+                cf._collect_company(dest,row,'2026-06-30')
+                self.assertEqual(fetch.call_count,1)
+            saved=json.loads((dest/'900000.json').read_text(encoding='utf-8'))
+            self.assertEqual(saved['companies']['900000']['reports'][0]['basis'],'CFS')"
+M045,investment/company_financials.py,156,"r.get('parser_version',0)<PARSER_VERSION","r.get('parser_version',0)<=PARSER_VERSION",tests.test_company_financials; tests.test_dashboard_delivery; tests.test_data_recovery; tests.test_market_refresh; tests.test_official_statements,55,EQUIVALENT: reasoned for stated valid inputs,Equivalent for valid report bundles: the newly entered equality branch still selects reparsed records with the unchanged strict parser_version<PARSER_VERSION predicate at line158. No state or result changes when that list is empty. No valid-input killing assertion exists.,No valid-input killing assertion: see equivalence mechanism.
+M046,investment/company_financials.py,184,c['source']['available_at']<=cutoff,c['source']['available_at']<cutoff,tests.test_company_financials; tests.test_dashboard_delivery; tests.test_data_recovery; tests.test_market_refresh; tests.test_official_statements,55,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,def test_M046_native_publication_on_cutoff(self):inventory_at_cutoff(self)
+M047,investment/company_financials.py,184,c['period_end']<=cutoff,c['period_end']<cutoff,tests.test_company_financials; tests.test_dashboard_delivery; tests.test_data_recovery; tests.test_market_refresh; tests.test_official_statements,55,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,def test_M047_native_period_on_cutoff(self):inventory_at_cutoff(self)
+M048,investment/company_financials.py,287,"time.monotonic()-prior.get('attempt',0)<(60 if retry else 3600)","time.monotonic()-prior.get('attempt',0)<=(60 if retry else 3600)",tests.test_company_financials; tests.test_dashboard_delivery; tests.test_data_recovery; tests.test_market_refresh; tests.test_official_statements,55,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M048_exact_retry_deadline(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            service=cf.CompanyFinancials(tmp);service.jobs['900000']=dict(status='failed',attempt=40)
+            row=dict(code='900000',name='S',market='KOSPI',eligibility='candidate',metrics={'market_cap_eok':2000})
+            with patch('investment.company_financials.load_market_cache',return_value={'universe':{'companies':[row]}}), \
+                 patch('investment.company_financials.folder',return_value=Path(tmp)), \
+                 patch('investment.company_financials.time.monotonic',return_value=100), \
+                 patch('investment.company_financials.Thread') as thread:
+                self.assertEqual(service.start('900000',retry=True)['status'],'running')
+                thread.return_value.start.assert_called_once()"
+M049,investment/company_financials.py,319,pages>100,pages>=100,tests.test_company_financials; tests.test_dashboard_delivery; tests.test_data_recovery; tests.test_market_refresh; tests.test_official_statements,55,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M049_exact_100_pages(self):
+        session=Mock()
+        def response(*a,**kw):return Mock(content=filing_page(int(kw['data']['currentPage']),100,100).encode('utf-8'))
+        session.post.side_effect=response
+        with patch('investment.company_financials.time.sleep'):
+            self.assertEqual(len(cf.fetch_filings('2026-10-02',session=session)),100)
+        self.assertEqual(session.post.call_count,100)"
+M050,investment/company_financials.py,330,page>=pages,page>pages,tests.test_company_financials; tests.test_dashboard_delivery; tests.test_data_recovery; tests.test_market_refresh; tests.test_official_statements,55,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M050_last_page_stops(self):
+        session=Mock();session.post.return_value.content=filing_page(1,1,1).encode('utf-8')
+        self.assertEqual(len(cf.fetch_filings('2026-10-02',session=session)),1)
+        self.assertEqual(session.post.call_count,1)"
+M055,investment/portfolio_risk.py,110,len(dates) < MIN_RETURNS+1,len(dates) <= MIN_RETURNS+1,tests.test_portfolio_risk; tests.test_risk_review; tests.test_rolling_relationship; tests.test_upgrade_integration,34,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M055_minimum_63_returns(self):
+        _,cache,cutoff=risk_fixture();h=cache['history']
+        self.assertEqual(pr.time_series(h['histories']['900000']['prices'][-64:],h['benchmarks']['KOSPI']['prices'][-64:],cutoff)['status'],'ready')"
+M056,investment/portfolio_risk.py,150,len(targets)>5,len(targets)>=5,tests.test_portfolio_risk; tests.test_risk_review; tests.test_rolling_relationship; tests.test_upgrade_integration,34,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M056_five_holdings_allowed(self):
+        targets,cache,cutoff=five_risk()
+        self.assertEqual(pr.portfolio_risk(targets,5,cache,cutoff)['status'],'ready')"
+M057,investment/portfolio_risk.py,152,abs(sum(weights)+cash_pct-100)>1e-6,abs(sum(weights)+cash_pct-100)>=1e-6,tests.test_portfolio_risk; tests.test_risk_review; tests.test_rolling_relationship; tests.test_upgrade_integration,34,EQUIVALENT: reasoned for stated valid inputs,"Equivalent for built-in valid numeric weights: after summing bounded weights/cash, subtraction of100 lies on the floating-point grid near100. It cannot equal the particular float1e-6 exactly; integer inputs cannot either. > and >= therefore agree at this guard. No valid-input killer.",No valid-input killing assertion: see equivalence mechanism.
+M060,investment/portfolio_risk.py,250,len(targets)>limits['max_positions'],len(targets)>=limits['max_positions'],tests.test_portfolio_risk; tests.test_risk_review; tests.test_rolling_relationship; tests.test_upgrade_integration,34,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M060_exact_position_limit(self):
+        targets,cache,cutoff=five_risk()
+        policy=dict(state='USER_CONFIRMED',effective_on='2020-01-01',provenance='synthetic',max_positions=5,max_position_pct=40,min_cash_pct=5)
+        v=pr.compare_portfolios(dict(targets=targets,cash_pct=5,created_on=cutoff),None,cache,cutoff,policy)
+        self.assertNotIn('max_positions',v['policy_violations'])"
+M061,investment/store.py,10,"profile not in ('home','work','unknown') or mode not in ('fixture','user_input','live')","profile not in ('home','work','unknown') and mode not in ('fixture','user_input','live')",tests.test_auto_refresh; tests.test_dual_pc; tests.test_market_events; tests.test_naver_review; tests.test_refresh; tests.test_research_app,115,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M061_profile_guard(self):
+        with tempfile.TemporaryDirectory() as t,self.assertRaises(ValueError):storage.Store(t,'invalid','fixture')"
+M062,investment/store.py,25,        validate_snapshot(snapshot),        pass # mutation: drop snapshot validation,tests.test_auto_refresh; tests.test_dual_pc; tests.test_market_events; tests.test_naver_review; tests.test_refresh; tests.test_research_app,115,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M062_validate_store_input(self):
+        s=make_fixture();s['meta']['access_token']='synthetic sentinel'
+        with tempfile.TemporaryDirectory() as t:
+            st=storage.Store(t,'work','fixture')
+            with self.assertRaises(ValueError):st.save_snapshot(s)"
+M064,investment/store.py,29,INSERT OR IGNORE INTO snapshots,INSERT OR REPLACE INTO snapshots,tests.test_auto_refresh; tests.test_dual_pc; tests.test_market_events; tests.test_naver_review; tests.test_refresh; tests.test_research_app,115,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M064_duplicate_snapshot_idempotence(self):
+        a=make_fixture();b=copy.deepcopy(a);b['companies'][0]['metrics']['price']+=1
+        stamps=[datetime(2026,1,i,tzinfo=timezone.utc) for i in (1,2,3)]
+        with tempfile.TemporaryDirectory() as t,patch('investment.store.datetime') as clock:
+            clock.now.side_effect=stamps;st=storage.Store(t,'work','fixture')
+            st.save_snapshot(a);st.save_snapshot(b);st.save_snapshot(a)
+            self.assertEqual(st.latest(),b)"
+M069,investment/store.py,41,"('code','path','quarter','model')","('code','path','quarter')",tests.test_auto_refresh; tests.test_dual_pc; tests.test_market_events; tests.test_naver_review; tests.test_refresh; tests.test_research_app,115,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M069_model_event_identity(self):
+        with tempfile.TemporaryDirectory() as t:
+            st=storage.Store(t,'work','fixture');a=dict(code='900000',path='technology',quarter='2026-06-30',model='v1')
+            self.assertNotEqual(st.event(a),st.event(dict(a,model='v2')))"
+M070,investment/store.py,44,"            db.execute('UPDATE events SET payload=? WHERE id=?',(json.dumps(event),eid))",            pass # mutation: omit event update,tests.test_auto_refresh; tests.test_dual_pc; tests.test_market_events; tests.test_naver_review; tests.test_refresh; tests.test_research_app,115,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M070_event_reevaluation(self):
+        with tempfile.TemporaryDirectory() as t:
+            st=storage.Store(t,'work','fixture');a=dict(code='900000',path='technology',quarter='2026-06-30',model='v1',status='pending')
+            eid=st.event(a);b=dict(a,status='confirmed');self.assertEqual(st.event(b),eid)
+            with st.connect() as db:saved=json.loads(db.execute('SELECT payload FROM events WHERE id=?',(eid,)).fetchone()[0])
+            self.assertEqual(saved,b)"
+M074,investment/auto_refresh.py,68,price_date < target,price_date <= target,tests.test_auto_refresh,21,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M074_target_is_not_stale(self):
+        s=make_fixture();s['meta']['price_date']='2026-09-25'
+        r=auto.summary(s,s,status='cached',checked_at=datetime(2026,9,28,tzinfo=auto.KST),target='2026-09-25',calendar_basis='synthetic')
+        self.assertFalse(r['stale'])"
+M075,investment/auto_refresh.py,111,snapshot['meta']['price_date'] >= target,snapshot['meta']['price_date'] > target,tests.test_auto_refresh,21,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M075_cached_date_equals_target(self):
+        with auto_case() as c:
+            c.snapshot['meta']['fetched_at']=c.time.isoformat();c.store.save_snapshot(c.snapshot)
+            with patch('investment.auto_refresh.target_date',return_value=(c.snapshot['meta']['price_date'],'synthetic')):c.run_refresh()
+            c.provider.fetch.assert_not_called()"
+M076,investment/auto_refresh.py,116,source_age < ttl,source_age <= ttl,tests.test_auto_refresh,21,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M076_first_cache_exact_ttl(self):
+        with auto_case() as c:
+            c.snapshot['meta']['fetched_at']=(c.time-timedelta(seconds=900)).isoformat();c.store.save_snapshot(c.snapshot)
+            c.run_refresh();c.provider.fetch.assert_called_once()"
+M077,investment/auto_refresh.py,121,and age < ttl:,and age <= ttl:,tests.test_auto_refresh,21,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M077_existing_cache_exact_ttl(self):
+        with auto_case() as c:
+            c.run_refresh();c.time+=timedelta(seconds=900);c.run_refresh()
+            self.assertEqual(c.provider.fetch.call_count,2)"
+M078,investment/auto_refresh.py,126,age < retry,age <= retry,tests.test_auto_refresh,21,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M078_retry_exact_deadline(self):
+        with auto_case() as c:
+            c.provider.fetch.side_effect=OSError('synthetic');c.run_refresh();c.time+=timedelta(seconds=60);c.run_refresh()
+            self.assertEqual(c.provider.fetch.call_count,2)"
+M079,investment/auto_refresh.py,107,1 <= v <= 86400,1 < v <= 86400,tests.test_auto_refresh,21,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M079_one_second_interval(self):
+        with auto_case() as c:
+            c.config['infomax_refresh']['freshness_seconds']=1;c.write_config();c.run_refresh()
+            c.provider.fetch.assert_called_once()"
+M084,investment/refresh.py,114,value <= 0,value < 0,tests.test_auto_refresh; tests.test_infomax_history; tests.test_naver_review; tests.test_refresh,64,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M084_zero_price_rejected(self):
+        with refresh_case() as c:
+            c.daily['companies'][0]['metrics']['price']=0
+            with self.assertRaises(ValueError):rf.refresh(c.root)"
+M085,investment/refresh.py,120,daily['meta']['price_date'] > as_of,daily['meta']['price_date'] >= as_of,tests.test_auto_refresh; tests.test_infomax_history; tests.test_naver_review; tests.test_refresh,64,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M085_observation_date_equals_price_date(self):
+        with refresh_case() as c:
+            c.daily['meta']['as_of']=c.daily['meta']['price_date']
+            with c.store.connect() as db:db.execute('DELETE FROM snapshots')
+            provider=Mock();provider.fetch.return_value=(c.daily,{'synthetic':1},'synthetic.json')
+            with patch('batch.run',return_value={'snapshot_id':'synthetic'}):r=rf.refresh(c.root,provider=provider)
+            self.assertEqual(r['snapshot']['meta']['price_date'],r['snapshot']['meta']['as_of'])"
+M086,investment/refresh.py,122,as_of > datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat(),as_of >= datetime.now(ZoneInfo('Asia/Seoul')).date().isoformat(),tests.test_auto_refresh; tests.test_infomax_history; tests.test_naver_review; tests.test_refresh,64,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M086_observation_today(self):
+        with refresh_case() as c:
+            today=datetime.now(auto.KST).date().isoformat();c.daily['meta']['as_of']=today
+            with c.store.connect() as db:db.execute('DELETE FROM snapshots')
+            provider=Mock();provider.fetch.return_value=(c.daily,{'synthetic':1},'synthetic.json')
+            with patch('batch.run',return_value={'snapshot_id':'synthetic'}):r=rf.refresh(c.root,provider=provider)
+            self.assertEqual(r['snapshot']['meta']['as_of'],today)"
+M087,investment/refresh.py,47,if not k.startswith('financial_') and k != 'warnings',if not k.startswith('financial_') or k != 'warnings',tests.test_auto_refresh; tests.test_infomax_history; tests.test_naver_review; tests.test_refresh,64,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M087_financial_metadata_preserved(self):
+        with refresh_case() as c:
+            c.daily['meta']['financial_period']='2025-12-31'
+            self.assertEqual(rf.merge_daily(c.previous,c.daily)['meta']['financial_period'],'2026-06-30')"
+M090,investment/refresh.py,175,if result['snapshot_id'] != sid:,if False:,tests.test_auto_refresh; tests.test_infomax_history; tests.test_naver_review; tests.test_refresh,64,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M090_mismatched_batch_snapshot_is_partial(self):
+        with refresh_case() as c,patch('batch.run',return_value={'snapshot_id':'wrong'}):
+            r=rf.refresh(c.root);self.assertEqual(r['receipt']['status'],'partial');self.assertEqual(len(r['receipt']['errors']),2)"
+M091,investment/trial_log.py,30,len(value) > limit,len(value) >= limit,tests.test_codex_review_fixes; tests.test_threshold_sensitivity_report; tests.test_trend_sensitivity_report; tests.test_trial_log,37,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M091_maximum_text_length(self):
+        with tempfile.TemporaryDirectory() as t:
+            e=dict(experiment_id='x'*100,rule_version='v',parameter_set={'a':1},decision='pending')
+            self.assertEqual(trial_log.record(t,'work',e)['experiment_id'],'x'*100)"
+M092,investment/trial_log.py,40,start > end,start >= end,tests.test_codex_review_fixes; tests.test_threshold_sensitivity_report; tests.test_trend_sensitivity_report; tests.test_trial_log,37,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M092_single_day_period(self):
+        with tempfile.TemporaryDirectory() as t:
+            e=dict(experiment_id='x',rule_version='v',parameter_set={'a':1},decision='pending',train_period=['2026-01-01']*2)
+            self.assertEqual(trial_log.record(t,'work',e)['train_period'],['2026-01-01']*2)"
+M097,investment/trial_log.py,80,row.get('prev_digest') != previous,False,tests.test_codex_review_fixes; tests.test_threshold_sensitivity_report; tests.test_trend_sensitivity_report; tests.test_trial_log,37,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M097_chain_previous_digest(self):
+        with tempfile.TemporaryDirectory() as t:
+            e=dict(experiment_id='x',rule_version='v',parameter_set={'a':1},decision='pending')
+            trial_log.record(t,'work',e);trial_log.record(t,'work',e);p=trial_log.log_path(t,'work')
+            rows=[json.loads(s) for s in p.read_text(encoding='utf-8').splitlines()];rows[-1]['prev_digest']='0'*64
+            body={k:v for k,v in rows[-1].items() if k!='digest'};rows[-1]['digest']=digest(body)
+            p.write_text(''.join(json.dumps(r)+'\n' for r in rows),encoding='utf-8')
+            with self.assertRaises(ValueError):trial_log.read_all(t,'work')"
+M101,investment/leader_strategy.py,22,c['momentum_lag']<c['window'],c['momentum_lag']<=c['window'],tests.test_leader_strategy,7,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M101_equal_lag_window(self):
+        c=leader.load_config();c['momentum_lag']=c['window']
+        with tempfile.TemporaryDirectory() as t:
+            p=Path(t)/'config.json';p.write_text(json.dumps(c),encoding='utf-8');self.assertEqual(leader.load_config(p),c)"
+M102,investment/leader_strategy.py,27,len(ps)<lag+w,len(ps)<=lag+w,tests.test_leader_strategy,7,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M102_exact_history_length(self):
+        c=leader.load_config();ps=bars([100]*(c['window']+c['momentum_lag']));t=dict(close=100,as_of=ps[-1]['date'],price_health={'status':'ready'})
+        self.assertEqual(leader.raw_features({'prices':ps},t,t['as_of'],c)[1],'')"
+M108,investment/leader_strategy.py,107,rank>=100-c['value_tail_pct'],rank>100-c['value_tail_pct'],tests.test_leader_strategy,7,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M108_value_upper_tail_equality(self):
+        d,c=leader_case();v=leader.build(d,c)
+        self.assertEqual(next(r for r in v['rows'] if r['code']=='900001')['value_band'],'저평가')"
+M109,investment/leader_strategy.py,107,rank<=c['value_tail_pct'],rank<c['value_tail_pct'],tests.test_leader_strategy,7,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M109_value_lower_tail_equality(self):
+        d,c=leader_case();v=leader.build(d,c)
+        self.assertEqual(next(r for r in v['rows'] if r['code']=='900003')['value_band'],'고평가')"
+M110,investment/leader_strategy.py,109,r['momentum_band']=='상' and r['turnover_band']=='상',r['momentum_band']=='상' or r['turnover_band']=='상',tests.test_leader_strategy,7,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M110_both_axes_required(self):
+        d,c=leader_case()
+        with patch('investment.leader_strategy.standardize',side_effect=[[-.5,-.5,2,-.5,-.5],[.5,.5,-2,.5,.5],[],[]]):v=leader.build(d,c)
+        self.assertFalse(next(r for r in v['rows'] if r['code']=='900002')['candidate'])"
+M111,investment/industry_phase.py,18,c['ma_fast']<c['ma_slow'],c['ma_fast']<=c['ma_slow'],tests.test_industry_phase,7,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M111_equal_phase_windows_rejected(self):
+        c=phase.load_config();c['ma_fast']=c['ma_slow']
+        with tempfile.TemporaryDirectory() as t:
+            p=Path(t)/'phase.json';p.write_text(json.dumps(c),encoding='utf-8')
+            with self.assertRaises(ValueError):phase.load_config(p)"
+M116,investment/industry_phase.py,51,ps[highs[0]]['date']<=lower,ps[highs[0]]['date']<lower,tests.test_industry_phase,7,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M116_high_window_excludes_lower_date(self):self.assertEqual(short_phase_path([200]+[100]*7)[-1]['phase'],'미확인')"
+M117,investment/industry_phase.py,54,breaks[0]<i-c['breakout_days'],breaks[0]<=i-c['breakout_days'],tests.test_industry_phase,7,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M117_breakout_keeps_full_prior_window(self):self.assertEqual(short_phase_path([100]*7+[50,75])[-1]['phase'],'사')"
+M118,investment/industry_phase.py,55,close>ps[breaks[0]]['close'],close>=ps[breaks[0]]['close'],tests.test_industry_phase,7,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M118_equal_high_is_not_breakout(self):self.assertEqual(short_phase_path([100]*7+[50,100])[-1]['phase'],'사')"
+M119,investment/industry_phase.py,80,p['close']>=path[peak]['close'],p['close']>path[peak]['close'],tests.test_industry_phase,7,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M119_last_equal_peak(self):
+        path=[dict(date=str(i),phase=p,close=v) for i,(p,v) in enumerate(zip(['쇠','생','왕','왕','쇠'],[90,100,120,120,100]))]
+        self.assertEqual(episodes(path)[0]['peak'],'3')"
+M121,investment/adapters.py,23,r.status_code>=500,r.status_code > 500,tests.test_market_events; tests.test_research_app,48,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M121_retry_http_500(self):
+        session=Mock();ok=Mock(status_code=200,headers={});ok.json.return_value={'ok':1}
+        session.request.side_effect=[Mock(status_code=500),ok]
+        value=adapters.Reader('work',{},session=session,sleep=lambda _:None)._request('GET','https://example.test')
+        self.assertEqual(value[0],{'ok':1});self.assertEqual(session.request.call_count,2)"
+M122,investment/agent_providers.py,58,v < 0,v <= 0,tests.test_research_agents; tests.test_research_sessions,22,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M122_zero_usage_valid(self):
+        value=dict(status='completed',output=[dict(type='message',content=[dict(type='output_text',text='{}')])],usage={'input_tokens':0,'output_tokens':0})
+        self.assertEqual(agent_providers.decode_response('openai',value)['usage'],value['usage'])"
+M123,investment/company_detail.py,30,p['close'] <= 0,p['close'] < 0,tests.test_company_detail,11,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M123_zero_chart_close(self):
+        row=dict(code='900000',market='KOSPI',prices=[dict(date='2026-10-01',close=0,final=True,venue='KRX',adjustment_basis='naver_chart_adjusted')])
+        self.assertEqual(company_detail.chart_history(row,{'meta':{'price_date':'2026-10-01'}})['bars'],[])"
+M124,investment/company_events.py,20,len(clusters)>100,len(clusters) >= 100,tests.test_company_events,3,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M124_exact_100_clusters(self):
+        self.assertEqual(company_events.parse({'clusters':[{'items':[]} for _ in range(100)]},'900000','news',datetime(2026,10,2,tzinfo=auto.KST)),[])"
+M125,investment/company_reports.py,37,len(href)>2*1024*1024,len(href) >= 2 * 1024 * 1024,tests.test_company_reports; tests.test_report_inbox,19,EQUIVALENT: reasoned for stated valid inputs,"Equivalent for valid embedded JSON links: the prefix is29 characters and valid base64 length is a multiple of4, so valid href length is1 mod4. The2MiB limit is0 mod4. An exactly-limit href already fails base64 validation, giving the same invalid result. No valid-input killer.",No valid-input killing assertion: see equivalence mechanism.
+M126,investment/core.py,20,b > 0,b >= 0,tests.test_auto_refresh; tests.test_infomax_import; tests.test_naver_review; tests.test_refresh; tests.test_research_agents; tests.test_research_app; tests.test_research_library; tests.test_valuation,171,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M126_zero_denominator(self):
+        from investment.core import ratio
+        self.assertIsNone(ratio(1,0))"
+M127,investment/daily_dashboard.py,83,uploaded.size>12*1024*1024,uploaded.size >= 12 * 1024 * 1024,tests.test_daily_dashboard,7,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M127_exact_upload_limit(self):
+        fake=MagicMock();fake.session_state={};fake.button.side_effect=[True,False];fake.form_submit_button.return_value=False
+        def columns(n):
+            cols=[Mock() for _ in range(n)]
+            for col in cols:col.number_input.side_effect=lambda *a,**k:a[3]
+            return cols
+        fake.columns.side_effect=columns;uploaded=Mock();uploaded.name='synthetic.json';uploaded.size=12*1024*1024
+        raw=b'{""mode"":""user_input""}';uploaded.getvalue.return_value=raw+b' '*(uploaded.size-len(raw));fake.file_uploader.return_value=uploaded
+        with patch('investment.daily_dashboard.st',fake),patch('investment.daily_dashboard.verify'):
+            self.assertEqual(daily_dashboard._inputs({},dict(pending=[]),'input')[0],{'mode':'user_input'})"
+M128,investment/dart_statements.py,98,investing[0]<=j,investing[0] < j,tests.test_company_financials; tests.test_dart_statements; tests.test_financial_account_recovery; tests.test_fiscal_native_financial,46,EQUIVALENT: reasoned for stated valid inputs,"Equivalent: the only added case is investing[0]==j. Then rows[j+1:investing[0]] is empty and the unchanged len(adjustments)!=3 check at line101 returns the same ({},{}). No killing assertion for valid rows.",No valid-input killing assertion: see equivalence mechanism.
+M129,investment/financial_health.py,8,path.stat().st_size > 5_000_000,path.stat().st_size >= 5000000,tests.test_dashboard_journey,4,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M129_exact_record_limit(self):
+        with tempfile.TemporaryDirectory() as t:
+            p=Path(t)/'record.json';p.write_bytes(b'{""x"":1}'+b' '*(5_000_000-7))
+            self.assertEqual(financial_health.read_record(p),{'x':1})"
+M130,investment/financial_metrics.py,103,x>0,x >= 0,tests.test_dashboard_upgrade; tests.test_fiscal_native_financial,35,REASONED: proposed assertion not run,"Use the existing complete KRW TTM financial fixture; set latest_quote.market_cap_eok=0, quote price and technical close positive, and matching quote/price dates.","self.assertIsNone(common_metrics(row, table, technical)['metrics']['per'])"
+M131,investment/financial_update_policy.py,34,old*new<0,old * new <= 0,tests.test_financial_update_policy; tests.test_fiscal_native_financial,27,EQUIVALENT: reasoned for stated valid inputs,"Equivalent for finite validated financial values: old==0 is already material; when new==0 and old!=0, the absolute revision is100%, already >=7%. Adding zero to the sign-product predicate changes no decision. No valid-input killer.",No valid-input killing assertion: see equivalence mechanism.
+M134,investment/holding_market.py,33,time.monotonic()-prior[0]<300,time.monotonic() - prior[0] <= 300,tests.test_holding_market,8,REASONED: proposed assertion not run,"Populate HoldingMarket.lookup cache at monotonic 100, advance the injected clock to exactly 400, and call lookup again without force.","self.assertEqual(fetcher.call_count, 2)"
+M135,investment/holdings_bridge.py,16,b['close'] > 0,b['close'] >= 0,tests.test_daily_dashboard; tests.test_holding_market; tests.test_holdings_bridge; tests.test_market_events; tests.test_naver_review,57,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M135_zero_saved_close(self):
+        r=dict(symbol='900000',kind='item',prices=[dict(date='2026-10-01',close=0,final=True,venue='KRX',adjustment_basis='naver_chart_adjusted')])
+        self.assertIsNone(holdings_bridge.saved_naver_close(r,'900000','2026-10-02'))"
+M136,investment/holdings_sync.py,54,"record.get('size',LIMIT+1)>LIMIT","record.get('size', LIMIT + 1) >= LIMIT",tests.test_holdings_sync,10,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M136_exact_remote_limit(self):
+        value={'kind':'investment-holdings-sync','version':1,'state':{}};raw=json.dumps(value).encode();raw+=b' '*(holdings_sync.LIMIT-len(raw))
+        remote=holdings_sync.GitHubStorage('fixture/example');remote.verify_private=Mock()
+        remote.api=Mock(return_value=dict(type='file',encoding='base64',size=len(raw),sha='a'*40,content=base64.b64encode(raw).decode()))
+        self.assertEqual(remote.read(),({},'a'*40))"
+M137,investment/infomax_provider.py,32,self.path.stat().st_size > 30 * 1024 * 1024,self.path.stat().st_size >= 30 * 1024 * 1024,tests.test_auto_refresh,21,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M137_exact_snapshot_limit(self):
+        snapshot=make_fixture();raw=json.dumps(snapshot).encode()
+        with tempfile.TemporaryDirectory() as t:
+            p=Path(t)/'snapshot.json';p.write_bytes(raw+b' '*(30*1024*1024-len(raw)))
+            self.assertEqual(infomax_provider.SavedSnapshotProvider(p).fetch()[0],snapshot)"
+M139,investment/live_dashboard.py,120,len(body)>1024,len(body) >= 1024,tests.test_company_financials; tests.test_company_reports; tests.test_dashboard_delivery; tests.test_dashboard_stability; tests.test_data_recovery; tests.test_holding_market; tests.test_holdings_sync; tests.test_live_dashboard; tests.test_mobile_dashboard; tests.test_naver_review; tests.test_report_inbox; tests.test_research_library_view,156,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M139_exact_1024_response(self):
+        with tempfile.TemporaryDirectory() as t:
+            handler=live_dashboard.handler_for(Path(t),read_only=True,report_inbox=Mock());out=Mock();out.headers={'Accept-Encoding':'gzip'};out.wfile=io.BytesIO()
+            handler.send_body(out,200,'x'*1024,'text/plain')
+            self.assertNotIn(('Content-Encoding','gzip'),[c.args for c in out.send_header.call_args_list]);self.assertEqual(len(out.wfile.getvalue()),1024)"
+M140,investment/market_events.py,23,len(value) > 4000,len(value) >= 4000,tests.test_market_events,13,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M140_exact_url_length(self):
+        prefix='https://example.test/';url=prefix+'x'*(4000-len(prefix));self.assertEqual(market_events.safe_url(url),url)"
+M141,investment/market_explanation.py,15,len(bars_by_code[r['code']]) >= n,len(bars_by_code[r['code']]) > n,tests.test_market_trend_changes,12,REASONED: proposed assertion not run,One ready KOSPI stock with exactly 50 valid closes; call build_market_explanation with that row and its bars.,"self.assertEqual(result['markets'][0]['breadth']['above']['50']['eligible'],1)"
+M142,investment/market_history.py,39,(last-first).days > 3700,(last - first).days >= 3700,tests.test_codex_review_fixes; tests.test_company_detail; tests.test_dashboard_stability; tests.test_dashboard_upgrade; tests.test_market_history; tests.test_market_refresh; tests.test_trend_sensitivity_report,92,REASONED: proposed assertion not run,"Set start=date(2010,1,1); end=start+timedelta(days=3700). No network is needed: _request only builds URL/parameters.","self.assertEqual(_request('900000','item',start.isoformat(),end.isoformat())[1]['endDateTime'],end.strftime('%Y%m%d')+'2359')"
+M143,investment/market_insights.py,10,len(pool)<5,len(pool) <= 5,tests.test_dashboard_upgrade; tests.test_sector_weighting,19,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M143_exact_five_percentile(self):self.assertEqual(market_insights.percentile(3,[1,2,3,4,5]),50)"
+M144,investment/market_refresh.py,45,price <= 0,price < 0,tests.test_market_refresh,15,REASONED: proposed assertion not run,Existing universe has one candidate; injected complete listing returns that same identity with price 0 and otherwise valid source/retrieval metadata.,"with self.assertRaisesRegex(ValueError, 'no_valid_quotes'):
+    collect_quotes(folder, lambda p: None, fetch=fetcher)"
+M145,investment/metrics.py,13,r['period_end']>history['observed_on'],r['period_end'] >= history['observed_on'],tests.test_infomax_history; tests.test_research_app,45,REASONED: proposed assertion not run,"observed_financial_history observed_on=2025-12-31, four consecutive annual rows through that date and four consecutive 2025 quarters through that date. Set scope='current_observation', basis='CFS', income_basis='standalone_quarters'; snapshot mode=user_input and as_of>=observed_on.","self.assertEqual(current_history(row,snapshot),row['observed_financial_history'])"
+M146,investment/native_financial.py,35,r['period_end']>cutoff,r['period_end'] >= cutoff,tests.test_fiscal_native_financial,18,REASONED: proposed assertion not run,"Use fiscal_report(fy=2026,month=12,q=1,available='2026-03-31')[0]; cutoff is exactly its period_end.","self.assertEqual(len(fiscal_quarter_records([report], '2026-03-31')), 1)"
+M147,investment/naver_bands.py,48,v<0,v <= 0,tests.test_naver_bands,5,REASONED: proposed assertion not run,"Copy the valid parse_bands fixture, keep its observed positive close, and set one numeric band y value to 0 at the same date.","self.assertEqual(result['bands']['per']['rows'][0]['values']['band1'],0)"
+M148,investment/naver_reference.py,53,len(name) > 200,len(name) >= 200,tests.test_naver_reference; tests.test_workspace_export,17,REASONED: proposed assertion not run,"Copy the valid parse_reference fixture, preserving ticker/security identity, and set itemname to exactly 200 ASCII characters.","self.assertEqual(parse_reference(raw, code, retrieved_at)['name'], 'x'*200)"
+M149,investment/naver_review.py,40,close <= 0,close < 0,tests.test_naver_review,21,REASONED: proposed assertion not run,"Copy a valid daily_values raw row; change only closingPrice to '0', retaining valid date, volume and tradingValue.","with self.assertRaises(ValueError):
+    daily_values(raw,cutoff=cutoff)"
+M151,investment/nice_financial.py,60,end.isoformat() > retrieved_at[:10],end.isoformat() >= retrieved_at[:10],tests.test_nice_financial,3,REASONED: proposed assertion not run,"Copy the annual NICE finance fixture; retrieved_at begins with the same date as the latest annual period_end, with matching fiscal year-end month.","self.assertIn(cutoff,[p['period_end'] for p in result['columns']])"
+M152,investment/official_statements.py,50,document['pages'] < 1,document['pages'] <= 1,tests.test_official_statements,8,REASONED: proposed assertion not run,"Copy a valid official packet; change only document.pages to 1, retaining verified identity, hash, source and review fields. Keep all imported cells on page1 as well.","self.assertEqual(validate_packet(packet,row),packet)"
+M154,investment/recommendation_allocation.py,16,w>cap,w >= cap,tests.test_risk_review; tests.test_upgrade_integration,17,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M154_cap_equality_rounding(self):
+        self.assertEqual(allocation.capped_weights([4.0,1.5000000005,3.9999999995],95,40),[40,15.00000001,39.99999999])"
+M155,investment/report.py,42,len(prices)>1,len(prices) >= 1,tests.test_infomax_history; tests.test_quality_score_disclosure; tests.test_research_app,47,REASONED: proposed assertion not run,"Use make_fixture, analyze its first company, then replace only that company's prices with one valid observation before calling onepager(snapshot,row,research_row).","self.assertIn('가격 이력 미확보', onepager(snapshot,row,research_row))"
+M156,investment/report_inbox.py,79,len(paths)>=500,len(paths) > 500,tests.test_report_inbox,10,REASONED: proposed assertion not run,Place 501 small valid HTML reports in a temporary ReportInbox folder; scan sufficiently for stable-file observation.,"self.assertLessEqual(len(inbox.observed), 500)"
+M157,investment/research_agents.py,77,len(value['issues']) > 20,len(value['issues']) >= 20,tests.test_research_agents; tests.test_research_library_view; tests.test_research_sessions,38,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M157_exact_20_review_issues(self):
+        v=dict(verdict='revise',summary='synthetic',issues=['x']*20);self.assertEqual(research_agents.validate_review(v),v)"
+M158,investment/research_catalog.py,36,len(values) > 30,len(values) >= 30,tests.test_research_catalog; tests.test_research_library_view; tests.test_weekly_research,37,REASONED: proposed assertion not run,"Copy the valid source annotation fixture, use 30 distinct tags and persons=[], and mock the library get/history/_put seams without changing other required metadata.",library._put.assert_called_once()
+M159,investment/research_drop.py,33,size > MAX_BYTES,size >= MAX_BYTES,tests.test_research_drop,4,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M159_exact_drop_size(self):
+        with tempfile.TemporaryDirectory() as t,patch('investment.research_drop.MAX_BYTES',3):
+            p=Path(t)/'source.txt';p.write_bytes(b'abc');self.assertEqual(list(research_drop._items(Path(t)))[0]['status'],'pending')"
+M160,investment/research_followup.py,20,len(thesis_id)>100,len(thesis_id) >= 100,tests.test_research_followup,8,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M160_exact_thesis_id_length(self):
+        with tempfile.TemporaryDirectory() as t:self.assertEqual(research_followup.plan_path(t,'work','x'*100,1).suffix,'.json')"
+M161,investment/research_inbox.py,31,len(content.encode()) > LIMIT,len(content.encode()) >= LIMIT,tests.test_research_inbox,9,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M161_exact_metadata_size(self):
+        v={'x':1};size=len(json.dumps(v,ensure_ascii=False,indent=2).encode())
+        with tempfile.TemporaryDirectory() as t,patch('investment.research_inbox.LIMIT',size):
+            p=Path(t)/'metadata.json';research_inbox.write(p,v);self.assertEqual(json.loads(p.read_text(encoding='utf-8')),v)"
+M162,investment/research_library.py,25,len(value) > limit,len(value) >= limit,tests.test_research_agents; tests.test_research_catalog; tests.test_research_library; tests.test_research_library_view; tests.test_telegram_export; tests.test_weekly_research,94,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M162_exact_text_limit(self):self.assertEqual(research_library.text('x'*2000),'x'*2000)"
+M164,investment/shared_dashboard.py,34,len(raw)>MAX_RESULT_EXPANDED,len(raw) >= MAX_RESULT_EXPANDED,tests.test_shared_dashboard,15,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M164_exact_payload_limit(self):
+        v={'x':1}
+        with patch('investment.shared_dashboard.MAX_RESULT_EXPANDED',7):self.assertEqual(shared_dashboard.encode_result_payload(v)['wire_bytes'],7)"
+M165,investment/telegram_export.py,35,len(raw) > MAX_BYTES,len(raw) >= MAX_BYTES,tests.test_telegram_export,13,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M165_exact_export_limit(self):
+        with tempfile.TemporaryDirectory() as t,patch('investment.telegram_export.MAX_BYTES',7):
+            p=Path(t)/'export.json';p.write_bytes(b'{""x"":1}');self.assertEqual(telegram_export.read_json(p),{'x':1})"
+M166,investment/telegram_listen.py,139,len(updates) > MAX_UPDATES,len(updates) >= MAX_UPDATES,tests.test_telegram_listen,15,REASONED: proposed assertion not run,Mock getUpdates to return exactly MAX_UPDATES=200 unique well-formed updates with sequential IDs 1..200; use temporary state/output paths and a valid approved channel.,"self.assertEqual(json.loads(state_path.read_text())['last_update_id'], 200)"
+M169,investment/thesis_monitor.py,85,then > 0,then >= 0,tests.test_thesis_monitor,23,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M169_zero_year_ago_profit(self):
+        with patch('investment.thesis_monitor._value',side_effect=[10,0]),patch('investment.thesis_monitor._prior',return_value={}):
+            self.assertEqual(thesis_monitor._yoy([],{},'operating_profit',turnaround=True),0)"
+M171,investment/trend_checkpoints.py,35,t['close'] > 0,t['close'] >= 0,tests.test_market_trend_changes,12,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M171_zero_price_not_ready(self):
+        r=dict(market='KOSPI',code='900000',name='S',ready=True,cap_eok=2000,rs=80,technical={'as_of':'2026-10-02','close':0})
+        self.assertFalse(trend_checkpoints.summarize(dict(as_of='2026-10-02',rows=[r]))['rows'][0]['ready'])"
+M172,investment/trend_diagnostics.py,17,b>0,b >= 0,tests.test_trend_diagnostics,6,REASONED: proposed assertion not run,Give diagnose valid bars and a positive close; supply sma150=90 and sma200=0 to exercise its guarded ratio.,"self.assertIsNone(next(c for c in diagnose(bars, technical)['checks'] if c['id']=='long_stack')['value'])"
+M173,investment/trend_following.py,15,p['volume']>=0,p['volume'] > 0,tests.test_market_trend_changes; tests.test_trend_following; tests.test_upgrade_integration,24,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M173_zero_volume_preserved(self):self.assertEqual(trend_following.chart_series([dict(date='2026-10-02',close=100,volume=0)])[0]['volume'],0)"
+M174,investment/valuation.py,17,len(observations) > 100,len(observations) >= 100,tests.test_valuation,14,REASONED: proposed assertion not run,Build 100 otherwise valid valuation observations with distinct source/observation identities; keep all required date/basis/period fields valid.,"self.assertEqual(validate_observations(records), records)"
+M175,investment/verification.py,39,revenue > 0,revenue >= 0,tests.test_verification,12,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M175_zero_revenue_is_missing(self):self.assertEqual(verification._recompute(dict(amounts={'revenue':0,'operating_profit':1},metrics={'operating_margin_pct':1}))['kind'],'missing')"
+M176,investment/visuals.py,88,"max(start,end)>2**53-1","max(start, end) >= 2 ** 53 - 1",tests.test_visuals,7,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M176_max_safe_integer(self):
+        n=2**53-1;self.assertEqual(visuals.waterfall_records([dict(code='900000',name='S',cost_krw=n,value_krw=n)])[-1]['end'],n)"
+M177,investment/weekly_research.py,25,len(raw) > 2_000_000,len(raw) >= 2000000,tests.test_weekly_research,11,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M177_exact_markdown_limit(self):
+        raw=b'x'*2_000_000;v=dict(research_date='2026-11-02',markdown_sha256=hashlib.sha256(raw).hexdigest(),records=[])
+        with tempfile.TemporaryDirectory() as t:
+            p=Path(t)/'weekly.md';p.write_bytes(raw);q=Path(t)/'manifest.json';q.write_text(json.dumps(v),encoding='utf-8')
+            self.assertEqual(weekly_research.read_bundle(p,q),v)"
+M178,investment/workspace_events.py,43,len(value) > cap,len(value) >= cap,tests.test_workspace_events,4,REASONED: proposed assertion not run,Write one matching same-day news cache row with a 1000-character title and a 200-character source into the fixture SQLite event table.,"self.assertEqual(len(load_cached_events(root,snapshot)['900000']), 1)"
+M179,investment/workspace_export.py,62,len(bars) < 2,len(bars) <= 2,tests.test_company_detail; tests.test_dashboard_delivery; tests.test_dashboard_payload; tests.test_dashboard_stability; tests.test_financial_table; tests.test_industry_sector_map; tests.test_upgrade_integration; tests.test_workspace_export,74,REASONED: proposed assertion not run,"Use two valid KOSPI/KOSDAQ benchmarks with exactly two final index-level closes,100 then110, on identical dates ending on target_date; snapshot mode=user_input.","self.assertAlmostEqual(market_summary(snapshot,cache,target_date)[0]['change_pct'], 10)"
+M180,investment/workspace_research.py,42,int(year) > 0,int(year) >= 0,tests.test_market_trend_changes; tests.test_price_strength; tests.test_trend_following; tests.test_upgrade_integration; tests.test_workspace_research,49,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,def test_M180_zero_year_unknown(self):self.assertIsNone(workspace_research._period_end('0000Q1'))
+M181,tools/company_finish.py,35,avg > 0,avg >= 0,tests.test_company_finish,3,REASONED: proposed assertion not run,Mock collect_extra's parsed balance/debt inputs so current and beginning equity equal their NCI values (average parent equity 0); all other fields and duplicate equity checks remain valid.,"with self.assertRaisesRegex(ValueError,'Non-positive average parent equity'):
+    collect_extra()"
+M182,tools/company_statements.py,40,len(response.content)>4*1024*1024,len(response.content) >= 4 * 1024 * 1024,tests.test_dart_statements; tests.test_fiscal_native_financial,31,REASONED: proposed assertion not run,Pad the existing valid mocked DART main/TOC HTML with whitespace to exactly 4MiB; keep its linked viewer and validated receipt contract unchanged.,"self.assertEqual(collect_receipt(session,entry,cache,code=code,name=name,market='KOSPI')['basis'],'CFS')"
+M183,tools/complete_financials.py,58,month<5,month <= 5,tests.test_dart_statements,13,REASONED: proposed assertion not run,Freeze main's date to May1; provide an eligible company with all previous-year reports but missing current Q1; mock acquisition and writes.,"self.assertEqual(collector.call_count, 1)"
+M185,tools/infomax_daily.py,23,len(values) >= 23,len(values) > 23,tests.test_infomax_daily,9,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M185_20_past_rows_without_today(self):
+        from tests import test_infomax_daily as daily_tests
+        c=daily_tests.DailyImportTests();c.setUp();c.values.pop(3)
+        self.assertEqual(len(c.values),23);self.assertEqual(len(c.convert()['companies'][0]['prices']),20)"
+M189,tools/infomax_history.py,36,len(dates)>=24,len(dates) > 24,tests.test_infomax_history,10,REASONED: proposed assertion not run,"Trim the valid Infomax history fixture to exactly 24 consecutive quarters ending on financial_period, including every required account.","self.assertEqual(len(build(base,accounts,observed_on,provenance,review)['companies'][0]['quarters']),24)"
+M190,tools/infomax_import.py,95,sum(i.file_size for i in archive.infolist()) <= 100 * 1024 * 1024,sum((i.file_size for i in archive.infolist())) < 100 * 1024 * 1024,tests.test_financial_table; tests.test_infomax_import,37,REASONED: proposed assertion not run,Use an otherwise valid XLSX with cell A1='ok'; pad worksheet XML or mock ZipInfo metadata so total expanded file_size is exactly 100MiB.,"self.assertEqual(read_grid(path)[0][0][0], 'ok')"
+M191,tools/infomax_review.py,79,value > 0,value >= 0,tests.test_marketcap_history; tests.test_review_tolerance,6,REASONED: proposed assertion not run,"Copy the complete parse_marketcap_history fixture; change one market-cap cell to 0, retaining identities and expected reverse-sorted dates.","with self.assertRaises(ValueError):
+    parse_marketcap_history(values,info,expected_dates)"
+M193,tools/infomax_valuation.py,30,set(companies) <= codes,set(companies) < codes,tests.test_valuation,14,REASONED: proposed assertion not run,Use the valid Infomax valuation fixture; restrict the snapshot to exactly the same company-code set present in observations.companies.,"self.assertEqual({r['code'] for r in build(snapshot,observations)['companies']},set(observations['companies']))"
+M194,tools/overlap_coverage_sim.py,55,len(sub) > 2,len(sub) >= 2,tests.test_codex_review_fixes; tests.test_overlap_coverage_sim,18,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M194_two_nonoverlap_samples_pending(self):
+        v=overlap_coverage_sim.intervals(np.array([1.,2.,3.,4.]),2,50,np.random.default_rng(1))
+        self.assertTrue(np.isnan(v['nonoverlap'][1]))"
+M196,tools/returns_history.py,80,balance[f] >= 0,balance[f] > 0,tests.test_returns_history,3,REASONED: proposed assertion not run,"Use the existing valid returns_history fixture; set cash and cash-equivalents to 0 in both annual balance observations, leaving equity/profit positive. Update the corresponding checked balance-review cash cells to0 too, retaining the fixture's positive invested capital.","self.assertEqual(build(base,review,balance_review,review_hash,balance_review_hash)['companies'][0]['financial_accounts']['balance']['2025-12-31']['현금및현금성자산'],0)"
+M198,tools/trend_history.py,36,len(payload) <= 20*1024*1024,len(payload) < 20 * 1024 * 1024,tests.test_trend_history,5,REASONED: proposed assertion not run,Mock every successful chart response with exactly20MiB of payload; use a temporary output directory and bounded mocked requests.,"self.assertEqual(request_get.call_count, len(SYMBOLS))"
+M199,tools/trend_sensitivity_report.py,54,now > c[-1 - p['ret_lag']],now >= c[-1 - p['ret_lag']],tests.test_codex_review_fixes; tests.test_trend_sensitivity_report,22,REASONED: proposed assertion not run,"Use a valid trend entry; set the latest close equal to the ret_lag close, retaining positive prices and benchmark values.","self.assertFalse(terms(entry,TREND_BASE)['back'])"
+M200,tools/verify_portfolio_data.py,33,path.stat().st_size > 30*1024*1024,path.stat().st_size >= 30 * 1024 * 1024,tests.test_market_events; tests.test_portfolio_data,18,REASONED: proposed assertion not run,Pad valid CLI market/holdings JSON fixture files with whitespace to exactly30MiB each; pass the existing successful CLI arguments.,"self.assertEqual(main(),0)"
+M203,investment/dashboard_build.py,15,path.is_file() and path.suffix in suffixes,path.is_file() or path.suffix in suffixes,tests.test_dashboard_stability,16,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M203_ignore_non_source_file(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=Path(t);(root/'investment').mkdir();p=root/'investment/notes.txt';p.write_text('a')
+            before=dashboard_build.source_fingerprint(root);p.write_text('b');self.assertEqual(dashboard_build.source_fingerprint(root),before)"
+M204,investment/data_recovery.py,49,"not isinstance(code,str) or not re.fullmatch(r'[0-9A-Z]{6}',code) or kind not in ('price','financial')","not isinstance(code,str) and not re.fullmatch(r'[0-9A-Z]{6}',code) and kind not in ('price','financial')",tests.test_data_recovery,6,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M204_invalid_code_before_delegation(self):
+        with tempfile.TemporaryDirectory() as t:
+            daily=Mock();r=data_recovery.DataRecovery(t,daily,Mock())
+            with patch.object(r,'view',return_value={'failures':[dict(kind='price',code='bad',can_retry=True)]}):
+                with self.assertRaises(ValueError):r.retry('price','bad')
+            daily.start.assert_not_called()"
+M209,tools/pc_check.py,54,ahead and behind,ahead or behind,tests.test_dual_pc,13,CONFIRMED: original passes; identical mutant fails proposed check,Full fixture/helper setup in proposed_checks.txt,"def test_M209_ahead_only_not_diverged(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=Path(t)
+            def command(cmd,**kw):
+                a=cmd[3:];out=''
+                if a==['rev-parse','--show-toplevel']:out=str(root)
+                elif a==['remote']:out='origin\n'
+                elif a[0]=='symbolic-ref':out='main\n'
+                elif a[0]=='rev-parse' and '--abbrev-ref' in a:out='origin/main\n'
+                elif a[:2]==['rev-parse','--git-path']:out=str(root/'.git'/a[-1])
+                elif a[0]=='rev-list':out='1 0\n'
+                return subprocess.CompletedProcess(cmd,0,out,'')
+            with patch('tools.pc_check.subprocess.run',side_effect=command):self.assertEqual(pc_check.inspect(root)['state'],'local_ahead')"
