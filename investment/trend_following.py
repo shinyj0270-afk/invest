@@ -1,5 +1,6 @@
 """Chart-first trend workspace from validated saved prices; no retrieval or orders."""
 from copy import deepcopy
+from statistics import mean
 from .portfolio_risk import checked, numeric, day
 from .market_history import benchmark_calendar, ADJUSTMENT_NOTE
 from .trend_diagnostics import diagnose
@@ -36,8 +37,10 @@ def build_trend_following(snapshot,research,cache=None):
                 raise ValueError('평가일 가격지수 수준 확인 필요')
             market_bars[market]=bars
             series=chart_series(bars);last=series[-1]
-            prior200=sum(p['close'] for p in bars[-221:-21])/200 if len(bars)>=221 else None
-            ma50=last['ma50'];ma200=last['ma200'];close=last['close']
+            closes=[p['close'] for p in bars]
+            # Decision averages use one arithmetic (exact mean) so equal windows compare equal; the chart's prefix-sum MAs are display only.
+            prior200=mean(closes[-221:-21]) if len(bars)>=221 else None
+            ma50=mean(closes[-50:]) if len(bars)>=50 else None;ma200=mean(closes[-200:]) if len(bars)>=200 else None;close=last['close']
             regime='자료 대기' if prior200 is None else '상승 정렬' if close>ma50>ma200 and ma200>prior200 else '하락 정렬' if close<ma50<ma200 and ma200<prior200 else '혼조 · 전환 관찰'
             result.update(status='ready',regime=regime,series=series,as_of=cutoff,close=close,
                 change_pct=(bars[-1]['close']/bars[-2]['close']-1)*100 if len(bars)>1 else None)

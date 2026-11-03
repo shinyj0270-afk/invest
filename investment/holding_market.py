@@ -32,7 +32,8 @@ class HoldingMarket:
             prior=self.results.get(code)
             if prior and not force and time.monotonic()-prior[0]<300:
                 return deepcopy(prior[1])
-            row=deepcopy(self.index[code]); now=self.now()
+            kept=prior[1].get('row') if prior else None   # a failed refresh falls back to the last successful dated quote, not the original catalog row
+            row=deepcopy(kept if kept and kept.get('price_date') else self.index[code]); now=self.now()
             cutoff=now.date()-timedelta(days=1)
             try:
                 record=self.fetcher(code,start=(cutoff-timedelta(days=14)).isoformat(),
