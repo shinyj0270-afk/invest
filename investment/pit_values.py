@@ -34,7 +34,9 @@ def map_record(record, *, company, rcept_dt, include_debt=False):
     if not (isinstance(receipt, str) and re.fullmatch(r'\d{14}', receipt)):raise ValueError('접수번호 형식 오류')
     try:expected = date(int(receipt[:4]), int(receipt[4:6]), int(receipt[6:8])).isoformat()
     except ValueError as exc:raise ValueError('접수번호 날짜 오류') from exc
-    if expected != rcept_dt:raise ValueError('접수일이 접수번호와 다릅니다')
+    try:gap = (date.fromisoformat(rcept_dt) - date.fromisoformat(expected)).days
+    except (TypeError, ValueError) as exc:raise ValueError('접수일 형식 오류') from exc
+    if not 0 <= gap <= 7:raise ValueError('접수일이 접수번호 날짜보다 이르거나 7일을 넘게 늦습니다')    # real data: rcept_dt can be a day later than the number's date
     values = record.get('values')
     if not isinstance(values, dict):raise ValueError('값이 없습니다')
     source = contract.get('source')

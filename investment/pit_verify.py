@@ -67,10 +67,15 @@ def _canon_values(raw):
     return out or None
 
 
+def _gap_days(no, dt):
+    try:return (date.fromisoformat(dt) - date(int(no[:4]), int(no[4:6]), int(no[6:8]))).days
+    except ValueError:return None
+
+
 def _independent_valid(r):
     if not isinstance(r, dict) or set(r) - TOP_KEYS or r.get('report_kind') != 'annual':return None
     no, dt, period = r.get('rcept_no'), r.get('rcept_dt'), r.get('period_end')
-    if not (isinstance(no, str) and re.fullmatch(r'\d{14}', no) and _iso(dt) and dt == f'{no[:4]}-{no[4:6]}-{no[6:8]}'):return None
+    if not (isinstance(no, str) and re.fullmatch(r'\d{14}', no) and _iso(dt) and _gap_days(no, dt) is not None and 0 <= _gap_days(no, dt) <= 7):return None
     if not (_iso(period) and period.endswith('-12-31') and period < dt):return None
     if not (isinstance(r.get('company'), str) and re.fullmatch(r'[0-9A-Z]{6}', r['company']) and r.get('basis') in ('CFS', 'OFS')):return None
     return _canon_values(r.get('values'))

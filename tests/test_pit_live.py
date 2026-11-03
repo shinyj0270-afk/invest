@@ -123,4 +123,15 @@ class PlanTests(unittest.TestCase):
         self.assertLessEqual(len(plan['requests']), plan['max_requests'])
 
 
+class BudgetedSessionTests(unittest.TestCase):
+    def test_every_get_is_charged_first_and_a_spent_budget_sends_nothing(self):
+        from investment.pit_live import BudgetedSession
+        session = FakeSession(FakeResponse(b'{}'), FakeResponse(b'{}'))
+        budget = Budget(max_requests=1, min_interval=0.0, clock=lambda: 0.0, sleep=lambda s: None)
+        wrapped = BudgetedSession(session, budget);wrapped.get('https://x.invalid/a', params={'k': 1})
+        self.assertEqual((budget.count, len(session.calls)), (1, 1))
+        with self.assertRaises(BudgetExceeded):wrapped.get('https://x.invalid/b')
+        self.assertEqual(len(session.calls), 1)
+
+
 if __name__ == '__main__':unittest.main()

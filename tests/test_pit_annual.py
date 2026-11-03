@@ -177,4 +177,18 @@ class CodexReviewTests(unittest.TestCase):
         self.assertNotIn('op',sel);self.assertNotIn('ocf',sel)                                                   # snapshot semantics: nothing is inherited
 
 
+class RealDataDateGapTests(unittest.TestCase):
+    def test_a_later_receipt_date_than_the_number_date_is_accepted_and_the_later_date_drives_eligibility(self):
+        real = receipt(no='20230308000776', rcept='2023-03-09', year=2022)                      # shape seen in real DART data
+        out = project([real], sessions())
+        self.assertEqual(out['blocked'], []);self.assertEqual(out['rows'][0]['available_at'], '2023-03-10')   # next session after 03-09, not after 03-08
+        self.assertEqual(select_vintage(out['rows'], '2023-03-09'), [])
+
+    def test_a_receipt_date_earlier_than_the_number_date_or_more_than_seven_days_later_is_blocked(self):
+        for no, rcept in (('20230310000001', '2023-03-09'), ('20230301000001', '2023-03-09')):
+            out = project([receipt(no=no, rcept=rcept, year=2022)], sessions())
+            self.assertEqual([b['reason'] for b in out['blocked']], ['identity'])
+        self.assertEqual(project([receipt(no='20230302000001', rcept='2023-03-09', year=2022)], sessions())['blocked'], [])      # exactly 7 days
+
+
 if __name__=='__main__':unittest.main()

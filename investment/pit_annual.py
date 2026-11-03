@@ -21,6 +21,7 @@ import re
 
 POLICY = 'next_session_after_rcept_dt_v1'
 MAX_GAP_DAYS = 10
+MAX_DATE_GAP_DAYS = 7      # rcept_dt may be later than the date inside the receipt number (seen in real data), never earlier
 BASES = ('CFS', 'OFS')
 IDENTITY = ('company', 'period_end', 'basis')
 TOP_KEYS = frozenset(IDENTITY + ('report_kind', 'rcept_no', 'rcept_dt', 'values'))
@@ -44,6 +45,13 @@ def _calendar(sessions):
     if not days or not all(_day(d) for d in days) or any(date.fromisoformat(d).weekday() > 4 for d in days):
         raise ValueError('거래일 달력은 비어 있지 않은 ISO 평일 날짜 목록이어야 합니다')
     return sorted(set(days))
+
+
+def _date_gap_ok(no, dt):
+    """The receipt number's own date, then 0..MAX_DATE_GAP_DAYS days later: the later `rcept_dt` is the conservative date and drives eligibility."""
+    try:number_day = date(int(no[:4]), int(no[4:6]), int(no[6:8]))
+    except ValueError:return False
+    return 0 <= (date.fromisoformat(dt) - number_day).days <= MAX_DATE_GAP_DAYS
 
 
 def available_at(rcept_dt, sessions):
@@ -89,7 +97,7 @@ def _check(r, sessions):
     if r.get('report_kind') != 'annual':return 'not_annual', None
     no, dt = r.get('rcept_no'), r.get('rcept_dt')
     if not (isinstance(no, str) and re.fullmatch(r'\d{14}', no) and _day(dt)):return 'identity_format', None
-    if f'{no[:4]}-{no[4:6]}-{no[6:8]}' != dt:return 'identity', None
+    if not _date_gap_ok(no, dt):return 'identity', None
     period = r.get('period_end')
     if not _day(period):return 'bad_period', None
     if not (isinstance(r.get('company'), str) and re.fullmatch(r'[0-9A-Z]{6}', r['company'])):return 'bad_company', None

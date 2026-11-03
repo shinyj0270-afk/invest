@@ -59,7 +59,16 @@ class FirstCallTests(unittest.TestCase):
     def run_it(self, client, **kw):
         store = ArtifactStore(self.root / '.local/pit-pilot/artifacts');shared = kw.pop('budget', None) or budget();client.budget = shared
         return run_first_call(client=client, store=store, budget=shared, root=self.root, today=TODAY,
-            calendar_fetch=kw.pop('calendar_fetch', calendar_fetch), **kw), store
+            calendar_fetch=self.charging(shared, kw.pop('calendar_fetch', calendar_fetch)), **kw), store
+
+    @staticmethod
+    def charging(shared, fetch):
+        def wrapped(symbol, **kw):
+            shared.spend();return fetch(symbol, **kw)            # like the CLI's budgeted session: charged only when a request really happens
+        return wrapped
+
+    def fresh_root(self):
+        self.tmp2 = tempfile.TemporaryDirectory();self.addCleanup(self.tmp2.cleanup);self.root = Path(self.tmp2.name)
 
     def lists(self):
         return {('00555555', 1): list_json('00555555', '298040', HY), ('00777777', 1): list_json('00777777', '', TL)}
@@ -85,7 +94,7 @@ class FirstCallTests(unittest.TestCase):
     def test_an_ambiguous_or_missing_corp_code_is_never_guessed(self):
         client = FakeClient(corp=corp_zip(ROWS + [('00888888', '도레이케미칼', '')]), lists=self.lists());summary, _ = self.run_it(client)
         self.assertEqual(summary['companies']['도레이케미칼']['status'], 'corp_code_not_unique');self.assertNotIn('list:00777777:1', client.calls)
-        client = FakeClient(corp=corp_zip([ROWS[1]]), lists=self.lists());summary, _ = self.run_it(client)
+        self.fresh_root();client = FakeClient(corp=corp_zip([ROWS[1]]), lists=self.lists());summary, _ = self.run_it(client)
         self.assertEqual(summary['companies']['298040']['status'], 'corp_code_not_unique');self.assertEqual(client.calls, ['corp', 'list:00777777:1'])
 
     def test_more_pages_than_the_plan_allows_stop_that_company_without_extra_requests(self):
@@ -108,6 +117,33 @@ class FirstCallTests(unittest.TestCase):
         lists = self.lists();lists[('00555555', 1)] = list_json('00555555', '298040', [HY[1], HY[2]])                       # only a correction and a half-year report
         client = FakeClient(lists=lists);summary, _ = self.run_it(client)
         self.assertNotIn('doc:20260520000002', client.calls);self.assertEqual(summary['companies']['298040']['document'], None)
+
+    def test_a_rerun_reuses_stored_artifacts_and_only_requests_what_is_missing(self):
+        first = FakeClient(lists=self.lists(), quota_at=3)                                                              # stops at the document request
+        summary, store = self.run_it(first);self.assertEqual(summary['stop_reason'], 'quota');self.assertEqual(first.calls, ['corp', 'list:00555555:1', 'doc:20260310000001'])
+        second = FakeClient(lists=self.lists());summary, _ = self.run_it(second)
+        self.assertEqual(second.calls, ['doc:20260310000001', 'list:00777777:1'])                                       # corp zip and the first list page come from the store
+        self.assertEqual(summary['status'], 'completed');self.assertEqual(set(summary['reused']), {'corpcode-zip', 'list-00555555-1'})
+        self.assertEqual(summary['requests_used'], 2 + 2)                                                               # calendar is charged by the fake fetcher each run
+
+    def test_a_response_that_fails_our_validation_is_labelled_as_rejected_not_as_a_provider_error(self):
+        lists = self.lists();lists[('00555555', 1)] = list_json('00555555', '999999', HY)                              # wrong stock code
+        client = FakeClient(lists=lists);summary, _ = self.run_it(client)
+        self.assertEqual((summary['status'], summary['stop_reason']), ('stopped', 'response_rejected'));self.assertIn('종목코드', summary['stop_detail'])
+        self.assertEqual(client.calls, ['corp', 'list:00555555:1'])
+
+    def test_the_real_data_date_gap_row_is_accepted_end_to_end(self):
+        rows = HY + [('20230308000776', '사업보고서 (2022.12)')]
+        page = list_json('00555555', '298040', rows);page['list'][-1]['rcept_dt'] = '20230309'
+        lists = self.lists();lists[('00555555', 1)] = page
+        client = FakeClient(lists=lists);summary, _ = self.run_it(client)
+        self.assertEqual(summary['status'], 'completed');self.assertIn('20230308000776', [r['rcept_no'] for r in summary['companies']['298040']['receipts']])
+
+    def test_a_completed_run_can_be_repeated_without_any_provider_request(self):
+        self.run_it(FakeClient(lists=self.lists()))
+        again = FakeClient(lists=self.lists());summary, _ = self.run_it(again)
+        self.assertEqual(again.calls, []);self.assertEqual(summary['status'], 'completed')
+        self.assertEqual(set(summary['reused']), {'corpcode-zip', 'list-00555555-1', 'document-zip', 'list-00777777-1'})
 
 
 if __name__ == '__main__':unittest.main()

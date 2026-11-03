@@ -18,6 +18,10 @@ DELISTED = dict(name='도레이케미칼', bgn='20140101', end='20181231')
 MAX_PAGES = 2
 
 
+class ResponseRejected(ValueError):
+    """A provider response that arrived fine but failed our validation (not a provider outage)."""
+
+
 def _now():
     return datetime.now().astimezone().isoformat()
 
@@ -26,19 +30,31 @@ def _yyyymmdd(day):
     return day.replace('-', '')
 
 
-def _collect(client, store, corp, bgn, end, stock_code, label, now):
-    """List pages for one company (at most MAX_PAGES). Returns dict(status, receipts, excluded, uncertain, raw_count)."""
+def _collect(client, store, corp, bgn, end, stock_code, label, now, reused):
+    """List pages for one company (at most MAX_PAGES), reusing a stored page instead of requesting it again. Returns dict(status, receipts, ...)."""
     pages = []
     page_no = 1
+    pseudo, doc = '%014d' % int(corp['corp_code']), None
     while True:
-        raw = client.list_page(corp['corp_code'], bgn, end, page_no)
-        store.put(('%014d' % int(corp['corp_code'])), f'list-{corp["corp_code"]}-{page_no}', json.dumps(raw, ensure_ascii=False, sort_keys=True).encode(), observed_at=now, source_url='opendart:list.json')
-        parsed = parse_page(raw, corp_code=corp['corp_code'], stock_code=stock_code)
+        doc = f'list-{corp["corp_code"]}-{page_no}'
+        stored = store.latest(pseudo, doc)
+        if stored is not None:
+            raw = json.loads(stored.decode('utf-8'));reused.append(doc)
+        else:
+            raw = client.list_page(corp['corp_code'], bgn, end, page_no)
+            store.put(pseudo, doc, json.dumps(raw, ensure_ascii=False, sort_keys=True).encode(), observed_at=now, source_url='opendart:list.json')
+        try:
+            parsed = parse_page(raw, corp_code=corp['corp_code'], stock_code=stock_code)
+        except ValueError as exc:
+            raise ResponseRejected(f'{label} 목록 {page_no}쪽: {exc}') from exc
         pages.append(parsed)
         if parsed['total_page'] > MAX_PAGES:return dict(status='too_many_pages', receipts=[], excluded=[], uncertain=[], raw_count=parsed['total_count'])
         if page_no >= parsed['total_page']:break
         page_no += 1
-    batch = assemble(pages, query=dict(corp_code=corp['corp_code'], bgn_de=bgn, end_de=end, label=label), collected_at=now)
+    try:
+        batch = assemble(pages, query=dict(corp_code=corp['corp_code'], bgn_de=bgn, end_de=end, label=label), collected_at=now)
+    except ValueError as exc:
+        raise ResponseRejected(f'{label} 목록 조립: {exc}') from exc
     return dict(status='listed', receipts=batch['receipts'], excluded=batch['excluded'], uncertain=batch['uncertain'], raw_count=batch['raw_count'])
 
 
@@ -49,7 +65,7 @@ def _latest_original_annual(receipts):
 
 def run_first_call(*, client, store, budget, root, today, calendar_fetch):
     now = _now()
-    summary = dict(status='completed', stop_reason=None, started_at=now, companies={}, calendar={}, requests_used=0)
+    summary = dict(status='completed', stop_reason=None, stop_detail=None, started_at=now, companies={}, calendar={}, requests_used=0, reused=[])
     out_dir = Path(root) / '.local/pit-pilot'
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -58,19 +74,22 @@ def run_first_call(*, client, store, budget, root, today, calendar_fetch):
         (out_dir / 'first-call-summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True), encoding='utf-8')
         return summary
 
-    def stop(reason):
-        summary.update(status='stopped', stop_reason=reason);return finish()
+    def stop(reason, detail=None):
+        summary.update(status='stopped', stop_reason=reason, stop_detail=detail);return finish()
 
     yesterday = (datetime.fromisoformat(today) - timedelta(days=1)).date().isoformat()
     try:
-        for symbol in ('KOSPI', 'KOSDAQ'):
-            budget.spend()
+        for symbol in ('KOSPI', 'KOSDAQ'):                                   # the calendar fetcher charges the budget itself, only when it really requests
             try:
                 result = calendar_fetch(symbol, kind='index', start='2023-01-02', end=yesterday, cache_dir=out_dir / 'calendar')
             except (ValueError, OSError):
                 return stop('calendar_failed')
             summary['calendar'][symbol] = dict(bars=len(result.get('prices', [])) if isinstance(result, dict) else None)
-        zip_bytes = client.corp_code_zip()                                      # the real client charges the shared budget itself, once per request
+        zip_bytes = store.latest('00000000000000', 'corpcode-zip')
+        if zip_bytes is None:
+            zip_bytes = client.corp_code_zip()                                  # the real client charges the shared budget itself, once per request
+        else:
+            summary['reused'].append('corpcode-zip')
     except BudgetExceeded:
         return stop('budget')
     except QuotaStop:
@@ -82,7 +101,7 @@ def run_first_call(*, client, store, budget, root, today, calendar_fetch):
 
 def _after_corp(client, store, budget, summary, zip_bytes, now, yesterday, finish, stop):
     try:
-        store.put('00000000000000', 'corpcode-zip', zip_bytes, observed_at=now, source_url='opendart:corpCode.xml')
+        if 'corpcode-zip' not in summary['reused']:store.put('00000000000000', 'corpcode-zip', zip_bytes, observed_at=now, source_url='opendart:corpCode.xml')
         end = _yyyymmdd(yesterday)
         plans = [(TARGET['name'], dict(stock_code=TARGET['stock_code']), TARGET['bgn'], end, TARGET['stock_code'], True),
                  (DELISTED['name'], dict(name=DELISTED['name']), DELISTED['bgn'], DELISTED['end'], None, False)]
@@ -92,7 +111,7 @@ def _after_corp(client, store, budget, summary, zip_bytes, now, yesterday, finis
             if len(candidates) != 1:
                 summary['companies'][key] = dict(status='corp_code_not_unique', candidates=len(candidates));continue
             corp = candidates[0]
-            result = _collect(client, store, corp, bgn, stop_day, stock_code if stock_code else (corp['stock_code'] or None), label, now)
+            result = _collect(client, store, corp, bgn, stop_day, stock_code if stock_code else (corp['stock_code'] or None), label, now, summary['reused'])
             entry = dict(status=result['status'], corp_code=corp['corp_code'], raw_count=result['raw_count'], document=None,
                 receipts=[dict(rcept_no=r['rcept_no'], rcept_dt=r['rcept_dt'], report_nm=r['report_nm'], correction=r['correction'], title_period=r['title_period']) for r in result['receipts']],
                 uncertain=[dict(rcept_no=u['rcept_no'], report_nm=u['report_nm']) for u in result['uncertain']])
@@ -100,13 +119,19 @@ def _after_corp(client, store, budget, summary, zip_bytes, now, yesterday, finis
             if want_document and result['status'] == 'listed':
                 latest = _latest_original_annual(result['receipts'])
                 if latest:
-                    data = client.document_zip(latest['rcept_no'])
-                    artifact = store.put(latest['rcept_no'], 'document-zip', data, observed_at=now, source_url='opendart:document.xml')
+                    data = store.latest(latest['rcept_no'], 'document-zip')
+                    if data is None:
+                        data = client.document_zip(latest['rcept_no'])
+                        artifact = store.put(latest['rcept_no'], 'document-zip', data, observed_at=now, source_url='opendart:document.xml')
+                    else:
+                        summary['reused'].append('document-zip');artifact = store.versions(latest['rcept_no'], 'document-zip')[-1]
                     entry['document'] = dict(rcept_no=latest['rcept_no'], sha256=artifact['sha256'], size=artifact['size'])
     except BudgetExceeded:
         return stop('budget')
     except QuotaStop:
         return stop('quota')
-    except ValueError:
-        return stop('provider_error')
+    except ResponseRejected as exc:
+        return stop('response_rejected', str(exc))
+    except ValueError as exc:
+        return stop('provider_error', str(exc))
     return finish()

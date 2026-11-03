@@ -65,7 +65,7 @@ class PageTests(unittest.TestCase):
         self.assertEqual(len(parse_page(good, corp_code=CORP, stock_code=STOCK)['rows']), 1)
 
     def test_identity_and_format_violations_raise(self):
-        for bad in (row(corp='00000001'), row(stock='005930'), row(no='123'), row(dt='20260311'), row(no='20260310000001', dt='2026-03-10'),
+        for bad in (row(corp='00000001'), row(stock='005930'), row(no='123'), row(dt='20260309'), row(dt='20260318'), row(no='20260310000001', dt='2026-03-10'),
                     row(no='2026031000001'), row(no='202603100000001'), row(no='20260230000001'), row(no='20261310000001')):
             with self.subTest(bad=bad['rcept_no'] + bad['rcept_dt']), self.assertRaises(ValueError):parse_page(page([bad]), corp_code=CORP, stock_code=STOCK)
 
@@ -137,6 +137,16 @@ class MetadataTests(unittest.TestCase):
         self.assertEqual((u['company'], u['corp_code'], u['title_period'], u['title_period_hint']), (STOCK, CORP, None, '2025-12'))
         d = parse_page(page([row(stock='')]), corp_code=CORP, stock_code=None)
         self.assertIsNone(assemble([parse_page(page([row(name='사업보고서 설명자료', stock='')]), corp_code=CORP, stock_code=None)], query={}, collected_at='t')['uncertain'][0]['company'])
+
+
+class RealDataDateTests(unittest.TestCase):
+    def test_a_receipt_date_up_to_seven_days_after_the_number_date_is_accepted_and_flagged(self):
+        # taken from the first live OpenDART response (2026-11-03): number dated 2023-03-08, rcept_dt 2023-03-09
+        real = row(no='20230308000776', name='사업보고서 (2022.12)', dt='20230309')
+        r = parse_page(page([real]), corp_code=CORP, stock_code=STOCK)['rows'][0]
+        self.assertEqual((r['rcept_dt'], r['rcept_no_date'], r['date_gap_days'], r['kind']), ('2023-03-09', '2023-03-08', 1, 'annual'))
+        self.assertEqual(parse_page(page([row(dt='20260317')]), corp_code=CORP, stock_code=STOCK)['rows'][0]['date_gap_days'], 7)        # boundary
+        self.assertEqual(parse_page(page([row()]), corp_code=CORP, stock_code=STOCK)['rows'][0]['date_gap_days'], 0)
 
 
 if __name__ == '__main__':unittest.main()

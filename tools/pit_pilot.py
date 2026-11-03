@@ -48,7 +48,7 @@ def run_first(args):
     from investment.pit_acquire import Budget
     from investment.pit_artifacts import ArtifactStore
     from investment.pit_first_call import run_first_call
-    from investment.pit_live import OpenDart, key_from_env
+    from investment.pit_live import BudgetedSession, OpenDart, key_from_env
     try:key = key_from_env()
     except ValueError as exc:
         print(f'오류: {exc}', file=sys.stderr);return 2
@@ -56,8 +56,8 @@ def run_first(args):
     with requests.Session() as session:
         client = OpenDart(key, session=session, budget=budget)
         summary = run_first_call(client=client, store=ArtifactStore(Path(args.root) / '.local/pit-pilot/artifacts'), budget=budget, root=Path(args.root),
-            today=date.today().isoformat(), calendar_fetch=lambda symbol, **kw: fetch_history(symbol, session=session, **kw))
-    brief = dict(status=summary['status'], stop_reason=summary['stop_reason'], requests_used=summary['requests_used'],
+            today=date.today().isoformat(), calendar_fetch=lambda symbol, **kw: fetch_history(symbol, session=BudgetedSession(session, budget), **kw))
+    brief = dict(status=summary['status'], stop_reason=summary['stop_reason'], stop_detail=summary['stop_detail'], requests_used=summary['requests_used'], reused=summary['reused'],
         companies={k: dict(status=v['status'], receipts=len(v.get('receipts', [])), document=bool(v.get('document'))) for k, v in summary['companies'].items()})
     print(json.dumps(brief, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if summary['status'] == 'completed' else 3

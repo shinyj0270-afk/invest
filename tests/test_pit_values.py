@@ -50,7 +50,10 @@ class MappingTests(unittest.TestCase):
             with self.subTest(name=name), self.assertRaises(ValueError):map_record(r, company='298040', rcept_dt='2026-03-10')
 
     def test_receipt_date_must_match_the_receipt_number_and_company_must_be_a_code(self):
-        with self.assertRaises(ValueError):map_record(record(), company='298040', rcept_dt='2026-03-11')
+        for bad in ('2026-03-09', '2026-03-18', '2026-13-01', 'garbage', None):                    # earlier than the number's date, 8 days later, not a date
+            with self.subTest(rcept_dt=bad), self.assertRaises(ValueError):map_record(record(), company='298040', rcept_dt=bad)
+        for ok in ('2026-03-11', '2026-03-17'):                                                   # real data: rcept_dt may be later than the number's date
+            self.assertEqual(map_record(record(), company='298040', rcept_dt=ok)[0]['rcept_dt'], ok)
         with self.assertRaises(ValueError):map_record(record(), company='', rcept_dt='2026-03-10')
 
     def test_non_numeric_values_and_an_empty_mapping_are_rejected(self):

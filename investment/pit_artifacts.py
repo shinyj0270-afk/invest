@@ -133,6 +133,12 @@ class ArtifactStore:
             rows = self._read_rows()
             return self._append_locked(rows, dict(rcept_no=rcept_no, document_id=document_id, observed_at=observed_at, status='failed', reason=str(reason)[:200]))
 
+    def latest(self, rcept_no, document_id):
+        """Bytes of the last stored observation of a document (hash-verified), or None when nothing usable was stored."""
+        for e in reversed(self.versions(rcept_no, document_id)):
+            if e.get('sha256') and e['status'] != 'resolved':return self.read(e)
+        return None
+
     def read(self, entry):
         digest = entry.get('sha256')
         if not digest:raise ValueError('이 항목에는 원문 바이트가 없습니다')

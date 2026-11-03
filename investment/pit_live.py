@@ -23,6 +23,16 @@ class QuotaStop(RuntimeError):
     """The provider signalled a request limit; stop everything and do not retry."""
 
 
+class BudgetedSession:
+    """Wraps any session so every GET (e.g. the calendar fetcher's) is charged to the shared budget before it is sent."""
+    def __init__(self, session, budget):
+        self.session, self.budget = session, budget
+
+    def get(self, *args, **kwargs):
+        self.budget.spend()
+        return self.session.get(*args, **kwargs)
+
+
 def key_from_env(env=None):
     value = (os.environ if env is None else env).get(KEY_ENV)
     if not isinstance(value, str) or not re.fullmatch(r'[0-9A-Za-z]{40}', value.strip()):

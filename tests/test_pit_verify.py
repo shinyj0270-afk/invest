@@ -198,6 +198,12 @@ class VerifyTests(unittest.TestCase):
         r = receipt();r['values'] = dict(revenue=1.0, tax_verified=True, effective_tax_rate=0.2, special_dividend='unknown', dps_basis='split_adjusted')
         self.assertTrue(verify([r], sessions())['ok']);self.assertEqual(verify([r], sessions())['counts']['rows'], 1)
 
+    def test_the_oracle_accepts_the_real_data_date_gap_like_production(self):
+        real = receipt(no='20260310000001', rcept='2026-03-11')
+        out = verify([real], sessions());self.assertTrue(out['ok']);self.assertEqual(out['counts']['rows'], 1)
+        for no, rcept in (('20260312000001', '2026-03-11'), ('20260301000001', '2026-03-11')):
+            res = verify([receipt(no=no, rcept=rcept)], sessions());self.assertEqual(res['counts']['blocked'], {'identity': 1});self.assertTrue(res['ok'])      # blocked by both
+
 
     def test_inputs_are_not_mutated(self):
         r = self.good();s = sessions();i = [inv('20260310000001', '2026-03-10')];before = copy.deepcopy((r, s, i))

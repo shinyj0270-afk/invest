@@ -39,13 +39,18 @@ def _row(raw, corp_code, stock_code):
     if not isinstance(raw, dict):raise ValueError('목록 행 형식 오류')
     no, dt, title = raw.get('rcept_no'), raw.get('rcept_dt'), raw.get('report_nm')
     if not (isinstance(no, str) and re.fullmatch(r'\d{14}', no)):raise ValueError('접수번호 형식 오류')
-    if not (isinstance(dt, str) and re.fullmatch(r'\d{8}', dt)) or dt != no[:8]:raise ValueError('접수일과 접수번호 불일치')
-    try:iso = date(int(dt[:4]), int(dt[4:6]), int(dt[6:])).isoformat()
+    if not (isinstance(dt, str) and re.fullmatch(r'\d{8}', dt)):raise ValueError('접수일 형식 오류')
+    try:
+        iso = date(int(dt[:4]), int(dt[4:6]), int(dt[6:])).isoformat()
+        number_day = date(int(no[:4]), int(no[4:6]), int(no[6:8]))
     except ValueError as exc:raise ValueError('접수일 형식 오류') from exc
+    gap = (date.fromisoformat(iso) - number_day).days
+    if not 0 <= gap <= 7:raise ValueError('접수일과 접수번호 날짜가 맞지 않습니다')       # real data: rcept_dt can be a day later than the number's date
     if raw.get('corp_code') != corp_code:raise ValueError('법인코드 불일치')
     if (raw.get('stock_code') or '') != (stock_code or ''):raise ValueError('종목코드 불일치')
     if not isinstance(title, str) or not title.strip():raise ValueError('보고서명 누락')
-    return dict(rcept_no=no, rcept_dt=iso, report_nm=title, corp_code=corp_code, stock_code=stock_code or '', **classify_title(title))
+    return dict(rcept_no=no, rcept_dt=iso, rcept_no_date=number_day.isoformat(), date_gap_days=gap, report_nm=title, corp_code=corp_code,
+        stock_code=stock_code or '', **classify_title(title))
 
 
 def parse_page(page, *, corp_code, stock_code):

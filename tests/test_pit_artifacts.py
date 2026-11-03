@@ -178,5 +178,12 @@ class ArtifactStoreTests(unittest.TestCase):
         self.store.put(NO, 'a', b'A', observed_at=T2, source_url='u');self.assertFalse(self.store.state(NO, 'a')['unresolved'])
         self.store.put(NO, 'a', b'C', observed_at=T2, source_url='u');self.assertTrue(self.store.state(NO, 'a')['unresolved'])
 
+    def test_latest_returns_the_last_observed_bytes_never_a_resolution_row_and_none_when_nothing_was_stored(self):
+        self.assertIsNone(self.store.latest(NO, 'a'))
+        a = self.store.put(NO, 'a', b'A', observed_at=T1, source_url='u');self.store.put(NO, 'a', b'B', observed_at=T1, source_url='u')
+        self.store.resolve(NO, 'a', accepted_sha256=a['sha256'], observed_at=T2, reason='A 수용')
+        self.assertEqual(self.store.latest(NO, 'a'), b'B')                                    # the last observation, not the pinned one
+        self.store.record_failure(NO, 'f', reason='timeout', observed_at=T1);self.assertIsNone(self.store.latest(NO, 'f'))
+
 
 if __name__ == '__main__':unittest.main()
