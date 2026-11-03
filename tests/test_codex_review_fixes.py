@@ -128,4 +128,21 @@ class RecordBeforeEvaluateTests(unittest.TestCase):
         self.assertLess(order.index('record'),order.index('evaluate'))
 
 
+class LockRetryTests(unittest.TestCase):
+    def test_a_transient_permission_error_while_taking_the_lock_is_retried(self):
+        real_open = trial_log.os.open;calls = []
+        def flaky(path, flags, *a, **k):
+            calls.append(1)
+            if len(calls) < 3:raise PermissionError(13, 'delete pending')
+            return real_open(path, flags, *a, **k)
+        with tempfile.TemporaryDirectory() as folder, patch.object(trial_log.os, 'open', flaky):
+            trial_log.record(folder, 'work', ENTRY)
+        self.assertGreaterEqual(len(calls), 3)
+
+    def test_a_persistent_permission_error_times_out_with_the_clear_lock_message(self):
+        def denied(path, flags, *a, **k):raise PermissionError(13, 'denied')
+        with tempfile.TemporaryDirectory() as folder, patch.object(trial_log.os, 'open', denied), patch.object(trial_log, 'LOCK_WAIT_SECONDS', 0.1):
+            with self.assertRaisesRegex(ValueError, '잠금'):trial_log.record(folder, 'work', ENTRY)
+
+
 if __name__=='__main__':unittest.main()

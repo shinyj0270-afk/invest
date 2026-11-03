@@ -91,7 +91,7 @@ def _exclusive(path):
     while True:
         try:
             fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY);break
-        except FileExistsError:
+        except (FileExistsError, PermissionError):      # Windows reports a lock file that is being deleted as PermissionError
             if time.monotonic() >= deadline:raise ValueError('시도 로그 잠금 대기 초과; 쓰는 프로세스가 없는지 확인한 뒤 잠금 파일을 수동 정리')
             time.sleep(0.02)
     try:yield

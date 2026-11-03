@@ -9,12 +9,21 @@ OpenDART/viewer terms are checked by the user and the first live call is approve
 """
 import argparse
 import json
+import re
 import sys
+from datetime import date
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:sys.path.insert(0, str(ROOT))
 from investment.pit_annual import project, project_all
 from investment.pit_verify import verify
+
+
+def _inventory_item_ok(item):
+    if not isinstance(item, dict) or not isinstance(item.get('rcept_no'), str) or not re.fullmatch(r'\d{14}', item['rcept_no']):return False
+    try:date.fromisoformat(item.get('rcept_dt'))
+    except (TypeError, ValueError):return False
+    return all(item.get(k) is None or isinstance(item[k], str) for k in ('company', 'stock_code', 'title_period'))
 
 
 def check_shapes(data):
@@ -23,8 +32,9 @@ def check_shapes(data):
     receipts, sessions, inventory = data.get('receipts'), data.get('sessions'), data.get('inventory')
     if not isinstance(receipts, list) or not all(isinstance(r, dict) for r in receipts):raise ValueError('receipts는 객체 목록이어야 합니다')
     if not isinstance(sessions, list) or not all(isinstance(d, str) for d in sessions):raise ValueError('sessions는 날짜 문자열 목록이어야 합니다')
-    if inventory is not None and (not isinstance(inventory, list) or not all(isinstance(i, dict) and isinstance(i.get('rcept_no'), str) and isinstance(i.get('rcept_dt'), str) for i in inventory)):
-        raise ValueError('inventory는 rcept_no·rcept_dt가 있는 객체 목록이어야 합니다')
+    if inventory is not None:
+        if not isinstance(inventory, list) or not all(_inventory_item_ok(i) for i in inventory):
+            raise ValueError('inventory는 형식이 맞는 rcept_no·rcept_dt(ISO 날짜)와 문자열 company·title_period를 가진 객체 목록이어야 합니다')
     return receipts, sessions, inventory
 
 

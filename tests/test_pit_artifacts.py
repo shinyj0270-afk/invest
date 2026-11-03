@@ -170,5 +170,13 @@ class ArtifactStoreTests(unittest.TestCase):
         self.assertEqual((back['status'], back['changed_from']), ('changed', sha(b'v2')))                                   # compared with the last observation, not the pin row
         self.assertFalse(self.store.state(NO, 'a')['pinned_sha256'] is None)
 
+    def test_fetching_the_accepted_version_again_is_not_unresolved_but_any_other_bytes_are(self):
+        a = self.store.put(NO, 'a', b'A', observed_at=T1, source_url='u');self.store.put(NO, 'a', b'B', observed_at=T1, source_url='u')
+        self.store.resolve(NO, 'a', accepted_sha256=a['sha256'], observed_at=T2, reason='A 수용')
+        self.store.put(NO, 'a', b'A', observed_at=T2, source_url='u');self.assertFalse(self.store.state(NO, 'a')['unresolved'])
+        self.store.put(NO, 'a', b'B', observed_at=T2, source_url='u');self.assertTrue(self.store.state(NO, 'a')['unresolved'])
+        self.store.put(NO, 'a', b'A', observed_at=T2, source_url='u');self.assertFalse(self.store.state(NO, 'a')['unresolved'])
+        self.store.put(NO, 'a', b'C', observed_at=T2, source_url='u');self.assertTrue(self.store.state(NO, 'a')['unresolved'])
+
 
 if __name__ == '__main__':unittest.main()

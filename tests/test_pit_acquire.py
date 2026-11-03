@@ -109,6 +109,16 @@ class AcquireTests(Fixture):
         with self.assertRaises(BudgetExceeded):self.run_acquire([], discover=discover, budget=tight)
         self.assertEqual(self.fetched, ['https://example.invalid/v?rcpNo=' + NO])                               # nothing fetched by the tight run
 
+class MalformedRecordTests(Fixture):
+    def test_odd_contract_shapes_do_not_escape_as_exceptions(self):
+        odd = good_record(period_contract=dict(report_kind='annual', source=['bad']))
+        out = self.run_acquire([node()], parse=lambda d, n, e: odd)
+        self.assertEqual(out['status'], 'ok');self.assertIsNone(out['provenance']['contract_sha256'])
+        class Weird(dict):
+            def get(self, *a):raise TypeError('boom')
+        out = self.run_acquire([node(doc='w')], parse=lambda d, n, e: Weird(good_record()), fetch=lambda url: b'w')
+        self.assertEqual(out['status'], 'failed');self.assertIn(out['reason'], ('mapping_failed', 'identity_mismatch', 'parse_failed'))
+
 
 class BudgetTests(unittest.TestCase):
     def test_requests_are_paced_and_counted(self):

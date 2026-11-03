@@ -53,10 +53,13 @@ def parse_page(page, *, corp_code, stock_code):
     if not isinstance(page, dict) or not isinstance(page.get('status'), str):raise ValueError('응답 형식 오류')
     if page['status'] == NO_DATA:
         if page.get('list') or page.get('total_count') not in (None, 0):raise ValueError('자료 없음 응답이 자료를 담고 있습니다')
+        if page.get('total_page') not in (None, 0, 1) or (page.get('page_count') is not None and (_int(page['page_count']) is None or page['page_count'] < 1)):
+            raise ValueError('자료 없음 응답의 쪽 정보가 모순됩니다')
         return dict(page_no=_int(page.get('page_no')) or 1, total_count=0, total_page=1, rows=[])
     if page['status'] != OK:raise ValueError('OpenDART 응답 오류 ' + page['status'])
     number, total, pages, rows = _int(page.get('page_no')), _int(page.get('total_count')), _int(page.get('total_page')), page.get('list')
     if not number or number < 1 or total is None or total < 0 or not pages or pages < 1 or not isinstance(rows, list):raise ValueError('쪽 정보 오류')
+    if total == 0 and (pages != 1 or rows):raise ValueError('total_count 0인데 쪽 정보나 행이 있습니다')
     size = page.get('page_count')
     if size is not None:
         size = _int(size)
@@ -81,6 +84,7 @@ def assemble(pages, *, query, collected_at):
     if len(set(numbers)) != len(numbers):raise ValueError('접수번호 중복')
     keep = sorted((r for r in rows if r['kind'] == 'annual'), key=lambda r: (r['rcept_dt'], r['rcept_no']))
     skipped = sorted((dict(rcept_no=r['rcept_no'], reason='not_annual', report_nm=r['report_nm']) for r in rows if r['kind'] in ('half', 'quarter', 'other')), key=lambda r: r['rcept_no'])
-    uncertain = sorted((dict(rcept_no=r['rcept_no'], rcept_dt=r['rcept_dt'], reason='uncertain_title', report_nm=r['report_nm'], title_period=None, kind='uncertain')
+    uncertain = sorted((dict(rcept_no=r['rcept_no'], rcept_dt=r['rcept_dt'], reason='uncertain_title', report_nm=r['report_nm'], title_period=None, kind='uncertain',
+        company=r['stock_code'] or None, corp_code=r['corp_code'], title_period_hint=r['title_period'])
         for r in rows if r['kind'] == 'uncertain'), key=lambda r: r['rcept_no'])
     return dict(receipts=[dict(r) for r in keep], excluded=skipped, uncertain=uncertain, raw_count=total, query=dict(query), collected_at=collected_at)

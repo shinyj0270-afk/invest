@@ -37,6 +37,7 @@ def map_record(record, *, company, rcept_dt, include_debt=False):
     if expected != rcept_dt:raise ValueError('접수일이 접수번호와 다릅니다')
     values = record.get('values')
     if not isinstance(values, dict):raise ValueError('값이 없습니다')
+    source = contract.get('source')
     mapped, keys = {}, {}
     for target, key in FIELDS + ((DEBT,) if include_debt else ()):
         if key not in values or values[key] is None:continue
@@ -45,4 +46,4 @@ def map_record(record, *, company, rcept_dt, include_debt=False):
     if not mapped:raise ValueError('매핑 가능한 값이 없습니다')
     return (dict(company=company, period_end=end, basis=record['basis'], report_kind='annual', rcept_no=receipt, rcept_dt=rcept_dt, values=mapped),
         dict(rcept_no=receipt, mapping_version=MAPPING_VERSION, parser_version=record.get('parser_version'), source_keys=keys,
-            source_url=record.get('url'), contract_sha256=(contract.get('source') or {}).get('sha256'), include_debt=bool(include_debt)))
+            source_url=record.get('url'), contract_sha256=source.get('sha256') if isinstance(source, dict) else None, include_debt=bool(include_debt)))

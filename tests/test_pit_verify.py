@@ -17,7 +17,7 @@ def receipt(no='20260310000001', rcept='2026-03-10', year=2025, revenue=100.0, c
     return dict(company=company, period_end=f'{year}-12-31', basis='CFS', report_kind='annual', rcept_no=no, rcept_dt=rcept, values=dict(revenue=revenue))
 
 
-def inv(no, rcept, period='2025-12', corr='none', company=None, kind='annual'):
+def inv(no, rcept, period='2025-12', corr='none', company='298040', kind='annual'):
     return dict(rcept_no=no, rcept_dt=rcept, title_period=period, correction=corr, kind=kind, company=company)
 
 
@@ -114,20 +114,89 @@ class VerifyTests(unittest.TestCase):
         known = [inv('20260310000001', '2026-03-10'), inv('20260520000001', '2026-05-20', corr='기재정정'), inv('20260520000002', '2026-05-20', corr='기재정정')]
         out = verify([receipt(), a, b], sessions(), inventory=known)
         self.assertEqual(out['unresolved'], []);self.assertEqual(out['counts']['ambiguous'], 1)
-    def test_a_disagreement_between_the_projection_rule_and_the_independent_availability_is_reported(self):
-        from unittest.mock import patch
-        import investment.pit_annual as annual
-        real = annual._check
-        def drifted(r, cal):
-            reason, when = real(r, cal);return reason, when and (date.fromisoformat(when) + timedelta(days=3)).isoformat()
-        with patch('investment.pit_verify._check', drifted):
-            out = verify(self.good(), sessions())
-        self.assertIn('availability_computation_disagrees', [p['problem'] for p in out['checks']['eligibility_oracle']['problems']])
-
     def test_a_later_receipt_of_another_company_does_not_set_the_end_of_an_unresolved_interval(self):
         known = [inv('20260415000002', '2026-04-15', corr='기재정정', company='011170'), inv('20260520000003', '2026-05-20', corr='기재정정', company='298040')]
         out = verify([receipt(no='20260520000003', rcept='2026-05-20', revenue=90.0)], sessions(), inventory=known)
         self.assertEqual([(u['rcept_no'], u['affects_until']) for u in out['unresolved']], [('20260415000002', None)])
+
+    def test_a_production_validator_that_rejects_every_valid_receipt_is_caught(self):
+        from unittest.mock import patch
+        import investment.pit_annual as annual
+        with patch.object(annual, '_values', lambda raw: None):
+            out = verify([receipt()], sessions())
+        self.assertFalse(out['ok']);self.assertIn('valid_receipt_blocked', [p['problem'] for p in out['checks']['eligibility_oracle']['problems']])
+
+    def test_a_projection_that_projects_an_invalid_receipt_is_caught(self):
+        bad = receipt(no='20260310000007');bad['report_kind'] = 'quarter'
+        def lenient(receipts, cal):
+            result = project([r for r in receipts if r['rcept_no'] != '20260310000007'], cal);extra = dict(result['rows'][0], rcept_no='20260310000007')
+            return dict(result, rows=result['rows'] + [extra])
+        out = verify([receipt(), bad], sessions(), project_fn=lenient)
+        self.assertIn('invalid_receipt_projected', [p['problem'] for p in out['checks']['eligibility_oracle']['problems']])
+
+    def test_a_transient_wrong_value_between_expected_cutoffs_is_caught_by_the_exact_row_set(self):
+        def transient(receipts, cal):
+            result = project(receipts, cal);rows = [dict(r) for r in result['rows']]
+            return dict(result, rows=rows + [dict(rows[0], available_at='2026-04-01', revenue=999.0, rcept_no='20260401000001'), dict(rows[0], available_at='2026-04-02')])
+        out = verify([receipt()], sessions(), project_fn=transient)
+        self.assertFalse(out['ok']);self.assertIn('row_set_differs', [p['problem'] for p in out['checks']['eligibility_oracle']['problems']])
+
+    def test_a_conflicting_shadow_row_behind_the_correct_one_is_caught(self):
+        def shadow(receipts, cal):
+            result = project(receipts, cal);rows = [dict(r) for r in result['rows']]
+            return dict(result, rows=rows + [dict(rows[0], rcept_no='20260310000099', revenue=999.0)])
+        out = verify([receipt()], sessions(), project_fn=shadow)
+        self.assertFalse(out['ok']);self.assertIn('row_set_differs', [p['problem'] for p in out['checks']['eligibility_oracle']['problems']])
+
+    def test_two_rows_with_the_same_identity_and_availability_are_reported_as_duplicates(self):
+        def twin(receipts, cal):
+            result = project(receipts, cal);rows = [dict(r) for r in result['rows']]
+            return dict(result, rows=rows + [dict(rows[0])])
+        self.assertIn('duplicate_row', [p['problem'] for p in verify([receipt()], sessions(), project_fn=twin)['checks']['eligibility_oracle']['problems']])
+
+    def test_a_projection_that_hides_its_blocked_records_is_caught(self):
+        quarter = receipt(no='20260310000007');quarter['report_kind'] = 'quarter'
+        def hide(receipts, cal):
+            return dict(project(receipts, cal), blocked=[])
+        out = verify([receipt(), quarter], sessions(), project_fn=hide)
+        self.assertFalse(out['ok']);self.assertIn('invalid_receipt_not_reported_blocked', [p['problem'] for p in out['checks']['eligibility_oracle']['problems']])
+        def hide_valid(receipts, cal):
+            return dict(project(receipts, cal), rows=[], blocked=[])
+        self.assertFalse(verify([receipt()], sessions(), project_fn=hide_valid)['ok'])                  # a valid receipt that vanishes is caught too
+
+    def test_unresolved_intervals_end_only_at_a_later_receipt_of_the_same_company_and_actual_fiscal_period(self):
+        known = [inv('20260310000001', '2026-03-10'), inv('20260520000002', '2026-05-20', corr='기재정정')]
+        wrong_year = receipt(no='20260520000002', rcept='2026-05-20', year=2024, revenue=90.0)               # inventory title says 2025-12, the data says FY2024
+        out = verify([wrong_year], sessions(), inventory=known)
+        first = [u for u in out['unresolved'] if u['rcept_no'] == '20260310000001'][0]
+        self.assertIsNone(first['affects_until'])
+        self.assertIn('inventory_identity_mismatch', [u['problem'] for u in out['unresolved'] if u['rcept_no'] == '20260520000002'])
+
+    def test_inventory_items_from_assemble_use_stock_code_and_an_unknown_company_is_conservative(self):
+        known = [dict(rcept_no='20260415000002', rcept_dt='2026-04-15', title_period='2025-12', stock_code='011170'),
+                 dict(rcept_no='20260416000003', rcept_dt='2026-04-16', title_period='2025-12')]
+        out = verify([receipt(no='20260520000009', rcept='2026-05-20', revenue=90.0)], sessions(), inventory=known + [inv('20260520000009', '2026-05-20', corr='기재정정')])
+        by = {u['rcept_no']: u for u in out['unresolved']}
+        self.assertEqual((by['20260415000002']['company'], by['20260415000002']['affects_until']), ('011170', None))      # another company's later receipt does not end it
+        self.assertEqual((by['20260416000003']['company'], by['20260416000003']['affects_until'], by['20260416000003']['company_unknown']), (None, None, True))
+
+    def test_a_matching_receipt_number_does_not_hide_a_wrong_inventory_identity(self):
+        for bad in (inv('20260310000001', '2026-03-11'), inv('20260310000001', '2026-03-10', company='011170'), inv('20260310000001', '2026-03-10', period='2024-12')):
+            out = verify([receipt()], sessions(), inventory=[bad])
+            self.assertEqual([u['problem'] for u in out['unresolved']], ['inventory_identity_mismatch']);self.assertFalse(out['ok'])
+
+    def test_malformed_receipts_are_blocked_like_production_instead_of_raising(self):
+        out = verify([receipt(), dict(company='298040', basis='CFS')], sessions())
+        self.assertEqual(out['counts']['blocked'], {'not_annual': 1})
+
+    def test_the_oracle_agrees_with_production_on_blocked_inputs_calendar_gaps_and_bad_value_types(self):
+        gap = [d for d in sessions() if not ('2026-03-11' <= d <= '2026-03-30')]                         # next session is 12 days after the receipt
+        out = verify([receipt()], gap);self.assertTrue(out['ok']);self.assertEqual(out['counts']['blocked'], {'calendar_gap': 1})
+        for values in (dict(revenue=True), dict(revenue=1.0, tax_verified='false'), dict(revenue=1.0, tax_verified=1), dict(revenue=-1.0)):
+            r = receipt();r['values'] = values;out = verify([r], sessions())
+            self.assertTrue(out['ok'], values);self.assertEqual(out['counts']['blocked'], {'bad_values': 1})
+        r = receipt();r['values'] = dict(revenue=1.0, tax_verified=True, effective_tax_rate=0.2, special_dividend='unknown', dps_basis='split_adjusted')
+        self.assertTrue(verify([r], sessions())['ok']);self.assertEqual(verify([r], sessions())['counts']['rows'], 1)
 
 
     def test_inputs_are_not_mutated(self):

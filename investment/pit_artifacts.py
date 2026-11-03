@@ -57,11 +57,13 @@ class ArtifactStore:
 
     @staticmethod
     def _state(rows):
-        pinned, unresolved = None, False
+        pinned, unresolved, latest = None, False, None
         for e in rows:
             if e['status'] == 'resolved':pinned, unresolved = e['sha256'], False
             elif e['status'] in ('changed', 'hash_mismatch'):unresolved = True
             elif e.get('sha256') and pinned and e['sha256'] != pinned:unresolved = True      # bytes other than the accepted ones were observed again
+            if e['status'] != 'resolved' and e.get('sha256'):latest = e['sha256']
+        if pinned and latest == pinned:unresolved = False           # the accepted bytes are what was observed last
         return dict(unresolved=unresolved, pinned_sha256=pinned)
 
     def state(self, rcept_no, document_id):

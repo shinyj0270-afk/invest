@@ -43,7 +43,10 @@ class CliTests(unittest.TestCase):
         path = self.write(dict(receipts=[], sessions=sessions()))
         code, _, err = self.run_cli(['verify', '--input', str(path), '--live']);self.assertEqual(code, 2);self.assertIn('구현되지 않았습니다', err)
         for payload in ({}, dict(receipts='x', sessions=[]), dict(receipts=[1], sessions=[]), dict(receipts=[], sessions=[1]),
-                        dict(receipts=[], sessions=sessions(), inventory=[None]), dict(receipts=[], sessions=sessions(), inventory=[dict(rcept_no=1)]), [1, 2]):
+                        dict(receipts=[], sessions=sessions(), inventory=[None]), dict(receipts=[], sessions=sessions(), inventory=[dict(rcept_no=1)]), [1, 2],
+                        dict(receipts=[], sessions=sessions(), inventory=[dict(rcept_no='20260310000001', rcept_dt='garbage')]),
+                        dict(receipts=[], sessions=sessions(), inventory=[dict(rcept_no='123', rcept_dt='2026-03-10')]),
+                        dict(receipts=[], sessions=sessions(), inventory=[dict(rcept_no='20260310000001', rcept_dt='2026-03-10', company='OTHER', title_period=[])])):
             code, _, err = self.run_cli(['verify', '--input', str(self.write(payload))]);self.assertEqual(code, 2);self.assertIn('오류', err)
         code, _, err = self.run_cli(['verify', '--input', 'Z:/definitely/not/here.json']);self.assertEqual(code, 2)
 

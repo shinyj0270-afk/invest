@@ -122,4 +122,21 @@ class AssembleTests(unittest.TestCase):
         out = assemble([empty], query={}, collected_at='t');self.assertEqual((out['receipts'], out['raw_count'], out['uncertain']), ([], 0, []))
 
 
+class MetadataTests(unittest.TestCase):
+    def test_contradictory_no_data_and_zero_total_metadata_are_rejected(self):
+        for bad in (dict(status='013', total_count=0, total_page=99, page_count=-1, list=[]), dict(status='013', total_count=0, total_page=3, list=[]),
+                    dict(status='013', total_count=0, page_count=0, list=[]),
+                    dict(status='000', page_no=1, page_count=1, total_count=0, total_page=2, list=[row()]), dict(status='000', page_no=1, page_count=1, total_count=0, total_page=1, list=[row()])):
+            with self.subTest(bad=str(bad)[:50]), self.assertRaises(ValueError):parse_page(bad, corp_code=CORP, stock_code=STOCK)
+        ok = dict(status='000', page_no=1, page_count=100, total_count=0, total_page=1, list=[])
+        self.assertEqual(parse_page(ok, corp_code=CORP, stock_code=STOCK)['rows'], [])
+
+    def test_uncertain_entries_keep_the_company_and_the_period_hint_for_review(self):
+        p = parse_page(page([row(name='[기타정정]사업보고서 (2025.12)')]), corp_code=CORP, stock_code=STOCK)
+        u = assemble([p], query={}, collected_at='t')['uncertain'][0]
+        self.assertEqual((u['company'], u['corp_code'], u['title_period'], u['title_period_hint']), (STOCK, CORP, None, '2025-12'))
+        d = parse_page(page([row(stock='')]), corp_code=CORP, stock_code=None)
+        self.assertIsNone(assemble([parse_page(page([row(name='사업보고서 설명자료', stock='')]), corp_code=CORP, stock_code=None)], query={}, collected_at='t')['uncertain'][0]['company'])
+
+
 if __name__ == '__main__':unittest.main()

@@ -65,11 +65,15 @@ def acquire_receipt(*, entry, company, basis, discover, fetch, parse, store, now
         record = parse(data, chosen, entry)
     except Exception as exc:
         return dict(status='failed', rcept_no=number, reason='parse_failed', detail=_detail(exc), artifact=artifact)
-    if not isinstance(record, dict) or (record.get('receipt'), record.get('code'), record.get('basis')) != (number, company, basis):
+    try:
+        identity = (record.get('receipt'), record.get('code'), record.get('basis')) if isinstance(record, dict) else None
+    except Exception:                       # a hostile or broken mapping type must not escape as an exception
+        identity = None
+    if identity != (number, company, basis):
         return dict(status='failed', rcept_no=number, reason='identity_mismatch', artifact=artifact)
     try:
         receipt, provenance = map_record(record, company=company, rcept_dt=entry['rcept_dt'], include_debt=include_debt)
-    except ValueError as exc:
+    except (ValueError, AttributeError, TypeError, KeyError) as exc:
         return dict(status='failed', rcept_no=number, reason='mapping_failed', detail=_detail(exc), artifact=artifact)
     provenance['artifact_sha256'] = artifact['sha256']            # raw downloaded bytes; `contract_sha256` is the parser's own (decoded text) hash
     provenance['artifact_document_id'] = chosen['document_id']
