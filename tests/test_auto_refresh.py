@@ -2,6 +2,7 @@
 import copy
 import json
 import tempfile
+import sys
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -233,6 +234,10 @@ class AutoRefreshTests(unittest.TestCase):
     def test_dashboard_start_failure_manual_recovery_and_fixture_separation(self):
         from streamlit.testing.v1 import AppTest
         from investment.local_config import load_local
+        # The app imports `batch` and investment modules lazily; if their first import happens while load_local is patched,
+        # they keep the mock for the rest of the process and later tests fail depending on order. Forget what this test imports.
+        imported_before = set(sys.modules)
+        self.addCleanup(lambda: [sys.modules.pop(k) for k in set(sys.modules) - imported_before if k == 'batch' or k.startswith('investment.')])
         root = Path(__file__).resolve().parents[1]
         local = load_local(self.root)
         self.config['infomax_refresh'] = None
