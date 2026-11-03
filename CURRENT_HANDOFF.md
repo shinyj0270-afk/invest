@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-11-03T14:10:00+09:00 (SESSION CLOSE 재작성; 전송 검증 pending)
+Updated: 2026-11-03T15:20:00+09:00 (SESSION CLOSE 재작성; 전송 검증 pending)
 Last agent: Claude Code (Opus/Sonnet 5.5 세션) — Claude 중심 전환 후 첫 INVESTMENT 작업
 Last PC: work Primary (config/local.json profile=work, pc_check finish 확인; 변경 없음)
 Last task: .venv Codex 런타임 의존 제거 후 UI 테스트 점검, 역할 문구 전환, 방법론 질문 Q01~Q10 직접 조사와 승인 후 첫 구현 3건
@@ -14,34 +14,35 @@ Completed:
 - 사용자 승인(2026-11-03 "바꿀 건 바꾸고, 전송할 건 전송하자") 후 첫 구현 3건. **신규 파일만 추가했고 기존 코드·설정·투자 규칙·DB는 바뀌지 않았다.**
   - 시도 로그(Q06 T1): `investment/trial_log.py`(append-only·해시 연쇄 JSONL, `.local/trial-log/<profile>.jsonl`, Git 제외)와 `tools/trial_log.py`(record/summary). 아직 어떤 탐색에도 연결·사용되지 않았다.
   - 겹침 포함률 모의 실험(Q07 T1): `tools/overlap_coverage_sim.py`와 결과 `docs/review/result_Q07_overlap_coverage_sim_2026-11-03.md`(합성 자료). 겹침을 무시한 구간의 실제 포함률은 지평 63/126/252일에서 각각 0.71~0.81/0.55~0.61/0.36~0.45였다.
+  - 추세 상태 내부 상수 민감도(S10 후속, 승인 "진행"): `tools/trend_sensitivity_report.py`가 저장 일봉으로 `price_trend_status`를 상수 하나씩 바꿔 재계산(기준 재계산을 `technical()`과 기업별 대조: 644개 불일치 0, 변이 7종 검출). **변형 18개를 평가 전에 시도 로그에 기록**(전부 rejected, 로그 누적 31회, head_digest `87ce5a85e51a9723ed071323da0d39bcff7d46dcdd34fb835ac7716150b3b7c8`). 데이터 폴더 124,883개 파일·DB 해시 실행 전후 동일. 결과: 후보를 가르는 것은 "종가>50>150>200일선" 배열(빼면 추천 통과 5→20)과 이동평균 길이(중기 180이면 9개, 단기 40이면 구성원 교체), 200일선 상승·지수 초과수익·비교 구간은 영향 없음. 어떤 값도 채택하지 않음, 규칙 변경 근거 아님. 결과 `docs/review/result_S10_trend_status_sensitivity_2026-11-03.md`.
   - 임계값 민감도 진단(S10, 승인 "진행"): `tools/threshold_sensitivity_report.py`가 필터를 하나씩 바꿔 통과 수·유지/추가/탈락과 조건별 단독 차단을 낸다(현재 규칙은 `propose`와 통과 집합 일치를 테스트로 고정, 방향 변이 6종 검출). 실제 시장 모집단에 읽기 전용 실행하고 **변형 13개를 평가 전에 시도 로그에 기록**(전부 rejected, 로그 누적 13회, head_digest `9b3d01d5871ba1c2e7eae8411a8608f8f2e1bf58c3d9bbae1c58e53682e5e60b`, `.local/trial-log/work.jsonl` Git 제외). 데이터 폴더 124,883개 파일·DB 해시 실행 전후 동일. 결과: RS·1개월 RS·200일선 임계값은 후보에 관여하지 않고(단독 차단 0), 후보를 가르는 것은 `price_trend_status` 복합 규칙(628개 탈락, 풀면 5→27)과 재무 컷(매출 YoY 5→7개/20→2개, 부채 150→4개). 어떤 값도 채택하지 않음. 결과 `docs/review/result_S10_threshold_sensitivity_real_pool_2026-11-03.md`.
   - 추천 초안 점수 진단(Q09 후속, 승인 "추가 진행"): `tools/recommendation_score_report.py`가 `propose`의 필터·점수를 재현(테스트로 일치 고정)해 깔때기·구성항 상관·cap·한 항 제거 겹침을 낸다. 실제 시장 모집단(저장 스냅샷+시장 캐시, 새로고침 미실행)에 읽기 전용 실행: **2,428개 중 5개만 통과**(추세 조건 탈락 629개가 최대), 데이터 폴더 124,883개 파일 실행 전후 동일. 점수 가중치는 현재 후보 구성에 영향이 없고 하드 필터가 결정한다. 결과 `docs/review/result_Q09_recommendation_score_real_pool_2026-11-03.md`.
   - 요인 중복 진단(Q09 T1): `tools/factor_overlap_report.py`(요인 간 순위 상관·한 요인 제거 시 상위 N 겹침·점수 미계산 사유). 합성 fixture 실행 후 사용자 승인("실행")으로 **실제 저장 스냅샷에 읽기 전용 실행**했다(SQLite `mode=ro`, 파일 복사 없음, 운영 DB 해시 `10e742e8cd5abe4f…` 전·중·후 동일). 3개 기업 모두 점수 미계산 — **장기 점수 S_long은 현재 실제 자료로는 계산되지 않는다(휴면)**: 실제 적재 경로가 `annual`을 채우지 않아 Q·G·C·V가 결측. 집계는 `docs/review/result_Q09_factor_overlap_real_snapshot_2026-11-03.md`.
 
 Pending:
 - **자료 경로 미확정(Q01~Q03)**: 시점별 상장·상폐·상장주식수, DART 공개 시각·정정 빈티지, 조정계수·정산가 공식 경로 미확인. 2008 일별 시총·주식수는 KRX OPEN API(2010~) 범위 밖. 접수시간 개정(2024-04-25, hwp)과 KRX 총수익지수 방법서 미열람.
-- **구조 공백**: 시도 로그는 S10 민감도 진단 13회에만 쓰였고 그 밖의 탐색에는 연결되지 않음(앞으로의 임계값 변형은 모두 기록 후 평가). 겹침 보정 추론은 합성 모의 실험까지만이고 앱·보고에는 반영하지 않음. 시기별 비용 버전표(Q04)와 계획·코호트 간 집계의 분모 표시(Q10) 없음. 장기 점수 S_long은 실제 자료로 계산되지 않음(위 결과). 추천 초안 점수 진단은 실행했고 통과 5개뿐이라 점수 가중치가 후보 구성에 영향을 주지 않음(하드 필터 임계값이 실질 결정 규칙).
+- **구조 공백**: 시도 로그는 S10 민감도 진단 31회(필터 13 + 추세 상수 18)에만 쓰였고 그 밖의 탐색에는 연결되지 않음(앞으로의 임계값 변형은 모두 기록 후 평가). 겹침 보정 추론은 합성 모의 실험까지만이고 앱·보고에는 반영하지 않음. 시기별 비용 버전표(Q04)와 계획·코호트 간 집계의 분모 표시(Q10) 없음. 장기 점수 S_long은 실제 자료로 계산되지 않음(위 결과). 추천 초안 점수 진단은 실행했고 통과 5개뿐이라 점수 가중치가 후보 구성에 영향을 주지 않음(하드 필터 임계값이 실질 결정 규칙).
 - 사용자 행위 필요: KRX OPEN API 키 신청·약관 동의, OpenDART 키, 법령 시행일별 조문(2008 증권거래세율)·농특세 별표 확인.
 - 비공식 UI 테스트 8개 실패 원인 미조사(2개는 8501 Streamlit 필요, 6개는 시계 고정에도 실패), `tests.test_auto_refresh` 5건 실패(옛 `.venv`에서도 동일) 미조사.
 - `research_sessions.py`는 agent를 Codex/Claude로만 허용하고 작성자≠검토자를 강제한다. Claude 중심 전환용 재설계 미착수(Claude 산출을 Codex로 표기 금지).
 - 주간 연구노트 등록 Codex 자동화(월 09:00, 옛 경로 `신영재\한국\INVESTMENT`)의 Claude 재구성 미착수. 예약 경로가 새 `.venv`로 동작하는지 미확인.
 - 유지: home Telegram watch 2회 실수신·최신 코드 수신·과거 home RSS 원인 확인은 이전 인계 기준 미실행. `.venv-codex-backup` 삭제는 며칠 정상 운영 후 사용자 확인. ChatGPT Pro 종료 전 대화 내보내기 여부 미확인.
 
-Next task: `price_trend_status` 복합 규칙의 내부 상수(50/150/200일선, 과거 구간 평균, 127봉, 지수 초과수익) 민감도를 볼지, 또는 S_long 휴면 처리·품질 점수 표시 점검을 할지 사용자와 정한다.
-Next action: 사용자가 승인하면 work Primary의 작업 워크트리에서 먼저 저장된 가격 자료를 읽기 전용으로 재계산할 수 있는지(저장 범위·형식) 확인하고, 가능하면 `tools/threshold_sensitivity_report.py`의 시도 로그 기록 방식(평가 전 기록, 전부 rejected, 최적값 미채택)을 그대로 적용한 진단을 TDD로 추가한다. 데이터 폴더 파일 목록·시각·SQLite 해시의 실행 전후 동일을 확인한다. 기존 코드·설정·규칙·DB는 바꾸지 않는다. 사용자 행위가 필요한 항목(KRX/OpenDART 키·약관·법령 조문 확인)은 대신하지 않는다.
+Next task: S10 민감도 진단은 여기서 마무리. 다음은 장기 점수 S_long 휴면 처리와 화면의 품질 점수 표시 점검을 할지, 또는 PIT 자료 경로(Q01~Q03) 작업으로 넘어갈지 사용자와 정한다.
+Next action: 사용자가 승인하면 work Primary의 작업 워크트리에서 S_long이 화면·문서에서 순위 근거로 읽히는 곳을 읽기 전용으로 점검해 보고한다(코드·규칙 변경은 별도 승인). 이동평균 기간 등 투자 규칙은 이 진단 결과만으로 바꾸지 않으며, 바꾸려면 시점 제약 자료와 시도 로그 기반 검증이 먼저다. 사용자 행위가 필요한 항목(KRX/OpenDART 키·약관·법령 조문 확인)은 대신하지 않는다.
 Recommended next agent: Claude Code — 구현·검증·인수인계. Codex 교차 검토는 Q01~Q10 문서의 사실 대조(초록 수준 한계 포함)에 한정하며 승인된 기존 검토 계약에 따른다.
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: High (PIT·편향·자료 계약), 단순 문서 정리는 Medium
 Escalation condition: 과거자료 부재·정정 vintage/상폐 정산 미확보·동시쓰기/divergence·지표 변경 필요·약관상 보존/재배포 제한 해석(KRX OPEN API) 필요 시 근거를 보존하고 해당 단계 보류
 Branch: shinyj0270-afk/invest (재사용 작업 워크트리); main (운영 원본)
-Commit: 3c8e46fcae55d3894952d25ef818eab0a9809927 (이번 민감도 진단 추가 직전 기준, 이전 결과를 push 완료한 SHA)
-Remote status: 반영 직전 원본 main·작업본·origin main 모두 3c8e46f 일치(0/0). 이번 민감도 진단 도구·결과·인계 commit/push는 작성 시 verification pending. 최종 보고 및 다음 START 실제 Git로 전송 commit을 확인한다.
+Commit: c79e8d54879ced4f20f9e5e9257202dc0b7411bb (이번 추세 상수 진단 추가 직전 기준, 이전 결과를 push 완료한 SHA)
+Remote status: 반영 직전 원본 main·작업본·origin main 모두 c79e8d5 일치(0/0). 이번 추세 상수 진단 도구·결과·인계 commit/push는 작성 시 verification pending. 최종 보고 및 다음 START 실제 Git로 전송 commit을 확인한다.
 
 Notes:
 - 검증(구현): 신규 테스트 `tests.test_trial_log` 5·`test_trial_log_cli` 2·`test_overlap_coverage_sim` 7·`test_factor_overlap_report` 7개 OK. 방향·래그 의존 로직은 일부러 깨뜨려 테스트가 실패하는 것을 확인한 뒤 복원. 관련 기존 `test_dual_pc` 13·`test_research_sessions` 4·`test_research_followup` 8·`test_leader_strategy` 7·`test_portfolio_risk` 14개 OK. `validate_share_candidates.py`(UI 제외) PASS·경고 0. 작업 워크트리에서 `tools/verify_portable.py`를 단독 실행하면 `config/local.json`이 없어 `Explicit matching PC profile required`로 실패하는 것은 기존 동작이며 공식 검증기의 같은 항목은 PASS.
 - 검증(앞선 CLOSE 실행): 문서 10개의 상대 링크 존재 확인, `tests.test_dual_pc` 13개·`tests.test_research_sessions` 4개 OK, `git diff --check` 0, `tools/pc_check.py --phase finish` clean(ahead/behind 0, 진행 Git 작업 0, 추적 private 경로 0, 예약 false). 공식 UI 23개 PASS는 `80e3391` 시점 실행 결과이며 이후 코드 변경 없음(문서만).
 - 한계: Q01~Q10은 조사 기록이며 지표·비용·배분·임계값 도입 승인이 아니다. 논문 본문 미열람, 네이버 증권·WICS·SSRN은 접근 제한으로 못 열었고 우회하지 않았다. 검색 결과 중 삽입 지시문이 섞인 페이지(cavac.at)는 열지 않았다.
-- 원본 반영: 오늘 7회(`80e3391`, `de85832`, `dd47f78`, `c8d8302`, `61fe566`, `d63ef9f`, `3c8e46f`)+이번 민감도 진단 추가 1회 예정. 재시작 1회(`61fe566`의 신규 모듈로 `restart_required=true` → 사용자 입력 보관 확인 후 안전 재시작 HTTP 202, build/source 일치·`restart_required=false` 확인). 신규 모듈·도구는 앱이 import하지 않아 동작 변화 없음. 어제 `.venv` 교체 시 서버 재시작 1회. 사용량 교대 0·비용 미집계. ChatGPT Deep Research 2회 실행(구독 한도 소모, 결과 무효).
+- 원본 반영: 오늘 8회(`80e3391`, `de85832`, `dd47f78`, `c8d8302`, `61fe566`, `d63ef9f`, `3c8e46f`, `c79e8d5`)+이번 추세 상수 진단 추가 1회 예정. 재시작 1회(`61fe566`의 신규 모듈로 `restart_required=true` → 사용자 입력 보관 확인 후 안전 재시작 HTTP 202, build/source 일치·`restart_required=false` 확인). 신규 모듈·도구는 앱이 import하지 않아 동작 변화 없음. 이후 `3c8e46f`·`c79e8d5` 반영 때도 같은 방식으로 안전 재시작(HTTP 202, build/source 일치). 어제 `.venv` 교체 시 서버 재시작 1회. 사용량 교대 0·비용 미집계. ChatGPT Deep Research 2회 실행(구독 한도 소모, 결과 무효).
 - `config/share_candidates.json`에는 Codex 검토 문서 3개만 있고 Q01~Q10 문서는 등록하지 않았다(공유 후보 여부는 별도 결정). 중앙 Wiki 수정 없음. 결과 발행·DB/원자료 접근·주문 0.
 - 다른 PC(home) 수신·실행 미확인. 집에서는 `fetch` 후 `pull --ff-only`로 문서만 받으면 된다. 내장 브라우저의 ChatGPT 로그인은 사용자가 직접 한 세션이며 계정·설정은 바꾸지 않았다.
 - PROJECT_STATE에 이번 전환·조사 항목을 추가했다. 이전 인계(Codex 11-03 검토 블록)는 Git 이력(`3ac6b2c`)에 보존된다.
