@@ -16,6 +16,9 @@ payload=json.JSONDecoder().raw_decode(html.split('const WORKSPACE_DATA=',1)[1])[
 snapshot=payload['analysis_snapshot']
 payload['discovery']={'snapshot':{'meta':dict(snapshot['meta'],discovery=True),
     'companies':[dict(r,legacy_available=False) for r in snapshot['companies']]},'research':payload['research']}
+# These candidates have neither legacy access nor a reviewed financial model.
+payload['company_details']={}
+payload['financial_tables']={}
 prefix,tail=html.split('const WORKSPACE_DATA=',1)
 html=prefix+'const WORKSPACE_DATA='+script_json(payload)+tail[tail.index(';</script>'):]
 with sync_playwright() as p:

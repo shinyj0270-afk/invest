@@ -31,7 +31,8 @@ with sync_playwright() as p:
         expect(page.locator(f'[data-brief-metric={key}] b')).not_to_have_text('—')
         expect(page.locator(f'[data-brief-metric={key}] small')).to_have_text(latest['period_end'])
     expect(page.locator('#research .section-title')).to_contain_text(snap['meta']['financial_basis'])
-    expect(page.locator('.brief-comparison svg')).to_have_count(3)
+    expect(page.locator('.cr-financial .sd-plot')).to_have_count(2)
+    expect(page.locator('.cr-financial .cr-evidence').first).to_contain_text(latest['period_end'])
     # A renamed issuer must not inherit the old company's monetary amounts.
     payload['discovery']['snapshot']['companies'][0]['name']='다른 식별정보'
     page.goto('about:blank')
@@ -39,7 +40,8 @@ with sync_playwright() as p:
     page.locator('[data-page=brief]').click();page.locator('#researchCompany').select_option(code)
     for key in ['revenue','op','net','borrowings']:
         expect(page.locator(f'[data-brief-metric={key}] b')).to_have_text('—')
-    expect(page.locator('.brief-comparison')).to_have_count(0)
+    expect(page.locator('.cr-financial .sd-plot')).to_have_count(0)
+    expect(page.locator('.cr-financial .sd-table')).to_have_count(0)
     assert not errors,errors
     browser.close()
 print('PASS discovery financials: missing global basis retains matched reviewed amounts/period, changed identity does not inherit amounts')

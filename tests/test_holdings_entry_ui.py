@@ -74,7 +74,7 @@ with sync_playwright() as pw:
     for r in fixture['research']:r['price_date']='2026-09-23'
     f.locator('#pFile').set_input_files({'name':'aged-fixture.json','mimeType':'application/json','buffer':json.dumps(fixture).encode()})
     expect(f.locator('#pValue')).to_have_text('—')
-    check('stale quote prompts price update','가격을 갱신' in f.locator('#pBookNote').inner_text())
+    expect(f.locator('#pBookNote')).to_contain_text('현재가·기준일·출처를 확인하세요.')
     page.locator('#pageSelect').select_option('portfolio',force=True);f.locator('#pPriceAge').fill('10')
     page.locator('[data-page=holdings]').click();expect(f.locator('#pValue')).to_have_text('1,150,000 원')
     open_tools(page);page.locator('[data-page=holdings]').click();page.locator('[data-context-page=waterfall]').click();expect(page.locator('#waterfallChart svg')).to_be_visible()

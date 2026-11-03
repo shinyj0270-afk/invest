@@ -22,7 +22,8 @@ with sync_playwright() as p:
     if actual:page.locator('#researchCompany').select_option('005930')
     expect(page.locator('[data-brief-metric]')).to_have_count(11)
     expect(page.locator('#financialSummary')).to_have_count(0)
-    expect(page.locator('.sd-table')).to_have_count(0)
+    # The brief page keeps source tables inside collapsed evidence details.
+    expect(page.locator('.sd-table:visible')).to_have_count(0)
     if actual:
         page.locator('.brief-financial').screenshot(path=str(ROOT/'validation/financial-table-actual.png'))
         code=page.evaluate("WORKSPACE_DATA.discovery.snapshot.companies.find(r=>!r.legacy_available).code")
