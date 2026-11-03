@@ -84,7 +84,15 @@ def component_stats(table):
     return out
 
 
+def positive_int(value):
+    try:number = int(value)
+    except (TypeError, ValueError):number = 0
+    if number < 1 or str(number) != str(value).strip():raise argparse.ArgumentTypeError('1 이상의 정수가 필요합니다')
+    return number
+
+
 def leave_one_out(table, top_n=15):
+    if isinstance(top_n, bool) or not isinstance(top_n, int) or top_n < 1:raise ValueError('top_n은 1 이상의 정수')
     rows = _passed(table)
     out = dict(top_n=top_n, passed=len(rows), baseline_top=[], without={})
     if not rows:
@@ -137,7 +145,7 @@ def latest_snapshot(path):
 
 
 def manifest(paths):
-    """(size, mtime_ns[, sha256 for SQLite files]) of every file under the given folders, to prove nothing changed."""
+    """(size, mtime_ns[, sha256 for SQLite files]) of every file under the given folders. A metadata comparison, not proof: a same-size edit that keeps its mtime would not show."""
     out = {}
     for base in map(Path, paths):
         if not base.exists():
@@ -186,7 +194,7 @@ def main(argv=None):
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument('--synthetic', action='store_true', help='합성 입력만 사용(실제 자료를 읽지 않음)')
     source.add_argument('--root', type=Path, help='INVESTMENT 작업 폴더(읽기 전용, 사용자 승인 후)')
-    parser.add_argument('--top-n', type=int, default=15)
+    parser.add_argument('--top-n', type=positive_int, default=15)
     args = parser.parse_args(argv)
     try:
         if args.synthetic:

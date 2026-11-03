@@ -5,7 +5,10 @@ Editing or deleting a middle line breaks the chain. Truncating the newest lines 
 so keep `summary()['head_digest']` in the handoff as an external anchor.
 """
 import json
+import os
+import time
 from collections import Counter
+from contextlib import contextmanager
 from datetime import date, datetime, timezone
 from pathlib import Path
 from .core import digest, num
@@ -13,6 +16,7 @@ from .core import digest, num
 PROFILES = ('work', 'home')
 DECISIONS = ('pending', 'rejected', 'adopted')
 HORIZONS = (63, 126, 252)
+LOCK_WAIT_SECONDS = 10
 REQUIRED = ('experiment_id', 'rule_version', 'parameter_set', 'decision')
 OPTIONAL = ('label_horizon', 'train_period', 'validation_period', 'test_period', 'discard_reason', 'metrics_ref')
 
@@ -79,14 +83,31 @@ def read_all(root, profile):
     return rows
 
 
+@contextmanager
+def _exclusive(path):
+    """Cross-process lock held across head read and append. A crash can leave the .lock file behind; remove it by hand after checking no writer runs."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lock = path.with_suffix('.lock');deadline = time.monotonic() + LOCK_WAIT_SECONDS
+    while True:
+        try:
+            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY);break
+        except FileExistsError:
+            if time.monotonic() >= deadline:raise ValueError('시도 로그 잠금 대기 초과; 쓰는 프로세스가 없는지 확인한 뒤 잠금 파일을 수동 정리')
+            time.sleep(0.02)
+    try:yield
+    finally:
+        os.close(fd);os.unlink(lock)
+
+
 def record(root, profile, entry):
     clean = _clean(entry)
-    rows = read_all(root, profile)
-    row = dict(clean, trial_index=len(rows) + 1, created_at=datetime.now(timezone.utc).isoformat(), prev_digest=rows[-1]['digest'] if rows else None)
-    row['digest'] = digest(row)
     path = log_path(root, profile)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open('a', encoding='utf-8', newline='\n') as f:f.write(json.dumps(row, ensure_ascii=False, sort_keys=True, allow_nan=False) + '\n')
+    with _exclusive(path):
+        rows = read_all(root, profile)
+        if path.exists() and path.stat().st_size and not path.read_bytes().endswith(b'\n'):raise ValueError('시도 로그 마지막 줄이 개행으로 끝나지 않음; 보존하고 검토')
+        row = dict(clean, trial_index=len(rows) + 1, created_at=datetime.now(timezone.utc).isoformat(), prev_digest=rows[-1]['digest'] if rows else None)
+        row['digest'] = digest(row)
+        with path.open('a', encoding='utf-8', newline='\n') as f:f.write(json.dumps(row, ensure_ascii=False, sort_keys=True, allow_nan=False) + '\n')
     return row
 
 

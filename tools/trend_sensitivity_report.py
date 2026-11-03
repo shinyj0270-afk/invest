@@ -45,7 +45,9 @@ def label(p):
 def terms(e, p):
     """The four sub-conditions of the rule (same operations and comparison directions as `technical`)."""
     c = e['closes'];dates = e['dates'];bm = e['bm'];now = c[-1]
-    sma = lambda n: sum(c[-n:]) / n
+    totals = [0]
+    for v in c:totals.append(totals[-1] + v)                      # prefix sums, exactly like `technical`, so strict comparisons agree bit for bit
+    sma = lambda n: (totals[-1] - totals[-1 - n]) / n
     n = p['rs_lag']
     return dict(stack=now > sma(p['sma_a']) > sma(p['sma_b']) > sma(p['sma_c']),
         slope=sma(p['sma_c']) > mean(c[-(WINDOW + p['mean_end']):-p['mean_end']]),
@@ -168,6 +170,8 @@ def main(argv=None):
     if not args.synthetic:after = manifest(watched)
     print(render(results, label_, len(vs) - 1, len(elig)))
     print('\n' + note)
+    if results[0]['parity_mismatch']:
+        print(f"\n오류: 기준 재계산이 technical()과 불일치한 기업 {results[0]['parity_mismatch']}개 — 위 표를 사용하지 않는다.");return 4
     if before is not None:
         same = before == after
         print(f"\n읽기 전용 확인: 데이터 폴더 파일 {len(before)}개의 크기·수정시각(SQLite는 해시)이 실행 전후 {'동일' if same else '**달라짐**'}.")

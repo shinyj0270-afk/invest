@@ -61,7 +61,15 @@ def _score(row_percentiles, weights):
     return 100 * sum(weights[k] / total * row_percentiles[k] for k in weights)
 
 
+def positive_int(value):
+    try:number = int(value)
+    except (TypeError, ValueError):number = 0
+    if number < 1 or str(number) != str(value).strip():raise argparse.ArgumentTypeError('1 이상의 정수가 필요합니다')
+    return number
+
+
 def leave_one_out(results, weights, top_n):
+    if isinstance(top_n, bool) or not isinstance(top_n, int) or top_n < 1:raise ValueError('top_n은 1 이상의 정수')
     p = factor_percentiles(results)
     scored = [i for i in range(len(results)) if all(p[k][i] is not None for k in weights)]
     out = dict(top_n=top_n, baseline_scored=len(scored), without={})
@@ -116,7 +124,7 @@ def main(argv=None):
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument('--fixture', action='store_true', help='합성 fixture만 사용(실제 자료를 읽지 않음)')
     source.add_argument('--snapshot', type=Path, help='분석 스냅샷 JSON 경로(읽기 전용, 사용자 승인 후)')
-    parser.add_argument('--top-n', type=int, default=5)
+    parser.add_argument('--top-n', type=positive_int, default=5)
     args = parser.parse_args(argv)
     if args.fixture:
         from investment.fixture import make_fixture
