@@ -54,5 +54,15 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(review,job['attempts'][0]['review'])
         self.assertEqual('awaiting_human',runner.accept(job,'review',dict(agent='Codex',model='unknown',value=self.review))['state'])
 
+    def test_agent_label_must_not_contradict_the_model_id(self):
+        runner=SessionRunner(self.lib,self.root/'sessions');job=runner.create(self.input)
+        for agent,model in (('Codex','claude-sonnet-5-5'),('Codex','Claude Opus'),('Claude','gpt-5.5'),('Claude','codex-mini'),('Claude','o3')):
+            with self.subTest(agent=agent,model=model),self.assertRaisesRegex(ValueError,'label'):
+                runner.accept(job,'research',dict(agent=agent,model=model,value=self.draft))
+        for agent,model in (('Claude','claude-sonnet-5-5'),('Claude','unknown'),('Codex','gpt-5.5'),('Codex','unknown')):
+            with self.subTest(agent=agent,model=model):
+                self.assertEqual('awaiting_session_review',runner.accept(job,'research',dict(agent=agent,model=model,value=self.draft))['state'])
+        self.assertEqual('awaiting_session_draft',job['state'])                                # rejected or accepted copies never mutate the input job
+
 
 if __name__ == '__main__': unittest.main()

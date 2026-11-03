@@ -10,6 +10,13 @@ from .research_agents import prepare, current, prompt, stamp, validate_draft, va
 from .research_library import fields, text
 
 
+def label_matches_model(agent, model):
+    """Reject a self-reported agent label that contradicts the model ID (e.g. Claude output labelled Codex). Not authentication."""
+    m = model.strip().lower()
+    if (agent == 'Codex' and 'claude' in m) or (agent == 'Claude' and re.match(r'(gpt|codex|o\d)', m)):
+        raise ValueError('Agent label contradicts model ID')
+
+
 class SessionRunner:
     def __init__(self, lib, root):
         self.lib, self.root = lib, Path(root)
@@ -32,6 +39,7 @@ class SessionRunner:
         fields(response, ('agent', 'model', 'value'))
         if response['agent'] not in ('Codex', 'Claude'): raise ValueError('Existing Codex/Claude session required')
         text(response['model'], 120)
+        label_matches_model(response['agent'], response['model'])
         if role in ('research', 'revision'):
             if role == 'revision':
                 if response['agent'] != job['steps'][0]['agent']: raise ValueError('Revision must use original author')

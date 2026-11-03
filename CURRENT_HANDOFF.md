@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-11-03T16:10:00+09:00 (SESSION CLOSE 재작성; 전송 검증 pending)
+Updated: 2026-11-03T17:00:00+09:00 (SESSION CLOSE 재작성; 전송 검증 pending)
 Last agent: Claude Code (Opus/Sonnet 5.5 세션) — Claude 중심 전환 후 첫 INVESTMENT 작업
 Last PC: work Primary (config/local.json profile=work, pc_check finish 확인; 변경 없음)
 Last task: .venv Codex 런타임 의존 제거 후 UI 테스트 점검, 역할 문구 전환, 방법론 질문 Q01~Q10 직접 조사와 승인 후 첫 구현 3건
@@ -25,11 +25,11 @@ Pending:
 - **구조 공백**: 시도 로그는 S10 민감도 진단 31회(필터 13 + 추세 상수 18)에만 쓰였고 그 밖의 탐색에는 연결되지 않음(앞으로의 임계값 변형은 모두 기록 후 평가). 겹침 보정 추론은 합성 모의 실험까지만이고 앱·보고에는 반영하지 않음. 시기별 비용 버전표(Q04)와 계획·코호트 간 집계의 분모 표시(Q10) 없음. 장기 점수 S_long은 실제 자료로 계산되지 않음(위 결과). 추천 초안 점수 진단은 실행했고 통과 5개뿐이라 점수 가중치가 후보 구성에 영향을 주지 않음(하드 필터 임계값이 실질 결정 규칙).
 - 사용자 행위 필요: KRX OPEN API 키 신청·약관 동의, OpenDART 키, 법령 시행일별 조문(2008 증권거래세율)·농특세 별표 확인.
 - 비공식 UI 테스트 8개 실패 원인 미조사(2개는 8501 Streamlit 필요, 6개는 시계 고정에도 실패), `tests.test_auto_refresh` 5건 실패(옛 `.venv`에서도 동일) 미조사.
-- `research_sessions.py`는 agent를 Codex/Claude로만 허용하고 작성자≠검토자를 강제한다. Claude 중심 전환용 재설계 미착수(Claude 산출을 Codex로 표기 금지).
+- `research_sessions.py`는 agent를 Codex/Claude로만 허용하고 작성자≠검토자를 강제한다. Claude 중심 전환: agent 라벨과 model ID가 모순되면(Codex+claude 계열, Claude+gpt/codex/o 계열) 가져오기를 거부하는 검사 추가(`label_matches_model`, 테스트·변이 3종 검출). 역할 고정(저자=Claude, 검토자=Codex 강제)은 하지 않음 — 기존 유연성 유지, 사용자 결정 필요 시 별도.
 - 주간 연구노트 등록 Codex 자동화(월 09:00, 옛 경로 `신영재\한국\INVESTMENT`)의 Claude 재구성 미착수. 예약 경로가 새 `.venv`로 동작하는지 미확인.
 - 유지: home Telegram watch 2회 실수신·최신 코드 수신·과거 home RSS 원인 확인은 이전 인계 기준 미실행. `.venv-codex-backup` 삭제는 며칠 정상 운영 후 사용자 확인. ChatGPT Pro 종료 전 대화 내보내기 여부 미확인.
 
-Next task: 사용자가 정한다. 후보: PIT 자료 경로(Q01~Q03) 작업, 또는 research_sessions.py의 Claude 중심 재설계.
+Next task: 사용자가 정한다. Codex 교차 검토 결과(PIT 설계 Q01~Q03, 실패 테스트 원인, 오늘 신규 코드 재점검)를 확인하고 반영 범위를 정한다.
 Next action: 사용자가 지정하면 work Primary 작업 워크트리에서 기존 정본·상태를 읽고 그 범위만 수행한다. 이동평균 기간 등 투자 규칙은 S10 진단 결과만으로 바꾸지 않는다. 사용자 행위가 필요한 항목(KRX/OpenDART 키·약관·법령 조문 확인)은 대신하지 않는다.
 Recommended next agent: Claude Code — 구현·검증·인수인계. Codex 교차 검토는 Q01~Q10 문서의 사실 대조(초록 수준 한계 포함)에 한정하며 승인된 기존 검토 계약에 따른다.
 Recommended model: 기존 사용자 설정 유지
