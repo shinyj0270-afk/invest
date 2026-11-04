@@ -21,6 +21,8 @@ _ALIASES = {
              'dividends_paid': ('배당금의지급', '배당금지급')}}
 _SECTIONS = {'유동자산': 'assets_current', '비유동자산': 'assets_noncurrent',
              '유동부채': 'current', '비유동부채': 'noncurrent'}
+_LIQUID_FINANCIAL = ('당기손익-공정가치금융자산', '당기손익-공정가치측정금융자산', '기타포괄손익-공정가치금융자산', '기타포괄손익-공정가치측정금융자산',
+                   '유동금융자산', '단기투자자산', '단기매매금융자산')       # 기타금융자산 is deliberately absent: it mixes in non-liquid items
 _CLOSE = ('부채총계', '자본', '자본총계', '자산총계', '부채', '자산')
 _OUTFLOWS = ('capex_tangible', 'capex_intangible', 'dividends_paid')
 _SIGNED = ('pretax_income', 'income_tax_expense', 'net_income_total')
@@ -52,13 +54,18 @@ def read_accounts(kind, rows, *, unit, first, columns, positional=False):
             field=family+'_'+str(section)
             if section is None:reason='section_unknown'
             elif section not in ('current', 'noncurrent') or required and section != required:reason='section_mismatch'
+        elif kind == 'balance' and label in _LIQUID_FINANCIAL:
+            if section == 'assets_noncurrent':continue
+            field='current_financial_assets'
+            if section != 'assets_current':reason='section_unknown' if section is None else 'section_mismatch'
         elif kind == 'balance' and section in ('current', 'noncurrent') and any(word in label for word in ('차입금', '사채', '리스부채', '당좌차월')):
             family='lease' if '리스부채' in label else 'borrowings'
             notes={**notes, family: 'unclassified'}
             continue
         if field is None:continue
+        summed=bool(family) or field == 'current_financial_assets'
         key=family or field
-        identity=(section, label) if family else field
+        identity=(section, label) if summed else field
         if identity in seen:reason=reason or 'duplicate'
         seen.add(identity)
         if field == 'short_term_financial_instruments' and section != 'assets_current':reason=reason or 'section_mismatch'
@@ -74,7 +81,7 @@ def read_accounts(kind, rows, *, unit, first, columns, positional=False):
             notes={**notes, key: notes.get(key, reason)}
             continue
         value=abs(parsed[0]) if field in _OUTFLOWS else parsed[0]
-        values={**values, field: values.get(field, 0)+value if family else value}
+        values={**values, field: values.get(field, 0)+value if summed else value}
     values={field: value for field, value in values.items()
             if field not in notes and not any(field.startswith(family+'_') for family in ('borrowings', 'lease') if family in notes)}
     return values, notes

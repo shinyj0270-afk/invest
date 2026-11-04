@@ -15,6 +15,10 @@ balance (section aware; sections are opened by the rows 유동자산, 비유동�
   A family (borrowings / lease) is left out, with a note, when: a matching row sits in an unknown section (`section_unknown`) or in the wrong section (`section_mismatch`),
   the same label repeats inside one section (`duplicate`), a row has some but not all amounts (`amount_count`), an amount is unreadable (`bad_number`) or negative
   (`negative`), or a row in a liability section mentions 차입금/사채/리스부채/당좌차월 but is not in the lists above (`unclassified`). Rows without any amount are headings.
+balance, liquid financial assets: current_financial_assets = sum of the rows 당기손익-공정가치금융자산, 당기손익-공정가치측정금융자산, 기타포괄손익-공정가치금융자산, 기타포괄손익-공정가치측정금융자산,
+  유동금융자산, 단기투자자산, 단기매매금융자산 that sit INSIDE the 유동자산 section (the same labels in 비유동자산 are ignored without a note; `기타금융자산` is never counted because it mixes in
+  non-liquid items). Anomalies follow the other summed fields: a label repeated inside the section `duplicate`, partial amounts `amount_count`, unreadable `bad_number`, negative `negative`,
+  a row outside any asset section `section_unknown` (or `section_mismatch` inside a liability section). No row -> the field is absent (no note).
 income: finance_costs 금융비용|금융원가 | pretax_income 법인세비용차감전순이익, 법인세차감전순이익, 법인세비용차감전계속영업이익, 법인세비용차감전계속사업이익 (each also with `(손실)`);
   loss labels 법인세비용차감전순손실, 법인세차감전순손실 | income_tax_expense 법인세비용, 법인세비용(수익), 법인세비용(환입); 법인세수익 is `unsupported_label` |
   net_income_total 당기순이익, 당기순이익(손실), 당기순손익, 연결당기순이익, 연결당기순이익(손실); loss label 당기순손실 | interest_expense 이자비용 (also from cash)
@@ -380,6 +384,65 @@ class AliasAndEdgeTests(unittest.TestCase):
         rows_is = [['Ⅰ. 매출액', '7', '5,968', '4,894'], ['Ⅵ. 영업이익', '', '746', '362'], ['금융비용', '', '300', '']]
         result = pit_xml.parse_statements(doc(balance(), income(rows=rows_is), cash()), year=2025)
         self.assertNotIn('finance_costs', result['values']);self.assertEqual(result['notes'], {'finance_costs': 'amount_count'})
+
+
+LIQUID_LABELS = ('당기손익-공정가치금융자산', '당기손익-공정가치측정금융자산', '기타포괄손익-공정가치금융자산', '기타포괄손익-공정가치측정금융자산', '유동금융자산', '단기투자자산', '단기매매금융자산')
+
+
+def with_row(row, after='단기금융상품', rows=BS):
+    at = next(i for i, r in enumerate(rows) if r[0] == after)
+    return rows[:at + 1] + [row] + rows[at + 1:]
+
+
+class CurrentFinancialAssetsTests(unittest.TestCase):
+    def test_every_liquid_financial_asset_label_inside_current_assets_is_read(self):
+        for label in LIQUID_LABELS:
+            with self.subTest(label=label):
+                result = read(bs_rows=with_row([label, '25', '1', '1']))
+                self.assertEqual(result['values'], {**FULL, 'current_financial_assets': 25});self.assertEqual(result['notes'], {})
+
+    def test_distinct_labels_are_summed_and_note_references_are_removed(self):
+        rows = with_row(['기타포괄손익-공정가치측정금융자산 (주6,31)', '5', '1', '1'], rows=with_row(['당기손익-공정가치금융자산 (주6,24)', '25', '1', '1']))
+        result = read(bs_rows=rows)
+        self.assertEqual(result['values']['current_financial_assets'], 30);self.assertEqual(result['notes'], {})
+
+    def test_the_same_labels_in_non_current_assets_are_ignored_without_a_note_and_other_financial_assets_never_count(self):
+        rows = with_row(['당기손익-공정가치금융자산', '77', '1', '1'], after='비유동자산')
+        result = read(bs_rows=rows)
+        self.assertNotIn('current_financial_assets', result['values']);self.assertEqual(result['notes'], {})
+        both = read(bs_rows=with_row(['당기손익-공정가치금융자산', '77', '1', '1'], after='비유동자산', rows=with_row(['당기손익-공정가치금융자산', '25', '1', '1'])))
+        self.assertEqual(both['values']['current_financial_assets'], 25)
+        for label in ('기타금융자산', '장기금융자산', '기타비유동금융자산', '금융리스채권'):
+            with self.subTest(label=label):
+                other = read(bs_rows=with_row([label, '99', '1', '1']))
+                self.assertNotIn('current_financial_assets', other['values']);self.assertEqual(other['notes'], {})
+
+    def test_zero_dash_and_the_absence_of_any_row(self):
+        for shown in ('0', '-'):
+            self.assertEqual(read(bs_rows=with_row(['유동금융자산', shown, '1', '1']))['values']['current_financial_assets'], 0)
+        self.assertNotIn('current_financial_assets', read()['values'])
+
+    def test_anomalies_drop_only_this_field(self):
+        cases = {'duplicate': with_row(['단기투자자산', '5', '1', '1'], rows=with_row(['단기투자자산', '25', '1', '1'])),
+                 'amount_count': with_row(['단기투자자산', '', '1', '1']), 'bad_number': with_row(['단기투자자산', '12a', '1', '1']),
+                 'negative': with_row(['단기투자자산', '(5)', '1', '1'])}
+        for reason, rows in cases.items():
+            with self.subTest(reason=reason):
+                result = read(bs_rows=rows)
+                self.assertNotIn('current_financial_assets', result['values']);self.assertEqual(result['notes'], {'current_financial_assets': reason})
+                self.assertEqual(result['values']['short_term_financial_instruments'], 50);self.assertEqual(result['values']['equity'], 2489)
+
+    def test_a_row_outside_any_asset_section_is_a_section_problem(self):
+        rows = [['자산', '', '', ''], ['단기투자자산', '5', '1', '1'], ['자산총계', '7,227', '1', '1'], ['자본', '', '', ''], ['자본총계', '2,489', '1', '1']]
+        self.assertEqual(read(bs_rows=rows)['notes'], {'current_financial_assets': 'section_unknown'})
+        in_liability = with_row(['단기투자자산', '5', '1', '1'], after='유동부채')
+        self.assertEqual(read(bs_rows=in_liability)['notes'], {'current_financial_assets': 'section_mismatch'})
+
+    def test_the_older_layout_reads_it_too(self):
+        rows_bs = [['Ⅰ. 유동자산', '', '', '3,738', '', '3,036'], ['현금및현금성자산', '5', '216', '', '249', ''], ['당기손익-공정가치금융자산', '6', '25', '', '20', ''],
+                   ['자산총계', '', '', '7,227', '', '6,218'], ['자본 총계', '', '', '2,489', '', '2,055']]
+        result = pit_xml.parse_statements(doc(balance(rows=rows_bs), income(), cash()), year=2025)
+        self.assertEqual(result['values']['current_financial_assets'], 25)
 
 
 if __name__ == '__main__':unittest.main()
