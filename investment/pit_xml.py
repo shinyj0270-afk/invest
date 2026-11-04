@@ -1,11 +1,12 @@
 """Read consolidated annual DART XML tables and ZIP bytes without external I/O."""
+from collections import Counter
 from datetime import date
 from html.parser import HTMLParser
 import hashlib
 import io
 import re
 import zipfile
-from .pit_xml_accounts import read_accounts, _merge
+from .pit_xml_accounts import read_accounts, drop_dashes, _merge
 from .pit_xml_tags import read_tagged_detail
 
 PARSER_VERSION = 'pit-xml-1'
@@ -137,9 +138,11 @@ def _statement(table, kind, unit, title):
     header=[_compact(cell) for cell in table[0]]
     note=len(header) > 1 and header[1] == '주석'
     columns=header[1+note:]
-    numbered=len(columns) in (2, 3) and all(re.fullmatch(r'제[0-9]+기', column) for column in columns)
+    numbered=len(columns) in (2, 3) and all(re.fullmatch(r'제[0-9]+기말?', column) for column in columns)
+    widths=Counter(len(row) for row in table[1:] if row)
+    positional=numbered and bool(widths) and widths.most_common(1)[0][0] <= 1+note+len(columns)      # one cell per period column, else detail and subtotal cells (grouped)
     if numbered:
-        periods=[int(column[1:-1]) for column in columns]
+        periods=[int(re.search(r'[0-9]+', column).group()) for column in columns]
         if any(a-b != 1 for a, b in zip(periods, periods[1:])):raise ValueError('당기와 전기 금액 열 오류')
         numbers={int(m.group(1)) for cell in map(_compact, _title_cells(title)) if re.search(r'[0-9]{4}년[0-9]{1,2}월[0-9]{1,2}일', cell)
                  for m in [re.search(r'제([0-9]+)기', cell)] if m}
@@ -153,14 +156,19 @@ def _statement(table, kind, unit, title):
         if field is None:continue
         if field in seen:raise ValueError('동일 계정 중복 오류')
         seen.add(field)
-        amounts=[cell for cell in row[1+note:] if cell]
-        if not amounts and not numbered:continue
+        amounts=drop_dashes([cell for cell in row[1+note:] if cell], len(columns))
+        if not amounts and not positional:continue
         if len(amounts) != len(columns):raise ValueError('계정 금액 개수 오류')
         parsed=[_amount(cell, unit) for cell in amounts]
         if _label(row[0]) in LOSS_LABELS and any(value > 0 for value in parsed):raise ValueError('영업손실 금액 부호 불명확')
         values={**values, field: parsed[0]}
-    extra, notes=read_accounts(kind, table[1:], unit=unit, first=1+note, columns=len(columns), positional=numbered)
+    extra, notes=read_accounts(kind, table[1:], unit=unit, first=1+note, columns=len(columns), positional=positional)
     return {**values, **extra}, notes
+
+
+def _annual_title(title):
+    """A title that names a half-year or a quarter belongs to an interim statement, which is never read."""
+    return not any(re.search('반기|분기', _compact(cell)) for row in title for cell in row)
 
 
 def parse_statements(text, *, year):
@@ -172,7 +180,7 @@ def parse_statements(text, *, year):
         parser=Tables(nested=nested); parser.feed(text); parser.close()
         for title, account in zip(parser.tables, parser.tables[1:]):
             name=_compact(title[0][0]) if title and len(title[0]) == 1 else ''
-            if name in TITLES and account and account[0] and _compact(account[0][0]) in ('', '과목'):
+            if name in TITLES and account and account[0] and _compact(account[0][0]) in ('', '과목') and _annual_title(title):
                 candidates.append((name, title, account))
         if candidates:break
     if not candidates:raise NoStatements('연결 재무제표가 없습니다')
@@ -240,9 +248,11 @@ def parse_document_zip(data, *, receipt, year, url):
                 if merged is None:merged=parsed; continue
                 if any(merged[key] != parsed[key] for key in ('period_start', 'period_end')):raise ValueError('문서 기간 불일치')
                 original={field for fields in ALIASES.values() for field in fields}
-                if any(merged['values'][key] != value for key, value in parsed['values'].items() if key in original and key in merged['values']):
+                tolerance=max(merged['unit'], parsed['unit'])                                       # the same value rounded differently by two members
+                if any(abs(merged['values'][key]-value) > tolerance for key, value in parsed['values'].items() if key in original and key in merged['values']):
                     raise ValueError('문서 계정 값 불일치')
-                values, notes=_merge(merged['values'], parsed['values'], merged['notes'], parsed['notes'])
+                agreed={key: merged['values'].get(key, value) if key in original else value for key, value in parsed['values'].items()}      # an original value within the rounding keeps the first member's
+                values, notes=_merge(merged['values'], agreed, merged['notes'], parsed['notes'])
                 merged={**merged, 'values': values, 'notes': notes}
     except zipfile.BadZipFile as exc:raise ValueError('ZIP 형식 오류') from exc
     if merged is None:raise ValueError('사용 가능한 XML 문서가 없습니다')

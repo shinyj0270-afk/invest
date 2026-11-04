@@ -420,7 +420,7 @@ class ZipTests(unittest.TestCase):
             self.run_zip({'a.xml': '<DOCUMENT/>', 'b.xml': b'\xff\xfe\x00bad'})
 
     def test_members_that_disagree_or_are_individually_broken_are_refused(self):
-        other_rows = [row[:] for row in IS_ROWS];other_rows[0][2] = '5,969'
+        other_rows = [row[:] for row in IS_ROWS];other_rows[0][2] = '5,975'      # more than one unit away: a one-unit difference is rounding (tests/test_pit_xml_layouts.py)
         with self.assertRaises(ValueError):
             self.run_zip({'a.xml': doc(balance(), income(), cash()), 'b.xml': doc(balance(), income(rows=other_rows), cash())})
         with self.assertRaises(ValueError):

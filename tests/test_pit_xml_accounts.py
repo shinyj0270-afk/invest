@@ -22,6 +22,10 @@ balance, liquid financial assets: current_financial_assets = sum of the rows 당
 income: finance_costs 금융비용|금융원가 | pretax_income 법인세비용차감전순이익, 법인세차감전순이익, 법인세비용차감전계속영업이익, 법인세비용차감전계속사업이익 (each also with `(손실)`);
   loss labels 법인세비용차감전순손실, 법인세차감전순손실 | income_tax_expense 법인세비용, 법인세비용(수익), 법인세비용(환입), tax-income label 법인세수익 |
   net_income_total 당기순이익, 당기순이익(손실), 당기순손익, 연결당기순이익, 연결당기순이익(손실), 당기연결순이익; loss label 당기순손실 | interest_expense 이자비용 (also from cash)
+  finance_costs is an expense: it is stored as its MAGNITUDE (some statements show it as a deduction, `(55,346)`).
+  Tax rows shown NEGATIVE are ambiguous (a benefit, or an expense printed as a deduction like `계속영업법인세비용 (91)`): when pretax_income and a target (net_income_total or a continuing-operations
+  income row such as 계속영업이익) are readable they are resolved by the same identity (exactly one sign must fit, else `sign_unclear`); when the identity cannot be evaluated they are taken as shown.
+  Aliases also: pretax 법인세비용차감전계속영업순이익, tax 계속영업법인세비용, tax-income label 법인세수익(비용).
   Loss labels with an amount <= 0 are taken as shown. A positive amount under a loss label and every amount under `법인세수익` have an UNCLEAR SIGN (companies name a profit line `…순손실`, and show a tax benefit
   as a positive 수익): they are resolved with the statement identity pretax_income - income_tax_expense = net_income_total, checked within 3 statement units (rounding). Candidates: a loss-label amount x is
   +x or -x, a 법인세수익 amount y gives income_tax_expense -y or +y. The identity needs the other two numbers (taken as shown when their labels are normal); the signs are taken only when EXACTLY ONE
@@ -34,6 +38,8 @@ Amount cells: in the period-number layout the columns are positional, so the CUR
 (real documents leave a zero prior year blank), a BLANK CURRENT cell with a filled later cell reads as 0 (checked on real documents: every such row that also appears in the older layout of the same
 document shows `-` there), more cells than period columns is `amount_count`; a row whose cells are
 all blank is a heading. In the older (당)/(전) layout the amounts are the non-empty cells and their number must equal the column count.
+Two rows of one NEW field with DIFFERENT labels (연결당기순이익 and 당기순이익(손실)) or the same label repeated count as ONE when their current amounts are equal; unequal ones are `duplicate`.
+(Summed families and the five original fields keep the strict rule.) Sale-and-leaseback liabilities 판매후리스부채 / 비유동판매후리스부채 are NOT counted as leases (the tag CurrentLeaseLiabilities excludes them) and are skipped silently, without a note.
 Per field: a label repeated inside one statement is `duplicate`; an unreadable amount is `bad_number`; a wanted row with some but not all amounts is `amount_count`;
 two copies of the same statement (or two XML members, or income+cash for interest_expense) that disagree leave the field out with `conflict`.
 """
@@ -296,7 +302,7 @@ def sectioned(label, section):
 class AliasAndEdgeTests(unittest.TestCase):
     BORROW_ANY = ('차입금', '사채', '전환사채', '신주인수권부사채', '차입금및사채', '사채및차입금', '교환사채')
     BORROW_CURRENT = ('단기차입금', '유동성장기차입금', '유동성사채', '단기사채', '유동성전환사채', '유동성신주인수권부사채', '유동성장기사채', '당좌차월')
-    BORROW_NONCURRENT = ('장기차입금', '장기사채', '비유동차입금', '비유동사채', '장기차입금(사채 포함)')
+    BORROW_NONCURRENT = ('장기차입금', '장기사채', '비유동차입금', '비유동사채', '장기차입금(사채 포함)', '사채 및 장기차입금')
     LEASE_ANY = ('리스부채',)
     LEASE_CURRENT = ('유동리스부채', '유동성리스부채', '단기리스부채')
     LEASE_NONCURRENT = ('비유동리스부채', '비유동성리스부채', '장기리스부채')
@@ -562,6 +568,98 @@ class BlankCurrentCellTests(unittest.TestCase):
         self.assertEqual((result['values']['income_tax_expense'], result['notes']), (0, {}))
         loss = read(is_rows=[r if r[0] != '당기순이익' else ['당기순손실', '', '1', '1'] for r in IS])
         self.assertEqual(loss['values']['net_income_total'], 0)
+
+
+def ls_rows(tax=('계속영업법인세비용', '(91)'), pretax=('법인세비용차감전계속영업순이익', '333'), continuing=('계속영업이익', '242'), net=('당기순이익', '242')):
+    return [['매출액', '5,968', '4,894', '4,000'], ['영업이익', '746', '362', '300'], [pretax[0], pretax[1], '1', '1'], [tax[0], tax[1], '1', '1'],
+            [continuing[0], continuing[1], '1', '1'], ['중단영업손익', '0', '1', '1'], [net[0], net[1], '1', '1']]
+
+
+class ExpenseSignAndAliasTests(unittest.TestCase):
+    def fields(self, rows):
+        result = read(is_rows=rows)
+        return {k: result['values'].get(k) for k in ('pretax_income', 'income_tax_expense', 'net_income_total', 'finance_costs')}, result['notes'], result['values']
+
+    def test_finance_costs_are_stored_as_a_magnitude(self):
+        for label in ('금융비용', '금융원가'):
+            for shown in ('(300)', '300'):
+                with self.subTest(label=label, shown=shown):
+                    result = read(is_rows=[r if r[0] != '금융비용' else [label, shown, '1', '1'] for r in IS])
+                    self.assertEqual((result['values']['finance_costs'], result['notes']), (300, {}))
+
+    def test_a_tax_expense_printed_as_a_deduction_is_resolved_by_the_identity_with_continuing_income(self):
+        values, notes, _ = self.fields(ls_rows())
+        self.assertEqual((values['pretax_income'], values['income_tax_expense'], values['net_income_total']), (333, 91, 242))
+        self.assertEqual(notes, {})
+        only_net = [r for r in ls_rows() if r[0] != '계속영업이익']
+        self.assertEqual(self.fields(only_net)[0]['income_tax_expense'], 91)                  # 333 - 91 = 242 = net income as well
+        only_continuing = [r for r in ls_rows() if r[0] != '당기순이익']
+        self.assertEqual(self.fields(only_continuing)[0]['income_tax_expense'], 91)
+
+    def test_the_continuing_income_row_is_only_a_target_and_is_not_exported(self):
+        _, _, values = self.fields(ls_rows())
+        self.assertEqual({k for k in values} & {'continuing_income', 'income_continuing'}, set())
+
+    def test_a_negative_tax_that_is_a_benefit_stays_negative(self):
+        rows = income_rows(pretax=('법인세비용차감전순이익(손실)', '(315)'), tax=('법인세비용(수익)', '(369)'), net=('당기순이익', '54'))
+        values, notes, _ = self.fields(rows)
+        self.assertEqual((values['pretax_income'], values['income_tax_expense'], values['net_income_total'], notes), (-315, -369, 54, {}))
+
+    def test_a_negative_tax_that_fits_no_sign_is_left_out(self):
+        values, notes, _ = self.fields(income_rows(pretax=('법인세비용차감전순이익', '100'), tax=('법인세비용', '(30)'), net=('당기순이익', '500')))
+        self.assertEqual((values['income_tax_expense'], notes), (None, {'income_tax_expense': 'sign_unclear'}))
+        self.assertEqual((values['pretax_income'], values['net_income_total']), (100, 500))
+
+    def test_a_positive_tax_is_taken_as_shown_without_any_identity(self):
+        values, notes, _ = self.fields(income_rows(pretax=('법인세비용차감전순이익', '625'), tax=('법인세비용', '123'), net=('당기순이익', '999')))
+        self.assertEqual((values['income_tax_expense'], notes), (123, {}))
+
+    def test_a_negative_tax_is_taken_as_shown_when_the_identity_cannot_be_evaluated(self):
+        rows = [r for r in income_rows(tax=('법인세비용', '(30)')) if not r[0].startswith('법인세비용차감')]
+        values, notes, _ = self.fields(rows)
+        self.assertEqual((values['income_tax_expense'], notes), (-30, {}))
+        no_target = [r for r in income_rows(tax=('법인세비용', '(30)')) if r[0] != '당기순이익']
+        self.assertEqual(self.fields(no_target)[0]['income_tax_expense'], -30)
+
+    def test_the_tax_income_label_with_a_bracketed_cost_reads_like_the_plain_tax_income_label(self):
+        values, notes, _ = self.fields(income_rows(pretax=('법인세비용차감전순이익(손실)', '173'), tax=('법인세수익(비용)', '4'), net=('당기순이익(손실)', '177')))
+        self.assertEqual((values['income_tax_expense'], notes), (-4, {}))
+        expense = self.fields(income_rows(pretax=('법인세비용차감전순이익(손실)', '173'), tax=('법인세수익(비용)', '(4)'), net=('당기순이익(손실)', '169')))
+        self.assertEqual((expense[0]['income_tax_expense'], expense[1]), (4, {}))
+
+    def test_the_pretax_alias_for_continuing_net_income_is_read(self):
+        values, _, _ = self.fields(income_rows(pretax=('법인세비용차감전계속영업순이익(손실)', '625')))
+        self.assertEqual(values['pretax_income'], 625)
+
+
+class SaleAndLeasebackTests(unittest.TestCase):
+    def test_sale_and_leaseback_liabilities_are_neither_counted_nor_flagged(self):
+        rows = BS[:12] + [['판매후리스부채', '18', '1', '1']] + BS[12:]                                 # inside 유동부채, next to 유동리스부채
+        rows = rows[:17] + [['비유동판매후리스부채', '48', '1', '1']] + rows[17:]                       # inside 비유동부채
+        result = read(bs_rows=rows)
+        self.assertEqual((result['values']['lease_current'], result['values']['lease_noncurrent'], result['notes']), (7, 15, {}))
+        self.assertEqual(result['values']['borrowings_current'], 130)
+
+
+class EqualDuplicateTests(unittest.TestCase):
+    def test_two_rows_that_say_the_same_thing_count_once(self):
+        rows = [r for r in IS if r[0] != '당기순이익'] + [['연결당기순이익', '502', '1', '1'], ['당기순이익(손실)', '502', '9', '9']]
+        result = read(is_rows=rows)
+        self.assertEqual((result['values']['net_income_total'], result['notes']), (502, {}))
+        same_label = read(is_rows=IS + [['당기순이익', '502', '1', '1']])
+        self.assertEqual((same_label['values']['net_income_total'], same_label['notes']), (502, {}))
+
+    def test_unequal_repeats_and_summed_families_stay_duplicates(self):
+        result = read(is_rows=IS + [['당기순이익(손실)', '503', '1', '1']])
+        self.assertNotIn('net_income_total', result['values']);self.assertEqual(result['notes'], {'net_income_total': 'duplicate'})
+        family = read(bs_rows=BS[:9] + [['단기차입금', '100', '110', '120']] + BS[9:])                 # the same borrowing label twice stays a duplicate even with equal amounts
+        self.assertEqual(family['notes'], {'borrowings': 'duplicate'})
+        total = read(bs_rows=BS + [['자산총계', '7,227', '1', '1']])
+        self.assertEqual((total['values']['total_assets'], total['notes']), (7227, {}))            # an equal repeat of a plain field is fine
+
+    def test_the_original_fields_keep_the_strict_duplicate_rule(self):
+        with self.assertRaises(ValueError):
+            read(is_rows=IS + [['매출액', '5,968', '1', '1']])
 
 
 if __name__ == '__main__':unittest.main()
