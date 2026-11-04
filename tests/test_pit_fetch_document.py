@@ -8,7 +8,8 @@ from investment.pit_first_call import run_fetch_document
 from tests.test_pit_first_call import FakeClient, list_json
 
 LISTED = [('20240314001093', '사업보고서 (2023.12)'), ('20240801000002', '[기재정정]사업보고서 (2023.12)'), ('20240515000003', '분기보고서 (2024.03)'),
-          ('20230316000692', '사업보고서 (2022.12)')]
+          ('20230316000692', '사업보고서 (2022.12)'), ('20240802000004', '[첨부정정]사업보고서 (2023.12)'), ('20240803000005', '[기재정정]반기보고서 (2024.06)'),
+          ('20240804000006', '[기재정정]사업보고서 (2023.03)')]
 
 
 def budget(n=1):
@@ -38,11 +39,16 @@ class FetchDocumentTests(unittest.TestCase):
         self.run_it('20240314001093');client, summary = self.run_it('20240314001093')
         self.assertEqual((client.calls, summary['reused'], summary['requests_used']), ([], True, 0))
 
-    def test_only_listed_original_annual_reports_are_allowed_and_nothing_is_requested_otherwise(self):
-        for number in ('20240801000002', '20240515000003', '20991231000001'):             # correction, quarterly report, never listed
+    def test_a_listed_content_correction_of_a_december_annual_report_is_fetched_like_an_original(self):
+        client, summary = self.run_it('20240801000002')
+        self.assertEqual((client.calls, summary['status'], summary['requests_used']), (['doc:20240801000002'], 'completed', 1))
+        self.assertEqual(self.store.latest('20240801000002', 'document-zip'), client.doc)
+
+    def test_only_listed_december_annual_reports_are_allowed_and_nothing_is_requested_otherwise(self):
+        for number in ('20240802000004', '20240803000005', '20240804000006', '20240515000003', '20991231000001'):   # attachment correction, half-year correction, non-December correction, quarterly, never listed
             with self.subTest(number=number):
                 client, summary = self.run_it(number)
-                self.assertEqual((summary['status'], summary['stop_reason'], client.calls), ('stopped', 'not_a_listed_annual_original', []))
+                self.assertEqual((summary['status'], summary['stop_reason'], client.calls), ('stopped', 'not_a_listed_annual_report', []))
 
     def test_the_list_rule_checks_kind_period_and_the_source_of_the_listing(self):
         put = lambda doc_id, items, code='99999999': self.store.put(code.zfill(14), doc_id, json.dumps(list_json(code, '000000', items), ensure_ascii=False).encode(),
@@ -51,7 +57,7 @@ class FetchDocumentTests(unittest.TestCase):
         put('notes-99999999', [('20240101000003', '사업보고서 (2023.12)')])                  # not a list page: never trusted
         for number in ('20240101000001', '20240101000002', '20240101000003'):
             with self.subTest(number=number):
-                client, summary = self.run_it(number);self.assertEqual((summary['stop_reason'], client.calls), ('not_a_listed_annual_original', []))
+                client, summary = self.run_it(number);self.assertEqual((summary['stop_reason'], client.calls), ('not_a_listed_annual_report', []))
 
     def test_a_damaged_list_artifact_is_skipped_not_fatal(self):
         fresh = ArtifactStore(Path(self.tmp.name) / 'b')                                    # the damaged page comes FIRST in this store

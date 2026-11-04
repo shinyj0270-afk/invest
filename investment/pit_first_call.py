@@ -185,8 +185,8 @@ def run_delisted_list(*, client, store, budget, root, name, bgn, end):
     return finish()
 
 
-def _listed_annual_original(store, rcept_no):
-    """True when a stored list page reports this receipt as an original (uncorrected) December annual report."""
+def _listed_annual_report(store, rcept_no):
+    """True when a stored list page reports this receipt as a December annual report, original or a content correction (기재정정); attachment-only corrections stay out."""
     for entry in store.entries():
         if not entry['document_id'].startswith('list-') or not entry.get('sha256') or entry['status'] == 'resolved':continue
         try:raw = json.loads(store.read(entry).decode('utf-8'))
@@ -194,12 +194,12 @@ def _listed_annual_original(store, rcept_no):
         for item in raw.get('list', []) if isinstance(raw, dict) else []:
             if isinstance(item, dict) and item.get('rcept_no') == rcept_no:
                 kind = classify_title(item.get('report_nm'))
-                return kind['kind'] == 'annual' and kind['correction'] == 'none' and (kind['title_period'] or '').endswith('-12')
+                return kind['kind'] == 'annual' and kind['correction'] in ('none', '기재정정') and (kind['title_period'] or '').endswith('-12')
     return False
 
 
 def run_fetch_document(*, client, store, budget, rcept_no):
-    """Fetch ONE original annual report document (at most one request); only receipts a stored list page reports are allowed."""
+    """Fetch ONE annual report document, original or 기재정정 (at most one request); only receipts a stored list page reports are allowed."""
     if not (isinstance(rcept_no, str) and re.fullmatch(r'\d{14}', rcept_no)):raise ValueError('접수번호 형식 오류')
     summary = dict(status='completed', stop_reason=None, rcept_no=rcept_no, sha256=None, size=None, reused=False, requests_used=0)
 
@@ -208,7 +208,7 @@ def run_fetch_document(*, client, store, budget, rcept_no):
         if reason:summary.update(status='stopped', stop_reason=reason)
         return summary
 
-    if not _listed_annual_original(store, rcept_no):return finish('not_a_listed_annual_original')
+    if not _listed_annual_report(store, rcept_no):return finish('not_a_listed_annual_report')
     try:
         data = store.latest(rcept_no, 'document-zip')
         summary['reused'] = data is not None
