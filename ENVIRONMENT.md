@@ -2,6 +2,11 @@
 
 현재 실행·설치·검증은 [PC 실행/이전 안내](docs/PC_MIGRATION.md), 실제 최신 상태는 [PROJECT_STATE.md](PROJECT_STATE.md)를 확인한다. 아래 Git 미설정/Wiki 부재/집 PC 미검증 문구는 작성 당시 이력이며 현재 환경 판정에 사용하지 않는다. PC별 인증·설정·데이터는 자동 이전하지 않는다.
 
+
+## UI 검증 실행 규칙 (2026-11-04)
+
+앱을 운영 자료(`data/`, `private_data/`)로 직접 띄우면 시작 시 자동 갱신(`ensure_data`)이 SQLite와 JSON을 다시 쓰고 설정에 따라 외부 호출까지 한다. 서버가 필요한 UI 테스트(`tests/test_daily_ui.py`, `tests/test_viewer_ui.py`)는 `python tools/run_ui_isolated.py`로 실행한다. 이 도구는 백업(`tools/backup_data.py`와 같은 모듈)을 먼저 만들고, 어댑터를 켜지 않은 샌드박스 복사본에서 서버와 테스트를 돌린 뒤 운영 자료가 바뀌지 않았는지 해시로 대조한다. 변경이 있으면 실패로 처리하고 샌드박스를 남긴다. 백업 확인은 `python tools/backup_data.py verify <백업 폴더>`. 공식 검증기(`tools/validate_share_candidates.py --ui`)는 합성 자료의 빈 `home` 프로필에서 공유 후보를 점검하는 용도라 이 두 테스트를 넣지 않는다. 샌드박스는 `company-financials`·`market-expansion`(합계 약 1.4GB)을 복사하지 않으므로 그 폴더를 읽는 화면은 이 방식으로 검증되지 않을 수 있다.
+
 ---
 
 # PC별 설정 적용 · work13

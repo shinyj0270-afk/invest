@@ -1,3 +1,17 @@
+# PIT 연간 재무 파일럿·안정화 도구 · 2026-11-04
+
+- work Primary, Claude Code(구현 일부는 Codex `gpt-6-astra`/medium). 이 절 작성 시점 main/origin main `dcd5f07` 일치·clean. 재개 지점은 CURRENT_HANDOFF.md.
+- PIT 연간 재무 파일럿(효성중공업 FY2025·롯데케미칼 FY2025·상장폐지 동아타이어공업 FY2023, 연결·12월 결산·원화): 접수번호 단위 투영 `pit_annual`, 목록 해석 `pit_inventory`, 불변 원문 보관 `pit_artifacts`, 값 매핑 `pit_values`, 취득 `pit_acquire`, 독립 검증기 `pit_verify`, OpenDART 클라이언트·첫 호출 `pit_live`·`pit_first_call`, `document.xml` 파서 `pit_xml`, CLI `tools/pit_pilot.py`(`fetch-document` 포함, 실호출은 명시 확인 플래그와 요청별 승인 필요). 세 회사 모두 파서→매핑→투영→회사별 검증 통과, 차단 0건. 결과와 한계: `docs/review/result_PIT_pilot_three_companies_2026-11-04.md`.
+- 실호출은 누적 약 12건(OpenDART 목록·문서·고유번호, 네이버 지수 일봉; 인계 기록 9건 + 이후 롯데케미칼 목록·문서, 동아타이어공업 문서). 쿼터 신호 없음. 내려받은 자료는 `.local/pit-pilot/`에만 있고 Git·사본 없음.
+- 한계: 회사당 1개 연도뿐이라 연속 연도·정정공시 빈티지는 합성 테스트로만 검증. `verify`는 회사·기준 한 쌍씩. 영업손실이 양수로 표기되면 오류로 멈춤(음수 표기만 영업이익으로 채택). `balance_debt`(부채 정의)와 세율은 미정이라 Q 요인 불가. 거래일 달력은 네이버 지수 일봉 기반(공식 달력 아님).
+- PIT 품질 점수: `investment/pit_quality.py`가 G·C만 별도 `S_pit_GC`로 계산(기존 `quality_score`·`S_long` 불변, 앱 미연결, 요인별 풀 5개 미만이면 None). V·B는 시점 보장이 없어 제외, Q는 부채·세율 때문에 제외. 실제 3사에는 풀·연도 부족으로 점수가 나오지 않음.
+- 안정화: 변이 생존 131개 중 125개를 `tests/test_sweep_g1~g4.py`로 해결(남은 6개는 동등 변이 판단, 근거 `docs/review/mutation_sweep_2026-11-03/README.md`). 운영 자료 보호용 `investment/data_backup.py`(SQLite 백업 API·무결성 검사·보존 10개)와 격리 샌드박스·실행기(`investment/sandbox.py`, `isolated_run.py`, `tools/run_ui_isolated.py`)로 서버가 필요한 UI 테스트 2건을 운영 자료 변경 없이 실행.
+- 운영 자료 변경 기록: 2026-11-04 08:19 앱을 운영 자료로 직접 띄워 자동 갱신이 `research.sqlite3`를 바꿈(해시 앞 16자리 `10e742e8cd5abe4f`→`6f366636a8be3dab`, 백업 없음). 이후 기준값은 `6f366636a8be3dab`.
+- 검증(작성 시점 기준): 비UI 전체 1339개 통과(스킵 3), 공식 UI 검증기 `validate_share_candidates.py --ui` 전 항목 통과(커밋 `51ddbab` 기준), 격리 실행기로 서버 필요 UI 테스트 2건 통과.
+- 미해결: 정정공시·연속 연도 실자료 검증(회사당 약 3개 연도 문서, 요청별 승인), 부채 정의·세율 근거 결정, V·B 시점 자료, 줄바꿈 혼재 정리, 집 PC 동기화.
+
+---
+
 # Python 환경 전환·역할 전환·방법론 외부 근거 조사 Q01~Q10 · 2026-11-03
 
 - work Primary, Claude Code. 시작 main/작업 워크트리/origin main dd47f78 일치·clean(조사 문서 반영 직전은 3ac6b2c). 상세 재개 지점은 CURRENT_HANDOFF.md.
