@@ -92,6 +92,17 @@ def compute_factors(pit_rows, as_of, *, tolerated=frozenset()):
                 tolerated=sorted(tolerated), approximations=approximations, latest_period=annual[-1]['period_end'] if annual else None)
 
 
+def newer_periods_from_receipts(receipts_by_code, as_of):
+    """Latest December period (as a month-end date) each company's annual filings show by `as_of`; feeds `pit_scores(newer_periods=)`."""
+    if not isinstance(receipts_by_code, dict) or not all(isinstance(k, str) and isinstance(v, list) for k, v in receipts_by_code.items()):raise ValueError('receipts_by_code must map codes to lists')
+    cutoff = date.fromisoformat(as_of).isoformat()
+    out = {}
+    for code, receipts in receipts_by_code.items():
+        periods = [r['title_period'] for r in receipts if (r.get('title_period') or '').endswith('-12') and r['rcept_dt'] <= cutoff]
+        if periods:out[code] = max(periods) + '-31'
+    return out
+
+
 def _is_date(text):
     try:date.fromisoformat(text)
     except ValueError:return False

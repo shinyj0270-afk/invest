@@ -367,4 +367,36 @@ class StalenessTests(unittest.TestCase):
         self.assertIsNone(pf.compute_factors(series(), '2019-06-30')['latest_period'])
 
 
+class NewerPeriodsFromInventoryTests(unittest.TestCase):
+    def receipt(self, filed, period, correction='none'):
+        return dict(rcept_no=filed.replace('-', '') + '000001', rcept_dt=filed, report_nm='x', correction=correction, title_period=period)
+
+    def test_the_latest_december_period_filed_by_the_as_of_date_is_returned_as_a_month_end(self):
+        receipts = {'AAA111': [self.receipt('2023-03-20', '2022-12'), self.receipt('2024-03-18', '2023-12'), self.receipt('2025-03-18', '2024-12')],
+                    'BBB222': [self.receipt('2023-03-20', '2022-12')]}
+        self.assertEqual(pf.newer_periods_from_receipts(receipts, '2024-06-30'), {'AAA111': '2023-12-31', 'BBB222': '2022-12-31'})
+        self.assertEqual(pf.newer_periods_from_receipts(receipts, '2024-03-18')['AAA111'], '2023-12-31')           # filed on the as-of day counts
+        self.assertEqual(pf.newer_periods_from_receipts(receipts, '2024-03-17')['AAA111'], '2022-12-31')
+
+    def test_other_periods_and_missing_titles_are_ignored_and_a_company_with_nothing_is_omitted(self):
+        receipts = {'AAA111': [self.receipt('2024-03-18', '2023-12'), self.receipt('2024-08-14', '2024-06'), self.receipt('2024-09-01', None)],
+                    'BBB222': [self.receipt('2024-08-14', '2024-06')], 'CCC333': []}
+        self.assertEqual(pf.newer_periods_from_receipts(receipts, '2024-12-31'), {'AAA111': '2023-12-31'})
+
+    def test_a_correction_filing_counts_and_bad_input_is_refused(self):
+        receipts = {'AAA111': [self.receipt('2024-03-18', '2023-12'), self.receipt('2024-05-02', '2023-12', '기재정정')]}
+        self.assertEqual(pf.newer_periods_from_receipts(receipts, '2024-12-31'), {'AAA111': '2023-12-31'})
+        for bad in ([], {'AAA111': 'x'}, {1: []}):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                pf.newer_periods_from_receipts(bad, '2024-12-31')
+        with self.assertRaises(ValueError):
+            pf.newer_periods_from_receipts({}, '2024-13-01')
+
+    def test_the_result_feeds_pit_scores(self):
+        pool = {'STALE1': series(years=(2018, 2019, 2020, 2021), company='STALE1')}
+        newer = pf.newer_periods_from_receipts({'STALE1': [self.receipt('2025-03-18', '2024-12')]}, '2025-04-01')
+        result = pf.pit_scores(pool, '2025-04-01', newer_periods=newer)[0]
+        self.assertEqual(result['reasons']['S_pit_QGCB'], ['parse_failed'])
+
+
 if __name__ == '__main__':unittest.main()
