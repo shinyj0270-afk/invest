@@ -31,7 +31,8 @@ cash: depreciation 감가상각비, 유형자산감가상각비 | amortization �
   capex_* and dividends_paid are outflows: the stored value is the absolute value (companies show them as (negative) or as positive numbers).
   depreciation, amortization, rou_depreciation, interest_expense must be >= 0 (`negative` otherwise).
 Amount cells: in the period-number layout the columns are positional, so the CURRENT amount is the first cell after the label/note column; later cells may be blank
-(real documents leave a zero prior year blank), a blank current cell with a filled later cell, or more cells than period columns, is `amount_count`; a row whose cells are
+(real documents leave a zero prior year blank), a BLANK CURRENT cell with a filled later cell reads as 0 (checked on real documents: every such row that also appears in the older layout of the same
+document shows `-` there), more cells than period columns is `amount_count`; a row whose cells are
 all blank is a heading. In the older (당)/(전) layout the amounts are the non-empty cells and their number must equal the column count.
 Per field: a label repeated inside one statement is `duplicate`; an unreadable amount is `bad_number`; a wanted row with some but not all amounts is `amount_count`;
 two copies of the same statement (or two XML members, or income+cash for interest_expense) that disagree leave the field out with `conflict`.
@@ -163,7 +164,7 @@ class SectionTests(unittest.TestCase):
                 self.assertIn(other + '_current', result['values'])
 
     def test_repeated_labels_partial_amounts_bad_and_negative_numbers_drop_only_their_family(self):
-        cases = {'duplicate': BS[:9] + [['단기차입금', '1', '1', '1']] + BS[9:], 'amount_count': BS[:8] + [['단기차입금', '', '110', '120']] + BS[9:],
+        cases = {'duplicate': BS[:9] + [['단기차입금', '1', '1', '1']] + BS[9:], 'amount_count': BS[:8] + [['단기차입금', '1', '2', '3', '4']] + BS[9:],
                  'bad_number': BS[:8] + [['단기차입금', '12a', '110', '120']] + BS[9:], 'negative': BS[:8] + [['단기차입금', '(100)', '110', '120']] + BS[9:]}
         for reason, rows in cases.items():
             with self.subTest(reason=reason):
@@ -378,8 +379,8 @@ class AliasAndEdgeTests(unittest.TestCase):
         result = read(bs_rows=rows)
         self.assertEqual(result['values']['borrowings_noncurrent'], 340);self.assertEqual(result['notes'], {})
 
-    def test_a_blank_current_cell_with_a_filled_later_cell_or_too_many_cells_is_an_amount_count_problem(self):
-        for row in (['금융비용', '', '280', '250'], ['금융비용', '', '', '250'], ['금융비용', '300', '280', '250', '1']):
+    def test_too_many_cells_are_an_amount_count_problem_in_the_period_number_layout(self):
+        for row in (['금융비용', '300', '280', '250', '1'], ['금융비용', '', '280', '250', '1']):
             with self.subTest(row=row):
                 self.assertEqual(read(is_rows=[r if r[0] != '금융비용' else row for r in IS])['notes'], {'finance_costs': 'amount_count'})
 
@@ -427,7 +428,7 @@ class CurrentFinancialAssetsTests(unittest.TestCase):
 
     def test_anomalies_drop_only_this_field(self):
         cases = {'duplicate': with_row(['단기투자자산', '5', '1', '1'], rows=with_row(['단기투자자산', '25', '1', '1'])),
-                 'amount_count': with_row(['단기투자자산', '', '1', '1']), 'bad_number': with_row(['단기투자자산', '12a', '1', '1']),
+                 'amount_count': with_row(['단기투자자산', '1', '2', '3', '4']), 'bad_number': with_row(['단기투자자산', '12a', '1', '1']),
                  'negative': with_row(['단기투자자산', '(5)', '1', '1'])}
         for reason, rows in cases.items():
             with self.subTest(reason=reason):
@@ -522,6 +523,45 @@ class SignResolutionTests(unittest.TestCase):
     def test_the_connected_net_income_alias_is_read(self):
         result = read(is_rows=swap(IS, '당기순이익', '당기연결순이익'))
         self.assertEqual(result['values']['net_income_total'], 502)
+
+
+class BlankCurrentCellTests(unittest.TestCase):
+    """In the period-number layout a blank current cell with a later cell filled is a zero (the format leaves zeros blank)."""
+
+    def test_a_blank_current_cell_reads_as_zero_for_the_new_fields(self):
+        for row in (['금융비용', '', '280', '250'], ['금융비용', '', '', '250'], ['금융비용', '', '280', '']):
+            with self.subTest(row=row):
+                result = read(is_rows=[r if r[0] != '금융비용' else row for r in IS])
+                self.assertEqual((result['values']['finance_costs'], result['notes']), (0, {}))
+
+    def test_the_rule_reaches_every_kind_of_new_account(self):
+        borrow = read(bs_rows=[r if r[0] != '단기차입금' else ['단기차입금', '', '110', '120'] for r in BS])        # 0 + 20 + 10
+        self.assertEqual((borrow['values']['borrowings_current'], borrow['notes']), (30, {}))
+        capex = read(cf_rows=[r if r[0] != '무형자산의 취득' else ['무형자산의 취득', '', '(14)', '(13)'] for r in CF])
+        self.assertEqual((capex['values']['capex_intangible'], capex['notes']), (0, {}))
+        liquid = read(bs_rows=with_row(['당기손익-공정가치금융자산', '', '20', '1']))
+        self.assertEqual((liquid['values']['current_financial_assets'], liquid['notes']), (0, {}))
+        total = read(bs_rows=[r if r[0] != '자산총계' else ['자산총계', '', '6,218', '5,900'] for r in BS])
+        self.assertEqual((total['values']['total_assets'], total['notes']), (0, {}))
+
+    def test_an_all_blank_row_is_still_a_heading_and_the_original_fields_stay_strict(self):
+        result = read(is_rows=[r if r[0] != '금융비용' else ['금융비용', '', '', ''] for r in IS])
+        self.assertNotIn('finance_costs', result['values']);self.assertEqual(result['notes'], {})
+        with self.assertRaises(ValueError):                                                  # the original five fields keep the exact-count rule
+            read(is_rows=[r if r[0] != '매출액' else ['매출액', '', '4,894', '4,000'] for r in IS])
+
+    def test_the_older_layout_keeps_the_exact_count_rule(self):
+        rows_is = [['Ⅰ. 매출액', '7', '5,968', '4,894'], ['Ⅵ. 영업이익', '', '746', '362'], ['금융비용', '', '', '280']]
+        result = pit_xml.parse_statements(doc(balance(), income(rows=rows_is), cash()), year=2025)
+        self.assertNotIn('finance_costs', result['values']);self.assertEqual(result['notes'], {'finance_costs': 'amount_count'})
+
+    def test_a_zero_tax_income_and_a_zero_loss_label_resolve_without_ambiguity(self):
+        rows = income_rows(pretax=('법인세비용차감전순이익', '625'), tax=('법인세수익', ''), net=('당기순이익', '625'))
+        rows = [[r[0], r[1], '1', '1'] for r in rows]
+        result = read(is_rows=rows)
+        self.assertEqual((result['values']['income_tax_expense'], result['notes']), (0, {}))
+        loss = read(is_rows=[r if r[0] != '당기순이익' else ['당기순손실', '', '1', '1'] for r in IS])
+        self.assertEqual(loss['values']['net_income_total'], 0)
 
 
 if __name__ == '__main__':unittest.main()

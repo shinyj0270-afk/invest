@@ -33,7 +33,8 @@ IDENTITY_UNITS = 3      # pretax_income - income_tax_expense = net_income_total 
 def read_accounts(kind, rows, *, unit, first, columns, positional=False):
     """Return readable fields and soft failures for one statement body.
 
-    `positional` (period-number layout): the cells after the label are the period columns, so the current amount is the first one and later cells may be blank."""
+    `positional` (period-number layout): the cells after the label are the period columns, so the current amount is the first one; later cells may be blank, and a blank current cell
+    (with a later cell filled) reads as 0 because that format leaves zeros blank. A row with every cell blank is a heading."""
     from .pit_xml import _label, _amount
     aliases={label: field for field, labels in _ALIASES[kind].items() for label in labels}
     families={label: (family, required) for family, groups in (('borrowings', _BORROWINGS), ('lease', _LEASE))
@@ -48,7 +49,7 @@ def read_accounts(kind, rows, *, unit, first, columns, positional=False):
         cells=row[first:]
         amounts=[cell for cell in cells if cell]
         if not amounts:continue
-        if positional:amounts, counted=amounts[:1] if cells[0] else amounts, len(cells) <= columns and bool(cells[0])
+        if positional:amounts, counted=[cells[0] or '-'], len(cells) <= columns       # a blank current cell is a zero: the period-number layout leaves zeros blank
         else:counted=len(amounts) == columns
         family, required=families.get(label, (None, None)) if kind == 'balance' else (None, None)
         field=aliases.get(label); reason=None
@@ -93,7 +94,7 @@ def read_accounts(kind, rows, *, unit, first, columns, positional=False):
 
 def _resolve(values, notes, deferred, unit):
     """Signs the labels do not settle (a profit under a loss label, every 법인세수익) are taken only when exactly one combination satisfies pretax - tax = net."""
-    options={field: ((-deferred[field][0], deferred[field][0]) if field == 'income_tax_expense' else (deferred[field][0], -deferred[field][0]))
+    options={field: tuple(dict.fromkeys((-deferred[field][0], deferred[field][0]) if field == 'income_tax_expense' else (deferred[field][0], -deferred[field][0])))
              if field in deferred else (values[field],) for field in _SIGNED if field in deferred or field in values and field not in notes}
     matches=[c for c in product(*options.values()) if abs(c[0]-c[1]-c[2]) <= IDENTITY_UNITS*unit] if len(options) == 3 else []
     if len(matches) == 1:return {**values, **{f: v for f, v in zip(_SIGNED, matches[0]) if f in deferred}}, notes
