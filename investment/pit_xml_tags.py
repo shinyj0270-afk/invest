@@ -14,6 +14,7 @@ CONCEPTS = {
     'ifrs-full_ShorttermDepositsNotClassifiedAsCashEquivalents': ('short_term_financial_instruments', 'e'),
     'ifrs-full_DepreciationAndAmortisationExpense': ('da_total', 'd')}
 CONTEXT = 'FY_ifrs-full_ConsolidatedAndSeparateFinancialStatementsAxis_ifrs-full_ConsolidatedMember'
+REPORTED = CONTEXT + '_ifrs-full_CarryingAmountAccumulatedDepreciationAmortisationAndImpairmentAndGrossCarryingAmountAxis_dart_ReportedAmountMember'      # the line total of a note table (S-Oil, 효성중공업 tag leases this way)
 EVENT = re.compile(r'<TABLE\b|</TABLE\s*>|\(\s*단위\s*:\s*([^()]*)\)|<TE\b([^>]*)>', re.I)
 ATTRS = re.compile(r'''\b([\w:-]+)\s*=\s*(["'])(.*?)\2''', re.S)
 CELL_END = re.compile(r'</TE\s*>', re.I)
@@ -58,7 +59,8 @@ def read_tagged_detail(text, *, year):
             concept=CONCEPTS.get(attrs.get('ACODE'))
             if concept is None:continue
             field, period=concept
-            if attrs.get('ACONTEXT') != f'CFY{year}{period}{CONTEXT}' or field in notes:continue
+            allowed = (f'CFY{year}{period}{CONTEXT}', f'CFY{year}{period}{REPORTED}') if field.startswith('lease_') and period == 'e' else (f'CFY{year}{period}{CONTEXT}',)
+            if attrs.get('ACONTEXT') not in allowed or field in notes:continue
             end=CELL_END.search(text, token.end())
             body=text[token.end():end.start() if end else len(text)]
             reason=None

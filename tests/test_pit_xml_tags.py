@@ -240,4 +240,36 @@ class RoundingTests(unittest.TestCase):
         self.assertEqual(lease['values']['lease_current'], 7);self.assertEqual(lease['notes'], {})
 
 
+AXIS = 'ifrs-full_ConsolidatedAndSeparateFinancialStatementsAxis'
+REPORTED = 'ifrs-full_CarryingAmountAccumulatedDepreciationAmortisationAndImpairmentAndGrossCarryingAmountAxis_dart_ReportedAmountMember'
+
+
+class ReportedAmountContextTests(unittest.TestCase):
+    """S-Oil and 효성중공업 tag their lease note with the reported-amount member of the carrying-amount axis (no plain consolidated fact for current / non-current)."""
+    def ctx(self, entity='ifrs-full_ConsolidatedMember', tail=REPORTED, year=2025):
+        return f'CFY{year}eFY_{AXIS}_{entity}_{tail}'
+
+    def test_the_reported_amount_member_of_the_consolidated_statements_counts(self):
+        values, notes = read(table('(단위 : 천원)', fact(CUR, '102,286', self.ctx()), fact(NONCUR, '271,014', self.ctx()), fact(LEASE, '373,300', self.ctx())))
+        self.assertEqual((values, notes), (dict(lease_current=102286000, lease_noncurrent=271014000, lease_total=373300000), {}))
+
+    def test_separate_prior_year_and_other_axis_members_are_still_ignored(self):
+        other = 'ifrs-full_ClassesOfLiabilitiesAxis_entity00138279_OtherPayablesMember'
+        for context in (self.ctx(entity='ifrs-full_SeparateMember'), self.ctx(year=2024), self.ctx(tail=other), self.ctx(tail=REPORTED + '_x')):
+            with self.subTest(context=context):
+                self.assertEqual(read(table('(단위 : 천원)', fact(CUR, '5', context))), ({}, {}))
+
+    def test_only_the_lease_concepts_accept_it(self):
+        for code, kind in ((DEPOSIT, 'e'), (DA, 'd')):
+            with self.subTest(code=code):
+                context = f'CFY2025{kind}FY_{AXIS}_ifrs-full_ConsolidatedMember_{REPORTED}'
+                self.assertEqual(read(table('(단위 : 천원)', fact(code, '5', context, kind=kind))), ({}, {}))
+
+    def test_it_agrees_with_the_plain_consolidated_fact_or_conflicts_with_it(self):
+        agree = read(table('(단위 : 천원)', fact(LEASE, '48,549'), fact(LEASE, '48,549', self.ctx())))
+        self.assertEqual(agree, (dict(lease_total=48549000), {}))
+        clash = read(table('(단위 : 천원)', fact(LEASE, '48,549'), fact(LEASE, '48,000', self.ctx())))
+        self.assertEqual(clash, ({}, dict(lease_total='conflict')))
+
+
 if __name__ == '__main__':unittest.main()
