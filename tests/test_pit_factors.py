@@ -412,4 +412,11 @@ class NewerPeriodsFromInventoryTests(unittest.TestCase):
         self.assertEqual(result['reasons']['S_pit_QGCB'], ['parse_failed'])
 
 
+class StatutoryRateTableTests(unittest.TestCase):
+    def test_the_top_rate_including_local_tax_by_fiscal_year(self):
+        for year, rate in ((2019, .275), (2022, .275), (2023, .264), (2025, .264), (2026, .275), (2030, .275)):
+            with self.subTest(year=year):
+                self.assertAlmostEqual(pf._statutory({'period_end': f'{year}-12-31'}), rate, places=12)
+
+
 if __name__ == '__main__':unittest.main()

@@ -41,7 +41,7 @@ def _balance(row, debt):
     return value, reasons, approximations
 
 
-STATUTORY_TAX_RATE = ((2022, 0.275), (9999, 0.264))      # top corporate rate incl. local income tax by fiscal year: 25% x 1.1 up to FY2022, 24% x 1.1 from FY2023 (FY2026 change unconfirmed)
+STATUTORY_TAX_RATE = ((2022, 0.275), (2025, 0.264), (9999, 0.275))      # top corporate rate incl. local income tax: 25% x 1.1 up to FY2022, 24% x 1.1 for FY2023-2025, 25% x 1.1 from FY2026 (2025 tax reform passed 2025-12-02)
 
 
 def _statutory(row):
