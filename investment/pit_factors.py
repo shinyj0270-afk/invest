@@ -41,15 +41,24 @@ def _balance(row, debt):
     return value, reasons, approximations
 
 
+STATUTORY_TAX_RATE = ((2022, 0.275), (9999, 0.264))      # top corporate rate incl. local income tax by fiscal year: 25% x 1.1 up to FY2022, 24% x 1.1 from FY2023 (FY2026 change unconfirmed)
+
+
+def _statutory(row):
+    year = int(row['period_end'][:4])
+    return next(rate for last, rate in STATUTORY_TAX_RATE if year <= last)
+
+
 def _nopat(row):
     op, pretax, tax = (row.get(k) for k in ('op', 'pretax_income', 'income_tax_expense'))
     reasons = [f'missing:{k}' for k, v in (('op', op), ('pretax_income', pretax)) if not num(v)]
     if not num(pretax):return None, reasons, []
     if pretax <= 0:return (op if num(op) else None), reasons, ['tax_rate_zero_for_loss']
     if not num(tax):return None, reasons + ['missing:income_tax_expense'], []
-    rate = tax / pretax
-    if not 0 <= rate <= 1:return None, reasons + ['tax_rate_unusable'], []
-    return (op * (1 - rate) if num(op) else None), reasons, []
+    rate, used = tax / pretax, []
+    statutory = _statutory(row)
+    if not 0 <= rate <= statutory:rate, used = statutory, ['tax_rate_statutory_substituted']
+    return (op * (1 - rate) if num(op) else None), reasons, used
 
 
 def _quality(rows, debts):

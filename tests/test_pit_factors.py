@@ -75,6 +75,17 @@ class FactorTests(unittest.TestCase):
         self.assertAlmostEqual(pf.compute_factors(rows, AS_OF)['Q'], median([48 / 600, 30 / 500, 50 / 500]), places=12)
         self.assertAlmostEqual(pf.compute_factors(rows, AS_OF)['Q'], 0.08, places=12)
 
+    def test_the_statutory_rate_depends_on_the_fiscal_year_and_the_boundary_is_inclusive(self):
+        at_limit = per_year(series(), income_tax_expense={2022: 22.275, 2023: 22.275})      # pretax 45: rate .495 is above both limits
+        self.assertEqual(pf.compute_factors(at_limit, AS_OF)['approximations'], {'Q': ['tax_rate_statutory_substituted']})
+        exact = per_year(series(), pretax_income={2022: 100.0, 2023: 100.0}, income_tax_expense={2022: 27.5, 2023: 26.4})
+        f = pf.compute_factors(exact, AS_OF)                                                  # exactly the statutory rate of each year is an effective rate, not a substitute
+        self.assertEqual(f['approximations'], {})
+        over = per_year(series(), pretax_income={2022: 100.0, 2023: 100.0}, income_tax_expense={2022: 27.6, 2023: 26.5})
+        self.assertEqual(pf.compute_factors(over, AS_OF)['approximations'], {'Q': ['tax_rate_statutory_substituted']})
+        old = per_year(series(years=(2019, 2020, 2021, 2022)), income_tax_expense={2022: 45.0})
+        self.assertAlmostEqual(pf.compute_factors(old, '2023-06-30')['Q'], median([.08, .08, 50 * (1 - .275) / 500]), places=12)
+
     def test_the_tax_rate_rule(self):
         loss = per_year(series(), pretax_income={2022: -10.0, 2023: -5.0}, income_tax_expense={2022: 3.0, 2023: 3.0})      # loss years: rate 0 (NOPAT = op), tax expense ignored
         f = pf.compute_factors(loss, AS_OF)
@@ -82,15 +93,17 @@ class FactorTests(unittest.TestCase):
         self.assertEqual(f['approximations'], {'Q': ['tax_rate_zero_for_loss']})
         zero_pretax = per_year(series(), pretax_income={2022: 0.0, 2023: 0.0})
         self.assertAlmostEqual(pf.compute_factors(zero_pretax, AS_OF)['Q'], 0.10, places=12)
-        edge = per_year(series(), income_tax_expense={2023: 45.0})                          # rate exactly 1 -> NOPAT 0, still usable
-        self.assertAlmostEqual(pf.compute_factors(edge, AS_OF)['Q'], median([40 / 500, 40 / 500, 0.0]), places=12)
+        edge = per_year(series(), income_tax_expense={2022: 45.0, 2023: 45.0})              # rate 1 is outside 0..statutory -> the statutory rate replaces it (26.4% from FY2023)
+        f = pf.compute_factors(edge, AS_OF)
+        self.assertAlmostEqual(f["Q"], 50 * (1 - .264) / 500, places=12)                    # FY2022 still 27.5%, FY2023 26.4%: median of [.08, .0725, .0736]
+        self.assertEqual(f['approximations'], {'Q': ['tax_rate_statutory_substituted']})
         no_tax = per_year(series(), income_tax_expense={2022: 0.0, 2023: 0.0})              # rate exactly 0, usable
         self.assertAlmostEqual(pf.compute_factors(no_tax, AS_OF)['Q'], median([40 / 500, 50 / 500, 50 / 500]), places=12)
         self.assertEqual(pf.compute_factors(no_tax, AS_OF)['approximations'], {})
         for tax in (-1.0, 46.0):
             with self.subTest(tax=tax):
                 f = pf.compute_factors(per_year(series(), income_tax_expense={2022: tax}), AS_OF)
-                self.assertEqual((f['Q'], f['reasons']['Q']), (None, ['tax_rate_unusable']))
+                self.assertIsNotNone(f['Q']);self.assertNotIn('Q', f['reasons']);self.assertEqual(f['approximations'], {'Q': ['tax_rate_statutory_substituted']})
         f = pf.compute_factors(series(drop=('income_tax_expense',)), AS_OF)
         self.assertEqual((f['Q'], f['reasons']['Q']), (None, ['missing:income_tax_expense']))
         f = pf.compute_factors(series(drop=('pretax_income',)), AS_OF)
