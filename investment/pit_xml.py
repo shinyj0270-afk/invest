@@ -6,6 +6,7 @@ import io
 import re
 import zipfile
 from .pit_xml_accounts import read_accounts, _merge
+from .pit_xml_tags import read_tagged
 
 PARSER_VERSION = 'pit-xml-1'
 MAX_MEMBERS = 50
@@ -186,6 +187,9 @@ def parse_statements(text, *, year):
         copies={**copies, kind: original}; counts={**counts, kind: counts.get(kind, 0)+1}
         values, notes=_merge(values, found, notes, problems)
         if first_unit is None:first_unit=unit
+    tagged, problems=read_tagged(text, year=year)
+    values, merged_notes=_merge(values, tagged, notes, problems)
+    notes={**merged_notes, **notes}
     if not values:raise ValueError('사용 가능한 계정이 없습니다')
     return dict(values=values, notes=notes, basis='CFS', currency='KRW', unit=first_unit or 1,
                 period_start=f'{year}-01-01', period_end=f'{year}-12-31', statements=counts)

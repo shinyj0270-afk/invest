@@ -1,7 +1,7 @@
 """The A-stage account fields (see tests/test_pit_xml_accounts.py) flow unchanged through map_record -> project -> verify.
 
 Names are the same at every layer. Ranges (both `pit_annual` and the independent `pit_verify` copy must agree):
-  >= 0: total_assets, total_liabilities, short_term_financial_instruments, borrowings_current, borrowings_noncurrent, lease_current, lease_noncurrent,
+  >= 0: lease_total, da_total (tag-derived), total_assets, total_liabilities, short_term_financial_instruments, borrowings_current, borrowings_noncurrent, lease_current, lease_noncurrent,
         finance_costs, interest_expense, depreciation, amortization, rou_depreciation, capex_tangible, capex_intangible, dividends_paid
   any sign: pretax_income, income_tax_expense, net_income_total
 The legacy parser keys `net_income`, `assets`, `liabilities`, `tax`, `pretax` stay unmapped.
@@ -16,7 +16,7 @@ from tests.test_pit_values import record, RECEIPT
 
 NONNEGATIVE = ('total_assets', 'total_liabilities', 'short_term_financial_instruments', 'borrowings_current', 'borrowings_noncurrent', 'lease_current',
                'lease_noncurrent', 'finance_costs', 'interest_expense', 'depreciation', 'amortization', 'rou_depreciation', 'capex_tangible',
-               'capex_intangible', 'dividends_paid')
+               'capex_intangible', 'dividends_paid', 'lease_total', 'da_total')
 ANY_SIGN = ('pretax_income', 'income_tax_expense', 'net_income_total')
 NEW = NONNEGATIVE + ANY_SIGN
 VALUES = {key: float(i + 1) * 10 for i, key in enumerate(NEW)}

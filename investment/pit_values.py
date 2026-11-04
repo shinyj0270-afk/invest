@@ -12,7 +12,7 @@ import re
 
 MAPPING_VERSION = 'pit-values-1'
 FIELDS = (('revenue', 'revenue'), ('op', 'operating_profit'), ('ocf', 'ocf'), ('equity', 'equity'), ('cash', 'cash')) + tuple((field, field) for field in (
-    'total_assets', 'total_liabilities', 'short_term_financial_instruments',
+    'total_assets', 'total_liabilities', 'short_term_financial_instruments', 'lease_total', 'da_total',
     'borrowings_current', 'borrowings_noncurrent', 'lease_current',
     'lease_noncurrent', 'finance_costs', 'interest_expense',
     'depreciation', 'amortization', 'rou_depreciation',
