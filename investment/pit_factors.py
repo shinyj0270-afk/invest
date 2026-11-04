@@ -92,13 +92,19 @@ def compute_factors(pit_rows, as_of, *, tolerated=frozenset()):
                 tolerated=sorted(tolerated), approximations=approximations, latest_period=annual[-1]['period_end'] if annual else None)
 
 
+def _is_date(text):
+    try:date.fromisoformat(text)
+    except ValueError:return False
+    return True
+
+
 def _stale(result, as_of, limit):
     """True when the latest visible annual period is older than `limit` days: the company has no current data (e.g. delisted)."""
     return bool(limit is not None and result['latest_period'] and (date.fromisoformat(as_of) - date.fromisoformat(result['latest_period'])).days > limit)
 
 
 def _score(result, pools, minimum):
-    if result['stale']:return dict(result, S_pit_QGCB=None, reasons={**result['reasons'], 'S_pit_QGCB': ['stale_period']})
+    if result['stale']:return dict(result, S_pit_QGCB=None, reasons={**result['reasons'], 'S_pit_QGCB': ['parse_failed' if result['parse_failed'] else 'stale_period']})
     ps = {k: percentile(result[k], pools[k], minimum) for k in pools}
     complete = all(v is not None for v in ps.values())
     score = 100 * (.30 * ps['Q'] + .25 * ps['G'] + .20 * ps['C'] + .10 * ps['B']) / .85 if complete else None
@@ -109,17 +115,21 @@ def _score(result, pools, minimum):
     return dict(result, S_pit_QGCB=score, reasons={**result['reasons'], 'S_pit_QGCB': reasons})
 
 
-def pit_scores(companies, as_of, *, minimum=5, tolerated=frozenset(), max_staleness_days=460):
-    """Rank factors independently and combine their weighted percentiles; stale companies stay out of every pool."""
+def pit_scores(companies, as_of, *, minimum=5, tolerated=frozenset(), max_staleness_days=460, newer_periods=None):
+    """Rank factors independently and combine their weighted percentiles; stale companies stay out of every pool.
+    `newer_periods` maps a code to the latest annual period_end its filing inventory shows: a stale company with a newer one failed to parse (`parse_failed`), it is not gone."""
     if not isinstance(companies, dict) or not companies:raise ValueError('companies must be a non-empty dict')
     if type(minimum) is not int or minimum < 1:raise ValueError('minimum must be an integer >= 1')
     if not all(isinstance(code, str) for code in companies):raise ValueError('codes must be strings')
     _validate_tolerated(tolerated)
     if max_staleness_days is not None and (type(max_staleness_days) is not int or max_staleness_days < 1):raise ValueError('max_staleness_days must be None or an integer >= 1')
+    newer = {} if newer_periods is None else newer_periods
+    if not isinstance(newer, dict) or not all(isinstance(k, str) and (v is None or isinstance(v, str) and _is_date(v)) for k, v in newer.items()):raise ValueError('newer_periods must map codes to ISO dates or None')
     results = []
     for code, rows in sorted(companies.items()):
         factors = compute_factors(rows, as_of, tolerated=tolerated)
         if any(r['company'] != code for r in rows):raise ValueError('code must match each row company')
-        results.append(dict(factors, code=code, stale=_stale(factors, as_of, max_staleness_days)))
+        stale = _stale(factors, as_of, max_staleness_days)
+        results.append(dict(factors, code=code, stale=stale, parse_failed=bool(stale and newer.get(code) and newer[code] > factors['latest_period'])))
     pools = {k: [r[k] for r in results if r[k] is not None and not r['stale']] for k in ('G', 'C', 'Q', 'B')}
     return [_score(r, pools, minimum) for r in results]

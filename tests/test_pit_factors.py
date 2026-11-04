@@ -328,6 +328,30 @@ class StalenessTests(unittest.TestCase):
         self.assertFalse(off['STALE1']['stale']);self.assertEqual(off['STALE1']['latest_period'], '2021-12-31')
         self.assertIsNotNone(off['STALE1']['S_pit_QGCB'])                                    # it is ranked like any other company
 
+    def test_a_stale_company_whose_inventory_shows_a_newer_report_is_a_parse_failure(self):
+        pool = dict(companies_with_increasing_factors(), STALE1=series(years=(2018, 2019, 2020, 2021), company='STALE1'))
+        results = {r['code']: r for r in pf.pit_scores(pool, AS_OF, newer_periods={'STALE1': '2023-12-31'})}
+        self.assertEqual((results['STALE1']['S_pit_QGCB'], results['STALE1']['reasons']['S_pit_QGCB'], results['STALE1']['stale'], results['STALE1']['parse_failed']),
+                         (None, ['parse_failed'], True, True))
+        self.assertFalse(any(results[c]['parse_failed'] for c in pool if c != 'STALE1'))
+
+    def test_an_inventory_period_that_is_not_newer_keeps_the_stale_reason(self):
+        pool = {'STALE1': series(years=(2018, 2019, 2020, 2021), company='STALE1')}
+        for newer in ('2021-12-31', '2019-12-31', None):
+            with self.subTest(newer=newer):
+                result = pf.pit_scores(pool, AS_OF, newer_periods={'STALE1': newer})[0]
+                self.assertEqual((result['reasons']['S_pit_QGCB'], result['parse_failed']), (['stale_period'], False))
+        self.assertEqual(pf.pit_scores(pool, AS_OF)[0]['reasons']['S_pit_QGCB'], ['stale_period'])
+
+    def test_a_fresh_company_is_never_a_parse_failure_and_bad_input_is_refused(self):
+        pool = companies_with_increasing_factors()
+        code = sorted(pool)[0]
+        result = {r['code']: r for r in pf.pit_scores(pool, AS_OF, newer_periods={code: '2024-12-31'})}[code]
+        self.assertFalse(result['parse_failed'])
+        for bad in ([], {'AAA111': 20231231}, {'AAA111': 'x'}):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                pf.pit_scores(pool, AS_OF, newer_periods=bad)
+
     def test_a_company_without_a_visible_row_is_missing_not_stale(self):
         result = pf.pit_scores({'AAA111': series()}, '2019-06-30')[0]
         self.assertEqual((result['stale'], result['latest_period']), (False, None))
