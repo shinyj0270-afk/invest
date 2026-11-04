@@ -38,9 +38,14 @@ def _unit(stack, pending, position):
 
 
 def read_tagged(text, *, year):
-    """Return scaled values and the first problem for each qualifying field."""
+    """(values, notes): scaled values and the first problem for each qualifying field."""
+    return read_tagged_detail(text, year=year)[:2]
+
+
+def read_tagged_detail(text, *, year):
+    """(values, notes, units): like `read_tagged` plus the scale factor of each kept value. Facts of one field agree within half of the larger unit (table rounding); the finer value is kept."""
     from .pit_xml import _amount
-    values={}; notes={}; stack=[]; pending=None; previous=None
+    values={}; notes={}; units={}; stack=[]; pending=None; previous=None
     for token in EVENT.finditer(text):
         if token.group(1) is not None:
             caption=_caption(token.group(1), token.start())
@@ -66,11 +71,12 @@ def read_tagged(text, *, year):
             if not reason and unit is None:reason='unit_unknown'
             if not reason:
                 value*=unit
-                if field in values and values[field] != value:reason='conflict'
+                if field in values and abs(values[field]-value) > max(units[field], unit)/2:reason='conflict'
             if reason:
                 notes={**notes, field: reason}
                 values={key: value for key, value in values.items() if key != field}
-            else:values={**values, field: value}
+                units={key: value for key, value in units.items() if key != field}
+            elif field not in values or unit < units[field]:values={**values, field: value}; units={**units, field: unit}
         elif token.group(0)[1] == '/':
             if stack:
                 closed=stack.pop(); previous=(closed['inside'], closed['tagged'])
@@ -78,4 +84,4 @@ def read_tagged(text, *, year):
         else:
             stack.append({'at': token.start(), 'before': pending, 'previous': previous, 'inside': None, 'tagged': False})
             pending=None
-    return values, notes
+    return values, notes, units

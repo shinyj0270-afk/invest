@@ -4,14 +4,15 @@ Why: some accounts (total lease liabilities, depreciation+amortisation) are only
 Real documents show that the unit attribute `ADECIMAL` is NOT reliable (a note table in thousand won tagged `ADECIMAL="0"`), so the unit is read from the `(단위 : …)` caption in front of
 the table instead; the sign is taken from the displayed number and flipped when `ANEGATED="Y"` (a displayed `(19,050)` with `ANEGATED="Y"` is the positive fact 19,050).
 
-`read_tagged(text, *, year) -> (values, notes)`; never raises for data problems.
+`read_tagged(text, *, year) -> (values, notes)`; never raises for data problems. `read_tagged_detail` returns `(values, notes, units)` with the scale factor of each kept value.
+In `pit_xml.parse_statements` a tag value and a statement row of one field also agree within half of the TAG unit (the statement value is kept), otherwise `conflict`.
 Fields (concept, period type): lease_total ifrs-full_LeaseLiabilities (e) | lease_current ifrs-full_CurrentLeaseLiabilities (e) | lease_noncurrent ifrs-full_NoncurrentLeaseLiabilities (e) |
   short_term_financial_instruments ifrs-full_ShorttermDepositsNotClassifiedAsCashEquivalents (e) | da_total ifrs-full_DepreciationAndAmortisationExpense (d).
 Only the context `CFY{year}{e|d}FY_ifrs-full_ConsolidatedAndSeparateFinancialStatementsAxis_ifrs-full_ConsolidatedMember` counts (current year, consolidated, NO further axis); `e` = instant at year end,
 `d` = duration of the year, and the period type must match the concept. Prior-year, other-year, separate and dimensioned facts are ignored without a note.
 Unit: the closest `(단위 : 원|천원|백만원)` caption, looked for ONLY in (1) the cell's own table before the cell (no distance limit: real tagged cells sit far inside big tables), (2) the text between the
 previous table and this table, at most 2500 raw characters before this table's start, (3) the previous table when that table carries no `ACODE` tags (a statement title table). The caption of a previous table that holds tagged values is never inherited, otherwise a
-captionless table would silently get a wrong unit. None or another unit -> the field is omitted with note `unit_unknown`. Several facts of one field must agree after scaling (`conflict`); an unreadable number is `bad_number`; a negative value is `negative` (all five fields are >= 0).
+captionless table would silently get a wrong unit. None or another unit -> the field is omitted with note `unit_unknown`. Several facts of one field must agree after scaling (`conflict`), where "agree" allows the rounding of the coarser table: |a - b| <= half of the larger unit factor, and the value of the SMALLER unit is kept; an unreadable number is `bad_number`; a negative value is `negative` (all five fields are >= 0).
 In `pit_xml.parse_statements` the tag values are merged into `result['values']`: an absent field is added, an equal one is kept, a different one (statement row vs tag) is dropped with note `conflict`.
 Tags alone never make a document: without statements `NoStatements` is still raised.
 """
@@ -199,6 +200,44 @@ class MergeTests(unittest.TestCase):
     def test_tags_alone_do_not_make_a_document(self):
         with self.assertRaises(pit_xml.NoStatements):
             pit_xml.parse_statements(doc(table('(단위 : 원)', fact(LEASE, '22'))), year=2025)
+
+
+class RoundingTests(unittest.TestCase):
+    def test_the_same_amount_in_a_won_table_and_a_thousand_won_table_agrees_and_the_finer_value_is_kept(self):
+        won = table('(단위 : 원)', fact(DEPOSIT, '311,797,002,761'))
+        thousand = table('(단위 : 천원)', fact(DEPOSIT, '311,797,003'))
+        for parts in ((won, thousand), (thousand, won)):
+            values, notes = read(*parts)
+            self.assertEqual((values, notes), ({'short_term_financial_instruments': 311_797_002_761}, {}))
+
+    def test_the_tolerance_is_half_of_the_larger_unit_and_inclusive(self):
+        fine = table('(단위 : 원)', fact(LEASE, '5,500'))
+        self.assertEqual(read(fine, table('(단위 : 천원)', fact(LEASE, '5')))[1], {})              # |5500 - 5000| = 500
+        self.assertEqual(read(table('(단위 : 원)', fact(LEASE, '5,501')), table('(단위 : 천원)', fact(LEASE, '5')))[1], {'lease_total': 'conflict'})
+        self.assertEqual(read(table('(단위 : 원)', fact(LEASE, '1')), table('(단위 : 원)', fact(LEASE, '2')))[1], {'lease_total': 'conflict'})
+        self.assertEqual(read(table('(단위 : 천원)', fact(LEASE, '5')), table('(단위 : 백만원)', fact(LEASE, '0')))[1], {})   # 5000 vs 0: within 500000
+
+    def test_the_detail_function_reports_the_unit_of_the_kept_value(self):
+        values, notes, units = pit_xml_tags.read_tagged_detail('<DOCUMENT>' + table('(단위 : 천원)', fact(LEASE, '5')) + table('(단위 : 원)', fact(LEASE, '5,000')) + table('(단위 : 백만원)', fact(CUR, '2')) + '</DOCUMENT>', year=2025)
+        self.assertEqual((values, notes, units), ({'lease_total': 5000, 'lease_current': 2_000_000}, {}, {'lease_total': 1, 'lease_current': 1_000_000}))
+        self.assertEqual(pit_xml_tags.read_tagged('<DOCUMENT>' + table('(단위 : 천원)', fact(LEASE, '5')) + '</DOCUMENT>', year=2025), ({'lease_total': 5000}, {}))
+
+    def test_the_statement_and_tag_tolerance_is_inclusive_at_exactly_half_of_the_tag_unit(self):
+        rows = [r if r[0] != '유동리스부채' else ['유동리스부채', '500', '1', '1'] for r in BS]
+        edge = pit_xml.parse_statements(doc(bs(rows=rows), inc(rows=IS), cf(rows=CF), table('(단위 : 천원)', fact(CUR, '0'))), year=2025)
+        self.assertEqual(edge['values']['lease_current'], 500);self.assertEqual(edge['notes'], {})
+        beyond = [r if r[0] != '유동리스부채' else ['유동리스부채', '501', '1', '1'] for r in BS]
+        over = pit_xml.parse_statements(doc(bs(rows=beyond), inc(rows=IS), cf(rows=CF), table('(단위 : 천원)', fact(CUR, '0'))), year=2025)
+        self.assertNotIn('lease_current', over['values']);self.assertEqual(over['notes'], {'lease_current': 'conflict'})
+
+    def test_a_statement_row_and_a_rounded_tag_agree_and_the_statement_value_is_kept(self):
+        rows = [r if r[0] != '단기금융상품' else ['단기금융상품', '311,797,002,761', '1', '1'] for r in BS]
+        merged = pit_xml.parse_statements(doc(bs(rows=rows), inc(rows=IS), cf(rows=CF), table('(단위 : 천원)', fact(DEPOSIT, '311,797,003'))), year=2025)
+        self.assertEqual(merged['values']['short_term_financial_instruments'], 311_797_002_761);self.assertEqual(merged['notes'], {})
+        off = pit_xml.parse_statements(doc(bs(rows=rows), inc(rows=IS), cf(rows=CF), table('(단위 : 천원)', fact(DEPOSIT, '311,798,000'))), year=2025)
+        self.assertNotIn('short_term_financial_instruments', off['values']);self.assertEqual(off['notes'], {'short_term_financial_instruments': 'conflict'})
+        lease = pit_xml.parse_statements(doc(bs(rows=BS), inc(rows=IS), cf(rows=CF), table('(단위 : 천원)', fact(CUR, '0'))), year=2025)       # statement 7 won vs tag 0: within 500
+        self.assertEqual(lease['values']['lease_current'], 7);self.assertEqual(lease['notes'], {})
 
 
 if __name__ == '__main__':unittest.main()

@@ -20,9 +20,12 @@ balance, liquid financial assets: current_financial_assets = sum of the rows 당
   non-liquid items). Anomalies follow the other summed fields: a label repeated inside the section `duplicate`, partial amounts `amount_count`, unreadable `bad_number`, negative `negative`,
   a row outside any asset section `section_unknown` (or `section_mismatch` inside a liability section). No row -> the field is absent (no note).
 income: finance_costs 금융비용|금융원가 | pretax_income 법인세비용차감전순이익, 법인세차감전순이익, 법인세비용차감전계속영업이익, 법인세비용차감전계속사업이익 (each also with `(손실)`);
-  loss labels 법인세비용차감전순손실, 법인세차감전순손실 | income_tax_expense 법인세비용, 법인세비용(수익), 법인세비용(환입); 법인세수익 is `unsupported_label` |
-  net_income_total 당기순이익, 당기순이익(손실), 당기순손익, 연결당기순이익, 연결당기순이익(손실); loss label 당기순손실 | interest_expense 이자비용 (also from cash)
-  Loss labels are accepted only with an amount <= 0, a positive amount is `sign_unclear`.
+  loss labels 법인세비용차감전순손실, 법인세차감전순손실 | income_tax_expense 법인세비용, 법인세비용(수익), 법인세비용(환입), tax-income label 법인세수익 |
+  net_income_total 당기순이익, 당기순이익(손실), 당기순손익, 연결당기순이익, 연결당기순이익(손실), 당기연결순이익; loss label 당기순손실 | interest_expense 이자비용 (also from cash)
+  Loss labels with an amount <= 0 are taken as shown. A positive amount under a loss label and every amount under `법인세수익` have an UNCLEAR SIGN (companies name a profit line `…순손실`, and show a tax benefit
+  as a positive 수익): they are resolved with the statement identity pretax_income - income_tax_expense = net_income_total, checked within 3 statement units (rounding). Candidates: a loss-label amount x is
+  +x or -x, a 법인세수익 amount y gives income_tax_expense -y or +y. The identity needs the other two numbers (taken as shown when their labels are normal); the signs are taken only when EXACTLY ONE
+  combination satisfies it, otherwise the old notes stay (`sign_unclear` for loss labels, `unsupported_label` for 법인세수익) and the fields are left out.
 cash: depreciation 감가상각비, 유형자산감가상각비 | amortization 무형자산상각비 | rou_depreciation 사용권자산상각비 | interest_expense 이자비용 |
   capex_tangible 유형자산의취득 | capex_intangible 무형자산의취득 | dividends_paid 배당금의지급, 배당금지급.
   capex_* and dividends_paid are outflows: the stored value is the absolute value (companies show them as (negative) or as positive numbers).
@@ -198,7 +201,7 @@ class IncomeTests(unittest.TestCase):
         self.assertEqual(bad['values']['revenue'], 5968)
 
     def test_a_tax_income_label_and_continuing_operations_net_income_are_not_read(self):
-        result = read(is_rows=swap(IS, '법인세비용', '법인세수익'))
+        result = read(is_rows=IS[:4] + [['법인세수익', '999', '1', '1']] + IS[5:])      # 625 / 999 / 502 fit no identity
         self.assertNotIn('income_tax_expense', result['values']);self.assertEqual(result['notes'].get('income_tax_expense'), 'unsupported_label')
         only = read(is_rows=swap(IS, '당기순이익', '계속영업당기순이익'))
         self.assertNotIn('net_income_total', only['values']);self.assertEqual(only['notes'], {})
@@ -292,9 +295,9 @@ def sectioned(label, section):
 class AliasAndEdgeTests(unittest.TestCase):
     BORROW_ANY = ('차입금', '사채', '전환사채', '신주인수권부사채', '차입금및사채', '사채및차입금', '교환사채')
     BORROW_CURRENT = ('단기차입금', '유동성장기차입금', '유동성사채', '단기사채', '유동성전환사채', '유동성신주인수권부사채', '유동성장기사채', '당좌차월')
-    BORROW_NONCURRENT = ('장기차입금', '장기사채', '비유동차입금', '비유동사채')
+    BORROW_NONCURRENT = ('장기차입금', '장기사채', '비유동차입금', '비유동사채', '장기차입금(사채 포함)')
     LEASE_ANY = ('리스부채',)
-    LEASE_CURRENT = ('유동리스부채', '유동성리스부채')
+    LEASE_CURRENT = ('유동리스부채', '유동성리스부채', '단기리스부채')
     LEASE_NONCURRENT = ('비유동리스부채', '비유동성리스부채', '장기리스부채')
 
     def test_every_listed_borrowing_and_lease_alias_is_read_in_its_section(self):
@@ -443,6 +446,82 @@ class CurrentFinancialAssetsTests(unittest.TestCase):
                    ['자산총계', '', '', '7,227', '', '6,218'], ['자본 총계', '', '', '2,489', '', '2,055']]
         result = pit_xml.parse_statements(doc(balance(rows=rows_bs), income(), cash()), year=2025)
         self.assertEqual(result['values']['current_financial_assets'], 25)
+
+
+def income_rows(pretax=('법인세비용차감전순이익', '625'), tax=('법인세비용', '123'), net=('당기순이익', '502')):
+    return [['매출액', '5,968', '4,894', '4,000'], ['영업이익', '746', '362', '300'], [pretax[0], pretax[1], '1', '1'], [tax[0], tax[1], '1', '1'], [net[0], net[1], '1', '1']]
+
+
+class SignResolutionTests(unittest.TestCase):
+    def values(self, **kw):
+        result = read(is_rows=income_rows(**kw))
+        return {k: result['values'].get(k) for k in ('pretax_income', 'income_tax_expense', 'net_income_total')}, result['notes']
+
+    def test_a_profit_under_a_loss_label_is_resolved_by_the_identity(self):
+        values, notes = self.values(pretax=('법인세비용차감전순손실', '625'))
+        self.assertEqual((values, notes), (dict(pretax_income=625, income_tax_expense=123, net_income_total=502), {}))
+        values, notes = self.values(pretax=('법인세차감전순손실', '625'), net=('당기순손실', '502'))
+        self.assertEqual((values, notes), (dict(pretax_income=625, income_tax_expense=123, net_income_total=502), {}))
+
+    def test_a_loss_shown_as_a_positive_magnitude_is_resolved_to_a_negative_value(self):
+        values, notes = self.values(pretax=('법인세비용차감전순손실', '100'), tax=('법인세비용', '10'), net=('당기순손실', '110'))
+        self.assertEqual((values, notes), (dict(pretax_income=-100, income_tax_expense=10, net_income_total=-110), {}))
+
+    def test_a_loss_shown_in_parentheses_or_zero_is_taken_as_shown_without_the_identity(self):
+        values, notes = self.values(pretax=('법인세비용차감전순손실', '(100)'), tax=('법인세비용', '10'), net=('당기순손실', '(110)'))
+        self.assertEqual((values, notes), (dict(pretax_income=-100, income_tax_expense=10, net_income_total=-110), {}))
+        values, notes = self.values(pretax=('법인세비용차감전순손실', '0'), tax=('법인세비용', '0'), net=('당기순손실', '0'))
+        self.assertEqual((values, notes), (dict(pretax_income=0, income_tax_expense=0, net_income_total=0), {}))
+
+    def test_a_tax_income_label_is_resolved_by_the_identity_in_either_direction(self):
+        benefit = self.values(pretax=('법인세비용차감전순이익', '100'), tax=('법인세수익', '30'), net=('당기순이익', '130'))
+        self.assertEqual(benefit, (dict(pretax_income=100, income_tax_expense=-30, net_income_total=130), {}))
+        as_expense = self.values(tax=('법인세수익', '123'))                              # 625 - 123 = 502: the amount behaves like an expense
+        self.assertEqual(as_expense, (dict(pretax_income=625, income_tax_expense=123, net_income_total=502), {}))
+        negative = self.values(pretax=('법인세비용차감전순이익', '100'), tax=('법인세수익', '(30)'), net=('당기순이익', '70'))      # a negative income = an expense of 30
+        self.assertEqual(negative, (dict(pretax_income=100, income_tax_expense=30, net_income_total=70), {}))
+
+    def test_an_identity_that_no_combination_satisfies_leaves_the_old_notes(self):
+        values, notes = self.values(pretax=('법인세비용차감전순손실', '100'), net=('당기순손실', '100'))
+        self.assertEqual((values['pretax_income'], values['net_income_total'], values['income_tax_expense']), (None, None, 123))
+        self.assertEqual(notes, {'pretax_income': 'sign_unclear', 'net_income_total': 'sign_unclear'})
+        values, notes = self.values(tax=('법인세수익', '999'))
+        self.assertEqual((values['income_tax_expense'], notes), (None, {'income_tax_expense': 'unsupported_label'}))
+
+    def test_a_missing_number_makes_the_identity_unavailable(self):
+        rows = income_rows(pretax=('법인세비용차감전순손실', '625'))
+        no_net = [r for r in rows if r[0] != '당기순이익']
+        result = read(is_rows=no_net)
+        self.assertNotIn('pretax_income', result['values']);self.assertEqual(result['notes'], {'pretax_income': 'sign_unclear'})
+        no_pretax = read(is_rows=[r for r in income_rows(tax=('법인세수익', '30')) if not r[0].startswith('법인세비용차감')])
+        self.assertEqual(no_pretax['notes'], {'income_tax_expense': 'unsupported_label'})
+
+    def test_the_identity_tolerates_three_statement_units_of_rounding(self):
+        scaled = lambda net: pit_xml.parse_statements(doc(bs(rows=BS, unit='(단위 : 백만원)'), inc(rows=income_rows(pretax=('법인세비용차감전순손실', '625'), net=('당기순이익', net)), unit='(단위 : 백만원)'),
+                                                         cf(rows=CF, unit='(단위 : 백만원)')), year=2025)
+        near = scaled('505')                                                                 # 625 - 123 = 502 vs 505: 3 units apart
+        self.assertEqual(near['values']['pretax_income'], 625_000_000);self.assertEqual(near['notes'], {})
+        far = scaled('506')
+        self.assertNotIn('pretax_income', far['values']);self.assertEqual(far['notes'], {'pretax_income': 'sign_unclear'})
+
+    def test_two_ambiguous_numbers_are_resolved_together_and_a_normal_net_income_label_is_taken_as_shown(self):
+        values, notes = self.values(pretax=('법인세비용차감전순손실', '625'), tax=('법인세수익', '123'))
+        self.assertEqual((values, notes), (dict(pretax_income=625, income_tax_expense=123, net_income_total=502), {}))
+
+    def test_two_satisfying_combinations_are_not_a_resolution(self):
+        values, notes = self.values(pretax=('법인세비용차감전순손실', '1'), tax=('법인세비용', '0'), net=('당기순이익', '0'))      # +1 and -1 both fit within 3 units
+        self.assertEqual((values['pretax_income'], notes), (None, {'pretax_income': 'sign_unclear'}))
+
+    def test_a_number_that_already_has_a_note_is_not_used_by_the_identity(self):
+        rows = income_rows(pretax=('법인세비용차감전순손실', '625'))
+        rows = rows[:3] + [['법인세비용', '123', '1', '1'], ['법인세비용', '5', '1', '1']] + rows[4:]            # the tax row appears twice: duplicate
+        result = read(is_rows=rows)
+        self.assertEqual(result['notes'], {'income_tax_expense': 'duplicate', 'pretax_income': 'sign_unclear'})
+        self.assertNotIn('pretax_income', result['values']);self.assertNotIn('income_tax_expense', result['values'])
+
+    def test_the_connected_net_income_alias_is_read(self):
+        result = read(is_rows=swap(IS, '당기순이익', '당기연결순이익'))
+        self.assertEqual(result['values']['net_income_total'], 502)
 
 
 if __name__ == '__main__':unittest.main()
