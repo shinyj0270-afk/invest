@@ -25,7 +25,7 @@ _ALIASES = {
 _SECTIONS = {'유동자산': 'assets_current', '비유동자산': 'assets_noncurrent',
              '유동부채': 'current', '비유동부채': 'noncurrent'}
 _LIQUID_FINANCIAL = ('당기손익-공정가치금융자산', '당기손익-공정가치측정금융자산', '기타포괄손익-공정가치금융자산', '기타포괄손익-공정가치측정금융자산',
-                   '유동금융자산', '단기투자자산', '단기매매금융자산')       # 기타금융자산 is deliberately absent: it mixes in non-liquid items
+                   '유동금융자산', '단기투자자산', '단기매매금융자산', '단기금융자산')       # 기타금융자산 is deliberately absent: it mixes in non-liquid items
 _CLOSE = ('부채총계', '자본', '자본총계', '자산총계', '부채', '자산')
 _OUTFLOWS = ('capex_tangible', 'capex_intangible', 'dividends_paid', 'finance_costs')       # stored as magnitudes (a statement may print a cost as a deduction)
 _SIGNED = ('pretax_income', 'income_tax_expense', 'net_income_total')

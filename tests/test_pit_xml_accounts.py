@@ -396,7 +396,7 @@ class AliasAndEdgeTests(unittest.TestCase):
         self.assertNotIn('finance_costs', result['values']);self.assertEqual(result['notes'], {'finance_costs': 'amount_count'})
 
 
-LIQUID_LABELS = ('당기손익-공정가치금융자산', '당기손익-공정가치측정금융자산', '기타포괄손익-공정가치금융자산', '기타포괄손익-공정가치측정금융자산', '유동금융자산', '단기투자자산', '단기매매금융자산')
+LIQUID_LABELS = ('당기손익-공정가치금융자산', '당기손익-공정가치측정금융자산', '기타포괄손익-공정가치금융자산', '기타포괄손익-공정가치측정금융자산', '유동금융자산', '단기투자자산', '단기매매금융자산', '단기금융자산')
 
 
 def with_row(row, after='단기금융상품', rows=BS):
