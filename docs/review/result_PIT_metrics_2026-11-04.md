@@ -1,0 +1,37 @@
+# PIT 파생 지표 계산 결과 (2026-11-04)
+
+범위: 사용자 지시 "다음진행"(파생 지표 계산 모듈). 정의는 `design_financial_concepts_NICE_2026-11-04.md` 7절의 확정안이다. 네트워크 요청은 0건이다.
+
+## 만든 것
+- `investment/pit_metrics.py`: 연도 한 행(KRW 값 딕셔너리)에서 지표 19개를 계산하는 순수 함수 `compute_metrics(values)`. 각 지표는 `dict(value, status, reasons)`이다.
+  - `ok`: 확정된 입력만 사용. `partial`: 값은 있으나 입력 일부가 불완전(하한 또는 상한). `unknown`: 값 없음, 사유만 있음.
+  - 비어 있는 값을 0으로 채우지 않는다. 입력이 불완전한 지표를 쓰는 비율은 그 상태와 출처 접두어가 붙은 사유(`total_debt:lease_unconfirmed` 등)를 물려받는다. 분모가 0 이하이면 `unknown`이다.
+- 지표: `total_debt`, `liquid_assets`, `net_debt`, `ebitda`, `fcf`, `debt_ratio_pct`, `debt_to_assets_pct`, `debt_to_capital_pct`, `ebit_margin_pct`, `ebitda_margin_pct`, `roa_op_pct`, `roe_pct`, `debt_to_ebitda`, `net_debt_to_ebitda`, `ebitda_to_finance_costs`, `ebitda_to_interest`, `ocf_to_debt_pct`, `fcf_to_debt_pct`, `short_term_debt_ratio_pct`.
+- 정의(확정안 그대로): 총차입금 = 유동·비유동 차입금(양쪽 필요) + 리스부채(`lease_total` 우선, 없으면 유동+비유동, 둘 다 없으면 `partial`), 순차입금 = 총차입금 − (현금및현금성자산 + 단기금융상품 + 유동금융자산), EBITDA = 영업이익 + 상각비(`da_total` 우선, 없으면 감가상각비 + 무형자산상각비 + 사용권자산상각비), FCF = 영업현금흐름 − 유형·무형 자본적지출(처분 수입과 배당은 반영하지 않음).
+
+## 검증
+- 테스트 `tests/test_pit_metrics.py` 21개(테스트 먼저, Codex 구현, 검토 후 적용). 변이 검사에서 생존 0(처음 구현 37개, 유동금융자산 변경 후 바뀐 줄 9개).
+- **실제 데이터 대조**(개발 중 NICE 주요재무지표를 읽기 전용으로 본 값과 비교, 값은 저장하지 않음):
+  - 롯데케미칼 FY2022: 총차입금, EBITDA, 부채비율, 차입금의존도, 총차입금/EBITDA, EBITDA/이자비용이 일치.
+  - 효성중공업 FY2025: 총차입금, EBITDA, 부채비율, 차입금의존도, 총차입금/EBITDA가 일치.
+  - 효성중공업 FY2022·FY2024: 리스부채를 읽지 못해 `partial`(리스 미확인)이고 우리 값이 NICE 값보다 작은 하한이다. `partial`의 의미(하한)가 실제와 맞는다.
+
+## 대조에서 드러난 정의 차이
+1. **순차입금**: 우리 값이 더 크다. 확정한 현금성자산 정의에 `유동금융자산`이 들어가는데 파서가 이 항목을 아직 읽지 않는다. 처음 구현은 단기금융상품이 있으면 `ok`로 표시해 거짓 `ok`가 되었고, `current_financial_assets`가 입력에 없으면 항상 `partial`(`current_financial_assets_absent`)로 고쳤다. 지금 실데이터에서 순차입금은 항상 상한값이다.
+2. **EBITDA/금융비용**: NICE 표의 금융비용은 이자 성격 비용에 가깝다(우리 `interest_expense`와 맞는 값). 손익계산서 `금융비용`은 외환·파생 손익을 포함하므로 `ebitda_to_finance_costs`는 NICE 지표와 비교할 수 없고, 비교 가능한 것은 `ebitda_to_interest`(이자비용이 있는 연도만)다.
+3. **FCF**: NICE 값과 소폭 차이가 난다. 효성 FY2025의 차이는 유형자산 처분 수입 규모와 같다. 우리는 확정 정의대로 처분 수입을 반영하지 않는다. 롯데 FY2022는 차이가 더 크다.
+4. 효성중공업 FY2023은 차입금 묶음이 구간 불일치로 제외되어 총차입금 관련 지표가 `unknown`이다. EBITDA는 상각비를 본문에서 얻지 못한 연도(효성 FY2022~2024, 롯데 FY2023~2024, 동아 전 연도)에서 `unknown`이다.
+
+## 지금 실데이터에서 얻는 것
+| 회사 | 총차입금 | 순차입금 | EBITDA | FCF |
+|---|---|---|---|---|
+| 효성중공업 FY2025 | ok | partial(상한) | ok | ok |
+| 롯데케미칼 FY2022 | ok | partial(상한) | ok | ok |
+| 롯데케미칼 FY2025 | ok | partial(상한) | ok | ok |
+| 효성중공업 FY2022·2024 | partial(리스 미확인) | partial | unknown | ok |
+| 동아타이어공업 전 연도 | unknown(비유동 차입금 행 없음) | unknown | unknown | partial(무형 자본적지출 행 없음) |
+
+## 다음 후보
+1. `current_financial_assets`(유동금융자산)를 파서에서 읽어 순차입금을 `ok`로 만들기.
+2. 이 지표를 `pit_quality` 점수에 연결하기(Q 점수 설계 필요: 세금 예외 규칙도 미결정).
+3. 삼성중공업·RFHIC 추가(요청 목록 승인 필요).
