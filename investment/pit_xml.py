@@ -6,7 +6,7 @@ import hashlib
 import io
 import re
 import zipfile
-from .pit_xml_accounts import read_accounts, drop_dashes, _merge
+from .pit_xml_accounts import read_accounts, drop_dashes, _merge, COMPANY_LABELS
 from .pit_xml_tags import read_tagged_detail
 
 PARSER_VERSION = 'pit-xml-1'
@@ -134,7 +134,7 @@ def _title_unit(table, kind, year):
     return multipliers[next(iter(units))]
 
 
-def _statement(table, kind, unit, title):
+def _statement(table, kind, unit, title, extra_labels=None):
     header=[_compact(cell) for cell in table[0]]
     note=len(header) > 1 and header[1] == '주석'
     columns=header[1+note:]
@@ -162,7 +162,7 @@ def _statement(table, kind, unit, title):
         parsed=[_amount(cell, unit) for cell in amounts]
         if _label(row[0]) in LOSS_LABELS and any(value > 0 for value in parsed):raise ValueError('영업손실 금액 부호 불명확')
         values={**values, field: parsed[0]}
-    extra, notes=read_accounts(kind, table[1:], unit=unit, first=1+note, columns=len(columns), positional=positional)
+    extra, notes=read_accounts(kind, table[1:], unit=unit, first=1+note, columns=len(columns), positional=positional, extra_labels=extra_labels)
     return {**values, **extra}, notes
 
 
@@ -171,7 +171,7 @@ def _annual_title(title):
     return not any(re.search('반기|분기', _compact(cell)) for row in title for cell in row)
 
 
-def parse_statements(text, *, year):
+def parse_statements(text, *, year, extra_labels=None):
     """Return found annual fields in KRW; missing statement kinds are allowed."""
     if not isinstance(text, str) or not text:raise ValueError('문자열 원문이 필요합니다')
     if not isinstance(year, int) or isinstance(year, bool) or not 1990 <= year <= 2100:raise ValueError('사업연도 오류')
@@ -189,7 +189,7 @@ def parse_statements(text, *, year):
     for name, title, account in candidates:
         if income and name == '연결포괄손익계산서':continue
         kind=TITLES[name]; unit=_title_unit(title, kind, year)
-        found, problems=_statement(account, kind, unit, title)
+        found, problems=_statement(account, kind, unit, title, extra_labels)
         original={field: value for field, value in found.items() if field in ALIASES[kind]}
         if kind in copies and copies[kind] != original:raise ValueError('재무제표 사본 값 불일치')
         copies={**copies, kind: original}; counts={**counts, kind: counts.get(kind, 0)+1}
@@ -220,18 +220,18 @@ def build_record(text, *, receipt, year, url, sha256):
     return _record(parse_statements(text, year=year), receipt=receipt, year=year, url=url, sha256=sha256)
 
 
-def _read_member(archive, member, year):
+def _read_member(archive, member, year, extra_labels=None):
     with archive.open(member) as stream:data=stream.read(MAX_MEMBER_BYTES+1)
     if len(data) > MAX_MEMBER_BYTES:raise ValueError('XML 파일 크기 초과')
     for encoding in ('utf-8', 'cp949'):
         try:text=data.decode(encoding)
         except UnicodeDecodeError:continue
-        try:return parse_statements(text, year=year)
+        try:return parse_statements(text, year=year, extra_labels=extra_labels)
         except NoStatements:return None
     return None
 
 
-def parse_document_zip(data, *, receipt, year, url):
+def parse_document_zip(data, *, receipt, year, url, company=None):
     """Merge agreeing XML members in memory; never interpret names as paths."""
     try:data=memoryview(data).tobytes()
     except (TypeError, ValueError) as exc:raise ValueError('ZIP 바이트가 필요합니다') from exc
@@ -243,7 +243,7 @@ def parse_document_zip(data, *, receipt, year, url):
             if any(member.file_size > MAX_MEMBER_BYTES for member in members):raise ValueError('XML 파일 크기 초과')
             if sum(member.file_size for member in members) > 2*MAX_MEMBER_BYTES:raise ValueError('XML 전체 크기 초과')
             for member in members:
-                parsed=_read_member(archive, member, year)
+                parsed=_read_member(archive, member, year, COMPANY_LABELS.get(company))
                 if parsed is None:continue
                 if merged is None:merged=parsed; continue
                 if any(merged[key] != parsed[key] for key in ('period_start', 'period_end')):raise ValueError('문서 기간 불일치')

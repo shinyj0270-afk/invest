@@ -696,4 +696,56 @@ class SkInnovationLabelTests(unittest.TestCase):
                 self.assertEqual((values['income_tax_expense'], notes), (-30, {}))
 
 
+class AttributionRepeatTests(unittest.TestCase):
+    def rows(self, repeats):
+        base = [['매출액', '5,968', '4,894', '4,000'], ['영업이익', '746', '362', '300'], ['법인세비용차감전순손실', '(2,710)', '1', '1'], ['법인세수익', '(227)', '1', '1'],
+                ['계속영업당기순손실', '(2,483)', '1', '1'], ['중단영업당기순이익', '7', '1', '1'], ['당기순손실', '(2,476)', '1', '1']]
+        return base + repeats
+
+    def test_the_continuing_loss_row_repeated_in_the_attribution_block_does_not_hide_the_first(self):
+        repeats = [['계속영업당기순손실', '(2,043)', '1', '1'], ['계속영업당기순손실', '(441)', '1', '1']]
+        for extra in ([], repeats):
+            with self.subTest(repeats=len(extra)):
+                result = read(is_rows=self.rows(extra))
+                self.assertEqual((result['values']['pretax_income'], result['values']['income_tax_expense'], result['notes']), (-2710, -227, {}))
+
+    def test_without_any_continuing_row_the_tax_income_label_stays_unsupported(self):
+        result = read(is_rows=[r for r in self.rows([]) if r[0] != '계속영업당기순손실'])
+        self.assertEqual(result['notes'], {'income_tax_expense': 'unsupported_label'})
+
+
+class CompanyLabelTests(unittest.TestCase):
+    """Company-specific labels (user decision 2026-11-05): HD현대일렉트릭 (267260) books its borrowings as 단기금융부채 / 장기금융부채 on the face; its notes show they are bonds and loans."""
+    HD = {'단기금융부채': ('borrowings', 'current'), '장기금융부채': ('borrowings', 'noncurrent')}
+
+    def test_extra_labels_are_read_as_borrowings_in_their_section_only(self):
+        rows = sectioned_hd()
+        plain = parse(bs(rows=rows), inc(), cf())
+        self.assertNotIn('borrowings_current', plain['values'])                           # without the exception the labels stay unmapped
+        result = pit_xml.parse_statements(doc(bs(rows=rows), inc(), cf()), year=2025, extra_labels=self.HD)
+        self.assertEqual((result['values']['borrowings_current'], result['values']['borrowings_noncurrent'], result['notes']), (139, 47, {}))
+
+    def test_extra_labels_keep_the_section_rules(self):
+        wrong = [['유동자산', '1', '1', '1'], ['현금및현금성자산', '216', '1', '1'], ['자산총계', '1', '1', '1'], ['부채', '', '', ''], ['비유동부채', '1', '1', '1'],
+                 ['단기금융부채', '7', '7', '7'], ['부채총계', '1', '1', '1'], ['자본', '', '', ''], ['자본총계', '2,489', '2,055', '1']]
+        result = pit_xml.parse_statements(doc(bs(rows=wrong), inc(), cf()), year=2025, extra_labels=self.HD)
+        self.assertEqual(result['notes'], {'borrowings': 'section_mismatch'})
+
+    def test_the_zip_reader_applies_them_only_for_the_named_company(self):
+        import io, zipfile
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, 'w') as archive:
+            archive.writestr('a.xml', doc(bs(rows=sectioned_hd()), inc(), cf()).encode('utf-8'))
+        data = buffer.getvalue()
+        for company, expected in (('267260', 139), (None, None), ('000000', None)):
+            with self.subTest(company=company):
+                record = pit_xml.parse_document_zip(data, receipt='20260316000940', year=2025, url='u', company=company)
+                self.assertEqual(record['values'].get('borrowings_current'), expected)
+
+
+def sectioned_hd():
+    return [['유동자산', '1', '1', '1'], ['현금및현금성자산', '216', '1', '1'], ['자산총계', '1', '1', '1'], ['부채', '', '', ''], ['유동부채', '1', '1', '1'], ['단기금융부채', '139', '7', '7'],
+            ['비유동부채', '1', '1', '1'], ['장기금융부채', '47', '7', '7'], ['부채총계', '1', '1', '1'], ['자본', '', '', ''], ['자본총계', '2,489', '2,055', '1']]
+
+
 if __name__ == '__main__':unittest.main()

@@ -26,6 +26,9 @@ _SECTIONS = {'유동자산': 'assets_current', '비유동자산': 'assets_noncur
              '유동부채': 'current', '비유동부채': 'noncurrent'}
 _LIQUID_FINANCIAL = ('당기손익-공정가치금융자산', '당기손익-공정가치측정금융자산', '기타포괄손익-공정가치금융자산', '기타포괄손익-공정가치측정금융자산',
                    '유동금융자산', '단기투자자산', '단기매매금융자산', '단기금융자산')       # 기타금융자산 is deliberately absent: it mixes in non-liquid items
+COMPANY_LABELS = {      # stock code -> {label: (family, required section)}: borrowings the face statement books under another name, confirmed from the company's own notes
+    '267260': {'단기금융부채': ('borrowings', 'current'), '장기금융부채': ('borrowings', 'noncurrent')},      # HD현대일렉트릭 FY2025: 단기금융부채 139,200 = CurrentBorrowingsAndCurrentPortionOfNoncurrentBorrowings (notes), 장기금융부채 46,859 = NoncurrentPortionOfNoncurrentBondsIssued
+}
 _CLOSE = ('부채총계', '자본', '자본총계', '자산총계', '부채', '자산')
 _OUTFLOWS = ('capex_tangible', 'capex_intangible', 'dividends_paid', 'finance_costs')       # stored as magnitudes (a statement may print a cost as a deduction)
 _SIGNED = ('pretax_income', 'income_tax_expense', 'net_income_total')
@@ -33,7 +36,7 @@ _NEGATIVE_OK = _SIGNED + ('_continuing',)
 IDENTITY_UNITS = 3      # pretax_income - income_tax_expense = net_income_total may be off by this many statement units (rounding)
 
 
-def read_accounts(kind, rows, *, unit, first, columns, positional=False):
+def read_accounts(kind, rows, *, unit, first, columns, positional=False, extra_labels=None):
     """Return readable fields and soft failures for one statement body.
 
     `positional` (period-number layout): the cells after the label are the period columns, so the current amount is the first one; later cells may be blank, and a blank current cell
@@ -42,6 +45,7 @@ def read_accounts(kind, rows, *, unit, first, columns, positional=False):
     aliases={label: field for field, labels in _ALIASES[kind].items() for label in labels}
     families={label: (family, required) for family, groups in (('borrowings', _BORROWINGS), ('lease', _LEASE))
               for required, labels in zip((None, 'current', 'noncurrent'), groups) for label in labels}
+    families={**families, **(extra_labels or {})}
     values={}; notes={}; seen=set(); section=None; deferred={}
     for row in rows:
         if not row:continue
@@ -93,6 +97,7 @@ def read_accounts(kind, rows, *, unit, first, columns, positional=False):
             notes={**notes, key: notes.get(key, reason)}
             continue
         value=abs(parsed[0]) if field in _OUTFLOWS else parsed[0]
+        if duplicate and field == '_continuing':continue                                    # later repeats are the attribution block: the first row is the statement line
         if duplicate:                                                                       # a repeat that says the same thing counts once, any other repeat is a duplicate
             if not summed and values.get(field) == value:continue
             notes={**notes, key: notes.get(key, 'duplicate')}
