@@ -662,4 +662,38 @@ class EqualDuplicateTests(unittest.TestCase):
             read(is_rows=IS + [['매출액', '5,968', '1', '1']])
 
 
+class SkInnovationLabelTests(unittest.TestCase):
+    def fields(self, **kw):
+        result = read(is_rows=income_rows(**kw))
+        return {k: result['values'].get(k) for k in ('pretax_income', 'income_tax_expense', 'net_income_total')}, result['notes']
+
+    def test_operating_net_income_before_tax_labels_are_pretax_income(self):
+        for label in ('법인세차감전영업순이익', '법인세비용차감전영업순이익', '법인세비용차감전영업순이익(손실)', '법인세차감전영업순이익(손실)'):
+            with self.subTest(label=label):
+                values, notes = self.fields(pretax=(label, '625'))
+                self.assertEqual((values['pretax_income'], notes), (625, {}))
+
+    def test_an_operating_net_loss_label_with_a_negative_amount_is_taken_as_shown_and_a_positive_one_needs_the_identity(self):
+        values, notes = self.fields(pretax=('법인세비용차감전영업순손실', '(5,869)'), tax=('계속영업법인세효익', '(955)'), net=('당기순손실', '(4,914)'))
+        self.assertEqual((values['pretax_income'], values['income_tax_expense'], values['net_income_total'], notes), (-5869, -955, -4914, {}))
+        values, notes = self.fields(pretax=('법인세비용차감전영업순손실', '100'), tax=('법인세비용', '30'), net=('당기순이익', '70'))
+        self.assertEqual((values['pretax_income'], notes), (100, {}))                      # a profit under a loss label is settled by pretax - tax = net
+
+    def test_a_benefit_with_discontinued_operations_is_resolved_against_the_continuing_loss_row(self):
+        rows = [['매출액', '5,968', '4,894', '4,000'], ['영업이익', '746', '362', '300'], ['법인세비용차감전영업순손실', '(5,869)', '1', '1'], ['계속영업법인세효익', '(955)', '1', '1'],
+                ['계속영업연결당기순손실', '(4,914)', '1', '1'], ['중단영업손익', '(523)', '1', '1'], ['당기순손실', '(5,437)', '1', '1']]
+        for continuing in ('계속영업연결당기순손실', '계속영업당기순손실', '계속영업순손실'):
+            with self.subTest(label=continuing):
+                result = read(is_rows=[[continuing] + r[1:] if r[0] == '계속영업연결당기순손실' else r for r in rows])
+                self.assertEqual((result['values']['income_tax_expense'], result['values']['pretax_income'], result['values']['net_income_total'], result['notes']), (-955, -5869, -5437, {}))
+        result = read(is_rows=[r for r in rows if r[0] != '계속영업연결당기순손실'])
+        self.assertEqual((result['values'].get('income_tax_expense'), result['notes']), (None, {'income_tax_expense': 'sign_unclear'}))      # without the continuing row nothing fits
+
+    def test_tax_benefit_labels_are_income_tax_expense(self):
+        for label in ('계속영업법인세효익', '법인세효익', '법인세비용(효익)', '계속영업법인세비용(효익)'):
+            with self.subTest(label=label):
+                values, notes = self.fields(pretax=('법인세비용차감전순이익', '(100)'), tax=(label, '(30)'), net=('당기순이익', '(70)'))
+                self.assertEqual((values['income_tax_expense'], notes), (-30, {}))
+
+
 if __name__ == '__main__':unittest.main()

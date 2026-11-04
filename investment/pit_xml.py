@@ -251,7 +251,7 @@ def parse_document_zip(data, *, receipt, year, url):
                 tolerance=max(merged['unit'], parsed['unit'])                                       # the same value rounded differently by two members
                 if any(abs(merged['values'][key]-value) > tolerance for key, value in parsed['values'].items() if key in original and key in merged['values']):
                     raise ValueError('문서 계정 값 불일치')
-                agreed={key: merged['values'].get(key, value) if key in original else value for key, value in parsed['values'].items()}      # an original value within the rounding keeps the first member's
+                agreed={key: merged['values'][key] if key in merged['values'] and abs(merged['values'][key]-value) <= tolerance else value for key, value in parsed['values'].items()}      # a value within the rounding keeps the first member's
                 values, notes=_merge(merged['values'], agreed, merged['notes'], parsed['notes'])
                 merged={**merged, 'values': values, 'notes': notes}
     except zipfile.BadZipFile as exc:raise ValueError('ZIP 형식 오류') from exc

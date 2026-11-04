@@ -132,4 +132,23 @@ class MemberRoundingTests(unittest.TestCase):
         self.assertEqual(self.record(746, 746)['values']['operating_profit'], 746)
 
 
+class SoftMemberRoundingTests(unittest.TestCase):
+    def record(self, first, second, unit='(단위 : 원)'):
+        def text(pretax):
+            rows = [['Ⅰ. 매출액', '7', '5,968', '4,894'], ['Ⅵ. 영업이익', '', '746', '362'], ['법인세비용차감전순이익', '', str(pretax), '1']]
+            return doc(balance(unit=unit), income(unit=unit, rows=rows), cash(unit=unit))
+        return pit_xml.parse_document_zip(zip_of(text(first), text(second)), receipt='20260310000001', year=2025, url='u')
+
+    def test_a_new_field_that_differs_by_one_unit_between_members_keeps_the_first_value(self):
+        for first, second in ((1000, 1001), (1001, 1000)):
+            with self.subTest(first=first, second=second):
+                result = self.record(first, second)
+                self.assertEqual(result['values']['pretax_income'], first)
+
+    def test_two_units_or_more_stay_a_conflict_and_equal_values_are_unchanged(self):
+        result = self.record(1000, 1002)
+        self.assertNotIn('pretax_income', result['values'])                                  # a conflict drops the field (the record carries no notes)
+        self.assertEqual(self.record(1000, 1000)['values']['pretax_income'], 1000)
+
+
 if __name__ == '__main__':unittest.main()

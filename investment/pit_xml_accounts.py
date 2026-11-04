@@ -6,16 +6,16 @@ _BORROWINGS = (
     ('장기차입금', '장기사채', '비유동차입금', '비유동사채', '장기차입금(사채포함)', '사채및장기차입금'))
 _LEASE = (('리스부채',), ('유동리스부채', '유동성리스부채', '단기리스부채'), ('비유동리스부채', '비유동성리스부채', '장기리스부채'))
 _NOT_COUNTED = ('판매후리스부채', '비유동판매후리스부채')       # sale-and-leaseback financing: not a lease in the tags (CurrentLeaseLiabilities excludes it), so it is skipped
-_PRETAX = ('법인세비용차감전순이익', '법인세차감전순이익', '법인세비용차감전계속영업이익', '법인세비용차감전계속사업이익', '법인세비용차감전계속영업순이익')
-_LOSSES = ('당기순손실', '법인세비용차감전순손실', '법인세차감전순손실')
+_PRETAX = ('법인세비용차감전순이익', '법인세차감전순이익', '법인세비용차감전계속영업이익', '법인세비용차감전계속사업이익', '법인세비용차감전계속영업순이익', '법인세차감전영업순이익', '법인세비용차감전영업순이익')
+_LOSSES = ('당기순손실', '법인세비용차감전순손실', '법인세차감전순손실', '법인세비용차감전영업순손실')
 _TAX_INCOME = ('법인세수익', '법인세수익(비용)')       # a tax BENEFIT is shown positive here: the sign is settled by the identity
-_CONTINUING = ('계속영업이익', '계속영업이익(손실)', '계속영업당기순이익', '계속영업당기순이익(손실)', '계속영업순이익', '계속영업순이익(손실)')     # only a target of the identity, never exported
+_CONTINUING = ('계속영업이익', '계속영업이익(손실)', '계속영업당기순이익', '계속영업당기순이익(손실)', '계속영업순이익', '계속영업순이익(손실)', '계속영업연결당기순손실', '계속영업당기순손실', '계속영업순손실')     # only a target of the identity, never exported
 _ALIASES = {
     'balance': {'total_assets': ('자산총계',), 'total_liabilities': ('부채총계',),
                 'short_term_financial_instruments': ('단기금융상품',)},
     'income': {'finance_costs': ('금융비용', '금융원가'),
                'pretax_income': _PRETAX + tuple(label+'(손실)' for label in _PRETAX) + _LOSSES[1:],
-               'income_tax_expense': ('법인세비용', '법인세비용(수익)', '법인세비용(환입)', '계속영업법인세비용') + _TAX_INCOME,
+               'income_tax_expense': ('법인세비용', '법인세비용(수익)', '법인세비용(환입)', '계속영업법인세비용', '계속영업법인세효익', '법인세효익', '법인세비용(효익)', '계속영업법인세비용(효익)') + _TAX_INCOME,
                'net_income_total': ('당기순이익', '당기순이익(손실)', '당기순손익', '연결당기순이익', '연결당기순이익(손실)', '당기연결순이익', '당기순손실'),
                'interest_expense': ('이자비용',)},
     'cash': {'depreciation': ('감가상각비', '유형자산감가상각비'), 'amortization': ('무형자산상각비',),
