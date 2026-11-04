@@ -308,6 +308,58 @@ class OperatingLossTests(unittest.TestCase):
             pit_xml.parse_statements(doc(balance(), income(rows=rows), cash()), year=2025)
 
 
+class PeriodNotationTests(unittest.TestCase):
+    """Real filings differ: zero-padded months/days and no (당) marker on the flow statements (Lotte Chemical FY2024)."""
+    PADDED = ['제 49 기 2024년 01월 01일부터 2024년 12월 31일까지', '제 48 기 2023년 01월 01일부터 2023년 12월 31일까지']
+    BS = ['제 49(당) 기말 2024년 12월 31일 현재', '제 48(전) 기말 2023년 12월 31일 현재']
+
+    def parse(self, flow_lines, bs_lines=None, year=2024):
+        text = doc(balance(lines=bs_lines or self.BS), income(lines=flow_lines), cash(lines=flow_lines))
+        return pit_xml.parse_statements(text, year=year)
+
+    def test_zero_padded_dates_and_period_numbers_without_a_current_marker_are_read(self):
+        self.assertEqual(self.parse(self.PADDED)['values'], EXPECTED)
+
+    def test_the_line_with_the_larger_period_number_is_the_current_one_whatever_the_order(self):
+        self.assertEqual(self.parse(list(reversed(self.PADDED)))['values'], EXPECTED)
+
+    def test_without_markers_the_current_period_must_be_decidable(self):
+        same = ['제 49 기 2024년 01월 01일부터 2024년 12월 31일까지', '제 49 기 2023년 01월 01일부터 2023년 12월 31일까지']
+        one = [self.PADDED[0]]
+        no_number = ['2024년 01월 01일부터 2024년 12월 31일까지', '2023년 01월 01일부터 2023년 12월 31일까지']
+        for lines in (same, one, no_number, []):
+            with self.subTest(lines=lines), self.assertRaises(ValueError):
+                self.parse(lines)
+
+    def test_the_bigger_number_line_must_still_be_the_requested_year_and_a_full_calendar_year(self):
+        wrong_year = ['제 50 기 2025년 01월 01일부터 2025년 12월 31일까지', '제 49 기 2024년 01월 01일부터 2024년 12월 31일까지']
+        with self.assertRaises(ValueError):
+            self.parse(wrong_year)
+        for lines in (['제 49 기 2024년 07월 01일부터 2024년 12월 31일까지', '제 48 기 2023년 07월 01일부터 2023년 12월 31일까지'],
+                      ['제 49 기 2024년 11월 01일부터 2024년 12월 31일까지', '제 48 기 2023년 11월 01일부터 2023년 12월 31일까지'],
+                      ['제 49 기 2024년 01월 11일부터 2024년 12월 31일까지', '제 48 기 2023년 01월 11일부터 2023년 12월 31일까지'],
+                      ['제 49 기 2024년 01월 01일부터 2024년 12월 30일까지', '제 48 기 2023년 01월 01일부터 2023년 12월 30일까지']):
+            with self.subTest(lines=lines), self.assertRaises(ValueError):
+                self.parse(lines)
+
+    def test_a_prior_marker_on_the_older_line_alone_still_lets_the_period_numbers_decide(self):
+        lines = ['제 49 기 2024년 01월 01일부터 2024년 12월 31일까지', '제 48(전) 기 2023년 01월 01일부터 2023년 12월 31일까지']
+        self.assertEqual(self.parse(lines)['values'], EXPECTED)
+
+    def test_a_current_marker_still_wins_over_period_numbers(self):
+        marked = ['제 48 기 2023년 01월 01일부터 2023년 12월 31일까지', '제 49(당) 기 2024년 01월 01일부터 2024년 12월 31일까지']
+        self.assertEqual(self.parse(marked)['values'], EXPECTED)
+        wrong = ['제 49 기 2024년 01월 01일부터 2024년 12월 31일까지', '제 48(당) 기 2023년 01월 01일부터 2023년 12월 31일까지']
+        with self.assertRaises(ValueError):
+            self.parse(wrong)
+
+    def test_zero_padded_balance_sheet_dates_are_read_and_a_tail_of_a_longer_number_is_not(self):
+        padded_bs = ['제 49(당) 기말 2024년 12월 31일 현재', '제 48(전) 기말 2023년 12월 31일 현재']
+        self.assertEqual(self.parse(self.PADDED, bs_lines=padded_bs)['values'], EXPECTED)
+        with self.assertRaises(ValueError):
+            self.parse(self.PADDED, bs_lines=['제 49(당) 기말 12024년 12월 31일 현재', '제 48(전) 기말 2023년 12월 31일 현재'])
+
+
 def balance_rows_not_a_table_marker():
     return ''
 

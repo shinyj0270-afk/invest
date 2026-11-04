@@ -93,14 +93,26 @@ def _amount(text, unit):
     return int(text)*unit
 
 
+def _current_period_cells(cells):
+    """Period lines marked (당) win; otherwise the line(s) with the larger period number ('제 49 기' vs '제 48 기'), which needs two different numbers."""
+    compact=[_compact(cell) for cell in cells]
+    marked=[cell for cell in compact if '(당)' in cell]
+    if marked:return marked
+    numbered=[(int(m.group(1)), cell) for cell in compact if re.search(r'[0-9]{4}년[0-9]{1,2}월[0-9]{1,2}일', cell)
+              for m in [re.search(r'제([0-9]+)(?:\(전\))?기', cell)] if m]
+    if len({number for number, _ in numbered}) < 2:return []
+    top=max(number for number, _ in numbered)
+    return [cell for number, cell in numbered if number == top]
+
+
 def _title_unit(table, kind, year):
     cells=[cell for row in table for cell in row]
     units={match.group(1).strip() for cell in cells for match in re.finditer(r'\(\s*단위\s*:\s*([^()]*)\)', cell)}
     multipliers={'원': 1, '천원': 1000, '백만원': 1000000}
     if len(units) != 1 or not units <= multipliers.keys():raise ValueError('재무제표 단위 오류')
-    current=[_compact(cell) for cell in cells if '(당)' in _compact(cell)]
-    end=rf'(?<![0-9]){year}년12월31일'
-    start=rf'(?<![0-9]){year}년1월1일부터'
+    current=_current_period_cells(cells)
+    end=rf'(?<![0-9]){year}년0?12월0?31일'
+    start=rf'(?<![0-9]){year}년0?1월0?1일부터'
     if not current or any(not re.search(end, cell) or (kind != 'balance' and not re.search(start, cell)) for cell in current):
         raise ValueError('당기 사업연도 오류')
     return multipliers[next(iter(units))]
