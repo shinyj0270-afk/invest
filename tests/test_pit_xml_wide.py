@@ -12,7 +12,7 @@ import io
 import unittest
 import zipfile
 from investment import pit_xml
-from tests.test_pit_xml import doc, EXPECTED
+from tests.test_pit_xml import doc, EXPECTED, core
 
 WIDE_BS = ['제 8 기 2025.12.31 현재', '제 7 기 2024.12.31 현재', '제 6 기 2023.12.31 현재']
 WIDE_FLOW = ['제 8 기 2025.01.01 부터 2025.12.31 까지', '제 7 기 2024.01.01 부터 2024.12.31 까지', '제 6 기 2023.01.01 부터 2023.12.31 까지']
@@ -60,30 +60,30 @@ def parse(*parts, year=2025, closed=True):
 class WideLayoutTests(unittest.TestCase):
     def test_statements_nested_in_a_wrapper_table_with_three_period_columns_are_read_from_the_first_column(self):
         result = parse(bs(), inc(), cf())
-        self.assertEqual(result['values'], EXPECTED)
+        self.assertEqual(core(result['values']), EXPECTED)
         self.assertEqual((result['basis'], result['currency'], result['unit']), ('CFS', 'KRW', 1))
         self.assertEqual((result['period_start'], result['period_end']), ('2025-01-01', '2025-12-31'))
         self.assertEqual(result['statements'], {'balance': 1, 'income': 1, 'cash': 1})
 
     def test_an_unclosed_wrapper_table_and_a_missing_wrapper_both_work(self):
-        self.assertEqual(parse(bs(), inc(), cf(), closed=False)['values'], EXPECTED)
+        self.assertEqual(core(parse(bs(), inc(), cf(), closed=False)['values']), EXPECTED)
         flat = pit_xml.parse_statements(doc(bs(), inc(), cf()), year=2025)
-        self.assertEqual(flat['values'], EXPECTED)
+        self.assertEqual(core(flat['values']), EXPECTED)
 
     def test_two_period_columns_and_an_optional_note_column_work(self):
         two = ['', '제 8 기', '제 7 기']
         rows = lambda r: [row[:3] for row in r]
-        self.assertEqual(parse(bs(head=two, rows=rows(BS_ROWS), lines=WIDE_BS[:2]), inc(head=two, rows=rows(IS_ROWS), lines=WIDE_FLOW[:2]),
-                               cf(head=two, rows=rows(CF_ROWS), lines=WIDE_FLOW[:2]))['values'], EXPECTED)
+        self.assertEqual(core(parse(bs(head=two, rows=rows(BS_ROWS), lines=WIDE_BS[:2]), inc(head=two, rows=rows(IS_ROWS), lines=WIDE_FLOW[:2]),
+                                    cf(head=two, rows=rows(CF_ROWS), lines=WIDE_FLOW[:2]))['values']), EXPECTED)
         noted = ['과목', '주석', '제 8 기', '제 7 기', '제 6 기']
         with_note = lambda r: [[row[0], '5'] + row[1:] for row in r]
-        self.assertEqual(parse(bs(head=noted, rows=with_note(BS_ROWS)), inc(head=noted, rows=with_note(IS_ROWS)), cf(head=noted, rows=with_note(CF_ROWS)))['values'], EXPECTED)
+        self.assertEqual(core(parse(bs(head=noted, rows=with_note(BS_ROWS)), inc(head=noted, rows=with_note(IS_ROWS)), cf(head=noted, rows=with_note(CF_ROWS)))['values']), EXPECTED)
 
     def test_a_comprehensive_income_statement_alone_supplies_revenue_and_a_plain_one_wins_when_both_exist(self):
         only = parse(bs(), inc(name='연결 포괄손익계산서'), cf())
-        self.assertEqual(only['values'], EXPECTED)
+        self.assertEqual(core(only['values']), EXPECTED)
         both = parse(bs(), inc(), inc(name='연결 포괄손익계산서', rows=[['매출액', '1', '1', '1'], ['영업이익', '1', '1', '1']]), cf())
-        self.assertEqual(both['values'], EXPECTED)
+        self.assertEqual(core(both['values']), EXPECTED)
 
     def test_the_unit_is_scaled(self):
         million = parse(bs(unit='(단위 : 백만원)'), inc(unit='(단위 : 백만원)'), cf(unit='(단위 : 백만원)'))
@@ -101,10 +101,10 @@ class WideLayoutTests(unittest.TestCase):
     def test_a_stray_table_inside_a_cell_does_not_disturb_the_rest_of_the_enclosing_statement(self):
         stray = '<TABLE><TR><TD>메모</TD></TR></TABLE>'
         body = account(HEAD, BS_ROWS[:-1]).replace('</TBODY>', '<TR><TD><P>자본총계</P>' + stray + '</TD><TD>2,489</TD><TD>2,055</TD><TD>1,900</TD></TR></TBODY>')
-        self.assertEqual(parse(title('연결 재무상태표', WIDE_BS) + body, inc(), cf())['values'], EXPECTED)
+        self.assertEqual(core(parse(title('연결 재무상태표', WIDE_BS) + body, inc(), cf())['values']), EXPECTED)
 
     def test_copies_must_agree_and_identical_repeats_are_fine(self):
-        self.assertEqual(parse(bs(), bs(), inc(), cf())['values'], EXPECTED)
+        self.assertEqual(core(parse(bs(), bs(), inc(), cf())['values']), EXPECTED)
         changed = [['자산', '', '', ''], ['자본총계', '9', '9', '9']]
         with self.assertRaises(ValueError):
             parse(bs(), bs(rows=changed), inc(), cf())
@@ -148,7 +148,7 @@ class WideLayoutRefusalTests(unittest.TestCase):
     def test_zero_padded_and_unpadded_dotted_dates_are_both_accepted(self):
         bs_lines = ['제 8 기 2025.12.31 현재', '제 7 기 2024.12.31 현재', '제 6 기 2023.12.31 현재']
         flow = ['제 8 기 2025.1.1 부터 2025.12.31 까지', '제 7 기 2024.1.1 부터 2024.12.31 까지', '제 6 기 2023.1.1 부터 2023.12.31 까지']
-        self.assertEqual(parse(bs(lines=bs_lines), inc(lines=flow), cf(lines=flow))['values'], EXPECTED)
+        self.assertEqual(core(parse(bs(lines=bs_lines), inc(lines=flow), cf(lines=flow))['values']), EXPECTED)
 
     def test_a_wanted_row_must_carry_exactly_one_amount_per_period_column(self):
         for row in (['매출액', '5,968', '4,894', ''], ['매출액', '5,968'], ['매출액', '5,968', '4,894', '4,000', '3,000']):
@@ -194,14 +194,14 @@ class FallbackAndRecordTests(unittest.TestCase):
     def test_the_older_layout_inside_a_wrapper_table_is_read_when_no_outermost_statements_exist(self):
         from tests.test_pit_xml import balance, income, cash
         text = doc(wrap(balance(), income(), cash()))
-        self.assertEqual(pit_xml.parse_statements(text, year=2025)['values'], EXPECTED)
+        self.assertEqual(core(pit_xml.parse_statements(text, year=2025)['values']), EXPECTED)
 
     def test_outermost_statements_are_used_first_and_the_nested_reading_is_only_a_fallback(self):
         from tests.test_pit_xml import balance
         outer = balance()
         nested_other = wrap(bs(rows=[['자본총계', '1', '1', '1']]), inc(), cf())
         values = pit_xml.parse_statements(doc(outer, nested_other), year=2025)['values']
-        self.assertEqual(values, {'equity': 2489, 'cash': 216})
+        self.assertEqual(values, {'equity': 2489, 'cash': 216, 'total_assets': 7227, 'total_liabilities': 4738})       # the nested copy (equity 1) is never read
 
     def test_a_document_zip_with_the_wide_layout_builds_the_record(self):
         text = doc(wrap(bs(), inc(), cf()))
@@ -210,7 +210,7 @@ class FallbackAndRecordTests(unittest.TestCase):
             archive.writestr('20230309000420.xml', text.encode('utf-8'))
         data = buffer.getvalue()
         record = pit_xml.parse_document_zip(data, receipt='20230309000420', year=2025, url='opendart:document.xml')
-        self.assertEqual(record['values'], EXPECTED)
+        self.assertEqual(core(record['values']), EXPECTED)
         self.assertEqual((record['receipt'], record['basis'], record['year'], record['quarter']), ('20230309000420', 'CFS', 2025, 4))
         self.assertEqual(record['period_contract']['source']['sha256'], hashlib.sha256(data).hexdigest())
 

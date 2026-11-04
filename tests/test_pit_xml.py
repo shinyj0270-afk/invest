@@ -63,10 +63,15 @@ FULL = doc(balance(), income(), cash())
 EXPECTED = dict(revenue=5968, operating_profit=746, ocf=493, equity=2489, cash=216)
 
 
+def core(values):
+    """The five original fields only: later account additions (see test_pit_xml_accounts) are checked there."""
+    return {key: value for key, value in values.items() if key in EXPECTED}
+
+
 class StatementReadingTests(unittest.TestCase):
     def test_the_four_values_are_read_from_the_current_column_of_consolidated_statements(self):
         result = pit_xml.parse_statements(FULL, year=2025)
-        self.assertEqual(result['values'], EXPECTED)
+        self.assertEqual(core(result['values']), EXPECTED)
         self.assertEqual((result['basis'], result['currency'], result['unit']), ('CFS', 'KRW', 1))
         self.assertEqual((result['period_start'], result['period_end']), ('2025-01-01', '2025-12-31'))
 
@@ -156,7 +161,7 @@ class StatementReadingTests(unittest.TestCase):
     def test_look_alike_accounts_are_not_taken(self):
         income_rows = [['Ⅱ. 매출원가', '', '1', '1'], ['Ⅲ. 매출총이익', '', '2', '2'], ['Ⅸ. 금융수익', '', '3', '3'], ['Ⅶ. 기타수익', '', '4', '4'],
                        ['영업이익률', '', '5', '5'], ['Ⅳ. 판매비와관리비', '', '6', '6']]
-        bs_rows = [['자본금', '', '1', '1'], ['부채와자본총계', '', '2', '2'], ['자산총계', '', '3', '3'], ['장기금융자산', '', '4', '4'], ['단기현금및현금성자산', '', '5', '5']]
+        bs_rows = [['자본금', '', '1', '1'], ['부채와자본총계', '', '2', '2'], ['자산총액', '', '3', '3'], ['장기금융자산', '', '4', '4'], ['단기현금및현금성자산', '', '5', '5']]
         cf_rows = [['Ⅵ.기초 현금및현금성자산', '', '1', '1'], ['Ⅶ.기말 현금및현금성자산', '', '2', '2'], ['Ⅱ.투자활동으로 인한 현금흐름', '', '3', '3']]
         with self.assertRaises(ValueError):
             pit_xml.parse_statements(doc(balance(rows=bs_rows), income(rows=income_rows), cash(rows=cf_rows)), year=2025)   # nothing usable at all
@@ -185,7 +190,7 @@ class StatementReadingTests(unittest.TestCase):
 
     def test_repeated_copies_of_a_statement_must_agree(self):
         same = doc(balance(), income(), cash(), '<P>주석</P>', balance(), income(), cash())
-        self.assertEqual(pit_xml.parse_statements(same, year=2025)['values'], EXPECTED)
+        self.assertEqual(core(pit_xml.parse_statements(same, year=2025)['values']), EXPECTED)
         other_rows = [row[:] for row in IS_ROWS];other_rows[0][2] = '5,969'
         with self.assertRaises(ValueError):
             pit_xml.parse_statements(doc(balance(), income(), cash(), income(rows=other_rows)), year=2025)
@@ -223,7 +228,7 @@ class StatementReadingTests(unittest.TestCase):
 
     def test_missing_statements_leave_their_fields_out_and_nothing_found_is_a_clear_error(self):
         values = pit_xml.parse_statements(doc(balance(), income()), year=2025)['values']
-        self.assertEqual(values, dict(revenue=5968, operating_profit=746, equity=2489, cash=216))
+        self.assertEqual(core(values), dict(revenue=5968, operating_profit=746, equity=2489, cash=216))
         self.assertNotIn('balance_debt', values)
         with self.assertRaises(pit_xml.NoStatements):
             pit_xml.parse_statements('<DOCUMENT><P>감사보고서</P></DOCUMENT>', year=2025)
@@ -236,11 +241,11 @@ class StatementReadingTests(unittest.TestCase):
 
     def test_the_result_does_not_depend_on_the_order_or_the_surroundings(self):
         shuffled = doc(cash(), '<P>x & y</P>', income(), balance())
-        self.assertEqual(pit_xml.parse_statements(shuffled, year=2025)['values'], EXPECTED)
+        self.assertEqual(core(pit_xml.parse_statements(shuffled, year=2025)['values']), EXPECTED)
 
     def test_a_table_nested_inside_a_cell_does_not_hide_or_replace_the_outer_statement(self):
         nested = '<TABLE><TR><TD><TABLE><TR><TD>안쪽</TD></TR></TABLE></TD></TR></TABLE>'
-        self.assertEqual(pit_xml.parse_statements(doc(nested, balance(), income(), cash()), year=2025)['values'], EXPECTED)
+        self.assertEqual(core(pit_xml.parse_statements(doc(nested, balance(), income(), cash()), year=2025)['values']), EXPECTED)
 
 
 class SurvivorTests(unittest.TestCase):
@@ -318,10 +323,10 @@ class PeriodNotationTests(unittest.TestCase):
         return pit_xml.parse_statements(text, year=year)
 
     def test_zero_padded_dates_and_period_numbers_without_a_current_marker_are_read(self):
-        self.assertEqual(self.parse(self.PADDED)['values'], EXPECTED)
+        self.assertEqual(core(self.parse(self.PADDED)['values']), EXPECTED)
 
     def test_the_line_with_the_larger_period_number_is_the_current_one_whatever_the_order(self):
-        self.assertEqual(self.parse(list(reversed(self.PADDED)))['values'], EXPECTED)
+        self.assertEqual(core(self.parse(list(reversed(self.PADDED)))['values']), EXPECTED)
 
     def test_without_markers_the_current_period_must_be_decidable(self):
         same = ['제 49 기 2024년 01월 01일부터 2024년 12월 31일까지', '제 49 기 2023년 01월 01일부터 2023년 12월 31일까지']
@@ -344,18 +349,18 @@ class PeriodNotationTests(unittest.TestCase):
 
     def test_a_prior_marker_on_the_older_line_alone_still_lets_the_period_numbers_decide(self):
         lines = ['제 49 기 2024년 01월 01일부터 2024년 12월 31일까지', '제 48(전) 기 2023년 01월 01일부터 2023년 12월 31일까지']
-        self.assertEqual(self.parse(lines)['values'], EXPECTED)
+        self.assertEqual(core(self.parse(lines)['values']), EXPECTED)
 
     def test_a_current_marker_still_wins_over_period_numbers(self):
         marked = ['제 48 기 2023년 01월 01일부터 2023년 12월 31일까지', '제 49(당) 기 2024년 01월 01일부터 2024년 12월 31일까지']
-        self.assertEqual(self.parse(marked)['values'], EXPECTED)
+        self.assertEqual(core(self.parse(marked)['values']), EXPECTED)
         wrong = ['제 49 기 2024년 01월 01일부터 2024년 12월 31일까지', '제 48(당) 기 2023년 01월 01일부터 2023년 12월 31일까지']
         with self.assertRaises(ValueError):
             self.parse(wrong)
 
     def test_zero_padded_balance_sheet_dates_are_read_and_a_tail_of_a_longer_number_is_not(self):
         padded_bs = ['제 49(당) 기말 2024년 12월 31일 현재', '제 48(전) 기말 2023년 12월 31일 현재']
-        self.assertEqual(self.parse(self.PADDED, bs_lines=padded_bs)['values'], EXPECTED)
+        self.assertEqual(core(self.parse(self.PADDED, bs_lines=padded_bs)['values']), EXPECTED)
         with self.assertRaises(ValueError):
             self.parse(self.PADDED, bs_lines=['제 49(당) 기말 12024년 12월 31일 현재', '제 48(전) 기말 2023년 12월 31일 현재'])
 
@@ -370,12 +375,12 @@ class RecordTests(unittest.TestCase):
     def test_the_record_has_the_shape_pit_values_accepts(self):
         digest = hashlib.sha256(b'zip').hexdigest()
         record = pit_xml.build_record(FULL, receipt='20260311004208', year=2025, url=self.URL, sha256=digest)
-        self.assertEqual(record['values'], EXPECTED)
+        self.assertEqual(core(record['values']), EXPECTED)
         self.assertEqual((record['basis'], record['quarter'], record['year'], record['currency'], record['unit']), ('CFS', 4, 2025, 'KRW', 'KRW'))
         self.assertEqual((record['period_start'], record['period_end'], record['receipt'], record['url']), ('2025-01-01', '2025-12-31', '20260311004208', self.URL))
         self.assertEqual(record['parser_version'], pit_xml.PARSER_VERSION)
         receipt, provenance = map_record(record, company='298040', rcept_dt='2026-03-11')
-        self.assertEqual(receipt['values'], {k: float(v) for k, v in dict(revenue=5968, op=746, ocf=493, equity=2489, cash=216).items()})
+        self.assertEqual({k: receipt['values'][k] for k in ('revenue', 'op', 'ocf', 'equity', 'cash')}, {k: float(v) for k, v in dict(revenue=5968, op=746, ocf=493, equity=2489, cash=216).items()})
         self.assertEqual((provenance['contract_sha256'], provenance['mapping_version'], provenance['include_debt']), (digest, 'pit-values-1', False))
 
     def test_bad_receipts_and_digests_are_refused(self):
@@ -404,13 +409,13 @@ class ZipTests(unittest.TestCase):
         data = make_zip({'20260311004208.xml': doc(balance(), income(), cash()), '20260311004208_00761.xml': doc(balance(), income(), cash()),
                          '20260311004208_00760.xml': '<DOCUMENT><P>감사보고서</P></DOCUMENT>'})
         record = pit_xml.parse_document_zip(data, receipt='20260311004208', year=2025, url=self.URL)
-        self.assertEqual(record['values'], EXPECTED)
+        self.assertEqual(core(record['values']), EXPECTED)
         _, provenance = map_record(record, company='298040', rcept_dt='2026-03-11')
         self.assertEqual(provenance['contract_sha256'], hashlib.sha256(data).hexdigest())
 
     def test_members_that_hold_no_statements_or_cannot_be_decoded_are_skipped_but_nothing_usable_is_an_error(self):
         record = self.run_zip({'a.xml': b'\xff\xfe\x00bad', 'b.xml': doc(balance(), income(), cash()), 'c.txt': 'ignored'})
-        self.assertEqual(record['values'], EXPECTED)
+        self.assertEqual(core(record['values']), EXPECTED)
         with self.assertRaises(ValueError):
             self.run_zip({'a.xml': '<DOCUMENT/>', 'b.xml': b'\xff\xfe\x00bad'})
 
@@ -423,11 +428,11 @@ class ZipTests(unittest.TestCase):
 
     def test_a_member_that_only_adds_fields_the_other_lacks_is_merged_not_a_conflict(self):
         record = self.run_zip({'a.xml': doc(balance(), income()), 'b.xml': doc(cash())})
-        self.assertEqual(record['values'], EXPECTED)
+        self.assertEqual(core(record['values']), EXPECTED)
 
     def test_cp949_members_are_decoded(self):
         record = self.run_zip({'a.xml': doc(balance(), income(), cash()).encode('cp949', errors='replace')})
-        self.assertEqual(record['values'], EXPECTED)
+        self.assertEqual(core(record['values']), EXPECTED)
 
     def test_not_a_zip_a_bad_member_count_or_an_oversized_member_is_refused(self):
         with self.assertRaises(ValueError):
@@ -447,7 +452,7 @@ class ZipTests(unittest.TestCase):
 
     def test_member_names_are_never_used_as_paths(self):
         record = self.run_zip({'../../evil.xml': doc(balance(), income(), cash())})
-        self.assertEqual(record['values'], EXPECTED)
+        self.assertEqual(core(record['values']), EXPECTED)
 
 
 SPECIMEN_ROOT = os.environ.get('PIT_SPECIMEN_ROOT')

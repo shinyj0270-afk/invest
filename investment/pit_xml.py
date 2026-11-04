@@ -5,6 +5,7 @@ import hashlib
 import io
 import re
 import zipfile
+from .pit_xml_accounts import read_accounts, _merge
 
 PARSER_VERSION = 'pit-xml-1'
 MAX_MEMBERS = 50
@@ -89,7 +90,7 @@ def _compact(text):
 
 def _label(text):
     text=re.sub(r'^(?:[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫIVXivx]+[.．]|[0-9]+[.．)])', '', _compact(text), count=1)
-    return text.removeprefix('ㆍ')
+    return re.sub(r'\(주[0-9,]+\)$', '', text.removeprefix('ㆍ'))
 
 
 def _amount(text, unit):
@@ -157,7 +158,8 @@ def _statement(table, kind, unit, title):
         parsed=[_amount(cell, unit) for cell in amounts]
         if _label(row[0]) in LOSS_LABELS and any(value > 0 for value in parsed):raise ValueError('영업손실 금액 부호 불명확')
         values={**values, field: parsed[0]}
-    return values
+    extra, notes=read_accounts(kind, table[1:], unit=unit, first=1+note, columns=len(columns), positional=numbered)
+    return {**values, **extra}, notes
 
 
 def parse_statements(text, *, year):
@@ -174,17 +176,18 @@ def parse_statements(text, *, year):
         if candidates:break
     if not candidates:raise NoStatements('연결 재무제표가 없습니다')
     income=any(name == '연결손익계산서' for name, _, _ in candidates)
-    copies={}; counts={}; first_unit=None
+    copies={}; counts={}; first_unit=None; values={}; notes={}
     for name, title, account in candidates:
         if income and name == '연결포괄손익계산서':continue
         kind=TITLES[name]; unit=_title_unit(title, kind, year)
-        values=_statement(account, kind, unit, title)
-        if kind in copies and copies[kind] != values:raise ValueError('재무제표 사본 값 불일치')
-        copies={**copies, kind: values}; counts={**counts, kind: counts.get(kind, 0)+1}
+        found, problems=_statement(account, kind, unit, title)
+        original={field: value for field, value in found.items() if field in ALIASES[kind]}
+        if kind in copies and copies[kind] != original:raise ValueError('재무제표 사본 값 불일치')
+        copies={**copies, kind: original}; counts={**counts, kind: counts.get(kind, 0)+1}
+        values, notes=_merge(values, found, notes, problems)
         if first_unit is None:first_unit=unit
-    values={field: value for copy in copies.values() for field, value in copy.items()}
     if not values:raise ValueError('사용 가능한 계정이 없습니다')
-    return dict(values=values, basis='CFS', currency='KRW', unit=first_unit or 1,
+    return dict(values=values, notes=notes, basis='CFS', currency='KRW', unit=first_unit or 1,
                 period_start=f'{year}-01-01', period_end=f'{year}-12-31', statements=counts)
 
 
@@ -231,9 +234,11 @@ def parse_document_zip(data, *, receipt, year, url):
                 if parsed is None:continue
                 if merged is None:merged=parsed; continue
                 if any(merged[key] != parsed[key] for key in ('period_start', 'period_end')):raise ValueError('문서 기간 불일치')
-                if any(merged['values'][key] != value for key, value in parsed['values'].items() if key in merged['values']):
+                original={field for fields in ALIASES.values() for field in fields}
+                if any(merged['values'][key] != value for key, value in parsed['values'].items() if key in original and key in merged['values']):
                     raise ValueError('문서 계정 값 불일치')
-                merged={**merged, 'values': {**merged['values'], **parsed['values']}}
+                values, notes=_merge(merged['values'], parsed['values'], merged['notes'], parsed['notes'])
+                merged={**merged, 'values': values, 'notes': notes}
     except zipfile.BadZipFile as exc:raise ValueError('ZIP 형식 오류') from exc
     if merged is None:raise ValueError('사용 가능한 XML 문서가 없습니다')
     return _record(merged, receipt=receipt, year=year, url=url, sha256=hashlib.sha256(data).hexdigest())

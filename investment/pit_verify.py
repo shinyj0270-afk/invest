@@ -20,7 +20,13 @@ from .pit_annual import project, MAX_GAP_DAYS, _calendar
 NOTICE = '이 결과는 회사 단위 복원이며 시장 표본이 아니다(생존·폐지 기업 몇 곳의 접수번호 단위 재구성). 달력은 지수 관측일 기준이며 공식 휴장일 검증이 아니다.'
 IDENTITY = ('company', 'period_end', 'basis')
 TOP_KEYS = {'company', 'period_end', 'basis', 'report_kind', 'rcept_no', 'rcept_dt', 'values'}
-NUMERIC = dict(revenue=(0, None), op=(None, None), ocf=(None, None), equity=(None, None), debt=(0, None), cash=(0, None), dps=(0, None), effective_tax_rate=(0, 1))
+NUMERIC = dict(revenue=(0, None), op=(None, None), ocf=(None, None), equity=(None, None), debt=(0, None), cash=(0, None), dps=(0, None), effective_tax_rate=(0, 1),
+               total_assets=(0, None), total_liabilities=(0, None), short_term_financial_instruments=(0, None),
+               borrowings_current=(0, None), borrowings_noncurrent=(0, None), lease_current=(0, None),
+               lease_noncurrent=(0, None), finance_costs=(0, None), interest_expense=(0, None),
+               depreciation=(0, None), amortization=(0, None), rou_depreciation=(0, None),
+               capex_tangible=(0, None), capex_intangible=(0, None), dividends_paid=(0, None),
+               pretax_income=(None, None), income_tax_expense=(None, None), net_income_total=(None, None))
 AMBIGUOUS = 'AMBIGUOUS'
 
 
