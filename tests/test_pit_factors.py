@@ -14,6 +14,9 @@ Reasons per missing factor (sorted, unique): not_enough_years, missing:<field>, 
     ambiguous_period (a later period exists only as an ambiguous row), no_annual_row.
 `pit_scores(companies, as_of, *, minimum=5, tolerated=frozenset())` ranks each factor in its own pool (`core.percentile`) and scores 100 x (.30 Q + .25 G + .20 C + .10 B) / .85 only when all four
     percentiles exist; otherwise None with reason `factor_missing` / `pool_too_small` under reasons['S_pit_QGCB']. It never writes `quality_score` or `S_long`.
+Pool membership (proposal): a company whose LATEST visible annual period ended more than `max_staleness_days` (default 460, about 15 months: a year plus the filing lag; None disables it) before `as_of` is STALE:
+    it is a company that has no current data on that date (for example a delisted one), so it is left out of every pool and gets S_pit_QGCB None with reason `stale_period` (and stale=True).
+    Every result carries `latest_period` (the latest visible non-ambiguous period or None) and `stale`; a company without any visible row is not stale, its factors are simply missing.
 """
 import copy
 import unittest
@@ -285,6 +288,59 @@ class ScoreTests(unittest.TestCase):
             pf.pit_scores({'ZZZ999': series()}, AS_OF)                                       # company code differs from the rows
         with self.assertRaises(ValueError):
             pf.pit_scores({1: series()}, AS_OF)
+
+
+class StalenessTests(unittest.TestCase):
+    def test_a_stale_company_is_left_out_of_every_pool_and_the_others_are_unchanged(self):
+        pool = companies_with_increasing_factors()
+        baseline = {r['code']: r for r in pf.pit_scores(pool, AS_OF)}
+        with_stale = dict(pool, STALE1=series(years=(2018, 2019, 2020, 2021), company='STALE1'))
+        results = {r['code']: r for r in pf.pit_scores(with_stale, AS_OF)}
+        self.assertEqual((results['STALE1']['S_pit_QGCB'], results['STALE1']['reasons']['S_pit_QGCB'], results['STALE1']['stale'], results['STALE1']['latest_period']),
+                         (None, ['stale_period'], True, '2021-12-31'))
+        for code in pool:
+            with self.subTest(code=code):
+                self.assertAlmostEqual(results[code]['S_pit_QGCB'], baseline[code]['S_pit_QGCB'], places=12)
+                self.assertEqual((results[code]['stale'], results[code]['latest_period']), (False, '2023-12-31'))
+
+    def test_a_stale_company_does_not_help_a_small_pool(self):
+        pool = companies_with_increasing_factors(4)
+        pool['STALE1'] = series(years=(2018, 2019, 2020, 2021), company='STALE1')
+        results = {r['code']: r for r in pf.pit_scores(pool, AS_OF)}
+        self.assertTrue(all(results[c]['S_pit_QGCB'] is None and results[c]['reasons']['S_pit_QGCB'] == ['pool_too_small'] for c in pool if c != 'STALE1'))
+
+    def test_the_default_limit_is_460_days_inclusive(self):
+        from datetime import date, timedelta
+        rows = series()                                                                      # latest period 2023-12-31
+        last = date(2023, 12, 31)
+        for days, stale in ((460, False), (461, True)):
+            with self.subTest(days=days):
+                result = pf.pit_scores({'AAA111': rows}, (last + timedelta(days=days)).isoformat())[0]
+                self.assertEqual(result['stale'], stale)
+                self.assertEqual(result['reasons']['S_pit_QGCB'] == ['stale_period'], stale)
+
+    def test_the_limit_can_be_changed_or_switched_off(self):
+        pool = companies_with_increasing_factors()
+        everyone = pf.pit_scores(pool, AS_OF, max_staleness_days=30)                         # 2023-12-31 is 182 days before 2024-06-30
+        self.assertTrue(all(r['stale'] and r['S_pit_QGCB'] is None and r['reasons']['S_pit_QGCB'] == ['stale_period'] for r in everyone))
+        stale_pool = dict(pool, STALE1=series(years=(2018, 2019, 2020, 2021), company='STALE1'))
+        off = {r['code']: r for r in pf.pit_scores(stale_pool, AS_OF, max_staleness_days=None)}
+        self.assertFalse(off['STALE1']['stale']);self.assertEqual(off['STALE1']['latest_period'], '2021-12-31')
+        self.assertIsNotNone(off['STALE1']['S_pit_QGCB'])                                    # it is ranked like any other company
+
+    def test_a_company_without_a_visible_row_is_missing_not_stale(self):
+        result = pf.pit_scores({'AAA111': series()}, '2019-06-30')[0]
+        self.assertEqual((result['stale'], result['latest_period']), (False, None))
+        self.assertEqual(result['reasons']['S_pit_QGCB'], ['factor_missing'])
+
+    def test_the_limit_is_validated(self):
+        for bad in (0, -1, 1.5, True, '460'):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                pf.pit_scores({'AAA111': series()}, AS_OF, max_staleness_days=bad)
+
+    def test_compute_factors_reports_the_latest_period(self):
+        self.assertEqual(pf.compute_factors(series(), AS_OF)['latest_period'], '2023-12-31')
+        self.assertIsNone(pf.compute_factors(series(), '2019-06-30')['latest_period'])
 
 
 if __name__ == '__main__':unittest.main()
