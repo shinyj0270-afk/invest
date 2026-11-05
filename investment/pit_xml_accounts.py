@@ -30,6 +30,16 @@ COMPANY_LABELS = {      # stock code -> {label: (family, required section)}: bor
     '267260': {'단기금융부채': ('borrowings', 'current'), '장기금융부채': ('borrowings', 'noncurrent')},      # HD현대일렉트릭 FY2025: 단기금융부채 139,200 = CurrentBorrowingsAndCurrentPortionOfNoncurrentBorrowings (notes), 장기금융부채 46,859 = NoncurrentPortionOfNoncurrentBondsIssued
     '298040': {'장기차입금': ('borrowings', None)},      # 효성중공업 FY2023: the main XML member labels the current borrowings row 장기차입금, the sister member of the same document labels the same amount 차입금
 }
+COMPANY_NOTE_FACTS = {      # (stock code, fiscal year) -> consolidated facts in KRW read by hand from the company's own notes (face statement has no line, notes untagged); absent fields only
+    # S-Oil: note table 기타채무 (유동 / 비유동 리스부채), consolidated XML member; each year's prior-year column in the next report gives the same figure (checked FY2022-FY2024).
+    ('010950', 2022): {'lease_current': 79_508_000_000, 'lease_noncurrent': 184_148_000_000},      # receipt 20230320000502
+    ('010950', 2023): {'lease_current': 63_017_000_000, 'lease_noncurrent': 153_923_000_000},      # receipt 20240320001242
+    ('010950', 2024): {'lease_current': 53_893_000_000, 'lease_noncurrent': 142_814_000_000},      # receipt 20250319000503
+    # 효성중공업: note 기타금융부채 row 리스부채 (total carrying amount; no current split), consolidated XML member, prior-year column cross-checked.
+    ('298040', 2022): {'lease_total': 18_743_000_000},      # receipt 20230308000776
+    ('298040', 2023): {'lease_total': 22_253_000_000},      # receipt 20240306000718
+    ('298040', 2024): {'lease_total': 22_793_000_000},      # receipt 20250312000970
+}
 _CLOSE = ('부채총계', '자본', '자본총계', '자산총계', '부채', '자산')
 _OUTFLOWS = ('capex_tangible', 'capex_intangible', 'dividends_paid', 'finance_costs')       # stored as magnitudes (a statement may print a cost as a deduction)
 _SIGNED = ('pretax_income', 'income_tax_expense', 'net_income_total')

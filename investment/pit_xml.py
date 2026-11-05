@@ -6,7 +6,7 @@ import hashlib
 import io
 import re
 import zipfile
-from .pit_xml_accounts import read_accounts, drop_dashes, _merge, COMPANY_LABELS
+from .pit_xml_accounts import read_accounts, drop_dashes, _merge, COMPANY_LABELS, COMPANY_NOTE_FACTS
 from .pit_xml_tags import read_tagged_detail
 
 PARSER_VERSION = 'pit-xml-1'
@@ -256,4 +256,6 @@ def parse_document_zip(data, *, receipt, year, url, company=None):
                 merged={**merged, 'values': values, 'notes': notes}
     except zipfile.BadZipFile as exc:raise ValueError('ZIP 형식 오류') from exc
     if merged is None:raise ValueError('사용 가능한 XML 문서가 없습니다')
+    facts=COMPANY_NOTE_FACTS.get((company, year), {})
+    merged={**merged, 'values': {**{k: v for k, v in facts.items() if k not in merged['values']}, **merged['values']}}      # hand-read note facts fill absent fields only
     return _record(merged, receipt=receipt, year=year, url=url, sha256=hashlib.sha256(data).hexdigest())

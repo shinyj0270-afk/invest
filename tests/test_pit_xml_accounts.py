@@ -48,6 +48,7 @@ import unittest
 import zipfile
 from investment import pit_xml
 from tests.test_pit_xml import doc, EXPECTED, balance, income, cash
+from investment import pit_xml_accounts
 from investment.pit_xml_accounts import COMPANY_LABELS
 from tests.test_pit_xml_wide import bs, inc, cf, wrap, parse, HEAD, WIDE_BS, WIDE_FLOW
 
@@ -765,6 +766,40 @@ class HyosungLabelTests(unittest.TestCase):
 def sectioned_hd():
     return [['유동자산', '1', '1', '1'], ['현금및현금성자산', '216', '1', '1'], ['자산총계', '1', '1', '1'], ['부채', '', '', ''], ['유동부채', '1', '1', '1'], ['단기금융부채', '139', '7', '7'],
             ['비유동부채', '1', '1', '1'], ['장기금융부채', '47', '7', '7'], ['부채총계', '1', '1', '1'], ['자본', '', '', ''], ['자본총계', '2,489', '2,055', '1']]
+
+
+class CompanyNoteFactTests(unittest.TestCase):
+    """Facts read by hand from a company's own notes where the face statement has no line and the notes are untagged (S-Oil, 효성중공업 FY2022-2024). They fill ABSENT fields only."""
+    FACTS = {('000001', 2025): {'lease_current': 7_000_000, 'lease_noncurrent': 15_000_000}, ('000001', 2024): {'lease_total': 99}, ('000001', 2026): {'lease_total': 98}}
+
+    def record(self, company, year=2025, rows=None):
+        import io, zipfile
+        from unittest import mock
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, 'w') as archive:
+            archive.writestr('a.xml', doc(bs(rows=rows or sectioned_hd()), inc(), cf()).encode('utf-8'))
+        with mock.patch.dict(pit_xml_accounts.COMPANY_NOTE_FACTS, self.FACTS, clear=False):
+            return pit_xml.parse_document_zip(buffer.getvalue(), receipt='20260316000940', year=year, url='u', company=company)
+
+    def test_absent_fields_are_filled_for_the_named_company_and_year_only(self):
+        values = self.record('000001')['values']
+        self.assertEqual((values['lease_current'], values['lease_noncurrent']), (7_000_000, 15_000_000))
+        self.assertNotIn('lease_total', values)                                               # other years of the same company are not used
+        for company in (None, '000002'):
+            with self.subTest(company=company):
+                self.assertNotIn('lease_current', self.record(company)['values'])
+
+    def test_a_value_read_from_the_statement_is_never_replaced(self):
+        rows = sectioned_hd()[:6] + [['유동리스부채', '3', '1', '1']] + sectioned_hd()[6:]
+        values = self.record('000001', rows=rows)['values']
+        self.assertEqual(values['lease_current'], 3)
+
+    def test_the_stored_company_facts_are_in_won_and_cover_the_checked_years(self):
+        facts = pit_xml_accounts.COMPANY_NOTE_FACTS
+        self.assertEqual(facts[('010950', 2024)], {'lease_current': 53_893_000_000, 'lease_noncurrent': 142_814_000_000})
+        self.assertEqual(facts[('298040', 2023)], {'lease_total': 22_253_000_000})
+        self.assertEqual(sorted(y for c, y in facts if c == '010950'), [2022, 2023, 2024])
+        self.assertEqual(sorted(y for c, y in facts if c == '298040'), [2022, 2023, 2024])
 
 
 if __name__ == '__main__':unittest.main()
