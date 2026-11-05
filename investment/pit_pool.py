@@ -1,7 +1,7 @@
 """Local PIT pool: stored annual documents -> point-in-time rows -> factor scores. No network, no key.
 
 The documents come from the hash-addressed store under `<root>/artifacts` (`manifest.jsonl` + `blobs/<sha256>`); the receipt lists and the trading calendar are plain inputs.
-Original annual reports only (`correction == 'none'`, December period); a document that cannot be read is reported in `problems`, never silently dropped.
+Original annual reports (`correction == 'none'`, December period). A year whose original is not stored starts from its earliest STORED correction (a later correction never replaces an original); a document that cannot be read is reported in `problems`, never silently dropped.
 """
 import json
 import io
@@ -30,12 +30,22 @@ def load_sessions(root, files):
     return sorted(days)
 
 
+def _first_versions(receipts, sha):
+    """Every stored original of a December period; for a period with no stored original, its earliest stored correction."""
+    stored = sorted((r for r in receipts if (r.get('title_period') or '').endswith('-12') and r['rcept_no'] in sha), key=lambda r: (r['rcept_dt'], r['rcept_no']))
+    originals = [r for r in stored if r['correction'] == 'none']
+    covered = {r['title_period'] for r in originals}
+    fallback = {}
+    for item in stored:
+        if item['title_period'] not in covered and item['title_period'] not in fallback:fallback = {**fallback, item['title_period']: item}
+    return sorted(originals + list(fallback.values()), key=lambda r: (r['rcept_dt'], r['rcept_no']))
+
+
 def company_rows(root, code, receipts, sha, sessions):
     """Parse every stored original annual report of one company and project it: dict(rows, blocked, problems, verify_ok, parsed)."""
     mapped, problems = [], []
-    for item in sorted(receipts, key=lambda r: r['rcept_dt']):
+    for item in _first_versions(receipts, sha):
         period = item.get('title_period') or ''
-        if item['correction'] != 'none' or not period.endswith('-12') or item['rcept_no'] not in sha:continue
         year = int(period[:4])
         path = Path(root) / 'artifacts' / 'blobs' / sha[item['rcept_no']]
         try:

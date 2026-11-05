@@ -59,11 +59,28 @@ class CompanyRowsTests(unittest.TestCase):
         self.assertEqual((result['parsed'], result['problems'], result['verify_ok'], len(result['rows'])), (1, [], True, 1))
         self.assertEqual(result['rows'][0]['company'], '298040')
 
-    def test_corrections_other_periods_and_unstored_receipts_are_skipped_without_a_problem(self):
+    def test_other_periods_and_unstored_receipts_are_skipped_without_a_problem(self):
         store = Store(self);store.add('20260309000001', GOOD)
-        receipts = [receipt(correction='기재정정'), receipt(period='2025-06'), receipt(no='20260309000009')]
+        receipts = [receipt(period='2025-06'), receipt(no='20260309000009')]
         result = pit_pool.company_rows(store.root, '298040', receipts, pit_pool.load_sha(store.root), SESSIONS)
         self.assertEqual((result['parsed'], result['problems'], result['rows']), (0, [], []))
+
+    def test_a_correction_is_skipped_when_the_original_of_that_year_is_stored(self):
+        store = Store(self);store.add('20260309000001', GOOD);store.add('20260310000002', GOOD)
+        receipts = [receipt(), receipt(no='20260310000002', dt='2026-03-10', correction='기재정정')]
+        result = pit_pool.company_rows(store.root, '298040', receipts, pit_pool.load_sha(store.root), SESSIONS)
+        self.assertEqual((result['parsed'], len(result['rows'])), (1, 1))
+        self.assertEqual(result['rows'][0]['rcept_no'], '20260309000001')
+
+    def test_a_year_without_a_stored_original_starts_from_its_earliest_stored_correction(self):
+        store = Store(self);store.add('20260311000002', GOOD);store.add('20260312000003', GOOD)
+        receipts = [receipt(no='20260309000001'),                                                       # the original exists in the list but is not stored
+                    receipt(no='20260312000003', dt='2026-03-12', correction='기재정정'),
+                    receipt(no='20260311000002', dt='2026-03-11', correction='기재정정'),
+                    receipt(no='20260310000009', dt='2026-03-10', correction='첨부추가')]                 # not stored: never used
+        result = pit_pool.company_rows(store.root, '298040', receipts, pit_pool.load_sha(store.root), SESSIONS)
+        self.assertEqual((result['parsed'], result['problems'], len(result['rows'])), (1, [], 1))
+        self.assertEqual(result['rows'][0]['rcept_no'], '20260311000002')
 
     def test_an_unreadable_document_is_reported_and_the_others_still_load(self):
         store = Store(self);store.add('20260309000001', b'not a zip');store.add('20260309000002', GOOD)
