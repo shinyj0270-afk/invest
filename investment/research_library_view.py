@@ -1,7 +1,7 @@
 """Read-only dashboard projection. Never creates or migrates a research DB."""
 import json
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from contextlib import closing
 from pathlib import Path
 from .local_config import load_local, require_profile
@@ -60,7 +60,7 @@ def recent_stories(result):
 
 def view(root):
     profile = require_profile(load_local(root))
-    result = dict(status='empty', profile=profile, masters=[dict(id=k, name=v[0], strategy=v[1]) for k, v in MASTERS.items()], cards=[], theses=[], sources=[], notes=[], stories=[])
+    result = dict(status='empty', profile=profile, masters=[dict(id=k, name=v[0], strategy=v[1]) for k, v in MASTERS.items()], cards=[], theses=[], sources=[], notes=[], stories=[], decisions_due=[])
     path = Path(root)/'.local'/'research-library'/profile/'user_input'/'research_library.sqlite3'
     if not path.exists():
         return result
@@ -172,4 +172,7 @@ def view(root):
     for record in result['theses']:
         record['followup'] = project(root,profile,record,cache)
     result['stories'] = recent_stories(result)
+    from .decision_journal import due_from_rows
+    today = datetime.now(timezone(timedelta(hours=9))).date().isoformat()
+    result['decisions_due'] = due_from_rows([(kind, key, payload) for kind, key, _, _, payload in rows], today)
     return result

@@ -25,6 +25,7 @@ data['cards']=[dict(id='card',kind='master',recorded_at='2026-01-04T00:00:00+00:
     value=dict(title='Synthetic research card',principle='Synthetic principle',conditions=['Condition one','Condition two'],counterexamples=['Counterexample']),
     provenance=[dict(id='s3',value=dict(title='Earlier publication',url='https://example.invalid/earlier',published_on='2000-01-01'))])]
 data['stories']=recent_stories(data)
+data['decisions_due']=[dict(id='d1',written_on='2026-01-05',review_on='2026-01-20',overdue_days=12,code='000001',name='<img src=y onerror=alert(3)>',review_type_label='매수 검토',hypothesis='Synthetic decision hypothesis',invalidation=['Synthetic counter'])]
 with sync_playwright() as p:
     browser=p.chromium.launch(headless=True,**chromium_options())
     page=browser.new_page(viewport={'width':1440,'height':1000});errors=[]
@@ -39,6 +40,9 @@ with sync_playwright() as p:
     page.locator('#pageSelect').select_option('research-library',force=True)
     expect(page.locator('#researchLibrary')).to_be_visible()
     expect(page.locator('#libraryStatus')).to_contain_text('ready')
+    expect(page.locator('#libraryDecisionsDue tbody tr')).to_have_count(1)
+    expect(page.locator('#libraryDecisionsDue')).to_contain_text('12일')
+    expect(page.locator('#libraryDecisionsDue')).to_contain_text('<img src=y')
     assert page.locator('#researchLibrary img').count()==0
     expect(page.locator('#researchLibrary')).to_contain_text('<img src=x')
     assert page.locator('#researchLibrary a[href^="javascript:"]').count()==0

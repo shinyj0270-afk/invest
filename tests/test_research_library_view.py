@@ -193,6 +193,19 @@ class ViewTests(unittest.TestCase):
         self.assertIn('s1:',lib.draft('t1'))
         self.assertIn('이전 revision 출처',lib.draft('t1'))
 
+    def test_decisions_due_projected_read_only(self):
+        # Synthetic journal rows only; no real holdings or decisions.
+        from investment.decision_journal import record
+        self.assertEqual(view(self.root)['decisions_due'],[])
+        lib=Library(self.root/'.local'/'research-library','work')
+        lib.source('s1',source())
+        entry=dict(written_on='2026-01-05',code='000001',name='Synthetic Co',market='KOSPI',kind='stock',review_type='watch',
+                   hypothesis='Synthetic hypothesis',invalidation=['Synthetic counter'],source_ids=['s1'],review_on='2026-01-06')
+        record(lib,'d1',entry);record(lib,'d2',dict(entry,review_on='2999-01-01'))
+        due=view(self.root)['decisions_due']
+        self.assertEqual([r['id'] for r in due],['d1'])
+        self.assertEqual(due[0]['review_type_label'],'관찰')
+
     def test_readonly_server_never_initializes_services(self):
         from investment.live_dashboard import serve
         with patch('investment.live_dashboard.ThreadingHTTPServer') as server, patch('investment.live_dashboard.load_service') as sync, patch('investment.live_dashboard.DailyMarketRefresh') as refresh:

@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from investment.local_config import load_local, require_profile
 from investment.research_library import Library, MASTERS
+from investment import decision_journal
 from investment.core import digest
 from investment.research_catalog import annotate, search, source_unique
 from investment.telegram_research import channels, batch
@@ -26,7 +27,7 @@ def main():
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, 'reconfigure'): stream.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('masters', 'source', 'master', 'thesis', 'evidence', 'propose', 'channels', 'telegram', 'history', 'draft', 'approved-result', 'annotate', 'search'))
+    parser.add_argument('action', choices=('masters', 'source', 'master', 'thesis', 'evidence', 'propose', 'channels', 'telegram', 'history', 'draft', 'approved-result', 'annotate', 'search', 'decision', 'decision-review', 'due'))
     parser.add_argument('--id')
     parser.add_argument('--kind', choices=('source', 'master', 'thesis', 'evidence', 'channel', 'coverage', 'telegram'))
     parser.add_argument('--input')
@@ -40,6 +41,7 @@ def main():
     parser.add_argument('--event-id')
     parser.add_argument('--draft', help='Previously inspected local draft; required for approved-result')
     parser.add_argument('--expected-revision', type=int, default=0)
+    parser.add_argument('--today', help='KST day for due; default today')
     args = parser.parse_args()
     if args.action == 'masters':
         print(json.dumps({k:dict(name=v[0], default_strategy=v[1], status='source_research_pending') for k,v in MASTERS.items()}, ensure_ascii=False, indent=2))
@@ -48,8 +50,8 @@ def main():
     # Gate Telegram before opening any supplied input file or creating a DB.
     if (args.action in ('channels', 'telegram') or args.kind in ('channel', 'coverage', 'telegram')) and profile != 'home':
         raise ValueError('Telegram processing requires configured home PC')
-    if args.action not in ('channels', 'propose', 'search') and not args.id: raise ValueError('--id required')
-    if args.action in ('source', 'master', 'thesis', 'evidence', 'propose', 'channels', 'telegram', 'approved-result', 'annotate') and not args.input:
+    if args.action not in ('channels', 'propose', 'search', 'due') and not args.id: raise ValueError('--id required')
+    if args.action in ('source', 'master', 'thesis', 'evidence', 'propose', 'channels', 'telegram', 'approved-result', 'annotate', 'decision', 'decision-review') and not args.input:
         raise ValueError('--input required')
     output = local_path(args.output) if args.output else None
     if output and output.exists(): raise ValueError('Output exists; choose a new filename')
@@ -57,6 +59,9 @@ def main():
     lib = Library(local_path('.local/research-library'), profile)
     if args.action == 'search':
         result = search(lib, args.query, person=args.person, topic=args.topic, sector=args.sector, company=args.company, stage=args.stage, event_id=args.event_id)
+    elif args.action == 'decision': result = dict(revision=decision_journal.record(lib, args.id, value))
+    elif args.action == 'decision-review': result = dict(revision=decision_journal.review(lib, args.id, value))
+    elif args.action == 'due': result = decision_journal.due(lib, args.today)
     elif args.action == 'annotate':
         result = dict(revision=annotate(lib, args.kind, args.id, value, args.expected_revision))
     elif args.action == 'source' and args.expected_revision == 0:

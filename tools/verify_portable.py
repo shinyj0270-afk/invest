@@ -11,7 +11,7 @@ commands = [
     [sys.executable, '-m', 'unittest', 'tests.test_naver_bands', 'tests.test_nice_financial', 'tests.test_credit_connection'],
     [sys.executable, '-m', 'unittest', 'tests.test_telegram_export', 'tests.test_telegram_listen', 'tests.test_telegram_watch', 'tests.test_research_inbox'],
     [sys.executable, '-m', 'unittest', 'tests.test_official_statements', 'tests.test_data_recovery', 'tests.test_dashboard_delivery'],
-    [sys.executable, '-m', 'unittest', 'tests.test_research_sessions', 'tests.test_research_agents', 'tests.test_research_library', 'tests.test_research_library_view', 'tests.test_research_catalog'],
+    [sys.executable, '-m', 'unittest', 'tests.test_research_sessions', 'tests.test_research_agents', 'tests.test_research_library', 'tests.test_decision_journal', 'tests.test_research_library_view', 'tests.test_research_catalog'],
     [sys.executable, '-m', 'unittest', 'tests.test_portability', 'tests.test_shared_dashboard'],
     [sys.executable, '-m', 'unittest', 'tests.test_financial_update_policy', 'tests.test_company_financials', 'tests.test_financial_account_recovery', 'tests.test_trend_diagnostics', 'tests.test_dashboard_upgrade', 'tests.test_portfolio_risk', 'tests.test_trend_following', 'tests.test_industry_phase', 'tests.test_leader_strategy'],
     [sys.executable, 'build.py'],
