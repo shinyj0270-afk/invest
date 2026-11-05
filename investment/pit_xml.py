@@ -6,7 +6,7 @@ import hashlib
 import io
 import re
 import zipfile
-from .pit_xml_accounts import read_accounts, drop_dashes, _merge, COMPANY_LABELS, COMPANY_NOTE_FACTS
+from .pit_xml_accounts import read_accounts, drop_dashes, _merge, COMPANY_LABELS, COMPANY_NOTE_FACTS, COMPANY_BORROWINGS_INCLUDE_LEASE
 from .pit_xml_tags import read_tagged_detail
 
 PARSER_VERSION = 'pit-xml-1'
@@ -134,16 +134,66 @@ def _title_unit(table, kind, year):
     return multipliers[next(iter(units))]
 
 
-def _statement(table, kind, unit, title, extra_labels=None):
+def _sector_cash(table, unit, candidates, year):
+    """Combine two disjoint cash sections only with independent closing-cash proof."""
+    rows=table[1:]; section=None; hits=[]
+    for i, row in enumerate(rows, 1):
+        label=_label(row[0]) if row else ''
+        if label in ('유동자산', '비유동자산', '금융업자산', '자산총계'):section=label
+        if label == '현금및현금성자산':hits=hits+[(i, section, row)]
+    if len(hits) < 2:return table
+    if len(hits) != 2 or tuple(h[1] for h in hits) != ('유동자산', '금융업자산'):
+        raise ValueError('동일 계정 중복 오류')
+    def current(row, header, multiplier):
+        note=len(header) > 1 and _compact(header[1]) == '주석'
+        cells=row[1+note:]; columns=header[1+note:]
+        numbered=all(re.fullmatch(r'제[0-9]+기말?', _compact(c)) for c in columns)
+        if numbered and len(cells) == len(columns):return _amount(cells[0] or '-', multiplier)
+        amounts=drop_dashes([c for c in cells if c], len(columns))
+        if len(amounts) != len(columns):raise ValueError('계정 금액 개수 오류')
+        return _amount(amounts[0], multiplier)
+    total=sum(current(row, table[0], unit) for _, _, row in hits)
+    closing=[current(row, body[0], _title_unit(title, 'cash', year))
+             for name, title, body in candidates if TITLES[name] == 'cash'
+             for row in body[1:] if row and _label(row[0]) in ('기말현금및현금성자산', '기말의현금및현금성자산', '기말재무상태표상현금및현금성자산')]
+    if not closing or any(value != total for value in closing):
+        raise ValueError('금융업 구분 현금 합계 불일치')
+    first, _, original=hits[0]; second=hits[1][0]
+    note=len(table[0]) > 1 and _compact(table[0][1]) == '주석'
+    cells=original[1+note:]; position=next(i for i, cell in enumerate(cells) if cell)
+    replacement=original[:1+note]+[str(total//unit) if i == position else c for i, c in enumerate(cells)]
+    return [replacement if i == first else row for i, row in enumerate(table) if i != second]
+
+
+def _opening_balance_columns(kind, columns, title):
+    """Current close, previous close, previous opening: three instants, two periods."""
+    if kind != 'balance' or len(columns) != 3:return False
+    matches=[re.fullmatch(r'제([0-9]+)(?:\(([당전])\))?기(기말|말|기초|초)', c) for c in columns]
+    if not all(matches):return False
+    periods=[int(m.group(1)) for m in matches]
+    if periods != [periods[0], periods[0]-1, periods[0]-1]:return False
+    if [m.group(3) for m in matches] not in (['기말', '기말', '기초'], ['말', '말', '초']):return False
+    if any(m.group(2) not in (None, mark) for m, mark in zip(matches, ('당', '전', '전'))):return False
+    dated=[(int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4)))
+           for cell in map(_compact, _title_cells(title))
+           for m in [re.search(r'제([0-9]+)기.*?([0-9]{4})년([0-9]{1,2})월([0-9]{1,2})일', cell)] if m]
+    current=[d for d in dated if d[0] == periods[0]]
+    if len(current) != 1:return False
+    year=current[0][1]
+    return set(dated) == {(periods[0], year, 12, 31), (periods[1], year-1, 12, 31), (periods[2], year-1, 1, 1)}
+
+
+def _statement(table, kind, unit, title, extra_labels=None, core_table=None):
     header=[_compact(cell) for cell in table[0]]
     note=len(header) > 1 and header[1] == '주석'
     columns=header[1+note:]
-    numbered=len(columns) in (2, 3) and all(re.fullmatch(r'제[0-9]+기말?', column) for column in columns)
+    opening=_opening_balance_columns(kind, columns, title)
+    numbered=opening or len(columns) in (2, 3) and all(re.fullmatch(r'제[0-9]+기말?', column) for column in columns)
     widths=Counter(len(row) for row in table[1:] if row)
     positional=numbered and bool(widths) and widths.most_common(1)[0][0] <= 1+note+len(columns)      # one cell per period column, else detail and subtotal cells (grouped)
     if numbered:
         periods=[int(re.search(r'[0-9]+', column).group()) for column in columns]
-        if any(a-b != 1 for a, b in zip(periods, periods[1:])):raise ValueError('당기와 전기 금액 열 오류')
+        if not opening and any(a-b != 1 for a, b in zip(periods, periods[1:])):raise ValueError('당기와 전기 금액 열 오류')
         numbers={int(m.group(1)) for cell in map(_compact, _title_cells(title)) if re.search(r'[0-9]{4}년[0-9]{1,2}월[0-9]{1,2}일', cell)
                  for m in [re.search(r'제([0-9]+)기', cell)] if m}
         if len(numbers) < 2 or max(numbers) != periods[0]:raise ValueError('당기 사업연도 오류')
@@ -151,7 +201,7 @@ def _statement(table, kind, unit, title, extra_labels=None):
         raise ValueError('당기와 전기 금액 열 오류')
     aliases={alias: field for field, names in ALIASES[kind].items() for alias in names}
     values={}; seen=set()
-    for row in table[1:]:
+    for row in (core_table or table)[1:]:
         field=aliases.get(_label(row[0])) if row else None
         if field is None:continue
         if field in seen:raise ValueError('동일 계정 중복 오류')
@@ -189,7 +239,8 @@ def parse_statements(text, *, year, extra_labels=None):
     for name, title, account in candidates:
         if income and name == '연결포괄손익계산서':continue
         kind=TITLES[name]; unit=_title_unit(title, kind, year)
-        found, problems=_statement(account, kind, unit, title, extra_labels)
+        core_table=_sector_cash(account, unit, candidates, year) if kind == 'balance' else None
+        found, problems=_statement(account, kind, unit, title, extra_labels, core_table=core_table)
         original={field: value for field, value in found.items() if field in ALIASES[kind]}
         if kind in copies and copies[kind] != original:raise ValueError('재무제표 사본 값 불일치')
         copies={**copies, kind: original}; counts={**counts, kind: counts.get(kind, 0)+1}
@@ -244,6 +295,19 @@ def _read_member(archive, member, year, extra_labels=None):
     return None
 
 
+def _exclude_confirmed_leases(parsed, company, year):
+    """Only source-verified inclusive debt totals can have leases subtracted."""
+    expected=COMPANY_BORROWINGS_INCLUDE_LEASE.get((company, year))
+    if expected is None:return parsed
+    values=parsed['values']; converted={}
+    for suffix, shown in expected.items():
+        debt=values.get('borrowings_'+suffix); lease=values.get('lease_'+suffix)
+        if debt != shown or lease is None or not 0 <= lease <= debt:
+            raise ValueError('리스 포함 차입금 범위 미확인')
+        converted={**converted, 'borrowings_'+suffix: debt-lease}
+    return {**parsed, 'values': {**values, **converted}}
+
+
 def parse_document_zip(data, *, receipt, year, url, company=None):
     """Merge agreeing XML members in memory; never interpret names as paths."""
     try:data=memoryview(data).tobytes()
@@ -273,4 +337,5 @@ def parse_document_zip(data, *, receipt, year, url, company=None):
     merged=_confirm_zeros(merged, listed)
     facts=COMPANY_NOTE_FACTS.get((company, year), {})
     merged={**merged, 'values': {**{k: v for k, v in facts.items() if k not in merged['values']}, **merged['values']}}      # hand-read note facts fill absent fields only
+    merged=_exclude_confirmed_leases(merged, company, year)
     return _record(merged, receipt=receipt, year=year, url=url, sha256=hashlib.sha256(data).hexdigest())

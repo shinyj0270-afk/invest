@@ -9,7 +9,8 @@ _NOT_COUNTED = ('판매후리스부채', '비유동판매후리스부채')      
 _PRETAX = ('법인세비용차감전순이익', '법인세차감전순이익', '법인세비용차감전계속영업이익', '법인세비용차감전계속사업이익', '법인세비용차감전계속영업순이익', '법인세차감전영업순이익', '법인세비용차감전영업순이익')
 _LOSSES = ('당기순손실', '법인세비용차감전순손실', '법인세차감전순손실', '법인세비용차감전영업순손실')
 _TAX_INCOME = ('법인세수익', '법인세수익(비용)')       # a tax BENEFIT is shown positive here: the sign is settled by the identity
-_CONTINUING = ('계속영업이익', '계속영업이익(손실)', '계속영업당기순이익', '계속영업당기순이익(손실)', '계속영업순이익', '계속영업순이익(손실)', '계속영업연결당기순손실', '계속영업당기순손실', '계속영업순손실')     # only a target of the identity, never exported
+_CONTINUING_LOSSES = ('계속영업손실',)
+_CONTINUING = _CONTINUING_LOSSES + ('계속영업이익', '계속영업이익(손실)', '계속영업당기순이익', '계속영업당기순이익(손실)', '계속영업순이익', '계속영업순이익(손실)', '계속영업연결당기순손실', '계속영업당기순손실', '계속영업순손실')     # only a target of the identity, never exported
 _ALIASES = {
     'balance': {'total_assets': ('자산총계',), 'total_liabilities': ('부채총계',),
                 'short_term_financial_instruments': ('단기금융상품',)},
@@ -31,6 +32,16 @@ COMPANY_LABELS = {      # stock code -> {label: (family, required section)}: bor
     '298040': {'장기차입금': ('borrowings', None)},      # 효성중공업 FY2023: the main XML member labels the current borrowings row 장기차입금, the sister member of the same document labels the same amount 차입금
 }
 COMPANY_NOTE_FACTS = {      # (stock code, fiscal year) -> consolidated facts in KRW read by hand from the company's own notes (face statement has no line, notes untagged); absent fields only
+    # Reviewed CFS lease notes; all source amounts are million KRW (scratch report evidence).
+    ('051910', 2022): {'lease_current': 95_079_000_000, 'lease_noncurrent': 294_559_000_000},
+    ('051910', 2023): {'lease_current': 100_130_000_000, 'lease_noncurrent': 391_736_000_000},
+    ('051910', 2024): {'lease_current': 141_096_000_000, 'lease_noncurrent': 773_657_000_000},
+    ('047050', 2022): {'lease_current': 66_305_000_000, 'lease_noncurrent': 241_405_000_000},
+    ('047050', 2023): {'lease_current': 74_361_000_000, 'lease_noncurrent': 347_466_000_000},
+    ('047050', 2024): {'lease_current': 79_527_000_000, 'lease_noncurrent': 334_273_000_000},
+    ('036460', 2022): {'borrowings_current': 25_558_917_000_000, 'borrowings_noncurrent': 17_292_636_000_000, 'lease_current': 378_923_000_000, 'lease_noncurrent': 1_652_602_000_000},
+    ('036460', 2023): {'borrowings_current': 17_834_740_000_000, 'borrowings_noncurrent': 21_021_910_000_000, 'lease_current': 331_076_000_000, 'lease_noncurrent': 1_538_286_000_000},
+    ('036460', 2024): {'borrowings_current': 17_730_115_000_000, 'borrowings_noncurrent': 21_385_638_000_000, 'lease_current': 241_621_000_000, 'lease_noncurrent': 1_201_532_000_000},
     # S-Oil: note table 기타채무 (유동 / 비유동 리스부채), consolidated XML member; each year's prior-year column in the next report gives the same figure (checked FY2022-FY2024).
     ('010950', 2022): {'lease_current': 79_508_000_000, 'lease_noncurrent': 184_148_000_000},      # receipt 20230320000502
     ('010950', 2023): {'lease_current': 63_017_000_000, 'lease_noncurrent': 153_923_000_000},      # receipt 20240320001242
@@ -39,6 +50,11 @@ COMPANY_NOTE_FACTS = {      # (stock code, fiscal year) -> consolidated facts in
     ('298040', 2022): {'lease_total': 18_743_000_000},      # receipt 20230308000776
     ('298040', 2023): {'lease_total': 22_253_000_000},      # receipt 20240306000718
     ('298040', 2024): {'lease_total': 22_793_000_000},      # receipt 20250312000970
+}
+COMPANY_BORROWINGS_INCLUDE_LEASE = {      # source-verified face totals, including leases; KRW
+    ('051910', 2022): {'current': 3_804_367_000_000, 'noncurrent': 12_160_152_000_000},
+    ('051910', 2023): {'current': 7_077_782_000_000, 'noncurrent': 14_850_332_000_000},
+    ('051910', 2024): {'current': 7_621_059_000_000, 'noncurrent': 19_755_038_000_000},
 }
 _CLOSE = ('부채총계', '자본', '자본총계', '자산총계', '부채', '자산')
 _OUTFLOWS = ('capex_tangible', 'capex_intangible', 'dividends_paid', 'finance_costs')       # stored as magnitudes (a statement may print a cost as a deduction)
@@ -104,6 +120,7 @@ def read_accounts(kind, rows, *, unit, first, columns, positional=False, extra_l
             if field == 'income_tax_expense' and parsed[0] < 0:                              # a benefit, or an expense printed as a deduction: the identity decides, else as shown
                 deferred={**deferred, field: (parsed[0], 'sign_unclear', parsed[0])}
                 continue
+            if field == '_continuing' and label in _CONTINUING_LOSSES and parsed[0] > 0:reason='sign_unclear'
             if field not in _NEGATIVE_OK + _OUTFLOWS and parsed[0] < 0:reason='negative'
         if reason:
             notes={**notes, key: notes.get(key, reason)}
