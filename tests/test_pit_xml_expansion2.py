@@ -74,6 +74,11 @@ class SectorCashTests(unittest.TestCase):
     def test_two_sector_cash_lines_are_summed_when_the_closing_cash_agrees(self):
         self.assertEqual(self.parse()['values']['cash'], 216)
 
+    def test_a_positive_operating_loss_is_settled_in_a_document_that_takes_the_sector_cash_path(self):
+        rows = [['Ⅰ. 매출', '', '5,968', '4,894'], ['Ⅲ. 매출총이익', '', '100', '90'], ['Ⅳ. 판매비와관리비', '', '1,043', '1,004'], ['Ⅴ. 영업손실', '', '943', '914']]
+        parsed = pit_xml.parse_statements(doc(balance(rows=SECTOR_ROWS), income(rows=rows), cash(rows=CLOSING)), year=2025)['values']
+        self.assertEqual((parsed['cash'], parsed['operating_profit']), (216, -943))
+
     def test_a_closing_cash_that_disagrees_or_is_missing_stops_the_parse(self):
         for name, cf_rows in {'unequal': [CLOSING[0], ['Ⅶ.기말 현금및현금성자산', '', '', '217', '', '249']], 'missing': CLOSING[:1]}.items():
             with self.subTest(name=name), self.assertRaises(ValueError):

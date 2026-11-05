@@ -307,6 +307,37 @@ class OperatingLossTests(unittest.TestCase):
             with self.subTest(row=row), self.assertRaises(ValueError):
                 self.values(row)
 
+    def settled(self, loss, gross=('100', '90'), selling=('1,043', '1,004')):
+        rows = [['Ⅰ. 매출', '', '5,968', '4,894'], ['Ⅲ. 매출총이익', '', *gross], ['Ⅳ. 판매비와관리비', '', *selling], loss]
+        return pit_xml.parse_statements(doc(balance(), income(rows=rows), cash()), year=2025)['values']
+
+    def test_a_positive_loss_amount_is_settled_by_gross_profit_less_selling_expenses(self):
+        self.assertEqual(self.settled(['Ⅴ. 영업손실', '', '943', '914'])['operating_profit'], -943)
+        self.assertEqual(self.settled(['Ⅴ. 영업손실', '', '943', '(914)'])['operating_profit'], -943)
+        self.assertEqual(self.settled(['Ⅴ. 영업손실', '', '(943)', '914'])['operating_profit'], -943)
+        self.assertEqual(self.settled(['Ⅴ. 영업손실', '', '946', '914'])['operating_profit'], -946)       # rounding: within 3 units
+
+    def test_a_positive_loss_amount_that_the_identity_confirms_as_a_profit_is_kept_as_a_profit(self):
+        self.assertEqual(self.settled(['Ⅴ. 영업손실', '', '943', '914'], gross=('2,000', '2,000'), selling=('1,057', '1,086'))['operating_profit'], 943)
+
+    def test_a_positive_loss_amount_stays_refused_when_the_identity_does_not_settle_it(self):
+        cases = {'neither candidate matches': dict(selling=('1,000', '1,004')),
+                 'prior column does not match': dict(selling=('1,043', '1,000')),
+                 'both candidates match': dict(loss=['Ⅴ. 영업손실', '', '1', '1'], gross=('0', '0'), selling=('0', '0'))}
+        for name, kwargs in cases.items():
+            with self.subTest(name), self.assertRaises(ValueError):
+                self.settled(**{'loss': ['Ⅴ. 영업손실', '', '943', '914'], **kwargs})
+
+    def test_a_positive_loss_amount_stays_refused_without_both_identity_rows_or_with_a_repeated_one(self):
+        loss = ['Ⅴ. 영업손실', '', '943', '914']
+        variants = {'no gross row': [['Ⅰ. 매출', '', '5,968', '4,894'], ['Ⅳ. 판매비와관리비', '', '1,043', '1,004'], loss],
+                    'no selling row': [['Ⅰ. 매출', '', '5,968', '4,894'], ['Ⅲ. 매출총이익', '', '100', '90'], loss],
+                    'repeated gross row': [['Ⅰ. 매출', '', '5,968', '4,894'], ['Ⅲ. 매출총이익', '', '100', '90'], ['매출총이익', '', '100', '90'],
+                                           ['Ⅳ. 판매비와관리비', '', '1,043', '1,004'], loss]}
+        for name, rows in variants.items():
+            with self.subTest(name), self.assertRaises(ValueError):
+                pit_xml.parse_statements(doc(balance(), income(rows=rows), cash()), year=2025)
+
     def test_an_operating_profit_and_an_operating_loss_row_together_are_refused(self):
         rows = [['Ⅰ. 매출', '', '5', '4'], ['Ⅵ. 영업이익', '', '6', '3'], ['IV. 영업손실', '', '(1)', '(1)']]
         with self.assertRaises(ValueError):

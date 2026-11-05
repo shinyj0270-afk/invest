@@ -13,6 +13,9 @@ PARSER_VERSION = 'pit-xml-1'
 MAX_MEMBERS = 50
 MAX_MEMBER_BYTES = 64 * 1024 * 1024
 LOSS_LABELS = ('영업손실',)       # shown as a negative amount, this IS the operating profit; a positive amount has an unclear sign
+GROSS_LABELS = ('매출총이익', '매출총이익(손실)', '매출총손익')       # operating profit = gross profit - selling and administrative expenses decides a positive loss amount
+SELLING_LABELS = ('판매비와관리비', '판매비및관리비', '판매관리비')
+LOSS_IDENTITY_UNITS = 3      # gross profit - selling expenses may be off from the operating line by this many statement units (rounding)
 TITLES = {'연결재무상태표': 'balance', '연결손익계산서': 'income',
           '연결포괄손익계산서': 'income', '연결현금흐름표': 'cash'}
 ALIASES = {
@@ -183,6 +186,33 @@ def _opening_balance_columns(kind, columns, title):
     return set(dated) == {(periods[0], year, 12, 31), (periods[1], year-1, 12, 31), (periods[2], year-1, 1, 1)}
 
 
+def _row_amounts(table, names, unit, first, columns):
+    """The amounts of the one row labelled with one of `names`; None when it is absent, repeated or unreadable."""
+    rows=[row for row in table if row and _label(row[0]) in names]
+    if len(rows) != 1:return None
+    amounts=drop_dashes([cell for cell in rows[0][first:] if cell], columns)
+    if len(amounts) != columns:return None
+    try:return [_amount(cell, unit) for cell in amounts]
+    except ValueError:return None
+
+
+def _settle_loss_sign(shown, table, unit, first):
+    """A positive amount under 영업손실 has an unclear sign. The statement's own identity decides it: gross profit - selling and administrative
+    expenses must match exactly one of +shown / -shown within LOSS_IDENTITY_UNITS statement units. Without both rows, or when neither or both
+    candidates match, the sign stays unclear (None)."""
+    columns=len(shown)
+    gross=_row_amounts(table, GROSS_LABELS, unit, first, columns)
+    selling=_row_amounts(table, SELLING_LABELS, unit, first, columns)
+    if gross is None or selling is None:return None
+    settled=[]
+    for amount, profit, cost in zip(shown, gross, selling):
+        if amount <= 0:settled.append(amount); continue
+        matches=[candidate for candidate in (amount, -amount) if abs(candidate-(profit-cost)) <= LOSS_IDENTITY_UNITS*unit]
+        if len(matches) != 1:return None
+        settled.append(matches[0])
+    return settled
+
+
 def _statement(table, kind, unit, title, extra_labels=None, core_table=None):
     header=[_compact(cell) for cell in table[0]]
     note=len(header) > 1 and header[1] == '주석'
@@ -210,7 +240,9 @@ def _statement(table, kind, unit, title, extra_labels=None, core_table=None):
         if not amounts and not positional:continue
         if len(amounts) != len(columns):raise ValueError('계정 금액 개수 오류')
         parsed=[_amount(cell, unit) for cell in amounts]
-        if _label(row[0]) in LOSS_LABELS and any(value > 0 for value in parsed):raise ValueError('영업손실 금액 부호 불명확')
+        if _label(row[0]) in LOSS_LABELS and any(value > 0 for value in parsed):
+            parsed=_settle_loss_sign(parsed, table[1:], unit, 1+note)
+            if parsed is None:raise ValueError('영업손실 금액 부호 불명확')
         values={**values, field: parsed[0]}
     extra, notes=read_accounts(kind, table[1:], unit=unit, first=1+note, columns=len(columns), positional=positional, extra_labels=extra_labels)
     return {**values, **extra}, notes
