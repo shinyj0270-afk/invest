@@ -2,7 +2,7 @@
 
 New fields (all KRW, current-period column, scaled by the statement unit). Everything here is SOFT: an anomaly in one of these fields never raises and never
 blocks the five original fields, the field is simply left out and a reason is recorded in `result['notes']` (key = field, or `borrowings` / `lease` for a family).
-A missing row means the field is absent (never 0). Labels are compared like the original aliases (whitespace removed, one leading numeral prefix removed) and
+A missing row means the field is absent (never 0), with ONE exception: when the lines under 유동자산 add up to its total (a leading run is enough, tolerance 3 units) the result carries `assets_listed=True` and the record builders turn an absent short_term_financial_instruments / current_financial_assets (without a note, and without a note-tag value) into a confirmed 0. Labels are compared like the original aliases (whitespace removed, one leading numeral prefix removed) and
 ALSO with one trailing note reference such as `(주14,31,35)` removed.
 
 balance (section aware; sections are opened by the rows 유동자산, 비유동자산, 유동부채, 비유동부채 and closed by 부채총계, 자본, 자본총계, 자산총계, 부채, 자산):
@@ -800,6 +800,66 @@ class CompanyNoteFactTests(unittest.TestCase):
         self.assertEqual(facts[('298040', 2023)], {'lease_total': 22_253_000_000})
         self.assertEqual(sorted(y for c, y in facts if c == '010950'), [2022, 2023, 2024])
         self.assertEqual(sorted(y for c, y in facts if c == '298040'), [2022, 2023, 2024])
+
+
+def complete_bs(extra_rows=(), total='1,000', after=()):
+    """A balance sheet whose 유동자산 lines (cash 600, receivables 300, inventory 100) add up to the 유동자산 total."""
+    return ([['자산', '', '', ''], ['유동자산', total, '900', '800'], ['현금및현금성자산', '600', '500', '400'], ['매출채권', '300', '300', '300'], *extra_rows, ['재고자산', '100', '100', '100'], *after,
+             ['비유동자산', '3,489', '3,182', '3,000'], ['자산총계', '4,489', '4,082', '3,800'], ['부채', '', '', ''], ['유동부채', '1', '1', '1'], ['부채총계', '1', '1', '1'],
+             ['자본', '', '', ''], ['자본총계', '2,489', '2,055', '1,900']])
+
+
+class ListedCurrentAssetsTests(unittest.TestCase):
+    """When the lines under 유동자산 add up to its total the face lists every current asset, so a liquid-financial-asset line that is not there is a confirmed zero (strict net debt)."""
+    def vals(self, rows, extra=()):
+        text = doc(bs(rows=rows), inc(rows=IS), cf(rows=CF), *extra)
+        record = pit_xml.build_record(text, receipt='20260316000940', year=2025, url='u', sha256='0' * 64)
+        return {k: record['values'].get(k) for k in ('short_term_financial_instruments', 'current_financial_assets')}, pit_xml.parse_statements(text, year=2025)['notes']
+
+    def test_the_flag_is_reported_without_adding_values_to_the_statement_result(self):
+        result = read(bs_rows=complete_bs())
+        self.assertTrue(result['assets_listed']);self.assertNotIn('short_term_financial_instruments', result['values'])
+        self.assertFalse(read()['assets_listed'])
+
+    def test_a_note_tag_value_wins_over_the_confirmed_zero(self):
+        from tests.test_pit_xml_tags import fact, table, DEPOSIT
+        values, notes = self.vals(complete_bs(), extra=(table('(단위 : 원)', fact(DEPOSIT, '50')),))
+        self.assertEqual((values['short_term_financial_instruments'], values['current_financial_assets'], notes), (50, 0, {}))
+
+    def test_complete_lines_confirm_a_zero_for_both_liquid_fields(self):
+        self.assertEqual(self.vals(complete_bs()), ({'short_term_financial_instruments': 0, 'current_financial_assets': 0}, {}))
+
+    def test_a_present_line_keeps_its_value_and_only_the_missing_field_becomes_zero(self):
+        rows = complete_bs([['단기금융상품', '50', '40', '30']], total='1,050')
+        self.assertEqual(self.vals(rows), ({'short_term_financial_instruments': 50, 'current_financial_assets': 0}, {}))
+        rows = complete_bs([['당기손익-공정가치금융자산', '25', '1', '1']], total='1,025')
+        self.assertEqual(self.vals(rows), ({'short_term_financial_instruments': 0, 'current_financial_assets': 25}, {}))
+
+    def test_an_incomplete_list_leaves_the_fields_absent(self):
+        for total in ('1,004', '1,100', '895'):
+            with self.subTest(total=total):
+                self.assertEqual(self.vals(complete_bs(total=total)), ({'short_term_financial_instruments': None, 'current_financial_assets': None}, {}))
+
+    def test_a_leading_run_of_lines_that_adds_up_is_enough(self):
+        self.assertEqual(self.vals(complete_bs(total='900'))[0]['current_financial_assets'], 0)       # cash 600 + receivables 300 = 900; the later inventory line is outside the total
+
+    def test_the_tolerance_is_three_units(self):
+        self.assertEqual(self.vals(complete_bs(total='1,003'))[0]['current_financial_assets'], 0)
+        self.assertIsNone(self.vals(complete_bs(total='1,004'))[0]['current_financial_assets'])
+
+    def test_a_row_after_the_listed_current_assets_is_ignored_when_a_prefix_adds_up(self):
+        rows = complete_bs(after=[['매각예정비유동자산', '', '20', '']])
+        self.assertEqual(self.vals(rows)[0]['current_financial_assets'], 0)
+
+    def test_a_problem_with_a_liquid_line_is_never_overwritten_by_the_zero(self):
+        rows = complete_bs([['단기투자자산', '(25)', '1', '1']], total='975')
+        values, notes = self.vals(rows)
+        self.assertEqual((values['current_financial_assets'], notes), (None, {'current_financial_assets': 'negative'}))
+        self.assertEqual(values['short_term_financial_instruments'], 0)
+
+    def test_the_same_labels_outside_current_assets_do_not_matter_and_unreadable_lines_leave_it_absent(self):
+        rows = complete_bs([['기타유동자산', '1x', '1', '1']], total='1,000')
+        self.assertEqual(self.vals(rows)[0], {'short_term_financial_instruments': None, 'current_financial_assets': None})
 
 
 if __name__ == '__main__':unittest.main()

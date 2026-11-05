@@ -57,7 +57,7 @@ def read_accounts(kind, rows, *, unit, first, columns, positional=False, extra_l
     families={label: (family, required) for family, groups in (('borrowings', _BORROWINGS), ('lease', _LEASE))
               for required, labels in zip((None, 'current', 'noncurrent'), groups) for label in labels}
     families={**families, **(extra_labels or {})}
-    values={}; notes={}; seen=set(); section=None; deferred={}
+    values={}; notes={}; seen=set(); section=None; deferred={}; listed={'total': None, 'lines': [], 'ok': True}
     for row in rows:
         if not row:continue
         label=_label(row[0])
@@ -69,6 +69,7 @@ def read_accounts(kind, rows, *, unit, first, columns, positional=False, extra_l
         if not amounts:continue
         if positional:amounts, counted=[cells[0] or '-'], len(cells) <= columns       # a blank current cell is a zero: the period-number layout leaves zeros blank
         else:amounts=drop_dashes(amounts, columns); counted=len(amounts) == columns
+        if kind == 'balance':_track_current_assets(listed, label, section, amounts, counted, unit)
         family, required=families.get(label, (None, None)) if kind == 'balance' else (None, None)
         field=aliases.get(label); reason=None
         if family:
@@ -119,7 +120,30 @@ def read_accounts(kind, rows, *, unit, first, columns, positional=False, extra_l
     if deferred:values, notes=_resolve(values, notes, deferred, unit, continuing)
     values={field: value for field, value in values.items()
             if field not in notes and not any(field.startswith(family+'_') for family in ('borrowings', 'lease') if family in notes)}
+    if kind == 'balance' and _assets_listed(listed, IDENTITY_UNITS*unit):      # every current asset is on the face: a liquid-financial line that is not there is a confirmed zero
+        values={**values, '_assets_listed': True}      # the caller turns it into zeros after the tags are merged
     return values, notes
+
+
+def _track_current_assets(listed, label, section, amounts, counted, unit):
+    """Collect the 유동자산 total and the amounts of the lines under it (first amount of each row)."""
+    from .pit_xml import _amount
+    if label != '유동자산' and section != 'assets_current':return
+    try:value=_amount(amounts[0], unit) if counted else None
+    except (ValueError, TypeError, OverflowError):value=None
+    if label == '유동자산':listed['total']=value
+    elif value is None:listed['ok']=False
+    else:listed['lines'].append(value)
+
+
+def _assets_listed(listed, tolerance):
+    """True when the 유동자산 total is read and some leading run of the lines under it adds up to it (a later row such as 매각예정비유동자산 sits outside the total)."""
+    if not listed['ok'] or listed['total'] is None:return False
+    running=0
+    for value in listed['lines']:
+        running+=value
+        if abs(running-listed['total']) <= tolerance:return True
+    return False
 
 
 def drop_dashes(amounts, columns):

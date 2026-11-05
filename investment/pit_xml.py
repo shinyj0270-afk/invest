@@ -199,9 +199,21 @@ def parse_statements(text, *, year, extra_labels=None):
     tagged={field: value for field, value in tagged.items() if not (field in values and abs(values[field]-value) <= units[field]/2)}      # same value within the tag's rounding: the statement value stays
     values, merged_notes=_merge(values, tagged, notes, problems)
     notes={**merged_notes, **notes}
+    listed=bool(values.get('_assets_listed'))
+    values={k: v for k, v in values.items() if k != '_assets_listed'}
     if not values:raise ValueError('사용 가능한 계정이 없습니다')
-    return dict(values=values, notes=notes, basis='CFS', currency='KRW', unit=first_unit or 1,
+    return dict(values=values, notes=notes, assets_listed=listed, basis='CFS', currency='KRW', unit=first_unit or 1,
                 period_start=f'{year}-01-01', period_end=f'{year}-12-31', statements=counts)
+
+
+LIQUID_FIELDS = ('short_term_financial_instruments', 'current_financial_assets')
+
+
+def _confirm_zeros(parsed, listed):
+    """The face lists every current asset (lines add up to the total): a liquid line that is absent after statements AND tags is a confirmed zero."""
+    if not listed:return parsed
+    zeros={f: 0 for f in LIQUID_FIELDS if f not in parsed['values'] and f not in parsed['notes']}
+    return {**parsed, 'values': {**zeros, **parsed['values']}}
 
 
 def _record(parsed, *, receipt, year, url, sha256):
@@ -217,7 +229,8 @@ def _record(parsed, *, receipt, year, url, sha256):
 
 def build_record(text, *, receipt, year, url, sha256):
     """Build the annual record consumed by pit_values.map_record."""
-    return _record(parse_statements(text, year=year), receipt=receipt, year=year, url=url, sha256=sha256)
+    parsed=parse_statements(text, year=year)
+    return _record(_confirm_zeros(parsed, parsed['assets_listed']), receipt=receipt, year=year, url=url, sha256=sha256)
 
 
 def _read_member(archive, member, year, extra_labels=None):
@@ -235,7 +248,7 @@ def parse_document_zip(data, *, receipt, year, url, company=None):
     """Merge agreeing XML members in memory; never interpret names as paths."""
     try:data=memoryview(data).tobytes()
     except (TypeError, ValueError) as exc:raise ValueError('ZIP 바이트가 필요합니다') from exc
-    merged=None
+    merged=None; listed=False
     try:
         with zipfile.ZipFile(io.BytesIO(data)) as archive:
             members=[member for member in archive.infolist() if member.filename.lower().endswith('.xml')]
@@ -245,6 +258,7 @@ def parse_document_zip(data, *, receipt, year, url, company=None):
             for member in members:
                 parsed=_read_member(archive, member, year, COMPANY_LABELS.get(company))
                 if parsed is None:continue
+                listed=listed or parsed['assets_listed']
                 if merged is None:merged=parsed; continue
                 if any(merged[key] != parsed[key] for key in ('period_start', 'period_end')):raise ValueError('문서 기간 불일치')
                 original={field for fields in ALIASES.values() for field in fields}
@@ -256,6 +270,7 @@ def parse_document_zip(data, *, receipt, year, url, company=None):
                 merged={**merged, 'values': values, 'notes': notes}
     except zipfile.BadZipFile as exc:raise ValueError('ZIP 형식 오류') from exc
     if merged is None:raise ValueError('사용 가능한 XML 문서가 없습니다')
+    merged=_confirm_zeros(merged, listed)
     facts=COMPANY_NOTE_FACTS.get((company, year), {})
     merged={**merged, 'values': {**{k: v for k, v in facts.items() if k not in merged['values']}, **merged['values']}}      # hand-read note facts fill absent fields only
     return _record(merged, receipt=receipt, year=year, url=url, sha256=hashlib.sha256(data).hexdigest())
