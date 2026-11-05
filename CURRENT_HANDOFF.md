@@ -1,11 +1,12 @@
 # CURRENT HANDOFF
 
-Updated: 2026-11-05 (투자 결정 일지 MERGE·CLOSE, 사용자 "INVESTMENT 일지 MERGE·CLOSE"를 상위 총괄 세션이 전달)
-Last agent: Claude Code (Opus 5.5, 투자 결정 일지 별도 세션)
+Updated: 2026-11-05 (PC 역할 결정 기록 CLOSE, 사용자 지시를 상위 총괄 세션이 전달; 앞서 투자 결정 일지 MERGE·CLOSE 3602646 push 확인)
+Last agent: Claude Code (Opus 5.5, 별도 세션)
 Last PC: work Primary (DESKTOP-D36HPLT, config/local.json profile=work). 사용자는 이 회사 PC를 2026-11-10까지만 사용
-Last task: Research Library 확장으로 투자 결정 일지 추가·검증·반영 (이전 작업: PIT 파서, 방법론 Q01~Q10)
+Last task: work Primary 새 회사 PC 이전 결정·일정 기록; 그 전에 투자 결정 일지 추가·검증·반영
 
 Completed:
+- **PC 역할 결정 기록(사용자 "CREDIT, INVESTMENT은 새 회사 PC를 Primary로, 나머지는 모두 집 PC를 Primary로", "기록 + CLOSE까지", 2026-11-05)**: USER_DATA_DECISIONS.md 20번과 PROJECT_STATE 맨 위 절에 기록. work Primary는 11월 말 설정할 새 회사 PC(인포맥스 설치, 이름 미정)로 이전, home Secondary·결과 발행 PC(home)는 유지. 현재 `DESKTOP-D36HPLT`는 2026-11-10(화)까지 사용, 이후 새 PC 설정 전까지 work Primary 공백·인포맥스 Excel 갱신 중단(DART 원문 재무는 home 가능). 새 PC는 docs/PC_MIGRATION.md 절차(clone, `.venv`, `config/local.json` profile=work 직접 설정), 로컬 DB·인증·private_data·Library DB 자동 복사 없음. `config/local.json`·profile 이름·운영/예약/발행 설정 변경 없음(문서만).
 - **투자 결정 일지(사용자 "확장안으로 진행", 2026-11-05, 별도 세션, 네트워크 0건)**: 새 저장소 대신 Research Library 로컬 DB에 `decision`(작성 후 수정 불가: 작성일·종목·검토 유형 관찰/매수 검토/매도 검토·가설·반증 조건·출처 ID·점검일·선택 점수 스냅샷/산업 가설 연결)과 `decision_review`(결과·held/refuted/undecidable·사유) 추가(`investment/decision_journal.py`). 수량·매입가·계좌 필드는 허용 목록 밖이라 거부. `due`는 점검일이 지났는데 그 이후 평가가 없는 일지 목록. CLI `tools/research_library.py decision|decision-review|due [--today]`, Research Library 화면 상단에 "점검일 지난 결정 일지" 읽기 전용 표, 사용법 [docs/DECISION_JOURNAL.md](docs/DECISION_JOURNAL.md). 저장은 `.local/research-library/<profile>/user_input/`(Git 제외, share_candidates·보유 동기화·결과 발행·data 백업 대상 아님). 검증: 신규 `tests.test_decision_journal` 9개 OK(모듈 없음으로 먼저 실패 확인), view 17개 OK, Research Library 화면 Playwright PASS(옛 view/JS로 신규 검사 실패 확인 후 복원, 390px 넘침 수정). 전체 unittest 1,633개 중 실패 2개는 실행 중 서버가 필요한 `test_daily_ui`·`test_viewer_ui` 가져오기 오류(기존, `run_ui_isolated.py` 대상). `validate_share_candidates.py --ui` 449개 경고0·25개 PASS. CLI 실행과 실제 운영 화면은 미확인(워크트리에 `config/local.json` 없음). 한계: 점수 스냅샷은 수동 입력, 출처 삭제 시 일지 숨김 없음, 로그인한 휴대폰 화면에도 목록이 보임. 다음: 원본 main 반영 후 운영 화면 확인, 필요하면 저장 품질점수 자동 스냅샷.
 - **PIT 정정본 첫 버전 규칙(사용자 "정정본 사용", 2026-11-05, 네트워크 0건)**: `pit_pool._first_versions`: 12월 기간마다 저장된 원본은 모두 쓰고, 저장된 원본이 하나도 없는 기간만 저장된 정정본 중 가장 이른 것을 첫 버전으로 쓴다(원본이 있으면 정정본은 계속 제외, 미저장 접수번호는 쓰지 않음). 테스트 2건 추가(`tests/test_pit_pool.py`, 옛 코드에서 1건 실패 확인). 한화솔루션 FY2025가 정정본 20260325001401(공시 2026-03-25)로 들어와 G −0.008, C 0.039, B −1.146이 계산, 풀 백분위 재산출(HD현대일렉트릭 96.3 … 롯데케미칼 18.0). 한화 Q·S는 아직 없음: FY2024 `pretax_income`·FY2025 `income_tax_expense` 결측, FY2022~2024 리스 미확인. 다음 작업 후보.
 - **PIT 한화솔루션 FY2025 문서 수신(사용자 "2건 승인", 2026-11-05)**: 외부 요청 실제 1건. `fetch-document` 20260316000955(첨부추가)는 도구 안전장치 `not_a_listed_annual_report`로 요청 0건에 중단, 20260325001401(기재정정, 817,463바이트)은 수신·저장(Git 제외 `.local`). 저장된 목록 원문(22건)에도 FY2025 원본은 없다. 정정본은 전 필드가 파싱된다(매출 13.33조, 영업이익 −3,648억, 세전 −8,380억, 리스 유동 601억/비유동 2,542억). `pit_pool`은 원본만 쓰므로 점수에는 미반영. 정정본을 FY2025 첫 버전으로 쓰면(메모리 시험) 한화솔루션 G −0.008, C 0.039, B −1.146이 계산되나 Q는 세전이익 결측과 FY2022~2024 리스 미확인으로 비어 S=None. 정정본 사용은 사용자 결정 대기.
@@ -83,15 +84,15 @@ Pending:
 - 주간 연구노트 등록 Codex 자동화(월 09:00, 옛 경로 `신영재\한국\INVESTMENT`)의 Claude 재구성 미착수. 예약 경로가 새 `.venv`로 동작하는지 미확인.
 - 유지: home Telegram watch 2회 실수신·최신 코드 수신·과거 home RSS 원인 확인은 이전 인계 기준 미실행. `.venv-codex-backup` 삭제는 며칠 정상 운영 후 사용자 확인. ChatGPT Pro 종료 전 대화 내보내기 여부 미확인.
 
-Next task: 사용자가 정한다. Codex 교차 검토 결과(PIT 설계 Q01~Q03, 실패 테스트 원인, 오늘 신규 코드 재점검)를 확인하고 반영 범위를 정한다.
+Next task: 2026-11-10까지 현재 회사 PC에서 남길 작업은 사용자가 정한다(그 전 마지막 CLOSE로 미전송 0 확인). 새 회사 PC 설정 시 docs/PC_MIGRATION.md로 work 작업본을 새로 만든다. 그 밖의 후보: Codex 교차 검토 결과(PIT 설계 Q01~Q03 등) 반영 범위 결정.
 Next action: 사용자가 지정하면 work Primary 작업 워크트리에서 기존 정본·상태를 읽고 그 범위만 수행한다. 이동평균 기간 등 투자 규칙은 S10 진단 결과만으로 바꾸지 않는다. 사용자 행위가 필요한 항목(KRX/OpenDART 키·약관·법령 조문 확인)은 대신하지 않는다.
 Recommended next agent: Claude Code — 구현·검증·인수인계. Codex 교차 검토는 Q01~Q10 문서의 사실 대조(초록 수준 한계 포함)에 한정하며 승인된 기존 검토 계약에 따른다.
 Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: High (PIT·편향·자료 계약), 단순 문서 정리는 Medium
 Escalation condition: 과거자료 부재·정정 vintage/상폐 정산 미확보·동시쓰기/divergence·지표 변경 필요·약관상 보존/재배포 제한 해석(KRX OPEN API) 필요 시 근거를 보존하고 해당 단계 보류
 Branch: shinyj0270-afk/invest (재사용 작업 워크트리); main (운영 원본)
-Commit: ef99091abc368dfc2e2e123aeb7084b543736176 (투자 결정 일지 구현 commit, 이미 생성됨). 반영 직전 원본 main·origin main은 00d58b3 일치(0/0)
-Remote status: ef99091과 이 인계 기록 commit은 작성 시 not pushed / verification pending. 최종 보고 및 다음 START의 실제 Git 조회로 전송을 확인한다.
+Commit: 360264662a0d5f415011d1202c73de47211a7249 (이번 기록 직전 기준; 투자 결정 일지와 그 인계 기록을 push 완료한 SHA)
+Remote status: 3602646은 HEAD·origin/main·ls-remote main 일치로 pushed (verified). 이번 PC 역할 기록 commit은 작성 시 not pushed / verification pending이며 최종 보고와 다음 START의 실제 Git 조회로 확인한다.
 
 Notes:
 - 투자 결정 일지 CLOSE 재검증(2026-11-05): `tests.test_decision_journal`·`test_research_library`·`test_research_library_view` 53개 OK, `test_research_library_ui.py` PASS, `git diff --check` 0. `validate_share_candidates.py --ui`(449개 경고0·25개 PASS)는 같은 세션의 동일 코드 ef99091 시점 실행 결과다. 집 PC는 `fetch` 후 `pull --ff-only`로 받은 뒤 `tests.test_decision_journal`을 따로 돌려 확인한다. 일지 DB는 PC별이라 회사 일지는 집으로 넘어가지 않는다.

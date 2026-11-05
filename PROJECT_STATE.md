@@ -1,3 +1,11 @@
+# PC 역할: work Primary 새 회사 PC로 이전 예정 · 2026-11-05
+
+- 사용자 결정(USER_DATA_DECISIONS.md 20번): INVESTMENT work Primary는 11월 말 설정할 새 회사 PC(인포맥스 설치, 이름 미정)로 옮긴다. home Secondary·결과 발행 PC(home)는 유지.
+- 현재 회사 PC `DESKTOP-D36HPLT`는 2026-11-10까지 사용. 그 뒤 새 PC 설정 전까지 work Primary 공백, 인포맥스 Excel 갱신 중단, DART 원문 재무는 home에서 계속 가능.
+- 새 PC는 docs/PC_MIGRATION.md 절차로 시작하며 로컬 DB·인증·private_data는 자동 복사하지 않는다. `config/local.json`·profile 이름 변경 없음. 문서만 바뀌었다.
+
+---
+
 # 투자 결정 일지 · 2026-11-05
 
 - work Primary, Claude Code(별도 세션). 시작 기준 main/origin main `00d58b3` 일치·clean. 재개 지점은 CURRENT_HANDOFF.md.

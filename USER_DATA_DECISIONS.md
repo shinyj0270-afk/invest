@@ -1,5 +1,12 @@
 # 사용자 데이터 사용 결정
 
+## 20. 회사 PC 교체와 work Primary 이전 · 2026-11-05
+
+- 사용자 결정(2026-11-05, 상위 총괄 세션이 전달한 지시 "CREDIT, INVESTMENT은 새 회사 PC를 Primary로, 나머지는 모두 집 PC를 Primary로" 및 "기록 + CLOSE까지"): INVESTMENT의 work Primary는 11월 말 설정할 새 회사 PC(인포맥스 설치, PC 이름 미정)로 옮긴다. home Secondary와 단일 결과 발행 PC(home, `config/result_publisher.json`)는 그대로다.
+- 현재 회사 PC `DESKTOP-D36HPLT`는 2026-11-10(화)까지만 사용한다. 11-10 이후 새 PC 설정 전까지 work Primary는 비어 있고 인포맥스 Excel 갱신은 멈춘다. 재무는 DART 원문 우선 원칙(5번)에 따라 home에서 계속 갱신할 수 있다.
+- 새 PC는 기존 [PC 실행·이전 안내](docs/PC_MIGRATION.md) 절차(clone, `.venv`, `config/local.json` profile=work 직접 설정)로 시작한다. 로컬 DB·인증·`private_data`·Library DB(투자 결정 일지 포함)는 자동 복사하지 않는다는 기존 원칙을 유지한다.
+- `config/local.json`과 profile 이름(work/home)은 이번에 바꾸지 않았다. 이 기록은 문서 변경뿐이며 운영 서버·예약·발행 설정은 바꾸지 않았다.
+
 ## 18. 10월 운영 점검 개선안 채택 · 2026-10-22
 
 사용자 승인: **“개선안 채택해줘”**. docs/OPERATIONS_REVIEW.md의 2026-10 점검 우선안과 네 가지 개선안을 채택한다.
