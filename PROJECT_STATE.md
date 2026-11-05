@@ -1,3 +1,12 @@
+# 투자 결정 일지 · 2026-11-05
+
+- work Primary, Claude Code(별도 세션). 시작 기준 main/origin main `00d58b3` 일치·clean. 재개 지점은 CURRENT_HANDOFF.md.
+- Research Library 로컬 DB에 `decision`(작성 후 수정 불가: 가설·반증 조건·출처·점검일·검토 유형·선택 점수 스냅샷)과 `decision_review`(결과·사후 평가) 기록 종류를 추가했다(`investment/decision_journal.py`, 사용법 `docs/DECISION_JOURNAL.md`). 점검일이 지난 미평가 일지는 CLI `due`와 Research Library 화면 상단 읽기 전용 표로 본다. 주문·수량·계좌 필드 없음, 저장은 Git 제외 `.local/`(PC별, 자동 공유 없음).
+- 검증: 신규 시험 9개(RED 확인 후 통과), Research Library 관련 53개 OK, 화면 Playwright PASS, 공식 `validate_share_candidates.py --ui` 449개 경고0·25개 PASS. 전체 unittest 1,633개 중 서버 필요 UI 2개만 연결 실패(기존).
+- 미해결: 점수 스냅샷 자동 채움 없음, 운영 화면·CLI 실사용 확인, 집 PC 수신 후 실행 확인.
+
+---
+
 # PIT 연간 재무 파일럿·안정화 도구 · 2026-11-04
 
 - work Primary, Claude Code(구현 일부는 Codex `gpt-6-astra`/medium). 이 절 작성 시점 main/origin main `dcd5f07` 일치·clean. 재개 지점은 CURRENT_HANDOFF.md.

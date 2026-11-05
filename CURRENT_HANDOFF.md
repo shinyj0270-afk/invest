@@ -1,9 +1,9 @@
 # CURRENT HANDOFF
 
-Updated: 2026-11-04 (PIT 파서·롯데케미칼 실호출 반영; 전송은 main 반영 후 별도 기록)
-Last agent: Claude Code (Opus/Sonnet 5.5 세션) — Claude 중심 전환 후 첫 INVESTMENT 작업
-Last PC: work Primary (config/local.json profile=work, pc_check finish 확인; 변경 없음)
-Last task: .venv Codex 런타임 의존 제거 후 UI 테스트 점검, 역할 문구 전환, 방법론 질문 Q01~Q10 직접 조사와 승인 후 첫 구현 3건
+Updated: 2026-11-05 (투자 결정 일지 MERGE·CLOSE, 사용자 "INVESTMENT 일지 MERGE·CLOSE"를 상위 총괄 세션이 전달)
+Last agent: Claude Code (Opus 5.5, 투자 결정 일지 별도 세션)
+Last PC: work Primary (DESKTOP-D36HPLT, config/local.json profile=work). 사용자는 이 회사 PC를 2026-11-10까지만 사용
+Last task: Research Library 확장으로 투자 결정 일지 추가·검증·반영 (이전 작업: PIT 파서, 방법론 Q01~Q10)
 
 Completed:
 - **투자 결정 일지(사용자 "확장안으로 진행", 2026-11-05, 별도 세션, 네트워크 0건)**: 새 저장소 대신 Research Library 로컬 DB에 `decision`(작성 후 수정 불가: 작성일·종목·검토 유형 관찰/매수 검토/매도 검토·가설·반증 조건·출처 ID·점검일·선택 점수 스냅샷/산업 가설 연결)과 `decision_review`(결과·held/refuted/undecidable·사유) 추가(`investment/decision_journal.py`). 수량·매입가·계좌 필드는 허용 목록 밖이라 거부. `due`는 점검일이 지났는데 그 이후 평가가 없는 일지 목록. CLI `tools/research_library.py decision|decision-review|due [--today]`, Research Library 화면 상단에 "점검일 지난 결정 일지" 읽기 전용 표, 사용법 [docs/DECISION_JOURNAL.md](docs/DECISION_JOURNAL.md). 저장은 `.local/research-library/<profile>/user_input/`(Git 제외, share_candidates·보유 동기화·결과 발행·data 백업 대상 아님). 검증: 신규 `tests.test_decision_journal` 9개 OK(모듈 없음으로 먼저 실패 확인), view 17개 OK, Research Library 화면 Playwright PASS(옛 view/JS로 신규 검사 실패 확인 후 복원, 390px 넘침 수정). 전체 unittest 1,633개 중 실패 2개는 실행 중 서버가 필요한 `test_daily_ui`·`test_viewer_ui` 가져오기 오류(기존, `run_ui_isolated.py` 대상). `validate_share_candidates.py --ui` 449개 경고0·25개 PASS. CLI 실행과 실제 운영 화면은 미확인(워크트리에 `config/local.json` 없음). 한계: 점수 스냅샷은 수동 입력, 출처 삭제 시 일지 숨김 없음, 로그인한 휴대폰 화면에도 목록이 보임. 다음: 원본 main 반영 후 운영 화면 확인, 필요하면 저장 품질점수 자동 스냅샷.
@@ -90,10 +90,11 @@ Recommended model: 기존 사용자 설정 유지
 Recommended reasoning: High (PIT·편향·자료 계약), 단순 문서 정리는 Medium
 Escalation condition: 과거자료 부재·정정 vintage/상폐 정산 미확보·동시쓰기/divergence·지표 변경 필요·약관상 보존/재배포 제한 해석(KRX OPEN API) 필요 시 근거를 보존하고 해당 단계 보류
 Branch: shinyj0270-afk/invest (재사용 작업 워크트리); main (운영 원본)
-Commit: f86a6321742338b7cd918d505100f97c13090eca (이번 문구 보강 직전 기준, 이전 결과를 push 완료한 SHA)
-Remote status: 반영 직전 원본 main·작업본·origin main 모두 f86a632 일치(0/0). 이번 문구 보강·인계 commit/push는 작성 시 verification pending. 최종 보고 및 다음 START 실제 Git로 전송 commit을 확인한다.
+Commit: ef99091abc368dfc2e2e123aeb7084b543736176 (투자 결정 일지 구현 commit, 이미 생성됨). 반영 직전 원본 main·origin main은 00d58b3 일치(0/0)
+Remote status: ef99091과 이 인계 기록 commit은 작성 시 not pushed / verification pending. 최종 보고 및 다음 START의 실제 Git 조회로 전송을 확인한다.
 
 Notes:
+- 투자 결정 일지 CLOSE 재검증(2026-11-05): `tests.test_decision_journal`·`test_research_library`·`test_research_library_view` 53개 OK, `test_research_library_ui.py` PASS, `git diff --check` 0. `validate_share_candidates.py --ui`(449개 경고0·25개 PASS)는 같은 세션의 동일 코드 ef99091 시점 실행 결과다. 집 PC는 `fetch` 후 `pull --ff-only`로 받은 뒤 `tests.test_decision_journal`을 따로 돌려 확인한다. 일지 DB는 PC별이라 회사 일지는 집으로 넘어가지 않는다.
 - 검증(구현): 신규 테스트 `tests.test_trial_log` 5·`test_trial_log_cli` 2·`test_overlap_coverage_sim` 7·`test_factor_overlap_report` 7개 OK. 방향·래그 의존 로직은 일부러 깨뜨려 테스트가 실패하는 것을 확인한 뒤 복원. 관련 기존 `test_dual_pc` 13·`test_research_sessions` 4·`test_research_followup` 8·`test_leader_strategy` 7·`test_portfolio_risk` 14개 OK. `validate_share_candidates.py`(UI 제외) PASS·경고 0. 작업 워크트리에서 `tools/verify_portable.py`를 단독 실행하면 `config/local.json`이 없어 `Explicit matching PC profile required`로 실패하는 것은 기존 동작이며 공식 검증기의 같은 항목은 PASS.
 - 검증(앞선 CLOSE 실행): 문서 10개의 상대 링크 존재 확인, `tests.test_dual_pc` 13개·`tests.test_research_sessions` 4개 OK, `git diff --check` 0, `tools/pc_check.py --phase finish` clean(ahead/behind 0, 진행 Git 작업 0, 추적 private 경로 0, 예약 false). 공식 UI 23개 PASS는 `80e3391` 시점 실행 결과이며, 이후 신규 도구·테스트, `app.py`/`report.py` 문구, `research_sessions` 라벨 검사, `trial_log` 보강이 있었고 공식 UI 검증기는 그 이후 재실행하지 않았다.
 - 한계: Q01~Q10은 조사 기록이며 지표·비용·배분·임계값 도입 승인이 아니다. 논문 본문 미열람, 네이버 증권·WICS·SSRN은 접근 제한으로 못 열었고 우회하지 않았다. 검색 결과 중 삽입 지시문이 섞인 페이지(cavac.at)는 열지 않았다.
