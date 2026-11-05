@@ -126,8 +126,9 @@ class StoredCompanyFactTests(unittest.TestCase):
 
     def test_lease_facts_cover_three_companies_and_three_years_in_won(self):
         for code in ('051910', '047050', '036460'):
-            self.assertEqual(sorted(y for c, y in self.FACTS if c == code), [2022, 2023, 2024])
-            for year in (2022, 2023, 2024):
+            years = [2022, 2023, 2024, 2025] if code == '036460' else [2022, 2023, 2024]
+            self.assertEqual(sorted(y for c, y in self.FACTS if c == code), years)
+            for year in years:
                 fact = self.FACTS[(code, year)]
                 self.assertTrue({'lease_current', 'lease_noncurrent'} <= set(fact))
                 self.assertTrue(all(v % 1_000_000 == 0 for v in fact.values()))
@@ -136,10 +137,12 @@ class StoredCompanyFactTests(unittest.TestCase):
 
     def test_gas_corp_borrowings_exclude_the_derivative_liabilities_of_the_face_total(self):
         self.assertEqual(self.FACTS[('036460', 2022)]['borrowings_current'], 25_558_917_000_000)      # face 유동금융부채 is 26,312,749 incl. 753,832 derivatives
+        self.assertEqual(self.FACTS[('036460', 2025)]['borrowings_current'], 13_316_323_000_000)      # 8,167,720 + 1,984 + 5,146,619 (million KRW)
 
-    def test_lg_borrowings_that_include_leases_are_listed_for_the_three_years_only(self):
+    def test_lg_borrowings_that_include_leases_are_listed_for_fy2022_to_fy2025_only(self):
         scope = pit_xml_accounts.COMPANY_BORROWINGS_INCLUDE_LEASE
-        self.assertEqual(sorted(scope), [('051910', 2022), ('051910', 2023), ('051910', 2024)])
+        self.assertEqual(sorted(scope), [('051910', y) for y in (2022, 2023, 2024, 2025)])
+        self.assertEqual(scope[('051910', 2025)], {'current': 11_738_137_000_000, 'noncurrent': 22_073_820_000_000})
         self.assertEqual(scope[('051910', 2022)]['current'], 3_804_367_000_000)
 
 

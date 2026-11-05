@@ -42,6 +42,7 @@ COMPANY_NOTE_FACTS = {      # (stock code, fiscal year) -> consolidated facts in
     ('036460', 2022): {'borrowings_current': 25_558_917_000_000, 'borrowings_noncurrent': 17_292_636_000_000, 'lease_current': 378_923_000_000, 'lease_noncurrent': 1_652_602_000_000},
     ('036460', 2023): {'borrowings_current': 17_834_740_000_000, 'borrowings_noncurrent': 21_021_910_000_000, 'lease_current': 331_076_000_000, 'lease_noncurrent': 1_538_286_000_000},
     ('036460', 2024): {'borrowings_current': 17_730_115_000_000, 'borrowings_noncurrent': 21_385_638_000_000, 'lease_current': 241_621_000_000, 'lease_noncurrent': 1_201_532_000_000},
+    ('036460', 2025): {'borrowings_current': 13_316_323_000_000, 'borrowings_noncurrent': 21_760_182_000_000, 'lease_current': 223_985_000_000, 'lease_noncurrent': 1_047_265_000_000},      # receipt 20260323001058 note 총차입금: 8,167,720+1,984+5,146,619 / 347,613+21,412,569; prior-year column equals the FY2024 facts
     # S-Oil: note table 기타채무 (유동 / 비유동 리스부채), consolidated XML member; each year's prior-year column in the next report gives the same figure (checked FY2022-FY2024).
     ('010950', 2022): {'lease_current': 79_508_000_000, 'lease_noncurrent': 184_148_000_000},      # receipt 20230320000502
     ('010950', 2023): {'lease_current': 63_017_000_000, 'lease_noncurrent': 153_923_000_000},      # receipt 20240320001242
@@ -55,6 +56,7 @@ COMPANY_BORROWINGS_INCLUDE_LEASE = {      # source-verified face totals, includi
     ('051910', 2022): {'current': 3_804_367_000_000, 'noncurrent': 12_160_152_000_000},
     ('051910', 2023): {'current': 7_077_782_000_000, 'noncurrent': 14_850_332_000_000},
     ('051910', 2024): {'current': 7_621_059_000_000, 'noncurrent': 19_755_038_000_000},
+    ('051910', 2025): {'current': 11_738_137_000_000, 'noncurrent': 22_073_820_000_000},      # FY2025 note 차입금: 3,273,425+3,118,639+5,222,013+lease 124,060 / 6,180,027+15,002,881+lease 890,912 (million KRW)
 }
 _CLOSE = ('부채총계', '자본', '자본총계', '자산총계', '부채', '자산')
 _OUTFLOWS = ('capex_tangible', 'capex_intangible', 'dividends_paid', 'finance_costs')       # stored as magnitudes (a statement may print a cost as a deduction)
