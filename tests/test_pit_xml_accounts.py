@@ -48,6 +48,7 @@ import unittest
 import zipfile
 from investment import pit_xml
 from tests.test_pit_xml import doc, EXPECTED, balance, income, cash
+from investment.pit_xml_accounts import COMPANY_LABELS
 from tests.test_pit_xml_wide import bs, inc, cf, wrap, parse, HEAD, WIDE_BS, WIDE_FLOW
 
 BS = [['자산', '', '', ''], ['유동자산', '3,738', '3,036', '2,900'], ['현금및현금성자산', '216', '249', '200'], ['단기금융상품', '50', '40', '30'],
@@ -741,6 +742,24 @@ class CompanyLabelTests(unittest.TestCase):
             with self.subTest(company=company):
                 record = pit_xml.parse_document_zip(data, receipt='20260316000940', year=2025, url='u', company=company)
                 self.assertEqual(record['values'].get('borrowings_current'), expected)
+
+
+class HyosungLabelTests(unittest.TestCase):
+    """효성중공업 (298040) FY2023: the main XML member labels the current borrowings row `장기차입금`, the sister member of the same document labels the same amount `차입금`."""
+    HYOSUNG = {'장기차입금': ('borrowings', None)}
+
+    def rows(self):
+        return [['유동자산', '1', '1', '1'], ['현금및현금성자산', '216', '1', '1'], ['자산총계', '1', '1', '1'], ['부채', '', '', ''], ['유동부채', '1', '1', '1'], ['장기차입금', '903', '7', '7'],
+                ['비유동부채', '1', '1', '1'], ['장기차입금', '398', '7', '7'], ['부채총계', '1', '1', '1'], ['자본', '', '', ''], ['자본총계', '2,489', '2,055', '1']]
+
+    def test_the_company_label_is_read_in_either_section(self):
+        result = pit_xml.parse_statements(doc(bs(rows=self.rows()), inc(), cf()), year=2025, extra_labels=self.HYOSUNG)
+        self.assertEqual((result['values']['borrowings_current'], result['values']['borrowings_noncurrent'], result['notes']), (903, 398, {}))
+
+    def test_other_companies_still_refuse_it_in_the_current_section(self):
+        result = parse(bs(rows=self.rows()), inc(), cf())
+        self.assertEqual(result['notes'], {'borrowings': 'section_mismatch'})
+        self.assertEqual(COMPANY_LABELS.get('298040'), self.HYOSUNG)
 
 
 def sectioned_hd():

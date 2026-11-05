@@ -28,6 +28,7 @@ _LIQUID_FINANCIAL = ('당기손익-공정가치금융자산', '당기손익-공�
                    '유동금융자산', '단기투자자산', '단기매매금융자산', '단기금융자산')       # 기타금융자산 is deliberately absent: it mixes in non-liquid items
 COMPANY_LABELS = {      # stock code -> {label: (family, required section)}: borrowings the face statement books under another name, confirmed from the company's own notes
     '267260': {'단기금융부채': ('borrowings', 'current'), '장기금융부채': ('borrowings', 'noncurrent')},      # HD현대일렉트릭 FY2025: 단기금융부채 139,200 = CurrentBorrowingsAndCurrentPortionOfNoncurrentBorrowings (notes), 장기금융부채 46,859 = NoncurrentPortionOfNoncurrentBondsIssued
+    '298040': {'장기차입금': ('borrowings', None)},      # 효성중공업 FY2023: the main XML member labels the current borrowings row 장기차입금, the sister member of the same document labels the same amount 차입금
 }
 _CLOSE = ('부채총계', '자본', '자본총계', '자산총계', '부채', '자산')
 _OUTFLOWS = ('capex_tangible', 'capex_intangible', 'dividends_paid', 'finance_costs')       # stored as magnitudes (a statement may print a cost as a deduction)
