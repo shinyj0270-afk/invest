@@ -449,6 +449,10 @@
     "tests/test_quant_extensions_ui.py": "tests/test_quant_extensions_ui.py",
     "docs/QUANT_EXTENSIONS.md": "docs/QUANT_EXTENSIONS.md",
     "docs/research/GS_QUANT_REVIEW_2026-10-26.md": "docs/research/GS_QUANT_REVIEW_2026-10-26.md",
-    "docs/research/INVESTMENT_MASTERS_WEEKLY_2026-10-26.md": "docs/research/INVESTMENT_MASTERS_WEEKLY_2026-10-26.md"
+    "docs/research/INVESTMENT_MASTERS_WEEKLY_2026-10-26.md": "docs/research/INVESTMENT_MASTERS_WEEKLY_2026-10-26.md",
+    "STATE_DIGEST.md": "STATE_DIGEST.md",
+    "docs/archive/HANDOFF_HISTORY_2026-11-06.md": "docs/archive/HANDOFF_HISTORY_2026-11-06.md",
+    "scripts/session_check.py": "scripts/session_check.py",
+    "tests/test_session_check.py": "tests/test_session_check.py"
   }
 }

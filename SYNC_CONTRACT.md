@@ -7,6 +7,7 @@
 | 파일/위치 | 책임 | 갱신 기준 |
 |---|---|---|
 | PROJECT_STATE.md | 전체 프로젝트의 현재 상태·주요 진행 단계·검증·미해결 | 실제 상태가 달라질 때, 기존 역사 보존 |
+| STATE_DIGEST.md | 상태 원본의 최신 사실·다음 작업·미해결·결정 링크 요약(UTF-8 3KB 이하) | 매 SESSION CLOSE, 원본 우선 |
 | CURRENT_HANDOFF.md | 바로 다음 세션의 작업과 마지막 인계 증거 | 매 SESSION CLOSE, 무변경도 갱신 |
 | AGENTS.md | 모든 로컬 AI의 공통 작업 규칙과 필수 문서 진입점 | 규칙 변경 시 |
 | CLAUDE.md | @AGENTS.md 재사용과 Claude 전용 보충 | Claude 고유 규칙 변경 시 |
@@ -30,17 +31,17 @@
 
 구현·검증·인수인계 담당 Claude Code가 기존 [investment-session 스킬](skills/investment-session/SKILL.md)을 실행한다. 독립 검토 세션은 검토 의견만 전달하며 새로운 병렬 시작/마감 시스템을 만들지 않는다.
 
-START는 PC → Git status/branch/HEAD/진행 작업/remote 관계 → 안전한 경우 fetch 및 ff-only 수신 → 작업 워크트리 확인·main까지 따라잡기(하나를 재사용, 원본은 바탕화면 폴더) → PROJECT_STATE → CURRENT_HANDOFF → AGENTS → SYNC_CONTRACT → Claude 추가 규칙 → 다음 action 순서다. 지침은 사전 점검에도 적용하며 수신 후 변경된 문서를 다시 읽는다. 원격 URL 확인 시 인증정보는 노출하지 않는다.
+START는 PC → Git status/branch/HEAD/진행 작업/remote 관계 → 안전한 경우 fetch 및 ff-only 수신 → 작업 워크트리 확인·main까지 따라잡기(하나를 재사용, 원본은 바탕화면 폴더) → STATE_DIGEST → CURRENT_HANDOFF → AGENTS → SYNC_CONTRACT → Claude 추가 규칙 → 다음 action 순서다. PROJECT_STATE와 docs/DUAL_PC_WORKFLOW 등 큰 문서는 제목·날짜를 grep/head로 찾고 필요한 절만 읽는다. 요약 누락·충돌·오래된 날짜는 원본 해당 절로 확인하고 미확인은 그대로 표시한다. 지침은 사전 점검에도 적용하며 수신 후 변경된 문서를 다시 읽는다. 원격 URL 확인 시 인증정보는 노출하지 않는다.
 
 미커밋 변경·진행 Git 작업·다른 쓰기 세션·divergence·예상 밖 branch·detached HEAD·upstream 부재·로컬 ahead이면 자동 수신을 보류한다. 자동 stash/reset/merge/rebase, force push, git clean, 충돌 덮어쓰기는 하지 않는다. fetch 실패는 최신 확인 실패이지 0/0이 아니다.
 
-MERGE(`합쳐줘`)는 작업 워크트리의 검증 → 명시 경로 stage·commit → 원본 main `--ff-only` 반영 → 코드 변경 시 입력 보관 확인 후 안전 재시작 → 원격 재확인 → push → 실제 remote SHA 확인이며 워크트리는 남긴다. CLOSE는 실제 변경 검증 → 필요한 PROJECT_STATE 갱신 → CURRENT_HANDOFF 항상 갱신 → diff/공유 범위 검토 → MERGE와 같은 반영·전송 → 필요한 장기 지식 검토 → push 확인 후 작업 워크트리 clean·원격 일치 확인(워크트리는 재사용하므로 지우지 않음) → 최종 branch/commit/remote 보고다. CLOSE 요청은 검증된 공유 변경의 commit/push를 포함한다. 원격이 별도 전진하면 자동 통합하지 않고 보존·중단한다.
+MERGE(`합쳐줘`)는 작업 워크트리의 검증 → 명시 경로 stage·commit → 원본 main `--ff-only` 반영 → 코드 변경 시 입력 보관 확인 후 안전 재시작 → 원격 재확인 → push → 실제 remote SHA 확인이며 워크트리는 남긴다. CLOSE는 실제 변경 검증 → 필요한 PROJECT_STATE 갱신 → 이전 CURRENT_HANDOFF archive 보존·이번 세션으로 교체 및 STATE_DIGEST 갱신 → diff/공유 범위 검토 → MERGE와 같은 반영·전송 → 필요한 장기 지식 검토 → push 확인 후 작업 워크트리 clean·원격 일치 확인(워크트리는 재사용하므로 지우지 않음) → 최종 branch/commit/remote 보고다. CLOSE 요청은 검증된 공유 변경의 commit/push를 포함한다. 원격이 별도 전진하면 자동 통합하지 않고 보존·중단한다.
 
 기존 pc-start/pc-finish 스크립트는 오프라인 점검만 한다. 실행만으로 문서 인계·commit·push가 끝나지 않는다. PowerShell 실행 정책 차단 시 프로젝트 .venv의 tools/pc_check.py를 사용하고 정책을 우회하지 않는다.
 
 ## CURRENT_HANDOFF 작성 계약
 
-전체 이력을 누적하지 않고 한 세션의 다음 실행 지점으로 교체한다. 이전 버전은 Git 이력으로 보존한다. 필수 항목:
+전체 이력을 누적하지 않고 한 세션의 다음 실행 지점으로 교체한다. 교체 전 원문은 docs/archive/HANDOFF_HISTORY_<KST 날짜>.md에 추가 보존한다(같은 날짜 파일은 덮어쓰지 않음). 원문 글자 수와 옮긴 내용의 일치를 확인한다. Git 이력도 유지한다. STATE_DIGEST.md를 최신 원본 사실·근거 링크·갱신일로 함께 갱신하고 UTF-8 3KB 이하인지 확인한다. 필수 항목:
 
 - Updated (KST), Last agent, Last PC, Last task.
 - Completed, Pending: 이번 완료와 다음 작업에 영향을 주는 미완료만 간결하게 기록.
@@ -68,7 +69,7 @@ commit은 됐지만 push 실패/미실행이면 `local commit 완료 / remote ha
 
 ## ChatGPT 인계
 
-ChatGPT가 로컬 파일을 자동으로 읽는다고 가정하지 않는다. 연결 가능하면 승인 저장소 main의 실제 commit을 먼저 확인하고 같은 commit의 PROJECT_STATE.md와 CURRENT_HANDOFF.md, 필요한 AGENTS/SYNC_CONTRACT를 읽는다. 연결이 없으면 사용자에게 인계 본문·관련 문서·branch/commit/remote 확인 결과를 전달할 수 있게 작성하고, 원격 최신성 미확인을 명시한다. 과거 대화는 최신 원본 증거가 아니다.
+ChatGPT가 로컬 파일을 자동으로 읽는다고 가정하지 않는다. 연결 가능하면 승인 저장소 main의 실제 commit을 먼저 확인하고 같은 commit의 STATE_DIGEST.md와 CURRENT_HANDOFF.md, 필요한 AGENTS/SYNC_CONTRACT를 읽고 PROJECT_STATE.md는 필요한 절만 검색해 읽는다. 연결이 없으면 사용자에게 인계 본문·관련 문서·branch/commit/remote 확인 결과를 전달할 수 있게 작성하고, 원격 최신성 미확인을 명시한다. 과거 대화는 최신 원본 증거가 아니다.
 
 ## Wiki 경계
 

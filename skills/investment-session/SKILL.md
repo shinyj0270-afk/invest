@@ -102,12 +102,14 @@ git rev-parse origin/main
 
 수신이 끝난 뒤 반드시 다음 순서로 읽는다.
 
-1. `PROJECT_STATE.md`
+1. `STATE_DIGEST.md` (UTF-8 3KB 이하 요약; 원본보다 우선하지 않음)
 2. `CURRENT_HANDOFF.md`
 3. `AGENTS.md`
 4. `SYNC_CONTRACT.md`
 5. Claude이면 `CLAUDE.md`의 추가 규칙
-6. `docs/DUAL_PC_WORKFLOW.md`와 현재 작업에 필요한 관련 문서
+6. `PROJECT_STATE.md`와 `docs/DUAL_PC_WORKFLOW.md` 등 큰 문서는 제목·날짜를 grep/head로 찾고 현재 작업에 필요한 절만 읽는다. 요약 누락·충돌·오래된 날짜는 원본 해당 절로 확인한다.
+
+빠른 상태 출력은 `python scripts/session_check.py`를 사용한다(기본 오프라인, PC profile은 명시한 `--profile work|home`만 표시; 미지정은 미확인). 안전 점검 후 원격 확인이 필요하면 `--fetch`를 사용한다. 기존 pc-start/pc-finish와 Git/PC 점검·수신 절차를 대체하지 않는다.
 
 수신을 보류했어도 로컬 문서는 읽을 수 있다. 미수신/캐시 기준임을 표시하고 충돌하는 구현은 진행하지 않는다. 필수 파일이 없으면 미확인으로 보고한다.
 
@@ -128,7 +130,7 @@ git rev-parse origin/main
 - profile: work/home/unknown 및 Primary/Secondary 개발 역할, config/result_publisher.json의 단일 결과 발행 PC
 - 원본 main HEAD short SHA, origin/main short SHA, clean 여부; 운영 서버의 실행/소스 일치·restart_required 또는 미확인 상태
 - 작업 워크트리 경로·브랜치 (새로 만들었는지, 이어 쓰는지)
-- 코드 수신·운영 실행·결과 발행·상대 PC 수신/실행을 각각 실제 확인한 단계로 구분하고, `PROJECT_STATE.md`의 최신 완료 작업을 간단히 보고
+- 코드 수신·운영 실행·결과 발행·상대 PC 수신/실행을 각각 실제 확인한 단계로 구분하고, `STATE_DIGEST.md`와 필요한 원본 절의 최신 완료 작업을 간단히 보고
 - 미해결 1~3개
 - `CURRENT_HANDOFF.md`의 다음 작업 1개, 권장 실행 주체/모델/Reasoning 및 escalation 조건
 - 정리 후보로 발견한 중복이 있으면 목록
@@ -258,7 +260,7 @@ MERGE 2단계의 검증 기준을 그대로 적용한다. 이미 MERGE로 반영
 
 전체 프로젝트 상태·주요 단계·검증·미해결이 실제로 바뀐 경우에만 `PROJECT_STATE.md` 맨 위에 날짜/작업명, 시작 branch/SHA, 실제 변경·실행 검증·미해결을 추가한다. 기존 과거 기록은 보존한다. 다음 실행 지점과 전송 상태는 `CURRENT_HANDOFF.md`를 참조하며 반복 복사하지 않는다.
 
-`CURRENT_HANDOFF.md`는 무변경 세션도 항상 갱신한다. SYNC_CONTRACT.md의 필수 필드에 따라 다음 작업자가 바로 실행할 Next action, 권장 실행 주체·모델·Reasoning, escalation 조건을 작성한다. commit/push 전에는 pending으로 기록하고 성공을 선기록하지 않는다. 작업 워크트리를 정리할 예정이면 그 사실과 남긴 것을 Notes에 적는다.
+`CURRENT_HANDOFF.md`는 무변경 세션도 항상 이번 세션으로 교체한다(덧붙이지 않음). 교체 전 원문을 `docs/archive/HANDOFF_HISTORY_<KST 날짜>.md`에 추가 보존하고 원문 글자 수·내용 일치를 확인한다. 같은 날짜 archive는 덮어쓰지 않는다. `STATE_DIGEST.md`를 상태 원본의 최신 사실·다음 작업·미해결·핵심 결정 링크·갱신일로 함께 갱신하고 UTF-8 3KB 이하를 확인한다. 불확실한 내용은 원문 링크와 미확인으로 남긴다. SYNC_CONTRACT.md의 필수 필드에 따라 다음 작업자가 바로 실행할 Next action, 권장 실행 주체·모델·Reasoning, escalation 조건을 작성한다. commit/push 전에는 pending으로 기록하고 성공을 선기록하지 않는다. 작업 워크트리를 정리할 예정이면 그 사실과 남긴 것을 Notes에 적는다.
 
 SYNC_CONTRACT.md의 인계 분량·운영 점검 근거 기준을 적용해 이번 완료·현재 미완료·다음 한 작업으로 교체한다. 갱신 후 `git diff`와 새 파일 내용도 검토한다.
 

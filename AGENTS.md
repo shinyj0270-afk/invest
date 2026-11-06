@@ -8,8 +8,8 @@
 
 <!-- BEGIN DUAL-PC -->
 - work는 Primary로 주요 개발·실데이터 작업·최종 검증의 기본 환경이다. home은 Secondary로 보조 개발·테스트·야간/주말·비상 인계를 맡는다. 사용자가 명시한 프로필만 config/local.json에 설정한다. 미확인 PC는 unknown으로 두고 PC별 작업본과 실행 환경은 독립적으로 보존한다.
-- 모든 로컬 AI는 작업 시작 시 Git/PC 상태를 점검하고 PROJECT_STATE.md, CURRENT_HANDOFF.md, 이 파일, SYNC_CONTRACT.md, docs/DUAL_PC_WORKFLOW.md를 실제로 읽는다. Claude는 CLAUDE.md의 추가 규칙도 읽는다. 수신 후 다시 읽으며 세부 흐름은 기존 investment-session 스킬을 따른다. 기존 작업본/미완료 변경을 보존한다. 상위 저장소가 있으면 중첩 저장소를 만들지 않는다.
-- SESSION CLOSE마다 CURRENT_HANDOFF.md를 항상 갱신한다. PROJECT_STATE.md는 전체 상태·주요 단계·검증·미해결이 실제로 달라질 때만 갱신하고 다음 실행 지점은 CURRENT_HANDOFF.md를 참조한다. 과거 테스트를 재실행 결과로 복사하지 않는다.
+- 모든 로컬 AI는 작업 시작 시 Git/PC 상태를 점검하고 STATE_DIGEST.md(3KB 이하), CURRENT_HANDOFF.md, 이 파일, SYNC_CONTRACT.md를 실제로 읽는다. PROJECT_STATE.md는 전체 상태 원본으로 보존하며 제목·날짜를 grep/head로 찾은 뒤 현재 작업에 필요한 절만 읽는다. docs/DUAL_PC_WORKFLOW.md 등 큰 참고 문서도 해당 작업의 필요한 절만 읽는다. 요약과 원본이 충돌하면 기존 계약과 원본이 우선한다. Claude는 CLAUDE.md의 추가 규칙도 읽는다. 수신 후 다시 읽으며 세부 흐름은 기존 investment-session 스킬을 따른다. 기존 작업본/미완료 변경을 보존한다. 상위 저장소가 있으면 중첩 저장소를 만들지 않는다.
+- SESSION CLOSE마다 이전 CURRENT_HANDOFF.md를 docs/archive/HANDOFF_HISTORY_<KST 날짜>.md에 추가 보존한 뒤 이번 세션 내용으로 교체한다(누적하지 않음). STATE_DIGEST.md도 원본 최신 사실·근거 링크·갱신일로 함께 갱신하고 UTF-8 3KB 이하를 확인한다. 이전 원문과 새 archive의 글자 수·내용 보존을 확인한다. PROJECT_STATE.md는 전체 상태·주요 단계·검증·미해결이 실제로 달라질 때만 갱신하고 다음 실행 지점은 CURRENT_HANDOFF.md를 참조한다. 과거 테스트를 재실행 결과로 복사하지 않는다.
 - 한 기준 저장소와 PC별 작업본을 사용한다. 영구 work/home 브랜치를 나누지 않고 기존 인계 브랜치/PR 규칙을 따른다. 한 시점에 한 PC·한 쓰기 세션 원칙은 운영 관례이며 기술적 잠금이 아니다.
 - 원본은 바탕화면의 실제 프로젝트 폴더(운영 서버·설정·.venv·데이터가 있는 main)이고, 코드 변경은 거기서 직접 하지 않는다. 개발·격리 검증은 `git worktree`로 만든 작업 워크트리 하나를 재사용해 하고, 원본 main에 `--ff-only`로 반영한 뒤 안전 재시작·push한다. 세션(AI 대화)은 워크트리와 별개로 작업 단위마다 새로 열고 CLOSE 후 닫는다. START가 워크트리를 준비하고 `합쳐줘`(MERGE)·CLOSE가 반영·전송·정리를 실행한다(investment-session 스킬, 배경은 docs/DUAL_PC_WORKFLOW.md의 작업 워크트리 절).
 - PC 로컬 설정, 인증, 원자료, DB와 WAL/journal, 보유내역, 투자노트, 출력물, 로그, 전체 세션을 자동 공유하지 않는다.
