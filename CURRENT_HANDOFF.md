@@ -6,6 +6,7 @@ Last PC: work Primary (DESKTOP-D36HPLT, config/local.json profile=work). 사용�
 Last task: work Primary 새 회사 PC 이전 결정·일정 기록; 그 전에 투자 결정 일지 추가·검증·반영
 
 Completed:
+- **2026-11-02·11-09 주간 연구노트 등록(사용자 "둘 다 등록", 2026-11-09)**: 공개 원문 대조 후 기존 import_weekly_research로 work 로컬 DB에 등록. 신규 31(출처7·카드16·가설4·context4), 재실행 inserted0, catalog 31, DB 82→146행·무결성 ok·기존행 변경0. 가설 THESIS-20261102-01/02, THESIS-20261109-01/02(모두 active=연구 중, 실증 전). 검증본 docs/research/INVESTMENT_MASTERS_WEEKLY_2026-11-02.md, -11-09.md. 집 PC DB에는 반영되지 않음(PC별 DB).
 - **PC 역할 결정 기록(사용자 "CREDIT, INVESTMENT은 새 회사 PC를 Primary로, 나머지는 모두 집 PC를 Primary로", "기록 + CLOSE까지", 2026-11-05)**: USER_DATA_DECISIONS.md 20번과 PROJECT_STATE 맨 위 절에 기록. work Primary는 11월 말 설정할 새 회사 PC(인포맥스 설치, 이름 미정)로 이전, home Secondary·결과 발행 PC(home)는 유지. 현재 `DESKTOP-D36HPLT`는 2026-11-10(화)까지 사용, 이후 새 PC 설정 전까지 work Primary 공백·인포맥스 Excel 갱신 중단(DART 원문 재무는 home 가능). 새 PC는 docs/PC_MIGRATION.md 절차(clone, `.venv`, `config/local.json` profile=work 직접 설정), 로컬 DB·인증·private_data·Library DB 자동 복사 없음. `config/local.json`·profile 이름·운영/예약/발행 설정 변경 없음(문서만).
 Pending:
 - **PIT 파일럿 남은 일**: (a) 동아타이어공업 나머지 연도(FY2018~2022) 문서는 필요할 때만 요청별 승인, (b) 정정공시·연속 연도 빈티지 검증, (c) 문서 받기 명령 정식화, (d) PIT 품질 점수는 V/B가 시점 기록 없는 지표를 써서 불완전. 영업손실 양수 표기 기업은 현재 오류로 멈춘다(규칙 확장 시 계약 테스트부터).
@@ -14,7 +15,7 @@ Pending:
 - 사용자 행위 필요: KRX OPEN API 키 신청·약관 동의, OpenDART 키, 법령 시행일별 조문(2008 증권거래세율)·농특세 별표 확인.
 - 비공식 UI 테스트 8개 중 6개는 테스트 취약점으로 규명·수정했고 2개(`test_daily_ui`, `test_viewer_ui`)는 8501 Streamlit 서버가 필요하다. `tests.test_auto_refresh` 5건은 테스트 순서 의존으로 수정했다.
 - `research_sessions.py`는 agent를 Codex/Claude로만 허용하고 작성자≠검토자를 강제한다. Claude 중심 전환: agent 라벨과 model ID가 모순되면(Codex+claude 계열, Claude+gpt/codex/o 계열) 가져오기를 거부하는 검사 추가(`label_matches_model`, 테스트·변이 3종 검출). 역할 고정(저자=Claude, 검토자=Codex 강제)은 하지 않음 — 기존 유연성 유지, 사용자 결정 필요 시 별도.
-- 주간 연구노트 등록 Codex 자동화(월 09:00, 옛 경로 `신영재\한국\INVESTMENT`)의 Claude 재구성 미착수. 예약 경로가 새 `.venv`로 동작하는지 미확인.
+- 주간 연구노트는 11-02·11-09분을 수동 등록했다(자동 등록 아님). 주간 연구노트 등록 Codex 자동화(월 09:00, 옛 경로 `신영재\한국\INVESTMENT`)의 Claude 재구성 미착수. 예약 경로가 새 `.venv`로 동작하는지 미확인.
 - 유지: home Telegram watch 2회 실수신·최신 코드 수신·과거 home RSS 원인 확인은 이전 인계 기준 미실행. `.venv-codex-backup` 삭제는 며칠 정상 운영 후 사용자 확인. ChatGPT Pro 종료 전 대화 내보내기 여부 미확인.
 
 Next task: 2026-11-10까지 현재 회사 PC에서 남길 작업은 사용자가 정한다(그 전 마지막 CLOSE로 미전송 0 확인). 새 회사 PC 설정 시 docs/PC_MIGRATION.md로 work 작업본을 새로 만든다. 그 밖의 후보: Codex 교차 검토 결과(PIT 설계 Q01~Q03 등) 반영 범위 결정.

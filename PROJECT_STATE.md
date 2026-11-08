@@ -1,3 +1,11 @@
+# 2026-11-02·11-09 주간 연구노트 검증·등록 · 2026-11-09
+
+- work Primary, Claude Code. 시작 main/origin main `e6e07c9` 일치·clean. 사용자 요청 "둘 다 등록". 두 원본을 공개 원문과 대조했다(신규 URL 7개 HTTP200·제목 일치, IBD 3건 발행일은 페이지 메타로 확인·원본 미확인 표기 정정). 검증본은 docs/research/INVESTMENT_MASTERS_WEEKLY_2026-11-02.md, -11-09.md.
+- 기존 import_weekly_research 검증→SQLite backup→apply를 11-02, 11-09 순서로 실행: 신규 16(출처4·카드8·가설2·context2) + 15(출처3·카드8·가설2·context2), 기존 출처 재사용 9/10. 각 묶음 재실행 inserted0(duplicate). catalog 31건 입력·재입력0. DB 82→146행(연구 53→84, weekly 3→5, catalog 25→56), 무결성 ok·기존 82행 변경0·중복 URL0.
+- 원본의 MASTER-01~08(11-09)은 기존 ID와 충돌해 MASTER-20261109-01~08로 등록. 같은 보고서/서지의 URL 변형은 기존 출처로 재사용, S14(버크셔 홈페이지)는 미등록. 실증·현재 산업순위·사람 curate·대시보드 확인·다른 PC DB 복사 없음. 원본·manifest·DB 백업·영수증은 `.local/research-library/inbox/2026-11-0{2,9}/`(Git 제외).
+
+---
+
 # PC 역할: work Primary 새 회사 PC로 이전 예정 · 2026-11-05
 
 - 사용자 결정(USER_DATA_DECISIONS.md 20번): INVESTMENT work Primary는 11월 말 설정할 새 회사 PC(인포맥스 설치, 이름 미정)로 옮긴다. home Secondary·결과 발행 PC(home)는 유지.
