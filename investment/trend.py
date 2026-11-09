@@ -12,6 +12,8 @@ def calculate(row,benchmark,sessions,as_of,min_turnover=1e9):
     if row.get('suspended'): return dict(result,status='fail',reason='거래정지')
     if row.get('trend_prices') and (not bars or bars[-1]['date']!=as_of):
         return dict(result,reason='추세 시세가 현재 가격일보다 오래됨 · 재조회 필요')
+    if not bars or not expected or bars[-1]['date']!=expected[-1] or expected[-1]!=as_of:
+        return dict(result,reason='마지막 가격일·거래일·평가일 불일치 · 재조회 필요')
     if len(bars)<253 or len(expected)<253 or [b['date'] for b in bars[-253:]]!=expected[-253:]: return result
     bars=bars[-253:]
     if any(b['date'] not in bm for b in bars): return result

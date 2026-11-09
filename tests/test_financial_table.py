@@ -44,6 +44,38 @@ class FinancialTableTests(unittest.TestCase):
         self.assertEqual(table['groups'],[]);self.assertIn('중복',table['notes'][0])
         wrong=dict(self.source(self.period),name='다른 기업')
         self.assertEqual(build_table(self.row,self.snapshot,wrong)['groups'],[])
+
+    def test_latest_published_vintage_is_selected_at_the_view_date(self):
+        original=dict(self.period,period_end='2025-12-31',cadence='annual',available_at='2026-03-02',revenue=100e8)
+        corrected=dict(original,available_at='2026-04-01',revenue=90e8)
+        for location in ('snapshot','supplement','overlap'):
+            for periods in ((original,corrected),(corrected,original)):
+                for cutoff,expected in (('2026-03-01',None),('2026-03-02',100),
+                    ('2026-03-31',100),('2026-04-01',90),('2026-04-02',90)):
+                    with self.subTest(location=location,cutoff=cutoff,order=periods[0]['available_at']):
+                        self.snapshot['meta']['price_date']=cutoff
+                        self.row['annual']=list(periods) if location=='snapshot' else []
+                        if location=='overlap':
+                            self.row['annual']=[dict(original,revenue=80e8)]
+                        source=None if location=='snapshot' else self.source(*periods)
+                        before=copy.deepcopy((self.snapshot,source))
+                        table=build_table(self.row,self.snapshot,source)
+                        self.assertEqual((self.snapshot,source),before)
+                        if expected is None:
+                            self.assertEqual(table['groups'],[])
+                        else:
+                            self.assertEqual(len(table['groups']),1)
+                            columns=table['groups'][0]['columns']
+                            self.assertEqual(len(columns),1)
+                            self.assertEqual(columns[0]['values']['revenue'],expected)
+                            self.assertEqual(columns[0]['filing_available_at'],
+                                '2026-03-02' if expected==100 else '2026-04-01')
+
+    def test_conflicting_rows_in_one_vintage_still_fail_closed(self):
+        conflict=dict(self.period,revenue=90e8)
+        table=build_table(self.row,self.snapshot,self.source(self.period,conflict))
+        self.assertEqual(table['groups'],[])
+        self.assertIn('중복',table['notes'][0])
     def test_snapshot_and_official_overlap_uses_official_cells_without_mutation(self):
         self.row['quarters']=[dict(period_end='2026-06-30',available_at=None,basis='CFS',
             revenue=90e8,op=8e8,net_income=2e8,ebitda=17e8)]

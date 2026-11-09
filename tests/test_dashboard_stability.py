@@ -93,6 +93,34 @@ class FinancialMergeStabilityTests(unittest.TestCase):
         for a,b in ((record(p,p),record(o)),(record(p),record(o,o))):
             r=self.merge(a,b);self.assertEqual(r['periods'],[]);self.assertTrue(r['merge_rejected'])
 
+    def test_merge_selects_latest_available_vintage_before_source_priority(self):
+        original=dict(period(),period_end='2025-12-31',cadence='annual',available_at='2026-03-02',revenue=100e8)
+        corrected=dict(original,available_at='2026-04-01',revenue=90e8)
+        for source in ('provider','official'):
+            for periods in ((original,corrected),(corrected,original)):
+                for cutoff,expected in (('2026-03-31',100e8),('2026-04-01',90e8),(None,90e8)):
+                    with self.subTest(source=source,cutoff=cutoff,order=periods[0]['available_at']):
+                        p=record(*periods) if source=='provider' else record()
+                        o=record(*periods) if source=='official' else record()
+                        before=copy.deepcopy((p,o))
+                        result=self.merge(p,o,as_of=cutoff)
+                        self.assertEqual((p,o),before)
+                        self.assertEqual(len(result['periods']),1)
+                        self.assertEqual(result['periods'][0]['revenue'],expected)
+
+    def test_future_conflicting_vintage_does_not_hide_earlier_valid_vintage(self):
+        original=period(available_at='2026-08-14',revenue=100e8)
+        correction=dict(original,available_at='2026-10-08',revenue=90e8)
+        conflicting=dict(correction,revenue=80e8)
+        for p,o in ((record(original,correction,conflicting),record()),
+                    (record(),record(original,correction,conflicting))):
+            current=self.merge(p,o)
+            self.assertEqual(len(current['periods']),1)
+            self.assertEqual(current['periods'][0]['revenue'],100e8)
+            later=self.merge(p,o,as_of='2026-10-08')
+            self.assertEqual(later['periods'],[])
+            self.assertTrue(later['merge_rejected'])
+
     def test_eps_has_own_tolerance_and_merging_is_idempotent(self):
         p=record(period(available_at=None,eps=1200,revenue=1e9,source='인포맥스'))
         o=record(period(available_at='2026-08-14',eps=1100,revenue=1e9+99e6,balance_debt=99,source='DART'))

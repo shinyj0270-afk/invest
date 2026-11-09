@@ -62,7 +62,7 @@ def build_table(row, snapshot, supplemental=None, max_columns=6):
             records.extend(supplemental.get('periods',[]));notes.extend(supplemental.get('notes',[]))
         else:
             notes.append('추가 재무자료의 종목 식별이 달라 연결을 보류했습니다.')
-    groups={};seen=set();prepared=[]
+    groups={};seen=set();latest={}
     for index,raw in enumerate(records):
         r=dict(raw)
         if r.get('currency','KRW')!='KRW':continue
@@ -86,14 +86,17 @@ def build_table(row, snapshot, supplemental=None, max_columns=6):
             r['filing_available_at']=None
             r['source_url']=None
             r['receipt']=None
-        # Duplicates within one input remain ambiguous. A snapshot and a checked
-        # supplement may legitimately cover the same accounting period.
+        # Different publication dates are revisions; duplicates within a vintage
+        # remain ambiguous. Resolve each input before applying source priority.
         identity=(index>=provider_count,end,basis,cadence)
-        if identity in seen:
+        vintage=identity+(available,)
+        if vintage in seen:
             return dict(groups=[],rows=ROWS,notes=['동일 기간·기준의 재무자료가 중복되어 표 연결을 보류했습니다.'])
-        seen.add(identity)
+        seen.add(vintage)
         r['cell_provenance']=provenance
-        prepared.append((index>=provider_count,r))
+        if identity not in latest or (available or '')>(latest[identity].get('available_at') or ''):
+            latest[identity]=r
+    prepared=[(identity[0],r) for identity,r in latest.items()]
     if verified_supplemental and any(not supplemental_row for supplemental_row,_ in prepared):
         identity={k:row[k] for k in ('code','name','market')}
         provider=dict(identity,periods=[r for supplemental_row,r in prepared if not supplemental_row],notes=[])
@@ -220,13 +223,7 @@ def merge_financials(provider, official, *, as_of=None):
             if record.get('code') != code:
                 continue
             periods = record.get('periods', [])
-            if len({key(r) for r in periods}) != len(periods):
-                record.update(periods=[], notes=list(record.get('notes', []))+[
-                    '동일 기간·기준의 재무자료가 중복되어 병합을 보류했습니다.'])
-                record['merge_rejected'] = True
-                output[code] = record
-                continue
-            usable = []
+            latest = {}; seen = set()
             for period in periods:
                 available = period.get('available_at')
                 if not valid_day(period.get('period_end')):
@@ -238,6 +235,13 @@ def merge_financials(provider, official, *, as_of=None):
                 # Official cells must have a known filing date for an explicit cutoff.
                 if as_of and not provider_source and available is None and not period.get('cell_provenance'):
                     continue
+                vintage = key(period) + (available,)
+                if vintage in seen:
+                    record['notes'] = list(record.get('notes', []))+[
+                        '동일 기간·기준의 재무자료가 중복되어 병합을 보류했습니다.']
+                    record['merge_rejected'] = True
+                    break
+                seen.add(vintage)
                 provenance = copy.deepcopy(period.get('cell_provenance', {}))
                 for field in INPUTS:
                     if not num(period.get(field)):
@@ -256,8 +260,10 @@ def merge_financials(provider, official, *, as_of=None):
                         continue
                     provenance[field] = evidence
                 period['cell_provenance'] = provenance
-                usable.append(period)
-            record['periods'] = usable
+                identity = key(period)
+                if identity not in latest or (available or '') > (latest[identity].get('available_at') or ''):
+                    latest[identity] = period
+            record['periods'] = [] if record.get('merge_rejected') else list(latest.values())
             output[code] = record
         return output
 

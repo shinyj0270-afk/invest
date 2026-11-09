@@ -84,6 +84,31 @@ class ValuationTests(unittest.TestCase):
         self.assertEqual(self.result(official, infomax)['per']['value'], 7)
         self.assertEqual(self.result(infomax)['per']['value'], 9)
 
+    def test_source_priority_applies_only_to_compatible_observations(self):
+        for metric in ('per', 'pbr'):
+            for changes in (dict(observed_on='2026-09-22', price_date='2026-09-22'),
+                dict(observed_on='2026-09-24'), dict(financial_period='2026-12-31'),
+                dict(financial_basis='OFS'), dict(adjustment_basis='unadjusted'),
+                dict(venue='NXT'), dict(period_type='point_in_time' if metric=='per' else 'TTM')):
+                official = self.observation(metric, 8, source='official', denominator_positive=True, **changes)
+                current = self.observation(metric, 9, denominator_positive=True)
+                for observations in ((official, current), (current, official)):
+                    with self.subTest(metric=metric, changes=changes, observations=observations):
+                        result = self.result(*observations)[metric]
+                        self.assertEqual(result['value'], 9)
+                        self.assertEqual(result['source'], current['source'])
+
+    def test_compatible_official_missing_or_invalid_value_does_not_fall_back(self):
+        for value in (None, 0, -1):
+            with self.subTest(value=value):
+                result = self.result(self.observation('per', value, source='official', denominator_positive=True),
+                    self.observation('per', 9, denominator_positive=True))['per']
+                self.assertIsNone(result['value'])
+                self.assertEqual(result['source'], 'official')
+        result = self.result(self.observation('per', 8, source='official'),
+            self.observation('per', 9, denominator_positive=True))['per']
+        self.assertIsNone(result['value'])
+
     def test_official_total_debt_replaces_infomax_priority_net_debt(self):
         self.row['metrics']['net_debt_equity_pct'] = 125.9048
         self.row['additional_financial_evidence'] = dict(provider_priority_applied=True, unit='million KRW',

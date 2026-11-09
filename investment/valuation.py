@@ -81,8 +81,12 @@ def valuation_records(row, snapshot):
     records = validate_observations(row.get('valuation_observations', []))
     result = {}
     for metric, denominator in (('per', 'eps_ttm'), ('pbr', 'bps')):
-        # Prefer official filings (user decision 2026-10-15), then Infomax, then the newest observation/report.
         candidates = [r for r in records if r['metric'] in (metric, denominator)]
+        compatible = [r for r in candidates if _check(r, row, snapshot, metric)[0] is None]
+        # Apply source priority only after date/basis checks. If none qualify,
+        # retain the preferred rejected observation to explain the missing value.
+        candidates = compatible or candidates
+        # Prefer official filings (user decision 2026-10-15), then Infomax, then the newest observation/report.
         candidates.sort(key=lambda r: (
             0 if any(k in r['source'].lower() for k in ('official', '공식', 'dart')) else
             1 if ('infomax' in r['source'].lower() or '인포맥스' in r['source']) else 2,

@@ -65,6 +65,27 @@ class TrendHistoryTests(unittest.TestCase):
         self.assertTrue(all(r['status']=='unknown' for r in trend.analyze(s)))
         self.assertIn('오래됨',trend.analyze(s)[0]['reason'])
 
+    def test_regular_prices_require_price_calendar_and_evaluation_dates_to_match(self):
+        for stale in ('both', 'prices', 'calendar'):
+            with self.subTest(stale=stale):
+                s=make_fixture();s['companies']=s['companies'][:1]
+                self.assertEqual(trend.analyze(s)[0]['status'],'pass')
+                s['meta']['price_date']='2026-09-24'
+                if stale=='prices':s['sessions'].append('2026-09-24')
+                if stale=='calendar':
+                    s['companies'][0]['prices'].append(dict(s['companies'][0]['prices'][-1],date='2026-09-24'))
+                result=trend.analyze(s)[0]
+                self.assertEqual(result['status'],'unknown')
+                self.assertIsNone(result['rs126'])
+                self.assertIsNone(result['score'])
+
+    def test_future_prices_and_sessions_do_not_change_current_trend(self):
+        s=make_fixture();before=trend.analyze(s)
+        s['sessions'].append('2099-01-01')
+        for row in s['companies']:
+            row['prices'].append(dict(row['prices'][-1],date='2099-01-01',close=1))
+        self.assertEqual(trend.analyze(s),before)
+
     def test_split_event_requires_review(self):
         path=self.files['005930.KS']; data=json.loads(path.read_text(encoding='utf-8'))
         data['chart']['result'][0]['events']['splits']={'1':{'splitRatio':'2:1'}}
