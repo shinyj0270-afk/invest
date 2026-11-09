@@ -1,6 +1,7 @@
 """Consistent local SQLite backups with manifests and bounded retention."""
 import hashlib
 import json
+import re
 import shutil
 import sqlite3
 from contextlib import closing
@@ -56,6 +57,12 @@ def _sources(root):
     return sorted(sources, key=lambda p: p.relative_to(root).as_posix())
 
 
+def _order(name):
+    # Folder names are <stamp> or <stamp>-<n>; order by stamp, then by n as a number (creation order).
+    match = re.fullmatch(r'(\d{8}-\d{6})(?:-(\d+))?', name)
+    return (match[1], int(match[2] or 1)) if match else (name, 0)
+
+
 def list_backups(root):
     base = Path(root) / '.local/backups'
     if not base.is_dir():return []
@@ -65,14 +72,16 @@ def list_backups(root):
         try:manifest = json.loads((path / 'manifest.json').read_text(encoding='utf-8'))
         except (OSError, ValueError):continue
         if isinstance(manifest, dict) and manifest.get('tool') == 'data_backup':names.append(path.name)
-    return sorted(names, reverse=True)
+    return sorted(names, key=_order, reverse=True)
 
 
 def backup(root, *, now=None, keep=10):
     if type(keep) is not int or keep < 1:raise ValueError('보관 개수는 1 이상의 정수여야 합니다')
     now = _time(now);root = Path(root).resolve();sources = _sources(root)
     base = root / '.local/backups';base.mkdir(parents=True, exist_ok=True)
-    name = now.strftime('%Y%m%d-%H%M%S');index = 1
+    name = now.strftime('%Y%m%d-%H%M%S')
+    # Never reuse a number freed by retention: start after the highest one still present for this second.
+    index = 1 + max((n for stamp, n in (_order(p.name.removesuffix('.partial')) for p in base.iterdir()) if stamp == name), default=0)
     while True:
         target = base / (name if index == 1 else f'{name}-{index}')
         partial = target.with_name(target.name + '.partial')
@@ -90,7 +99,8 @@ def backup(root, *, now=None, keep=10):
         partial.rename(target)
     except BaseException:
         shutil.rmtree(partial);raise
-    for old in list_backups(root)[keep:]:shutil.rmtree(base / old)
+    for old in list_backups(root)[keep:]:
+        if old != target.name:shutil.rmtree(base / old)                       # the backup just made is never removed
     return dict(path=str(target), files=files, created_at=now.isoformat())
 
 
@@ -115,6 +125,7 @@ def verify_backup(path):
         if not isinstance(manifest, dict) or manifest.get('tool') != 'data_backup':raise ValueError('백업 표시 확인 필요')
         files = manifest.get('files')
         if not isinstance(files, list):raise ValueError('백업 파일 목록 확인 필요')
+        if not files:raise ValueError('백업 파일 목록이 비어 있습니다')
     except (OSError, ValueError) as exc:return dict(ok=False, checked=0, problems=[str(exc)])
     problems = [problem for entry in files for problem in _verify_file(root, entry)]
     return dict(ok=not problems, checked=len(files), problems=problems)

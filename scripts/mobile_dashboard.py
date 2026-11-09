@@ -23,7 +23,7 @@ import tempfile
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -208,7 +208,8 @@ def handler_for(access, backend_port):
                              '/market-refresh', '/quote-refresh', '/holding-market',
                              '/research-library', '/recommendations', '/dashboard-section', '/data-recovery'):
                 self.reply(404, '찾을 수 없습니다.'); return
-            if route == '/holding-market' and 'refresh' in urlsplit(self.path).query:
+            # Judge the decoded names the backend will see (e.g. %72efresh means refresh).
+            if route == '/holding-market' and 'refresh' in parse_qs(urlsplit(self.path).query, keep_blank_values=True):
                 self.reply(403, '휴대폰에서는 저장된 자료를 조회합니다.'); return
             backend = http.client.HTTPConnection('127.0.0.1', backend_port, timeout=120)
             try:

@@ -72,6 +72,17 @@ class BackupTests(unittest.TestCase):
         first = db.backup(self.root, now=self.now);second = db.backup(self.root, now=self.now)
         self.assertNotEqual(first['path'], second['path']);self.assertEqual(len(db.list_backups(self.root)), 2)
 
+    def test_retention_in_one_second_never_removes_the_backup_just_made(self):
+        # keep=2 in one second: the 4th run used to reuse the freed base name and then delete itself.
+        for _ in range(4):latest = db.backup(self.root, now=self.now, keep=2)
+        self.assertTrue(Path(latest['path']).is_dir())
+        names = db.list_backups(self.root)
+        self.assertEqual(len(names), 2);self.assertEqual(names[0], Path(latest['path']).name)
+
+    def test_backups_in_one_second_are_ordered_by_creation_not_by_text(self):
+        made = [Path(db.backup(self.root, now=self.now, keep=3)['path']).name for _ in range(11)]
+        self.assertEqual(db.list_backups(self.root), made[::-1][:3])                              # '-11','-10','-9', not '-9','-8','-7'
+
     def test_the_newest_backups_are_kept_and_only_tool_made_folders_are_ever_removed(self):
         stranger = self.root / '.local/backups/handmade';stranger.mkdir(parents=True);(stranger / 'note.txt').write_text('mine', encoding='utf-8')
         for i in range(5):db.backup(self.root, now=self.now + timedelta(minutes=i), keep=3)
@@ -121,6 +132,16 @@ class SurvivorTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup);self.root = make_project(self.tmp.name)
         self.now = datetime(2026, 11, 4, 9, 0, 0, tzinfo=KST)
+
+    def test_a_manifest_with_no_files_is_not_a_verified_backup(self):
+        folder = Path(self.tmp.name) / 'empty-backup';folder.mkdir()
+        (folder / 'manifest.json').write_text(json.dumps(dict(tool='data_backup', version=1, files=[])), encoding='utf-8')
+        report = db.verify_backup(folder)
+        self.assertFalse(report['ok']);self.assertEqual(report['checked'], 0);self.assertTrue(report['problems'])
+        from tools.backup_data import main
+        from contextlib import redirect_stdout
+        import io
+        with redirect_stdout(io.StringIO()):self.assertNotEqual(main(['verify', str(folder)]), 0)
 
     def test_a_folder_with_a_foreign_manifest_is_neither_listed_nor_ever_removed(self):
         foreign = self.root / '.local/backups/20990101-000000';foreign.mkdir(parents=True)

@@ -127,6 +127,26 @@ class MobileTests(unittest.TestCase):
         self.rejected(403,'/holding-market?code=900000&refresh=1',{'Authorization':self.auth})
         self.assertEqual(self.calls,[])
 
+    def test_refresh_is_blocked_by_its_decoded_name_even_with_a_valid_page_token(self):
+        # The backend decodes query names (parse_qs), so the gateway must judge the same decoded names.
+        headers={'Authorization':self.auth,'X-Dashboard-Token':'synthetic-token'}
+        for query in ('refresh=1','%72efresh=1','r%65fresh=1','%72%65%66%72%65%73%68=1','refresh='):
+            with self.subTest(query=query):
+                self.rejected(403,'/holding-market?code=900000&'+query,headers)
+        self.assertEqual(self.calls,[])
+
+    def test_encoded_refresh_is_rejected_before_any_backend_connection(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        path='/holding-market?code=900000&%72efresh=1'
+        request=SimpleNamespace(gate=lambda:True,requestline=f'GET {path} HTTP/1.1',path=path,headers={},reply=Mock())
+        with patch('http.client.HTTPConnection') as backend:
+            backend.return_value.getresponse.side_effect=OSError('synthetic upstream')
+            handler_for(None,1).do_GET(request)
+        request.reply.assert_called_once()
+        self.assertEqual(request.reply.call_args.args[0],403)
+        backend.assert_not_called()
+
     def test_login_throttle(self):
         for _ in range(8):
             self.rejected(401,headers={'Authorization':'Basic invalid!'})
