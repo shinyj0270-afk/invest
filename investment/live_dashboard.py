@@ -109,6 +109,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
     cache_lock=threading.RLock()
     from .data_recovery import DataRecovery
     recovery=DataRecovery(root,None if read_only else daily,None if read_only else financial)
+    flow_lock=threading.Lock()
     restarting=threading.Event()
     request_lock=threading.RLock()
     company_read_lock=threading.Lock()
@@ -183,6 +184,13 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
             if current_build_id!=loaded_build_id:
                 self.send_body(503,restart_page(token) if self.path in ('/','/dashboard') else '{"error":"서버 다시 실행 필요"}',
                     'text/html' if self.path in ('/','/dashboard') else 'application/json');return
+            if self.path == '/market-flows':
+                if self.headers.get('Host') != f'127.0.0.1:{self.server.server_port}':
+                    self.send_body(403, '', 'text/plain')
+                    return
+                from .market_flows import render_page, view
+                self.send_body(200, render_page(view(root), None if read_only else token), 'text/html')
+                return
             if self.path=='/credit-status':
                 if not self.authorized():self.send_body(403,'{}','application/json');return
                 from .credit_connection import status
@@ -354,7 +362,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                 content = ('<!doctype html><html lang="ko"><meta charset="utf-8">'
                            '<title>INVESTMENT · 자료 대기</title><main style="font:16px sans-serif;'
                            'max-width:680px;margin:12vh auto;padding:24px"><h1>실제 저장자료 대기</h1>'
-                           f'<p>{message}</p><p>기존 갱신 앱에서 저장자료 연결을 확인하세요.</p></main></html>')
+                           f'<p>{message}</p><p>기존 갱신 앱에서 저장자료 연결을 확인하세요.</p><a href="/market-flows">시장 자금 흐름 열기</a></main></html>')
                 self.send_body(200, content, 'text/html')
                 return
             cache=load_market_cache(root,result['snapshot'])
@@ -419,6 +427,24 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                 pass
 
         def do_POST(self):
+            if self.path == '/market-flows/refresh':
+                if read_only or not self.empty_refresh_request():
+                    self.send_body(403, '{}', 'application/json')
+                    return
+                # Coordinate with restart; public network requests must not block dashboard reads.
+                with request_lock:
+                    if restarting.is_set() or source_fingerprint(root) != loaded_build_id or not flow_lock.acquire(blocking=False):
+                        self.send_body(409, '{}', 'application/json')
+                        return
+                from .market_flows import refresh as refresh_flows
+                try:
+                    errors = refresh_flows(root)
+                    self.send_body(200, json.dumps({'errors': errors}, ensure_ascii=False), 'application/json')
+                except (OSError, ValueError):
+                    self.send_body(409, '{"error":"수급 저장소 또는 동시 갱신 확인 필요"}', 'application/json')
+                finally:
+                    flow_lock.release()
+                return
             with request_lock:self.handle_post()
 
         def handle_post(self):
@@ -433,6 +459,7 @@ def handler_for(root, *, refresh=ensure_data, token=None, holdings=None, quotes=
                     if not 0<size<=128 or json.loads(self.rfile.read(size))!={'drafts_saved':True}:raise ValueError('작성 내용 보관 확인이 필요합니다.')
                     for service in (daily,latest,financial_monitor):
                         if service and service.poll().get('status') in ('running','syncing'):raise ValueError('수집·동기화 진행 중입니다. 완료 후 다시 시도하세요.')
+                    if flow_lock.locked():raise ValueError('수급 갱신이 진행 중입니다.')
                     if financial and financial.running():raise ValueError('재무 수집 완료 후 다시 시도하세요.')
                     from .company_financials import acquire_lock
                     cfg=load_local(root);folder=cfg['data_dir']/cfg['profile']

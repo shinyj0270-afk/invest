@@ -206,7 +206,7 @@ def handler_for(access, backend_port):
             if route not in ('/', '/dashboard', '/health', '/holdings-frame', '/holdings',
                              '/company-view', '/company-financials', '/financial-monitor',
                              '/market-refresh', '/quote-refresh', '/holding-market',
-                             '/research-library', '/recommendations', '/dashboard-section', '/data-recovery'):
+                             '/research-library', '/recommendations', '/dashboard-section', '/data-recovery', '/market-flows'):
                 self.reply(404, '찾을 수 없습니다.'); return
             # Judge the decoded names the backend will see (e.g. %72efresh means refresh).
             if route == '/holding-market' and 'refresh' in parse_qs(urlsplit(self.path).query, keep_blank_values=True):

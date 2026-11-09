@@ -1,6 +1,11 @@
 {
   "purpose": "Single-source, explicit Git handoff list for the existing INVESTMENT workspace",
   "files": {
+    "investment/market_flows.py": "investment/market_flows.py",
+    "tools/market_flows.py": "tools/market_flows.py",
+    "src/market_flows.html": "src/market_flows.html",
+    "tests/test_market_flows.py": "tests/test_market_flows.py",
+    "docs/MARKET_FLOWS.md": "docs/MARKET_FLOWS.md",
     "docs/review/redteam_2026-11-03.md": "docs/review/redteam_2026-11-03.md",
     "docs/review/test_scenarios.md": "docs/review/test_scenarios.md",
     "docs/review/research_questions.md": "docs/review/research_questions.md",

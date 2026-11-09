@@ -133,6 +133,7 @@ function holdingBriefs(input,held){
  return briefs;
 }
 function renderHome(){
+ $('homeMarketFlows').hidden=!INVESTMENT_LIVE?.token||Boolean(WORKSPACE_DATA.result_view);
  const trend=WORKSPACE_DATA.trend_following||{},insights=WORKSPACE_DATA.market_insights;
  $('homeVerdict').innerHTML=HomeDashboardUI.verdictPanel(HomeDashboardUI.verdict(trend.market_explanation,insights));
  $('homeMarketCharts').innerHTML=HomeDashboardUI.marketCards(trend,trend.market_explanation,WORKSPACE_DATA.market_summary,TrendFollowingUI.miniChart);
