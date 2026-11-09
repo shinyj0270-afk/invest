@@ -1,6 +1,6 @@
 # CURRENT HANDOFF
 
-Updated: 2026-11-09 10:30 KST (결함 수정 3건 MERGE 후 Codex 핵심 로직 검토 기록; CLOSE 아님)
+Updated: 2026-11-09 KST (미병합 브랜치 2개 기록 추가; CLOSE 아님)
 Last agent: Claude Code (Opus 5.5, 상위 세션이 시작한 별도 세션)
 Last PC: work Primary (DESKTOP-D36HPLT). 이 PC는 2026-11-10까지 사용
 Last task: Codex 검토 지적 결함 3건 수정·반영(6b988af), Codex 핵심 로직 심층 검토 7건을 후속 과제로 기록
@@ -9,6 +9,7 @@ Completed:
 - **Codex 검토 결함 3건 수정(사용자 "1~3번만 고치기", "Saved, go ahead", 2026-11-09)**: (1) `scripts/mobile_dashboard.py` 휴대폰 게이트웨이가 `/holding-market` 쿼리를 `parse_qs`로 해석한 이름으로 검사해 `%72efresh=1` 같은 인코딩 우회를 403으로 막음. (2) `investment/data_backup.py` 같은 초 백업 순서를 시각+숫자 접미사로 판단, 보존 정리로 비워진 접미사 재사용 금지, 방금 만든 백업은 삭제하지 않음. (3) `verify_backup()`이 빈 `files` 목록을 실패로 처리(CLI 종료 코드 1). 새 테스트 5건이 수정 전 실패·수정 후 통과. 전체 `python -B -m unittest discover -s tests -p "test_*.py"` 1643건 중 1641 통과·3 skip·2 오류(`test_daily_ui`·`test_viewer_ui`, 8501 서버 필요한 기존 항목). `tools/validate_share_candidates.py` 통과(453 경로, flagged 0). 원본 main `--ff-only` 반영, 운영 서버(8767)·휴대폰 게이트웨이 미실행이라 재시작 없음(다음 실행 때 새 코드 적용, 실행 확인 안 함).
 - **Codex 핵심 로직 심층 검토 기록(사용자 "둘 다 기록", 2026-11-09)**: [review_codex_core_logic_2026-11-09.md](docs/review/review_codex_core_logic_2026-11-09.md)에 7건(높음 1·중간 4·낮음 2) 기록. 코드는 고치지 않음. 원본 보고서는 로컬 절대 경로가 있어 저장소에 넣지 않고 항목·근거만 옮김.
 Pending:
+- **미병합 브랜치 2개(새 회사 PC에서 검토 후 병합 여부 결정)**: (a) `origin/fix/astra-2026-11-09` `7ab8111`: 아래 후속 3·4·5번 수정안과 테스트(7개 파일 +134/−16). 착수 전 이 브랜치부터 확인. (b) `origin/feat/market-flows-2026-11-09` `cd1e12c`: Codex 구현 시장 자금 흐름 화면(네이버 투자자별 순매수 수량/거래량, ICI 미국 주간 펀드 흐름, [MARKET_FLOWS.md](docs/MARKET_FLOWS.md)는 브랜치에만 있음). Claude Code 확인: 수급 6·인포맥스 9 테스트와 관련 UI·휴대폰·라이브 테스트 통과, 미래 행 주입 시 테스트 실패 확인. 전체 테스트·브라우저 화면·실제 네트워크 갱신은 미확인. 흐름 표시 전용이며 선행성·적중률 미검증, ETF 기관 매매에는 LP 거래가 섞임.
 - **Codex 핵심 로직 후속 7건(착수: 11월 말 새 회사 PC 설정 후)**: 1(수기 재무값이 접수번호 무관 주입, `pit_xml_accounts.py:34`)·2(`pit_pool._first_versions` 정정본 제외)는 PIT 설계 결정 필요(아래 PIT 항목과 연결). 3(`trend.py:13` 일반 prices 경로 stale 통과)·4(`valuation.py:94` 첫 후보만 검사)·5(`financial_table.py:91-93` 정정 이력 시 표 비움)는 수정 범위 작음, 테스트 먼저. 6(PER/PBR 출처 우선순위 문서)·7(탐색 시총 하한 문서 850억 vs 코드 1,500억 초과)은 문서 정정.
 - **백업 후속(이번 범위 밖)**: `data_backup`이 SQLite 보조 파일(-wal·-shm)을 따로 다루는지 Codex 지적 4번은 미착수.
 - **PIT 파일럿 남은 일**: 나머지 연도 문서 요청별 승인, 정정공시·연속 연도 빈티지 검증, 문서 받기 명령 정식화, PIT 품질 점수의 V/B 시점 미기록. 수기값 접수번호 귀속·`PARSER_VERSION` 재생성 정책 미정([result_PIT_parser_fixes_2026-11-05.md](docs/review/result_PIT_parser_fixes_2026-11-05.md) 미해결 5·7).
